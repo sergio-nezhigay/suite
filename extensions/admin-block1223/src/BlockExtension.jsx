@@ -1,80 +1,105 @@
-import { useEffect, useMemo, useState, useCallback } from "react";
+import { useEffect, useState } from 'react';
 import {
-  Button,
+  Badge,
   BlockStack,
+  InlineStack,
   Text,
+  Button,
+  Divider,
+  Heading,
   reactExtension,
   useApi,
-} from "@shopify/ui-extensions-react/admin";
-import { api } from "./api";
-import { useFindMany } from "@gadgetinc/react";
+} from '@shopify/ui-extensions-react/admin';
+import { fetchSmsTemplates } from './fetchSmsTemplates';
+import { sendSmsMessage } from './sendSmsMessage';
 
-const TARGET = "admin.product-details.block.render";
+const TARGET = 'admin.product-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
 function App() {
   const { close, data, intents } = useApi(TARGET);
-  const [allIssues, setAllIssues] = useState("init");
+  const [smsStatus, setSmsStatus] = useState('Ready to send SMS');
   const [smsTemplates, setSmsTemplates] = useState([]);
+  const [selectedTemplate, setSelectedTemplate] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  console.log("test4");
-
-  // Function to fetch smsTemplates
-  const fetchSmsTemplates = useCallback(async () => {
-    try {
-      const result = await api.smsTemplates.findMany(); // Correctly accessing the smsTemplates model
-      setSmsTemplates(result);
-    } catch (err) {
-      console.error("Failed to fetch smsTemplates:", err);
-      setError("Failed to fetch smsTemplates");
-    }
-  }, []);
   useEffect(() => {
-    fetchSmsTemplates(); // Fetch the smsTemplates when the component mounts
-  }, [fetchSmsTemplates]);
+    const loadSmsTemplates = async () => {
+      try {
+        const result = await fetchSmsTemplates();
+        setSmsTemplates(result);
+      } catch (err) {
+        setError('Failed to fetch SMS templates');
+      }
+    };
 
-  const getIssueRecommendation = useCallback(async () => {
-    const receiverNumber = "380507025777";
-    const messageText = "Hello from front";
-    const res = await fetch("https://admin-action-block.gadget.app/send-sms", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        to: receiverNumber,
-        message: messageText,
-      }),
-    });
+    loadSmsTemplates();
+  }, []);
 
-    if (!res.ok) {
-      console.error("Network error");
-      setAllIssues("Network error");
+  const handleSendSms = async () => {
+    const receiverNumber = '380507025777'; // Fixed receiver number
+    if (selectedTemplate.length === 0) {
+      setSmsStatus('Please select a template to send.');
+      return;
     }
-    const json = await res.json();
-    setAllIssues(JSON.stringify(json));
-  }, [data.selected]);
+
+    setLoading(true);
+    setSmsStatus('Sending SMS...');
+    try {
+      const response = await sendSmsMessage(
+        receiverNumber,
+        selectedTemplate[0]
+      );
+      setSmsStatus(`Success: ${JSON.stringify(response)}`);
+    } catch (err) {
+      setSmsStatus(`Error: ${err.message}`);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <BlockStack spacing="loose">
-      <Text fontWeight="bold">Test12</Text>
-      <Text fontWeight="bold">{allIssues}</Text>
-      <Button onPress={getIssueRecommendation} disabled={false}>
-        Generate sms issue3
-      </Button>
-      <Text fontWeight="bold">SMS Templates:</Text>
-      {error ? (
-        <Text color="red">{error}</Text>
-      ) : (
-        smsTemplates.map((template) => (
-          <BlockStack key={template.id} spacing="tight">
-            <Text>ID: {template.id}</Text>
-            <Text>Title: {template.title}</Text>
-            <Text>Message: {template.smsText}</Text>
-          </BlockStack>
-        ))
-      )}
+    <BlockStack spacing='loose'>
+      <Heading>SMS Control Center</Heading>
+
+      {/* InlineStack to arrange buttons in a row with controlled spacing */}
+      <InlineStack spacing='tight' wrap={false} alignment='center'>
+        {smsTemplates.map((template) => (
+          <Button
+            key={template.id}
+            onPress={() => {
+              setSelectedTemplate([template.smsText]);
+              handleSendSms();
+            }}
+            disabled={loading}
+            variant='primary' // Use the primary variant to make buttons stand out
+            tone='default' // Default tone for normal button
+          >
+            {loading ? 'Sending...' : template.title}
+          </Button>
+        ))}
+      </InlineStack>
+
+      <Divider />
+
+      <BlockStack spacing='tight'>
+        <Text fontWeight='bold'>Status:</Text>
+        <Badge
+          status={
+            smsStatus.startsWith('Success')
+              ? 'success'
+              : smsStatus.startsWith('Error')
+              ? 'critical'
+              : undefined
+          }
+        >
+          {smsStatus}
+        </Badge>
+      </BlockStack>
+
+      {error && <Text color='critical'>{error}</Text>}
     </BlockStack>
   );
 }

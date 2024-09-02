@@ -1180,7 +1180,7 @@
             }
             return dispatcher;
           }
-          function useContext12(Context) {
+          function useContext3(Context) {
             var dispatcher = resolveDispatcher();
             {
               if (Context._context !== void 0) {
@@ -1194,19 +1194,19 @@
             }
             return dispatcher.useContext(Context);
           }
-          function useState7(initialState) {
+          function useState2(initialState) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useState(initialState);
           }
-          function useReducer2(reducer, initialArg, init) {
+          function useReducer(reducer, initialArg, init) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useReducer(reducer, initialArg, init);
           }
-          function useRef6(initialValue) {
+          function useRef2(initialValue) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useRef(initialValue);
           }
-          function useEffect8(create, deps) {
+          function useEffect2(create, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useEffect(create, deps);
           }
@@ -1218,11 +1218,11 @@
             var dispatcher = resolveDispatcher();
             return dispatcher.useLayoutEffect(create, deps);
           }
-          function useCallback12(callback, deps) {
+          function useCallback(callback, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useCallback(callback, deps);
           }
-          function useMemo17(create, deps) {
+          function useMemo2(create, deps) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useMemo(create, deps);
           }
@@ -1985,19 +1985,19 @@
           exports.memo = memo2;
           exports.startTransition = startTransition;
           exports.unstable_act = act;
-          exports.useCallback = useCallback12;
-          exports.useContext = useContext12;
+          exports.useCallback = useCallback;
+          exports.useContext = useContext3;
           exports.useDebugValue = useDebugValue;
           exports.useDeferredValue = useDeferredValue;
-          exports.useEffect = useEffect8;
+          exports.useEffect = useEffect2;
           exports.useId = useId;
           exports.useImperativeHandle = useImperativeHandle;
           exports.useInsertionEffect = useInsertionEffect;
           exports.useLayoutEffect = useLayoutEffect;
-          exports.useMemo = useMemo17;
-          exports.useReducer = useReducer2;
-          exports.useRef = useRef6;
-          exports.useState = useState7;
+          exports.useMemo = useMemo2;
+          exports.useReducer = useReducer;
+          exports.useRef = useRef2;
+          exports.useState = useState2;
           exports.useSyncExternalStore = useSyncExternalStore;
           exports.useTransition = useTransition;
           exports.version = ReactVersion;
@@ -2491,9 +2491,9 @@
         module.exports = function $$$reconciler($$$hostConfig) {
           var exports2 = {};
           "use strict";
-          var React7 = require_react();
+          var React = require_react();
           var Scheduler = require_scheduler();
-          var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+          var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
           var suppressWarning = false;
           function setSuppressWarning(newSuppressWarning) {
             {
@@ -2536,10 +2536,10 @@
             }
           }
           var assign = Object.assign;
-          function get4(key2) {
+          function get3(key2) {
             return key2._reactInternals;
           }
-          function set2(key2, value2) {
+          function set(key2, value2) {
             key2._reactInternals = value2;
           }
           var enableNewReconciler = false;
@@ -2890,7 +2890,7 @@
                 instance._warnedAboutRefsInRender = true;
               }
             }
-            var fiber = get4(component);
+            var fiber = get3(component);
             if (!fiber) {
               return false;
             }
@@ -4118,14 +4118,14 @@
           function includesSomeLane(a2, b) {
             return (a2 & b) !== NoLanes;
           }
-          function isSubsetOfLanes(set3, subset) {
-            return (set3 & subset) === subset;
+          function isSubsetOfLanes(set2, subset) {
+            return (set2 & subset) === subset;
           }
           function mergeLanes(a2, b) {
             return a2 | b;
           }
-          function removeLanes(set3, subset) {
-            return set3 & ~subset;
+          function removeLanes(set2, subset) {
+            return set2 & ~subset;
           }
           function intersectLanes(a2, b) {
             return a2 & b;
@@ -5399,9 +5399,9 @@
               }
               return maybeStrictRoot;
             };
-            var setToSortedString = function(set3) {
+            var setToSortedString = function(set2) {
               var array = [];
-              set3.forEach(function(value2) {
+              set2.forEach(function(value2) {
                 array.push(value2);
               });
               return array.sort().join(", ");
@@ -6291,7 +6291,7 @@
             }
           }
           var fakeInternalInstance = {};
-          var emptyRefsObject = new React7.Component().refs;
+          var emptyRefsObject = new React.Component().refs;
           var didWarnAboutStateAssignmentForComponent;
           var didWarnAboutUninitializedState;
           var didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate;
@@ -6363,7 +6363,7 @@
           var classComponentUpdater = {
             isMounted,
             enqueueSetState: function(inst, payload, callback) {
-              var fiber = get4(inst);
+              var fiber = get3(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6384,7 +6384,7 @@
               }
             },
             enqueueReplaceState: function(inst, payload, callback) {
-              var fiber = get4(inst);
+              var fiber = get3(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6406,7 +6406,7 @@
               }
             },
             enqueueForceUpdate: function(inst, callback) {
-              var fiber = get4(inst);
+              var fiber = get3(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6534,7 +6534,7 @@
           function adoptClassInstance(workInProgress2, instance) {
             instance.updater = classComponentUpdater;
             workInProgress2.stateNode = instance;
-            set2(instance, workInProgress2);
+            set(instance, workInProgress2);
             {
               instance._reactInternalInstance = fakeInternalInstance;
             }
@@ -17103,7 +17103,7 @@
             if (!parentComponent) {
               return emptyContextObject;
             }
-            var fiber = get4(parentComponent);
+            var fiber = get3(parentComponent);
             var parentContext = findCurrentUnmaskedContext(fiber);
             if (fiber.tag === ClassComponent) {
               var Component = fiber.type;
@@ -17114,7 +17114,7 @@
             return parentContext;
           }
           function findHostInstance(component) {
-            var fiber = get4(component);
+            var fiber = get3(component);
             if (fiber === void 0) {
               if (typeof component.render === "function") {
                 throw new Error("Unable to find node on an unmounted component.");
@@ -17131,7 +17131,7 @@
           }
           function findHostInstanceWithWarning(component, methodName) {
             {
-              var fiber = get4(component);
+              var fiber = get3(component);
               if (fiber === void 0) {
                 if (typeof component.render === "function") {
                   throw new Error("Unable to find node on an unmounted component.");
@@ -17602,7 +17602,7 @@
       if (true) {
         (function() {
           "use strict";
-          var React7 = require_react();
+          var React = require_react();
           var REACT_ELEMENT_TYPE = Symbol.for("react.element");
           var REACT_PORTAL_TYPE = Symbol.for("react.portal");
           var REACT_FRAGMENT_TYPE = Symbol.for("react.fragment");
@@ -17628,7 +17628,7 @@
             }
             return null;
           }
-          var ReactSharedInternals = React7.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
+          var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
           function error2(format) {
             {
               {
@@ -19722,103 +19722,8 @@
     }
   });
 
-  // node_modules/react-fast-compare/index.js
-  var require_react_fast_compare = __commonJS({
-    "node_modules/react-fast-compare/index.js"(exports, module) {
-      var hasElementType = typeof Element !== "undefined";
-      var hasMap = typeof Map === "function";
-      var hasSet = typeof Set === "function";
-      var hasArrayBuffer = typeof ArrayBuffer === "function" && !!ArrayBuffer.isView;
-      function equal(a2, b) {
-        if (a2 === b)
-          return true;
-        if (a2 && b && typeof a2 == "object" && typeof b == "object") {
-          if (a2.constructor !== b.constructor)
-            return false;
-          var length, i3, keys;
-          if (Array.isArray(a2)) {
-            length = a2.length;
-            if (length != b.length)
-              return false;
-            for (i3 = length; i3-- !== 0; )
-              if (!equal(a2[i3], b[i3]))
-                return false;
-            return true;
-          }
-          var it;
-          if (hasMap && a2 instanceof Map && b instanceof Map) {
-            if (a2.size !== b.size)
-              return false;
-            it = a2.entries();
-            while (!(i3 = it.next()).done)
-              if (!b.has(i3.value[0]))
-                return false;
-            it = a2.entries();
-            while (!(i3 = it.next()).done)
-              if (!equal(i3.value[1], b.get(i3.value[0])))
-                return false;
-            return true;
-          }
-          if (hasSet && a2 instanceof Set && b instanceof Set) {
-            if (a2.size !== b.size)
-              return false;
-            it = a2.entries();
-            while (!(i3 = it.next()).done)
-              if (!b.has(i3.value[0]))
-                return false;
-            return true;
-          }
-          if (hasArrayBuffer && ArrayBuffer.isView(a2) && ArrayBuffer.isView(b)) {
-            length = a2.length;
-            if (length != b.length)
-              return false;
-            for (i3 = length; i3-- !== 0; )
-              if (a2[i3] !== b[i3])
-                return false;
-            return true;
-          }
-          if (a2.constructor === RegExp)
-            return a2.source === b.source && a2.flags === b.flags;
-          if (a2.valueOf !== Object.prototype.valueOf && typeof a2.valueOf === "function" && typeof b.valueOf === "function")
-            return a2.valueOf() === b.valueOf();
-          if (a2.toString !== Object.prototype.toString && typeof a2.toString === "function" && typeof b.toString === "function")
-            return a2.toString() === b.toString();
-          keys = Object.keys(a2);
-          length = keys.length;
-          if (length !== Object.keys(b).length)
-            return false;
-          for (i3 = length; i3-- !== 0; )
-            if (!Object.prototype.hasOwnProperty.call(b, keys[i3]))
-              return false;
-          if (hasElementType && a2 instanceof Element)
-            return false;
-          for (i3 = length; i3-- !== 0; ) {
-            if ((keys[i3] === "_owner" || keys[i3] === "__v" || keys[i3] === "__o") && a2.$$typeof) {
-              continue;
-            }
-            if (!equal(a2[keys[i3]], b[keys[i3]]))
-              return false;
-          }
-          return true;
-        }
-        return a2 !== a2 && b !== b;
-      }
-      module.exports = function isEqual2(a2, b) {
-        try {
-          return equal(a2, b);
-        } catch (error2) {
-          if ((error2.message || "").match(/stack|recursion/i)) {
-            console.warn("react-fast-compare cannot handle circular refs");
-            return false;
-          }
-          throw error2;
-        }
-      };
-    }
-  });
-
   // extensions/admin-block1223/src/BlockExtension.jsx
-  var import_react40 = __toESM(require_react());
+  var import_react15 = __toESM(require_react());
 
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
   function isBasicObject(value2) {
@@ -20496,12 +20401,12 @@
           const [{
             channel,
             components
-          }, api2] = args;
+          }, api] = args;
           const root = createRemoteRoot(channel, {
             components,
             strict: true
           });
-          let renderResult = implementation(root, api2);
+          let renderResult = implementation(root, api);
           if (typeof renderResult === "object" && renderResult != null && "then" in renderResult) {
             renderResult = yield renderResult;
           }
@@ -20518,11 +20423,23 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/extension.mjs
   var extension = createExtensionRegistrationFunction();
 
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Badge/Badge.mjs
+  var Badge = createRemoteComponent("Badge");
+
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
   var BlockStack = createRemoteComponent("BlockStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button = createRemoteComponent("Button");
+
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Divider/Divider.mjs
+  var Divider = createRemoteComponent("Divider");
+
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Heading/Heading.mjs
+  var Heading = createRemoteComponent("Heading");
+
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
+  var InlineStack = createRemoteComponent("InlineStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text = createRemoteComponent("Text");
@@ -20806,12 +20723,12 @@
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/render.mjs
   var import_jsx_runtime3 = __toESM(require_jsx_runtime(), 1);
   function reactExtension(target, render$1) {
-    return extension(target, (root, api2) => __async(this, null, function* () {
-      const element = yield render$1(api2);
+    return extension(target, (root, api) => __async(this, null, function* () {
+      const element = yield render$1(api);
       yield new Promise((resolve, reject2) => {
         try {
           render(/* @__PURE__ */ (0, import_jsx_runtime3.jsx)(ExtensionApiContext.Provider, {
-            value: api2,
+            value: api,
             children: element
           }), root, () => {
             resolve();
@@ -20824,17 +20741,29 @@
     }));
   }
 
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Badge/Badge.mjs
+  var Badge2 = createRemoteReactComponent(Badge);
+
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
   var BlockStack2 = createRemoteReactComponent(BlockStack);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button2 = createRemoteReactComponent(Button);
 
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Divider/Divider.mjs
+  var Divider2 = createRemoteReactComponent(Divider);
+
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Heading/Heading.mjs
+  var Heading2 = createRemoteReactComponent(Heading);
+
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
+  var InlineStack2 = createRemoteReactComponent(InlineStack);
+
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text2 = createRemoteReactComponent(Text);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
-  var import_react10 = __toESM(require_react(), 1);
+  var import_react14 = __toESM(require_react(), 1);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/errors.mjs
   var AdminUIExtensionError = class extends Error {
@@ -20846,11 +20775,11 @@
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
   function useApi(_target) {
-    const api2 = (0, import_react10.useContext)(ExtensionApiContext);
-    if (api2 == null) {
+    const api = (0, import_react14.useContext)(ExtensionApiContext);
+    if (api == null) {
       throw new AdminUIExtensionError("No extension api found.");
     }
-    return api2;
+    return api;
   }
 
   // node_modules/@gadgetinc/api-client-core/dist/esm/AnyClient.js
@@ -28406,2673 +28335,41 @@ ${compileFieldSelection(operation.fields).join("\n")}
   };
   _a2 = $modelRelationships2;
 
-  // extensions/admin-block1223/src/api.js
-  var api = new Client2({
+  // extensions/admin-block1223/src/gadgetApi.js
+  var gadgetApi = new Client2({
     authenticationMode: { browserSession: true }
   });
 
-  // node_modules/@gadgetinc/react/dist/esm/GadgetProvider.js
-  var import_react11 = __toESM(require_react(), 1);
-  var GadgetUrqlClientContext = import_react11.default.createContext(void 0);
-  var GadgetConfigurationContext = import_react11.default.createContext(void 0);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/SignedIn.js
-  var import_react17 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/useAuth.js
-  var import_react16 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useGet.js
-  var import_react15 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useGadgetQuery.js
-  var import_react13 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/utils.js
-  var import_react12 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useStructuralMemo.js
-  var import_react14 = __toESM(require_react(), 1);
-  var import_react_fast_compare = __toESM(require_react_fast_compare(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/SignedInOrRedirect.js
-  var import_react18 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/SignedOut.js
-  var import_react19 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/SignedOutOrRedirect.js
-  var import_react20 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/auth/useSignOut.js
-  var import_react23 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useAction.js
-  var import_react22 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useGadgetMutation.js
-  var import_react21 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useActionForm.js
-  var import_react27 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useFindBy.js
-  var import_react24 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useFindOne.js
-  var import_react25 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useGlobalAction.js
-  var import_react26 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useBulkAction.js
-  var import_react28 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useEnqueue.js
-  var import_react29 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useFetch.js
-  var import_react30 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useFindFirst.js
-  var import_react31 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useFindMany.js
-  var import_react32 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useList.js
-  var import_react35 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useDebouncedSearch.js
-  var import_react33 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useSelectedRecordsController.js
-  var import_react34 = __toESM(require_react(), 1);
-  var SelectionType;
-  (function(SelectionType2) {
-    SelectionType2["All"] = "all";
-    SelectionType2["Page"] = "page";
-    SelectionType2["Multi"] = "multi";
-    SelectionType2["Single"] = "single";
-    SelectionType2["Range"] = "range";
-  })(SelectionType || (SelectionType = {}));
-
-  // node_modules/@gadgetinc/react/dist/esm/useMaybeFindFirst.js
-  var import_react36 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useMaybeFindOne.js
-  var import_react37 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/useTable.js
-  var import_react39 = __toESM(require_react(), 1);
-
-  // node_modules/@gadgetinc/react/dist/esm/internal/gql/graphql.js
-  var BackgroundActionOutcome;
-  (function(BackgroundActionOutcome2) {
-    BackgroundActionOutcome2["Completed"] = "completed";
-    BackgroundActionOutcome2["Failed"] = "failed";
-  })(BackgroundActionOutcome || (BackgroundActionOutcome = {}));
-  var BackgroundActionPriority;
-  (function(BackgroundActionPriority2) {
-    BackgroundActionPriority2["Default"] = "DEFAULT";
-    BackgroundActionPriority2["High"] = "HIGH";
-    BackgroundActionPriority2["Low"] = "LOW";
-    BackgroundActionPriority2["Platform"] = "PLATFORM";
-  })(BackgroundActionPriority || (BackgroundActionPriority = {}));
-  var GadgetFieldType;
-  (function(GadgetFieldType2) {
-    GadgetFieldType2["Any"] = "Any";
-    GadgetFieldType2["Array"] = "Array";
-    GadgetFieldType2["BelongsTo"] = "BelongsTo";
-    GadgetFieldType2["Boolean"] = "Boolean";
-    GadgetFieldType2["Code"] = "Code";
-    GadgetFieldType2["Color"] = "Color";
-    GadgetFieldType2["Computed"] = "Computed";
-    GadgetFieldType2["DateTime"] = "DateTime";
-    GadgetFieldType2["Email"] = "Email";
-    GadgetFieldType2["EncryptedString"] = "EncryptedString";
-    GadgetFieldType2["Enum"] = "Enum";
-    GadgetFieldType2["File"] = "File";
-    GadgetFieldType2["HasMany"] = "HasMany";
-    GadgetFieldType2["HasManyThrough"] = "HasManyThrough";
-    GadgetFieldType2["HasOne"] = "HasOne";
-    GadgetFieldType2["Id"] = "ID";
-    GadgetFieldType2["Json"] = "JSON";
-    GadgetFieldType2["Money"] = "Money";
-    GadgetFieldType2["Null"] = "Null";
-    GadgetFieldType2["Number"] = "Number";
-    GadgetFieldType2["Object"] = "Object";
-    GadgetFieldType2["Password"] = "Password";
-    GadgetFieldType2["RecordState"] = "RecordState";
-    GadgetFieldType2["RichText"] = "RichText";
-    GadgetFieldType2["RoleAssignments"] = "RoleAssignments";
-    GadgetFieldType2["String"] = "String";
-    GadgetFieldType2["Url"] = "URL";
-    GadgetFieldType2["Vector"] = "Vector";
-  })(GadgetFieldType || (GadgetFieldType = {}));
-  var SortOrder;
-  (function(SortOrder2) {
-    SortOrder2["Ascending"] = "Ascending";
-    SortOrder2["Descending"] = "Descending";
-  })(SortOrder || (SortOrder = {}));
-  var RelatedModelFieldFragmentFragmentDoc = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      }
-    ]
-  };
-  var FieldMetadataFragmentDoc = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "FieldMetadata" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-            { kind: "Field", name: { kind: "Name", value: "requiredArgumentForInput" } },
-            {
-              kind: "InlineFragment",
-              typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "sortable" } },
-                  { kind: "Field", name: { kind: "Name", value: "filterable" } }
-                ]
-              }
-            },
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "validations" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRegexFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "pattern" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRangeFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "min" } },
-                              { kind: "Field", name: { kind: "Name", value: "max" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetOnlyImageFileFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "allowAnimatedImages" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetGenericFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasManyConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasOneConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetBelongsToConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetEnumConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "allowMultiple" } },
-                        { kind: "Field", name: { kind: "Name", value: "allowOther" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "options" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "color" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetDateTimeConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "includeTime" } }] }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetNumberConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "decimals" } }] }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      }
-    ]
-  };
-  var SubFieldsFragmentDoc = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "SubFields" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "fields" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "configuration" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                    {
-                                      kind: "InlineFragment",
-                                      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                                      selectionSet: {
-                                        kind: "SelectionSet",
-                                        selections: [
-                                          { kind: "Field", name: { kind: "Name", value: "name" } },
-                                          {
-                                            kind: "Field",
-                                            name: { kind: "Name", value: "fields" },
-                                            selectionSet: {
-                                              kind: "SelectionSet",
-                                              selections: [
-                                                { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                                                {
-                                                  kind: "Field",
-                                                  name: { kind: "Name", value: "configuration" },
-                                                  selectionSet: {
-                                                    kind: "SelectionSet",
-                                                    selections: [
-                                                      { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                                      {
-                                                        kind: "InlineFragment",
-                                                        typeCondition: {
-                                                          kind: "NamedType",
-                                                          name: { kind: "Name", value: "GadgetObjectFieldConfig" }
-                                                        },
-                                                        selectionSet: {
-                                                          kind: "SelectionSet",
-                                                          selections: [
-                                                            { kind: "Field", name: { kind: "Name", value: "name" } },
-                                                            {
-                                                              kind: "Field",
-                                                              name: { kind: "Name", value: "fields" },
-                                                              selectionSet: {
-                                                                kind: "SelectionSet",
-                                                                selections: [
-                                                                  { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } }
-                                                                ]
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "FieldMetadata" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-            { kind: "Field", name: { kind: "Name", value: "requiredArgumentForInput" } },
-            {
-              kind: "InlineFragment",
-              typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "sortable" } },
-                  { kind: "Field", name: { kind: "Name", value: "filterable" } }
-                ]
-              }
-            },
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "validations" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRegexFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "pattern" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRangeFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "min" } },
-                              { kind: "Field", name: { kind: "Name", value: "max" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetOnlyImageFileFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "allowAnimatedImages" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetGenericFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasManyConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasOneConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetBelongsToConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetEnumConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "allowMultiple" } },
-                        { kind: "Field", name: { kind: "Name", value: "allowOther" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "options" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "color" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetDateTimeConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "includeTime" } }] }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetNumberConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "decimals" } }] }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-  var GetModelMetadataDocument = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "OperationDefinition",
-        operation: "query",
-        name: { kind: "Name", value: "GetModelMetadata" },
-        variableDefinitions: [
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "apiIdentifier" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "namespace" } },
-            type: { kind: "ListType", type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Boolean" } } }
-          }
-        ],
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "gadgetMeta" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "model" },
-                    arguments: [
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "apiIdentifier" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "apiIdentifier" } }
-                      },
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "namespace" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "namespace" } }
-                      }
-                    ],
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                        { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "fields" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } }]
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "FieldMetadata" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-            { kind: "Field", name: { kind: "Name", value: "requiredArgumentForInput" } },
-            {
-              kind: "InlineFragment",
-              typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "sortable" } },
-                  { kind: "Field", name: { kind: "Name", value: "filterable" } }
-                ]
-              }
-            },
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "validations" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRegexFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "pattern" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRangeFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "min" } },
-                              { kind: "Field", name: { kind: "Name", value: "max" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetOnlyImageFileFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "allowAnimatedImages" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetGenericFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasManyConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasOneConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetBelongsToConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetEnumConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "allowMultiple" } },
-                        { kind: "Field", name: { kind: "Name", value: "allowOther" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "options" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "color" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetDateTimeConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "includeTime" } }] }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetNumberConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "decimals" } }] }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-  var ModelActionMetadataDocument = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "OperationDefinition",
-        operation: "query",
-        name: { kind: "Name", value: "ModelActionMetadata" },
-        variableDefinitions: [
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "modelApiIdentifier" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "modelNamespace" } },
-            type: { kind: "ListType", type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "action" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "Boolean" } } }
-          }
-        ],
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "gadgetMeta" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "model" },
-                    arguments: [
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "apiIdentifier" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "modelApiIdentifier" } }
-                      },
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "namespace" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "modelNamespace" } }
-                      }
-                    ],
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                        { kind: "Field", name: { kind: "Name", value: "defaultRecord" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "action" },
-                          arguments: [
-                            {
-                              kind: "Argument",
-                              name: { kind: "Name", value: "apiIdentifier" },
-                              value: { kind: "Variable", name: { kind: "Name", value: "action" } }
-                            }
-                          ],
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "operatesWithRecordIdentity" } },
-                              { kind: "Field", name: { kind: "Name", value: "isDeleteAction" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "inputFields" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                                    { kind: "FragmentSpread", name: { kind: "Name", value: "SubFields" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "triggers" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "Field", name: { kind: "Name", value: "specID" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "FieldMetadata" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-            { kind: "Field", name: { kind: "Name", value: "requiredArgumentForInput" } },
-            {
-              kind: "InlineFragment",
-              typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "sortable" } },
-                  { kind: "Field", name: { kind: "Name", value: "filterable" } }
-                ]
-              }
-            },
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "validations" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRegexFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "pattern" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRangeFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "min" } },
-                              { kind: "Field", name: { kind: "Name", value: "max" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetOnlyImageFileFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "allowAnimatedImages" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetGenericFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasManyConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasOneConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetBelongsToConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetEnumConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "allowMultiple" } },
-                        { kind: "Field", name: { kind: "Name", value: "allowOther" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "options" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "color" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetDateTimeConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "includeTime" } }] }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetNumberConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "decimals" } }] }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "SubFields" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "fields" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "configuration" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                    {
-                                      kind: "InlineFragment",
-                                      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                                      selectionSet: {
-                                        kind: "SelectionSet",
-                                        selections: [
-                                          { kind: "Field", name: { kind: "Name", value: "name" } },
-                                          {
-                                            kind: "Field",
-                                            name: { kind: "Name", value: "fields" },
-                                            selectionSet: {
-                                              kind: "SelectionSet",
-                                              selections: [
-                                                { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                                                {
-                                                  kind: "Field",
-                                                  name: { kind: "Name", value: "configuration" },
-                                                  selectionSet: {
-                                                    kind: "SelectionSet",
-                                                    selections: [
-                                                      { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                                      {
-                                                        kind: "InlineFragment",
-                                                        typeCondition: {
-                                                          kind: "NamedType",
-                                                          name: { kind: "Name", value: "GadgetObjectFieldConfig" }
-                                                        },
-                                                        selectionSet: {
-                                                          kind: "SelectionSet",
-                                                          selections: [
-                                                            { kind: "Field", name: { kind: "Name", value: "name" } },
-                                                            {
-                                                              kind: "Field",
-                                                              name: { kind: "Name", value: "fields" },
-                                                              selectionSet: {
-                                                                kind: "SelectionSet",
-                                                                selections: [
-                                                                  { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } }
-                                                                ]
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-  var GlobalActionMetadataDocument = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "OperationDefinition",
-        operation: "query",
-        name: { kind: "Name", value: "GlobalActionMetadata" },
-        variableDefinitions: [
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "apiIdentifier" } },
-            type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "namespace" } },
-            type: { kind: "ListType", type: { kind: "NonNullType", type: { kind: "NamedType", name: { kind: "Name", value: "String" } } } }
-          },
-          {
-            kind: "VariableDefinition",
-            variable: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } },
-            type: { kind: "NamedType", name: { kind: "Name", value: "Boolean" } },
-            defaultValue: { kind: "BooleanValue", value: false }
-          }
-        ],
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "gadgetMeta" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "globalAction" },
-                    arguments: [
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "apiIdentifier" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "apiIdentifier" } }
-                      },
-                      {
-                        kind: "Argument",
-                        name: { kind: "Name", value: "namespace" },
-                        value: { kind: "Variable", name: { kind: "Name", value: "namespace" } }
-                      }
-                    ],
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inputFields" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                              { kind: "FragmentSpread", name: { kind: "Name", value: "SubFields" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "triggers" },
-                          selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "specID" } }] }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "RelatedModelFieldFragment" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "FieldMetadata" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            { kind: "Field", name: { kind: "Name", value: "name" } },
-            { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-            { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-            { kind: "Field", name: { kind: "Name", value: "requiredArgumentForInput" } },
-            {
-              kind: "InlineFragment",
-              typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetModelField" } },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "sortable" } },
-                  { kind: "Field", name: { kind: "Name", value: "filterable" } }
-                ]
-              }
-            },
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  { kind: "Field", name: { kind: "Name", value: "fieldType" } },
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "validations" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRegexFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "pattern" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetRangeFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "min" } },
-                              { kind: "Field", name: { kind: "Name", value: "max" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetOnlyImageFileFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } },
-                              { kind: "Field", name: { kind: "Name", value: "allowAnimatedImages" } }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "InlineFragment",
-                          typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetGenericFieldValidation" } },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "specID" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasManyConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetHasOneConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "inverseField" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [{ kind: "Field", name: { kind: "Name", value: "apiIdentifier" } }]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetBelongsToConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "relatedModel" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "key" } },
-                              { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                              { kind: "Field", name: { kind: "Name", value: "namespace" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "defaultDisplayField" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "name" } },
-                                    { kind: "Field", name: { kind: "Name", value: "apiIdentifier" } },
-                                    { kind: "Field", name: { kind: "Name", value: "fieldType" } }
-                                  ]
-                                }
-                              },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "fields" },
-                                directives: [
-                                  {
-                                    kind: "Directive",
-                                    name: { kind: "Name", value: "include" },
-                                    arguments: [
-                                      {
-                                        kind: "Argument",
-                                        name: { kind: "Name", value: "if" },
-                                        value: { kind: "Variable", name: { kind: "Name", value: "includeRelatedFields" } }
-                                      }
-                                    ]
-                                  }
-                                ],
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [{ kind: "FragmentSpread", name: { kind: "Name", value: "RelatedModelFieldFragment" } }]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetEnumConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "allowMultiple" } },
-                        { kind: "Field", name: { kind: "Name", value: "allowOther" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "options" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "Field", name: { kind: "Name", value: "name" } },
-                              { kind: "Field", name: { kind: "Name", value: "color" } }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetDateTimeConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "includeTime" } }] }
-                  },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetNumberConfig" } },
-                    selectionSet: { kind: "SelectionSet", selections: [{ kind: "Field", name: { kind: "Name", value: "decimals" } }] }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      },
-      {
-        kind: "FragmentDefinition",
-        name: { kind: "Name", value: "SubFields" },
-        typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetField" } },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "configuration" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                  {
-                    kind: "InlineFragment",
-                    typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        {
-                          kind: "Field",
-                          name: { kind: "Name", value: "fields" },
-                          selectionSet: {
-                            kind: "SelectionSet",
-                            selections: [
-                              { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                              {
-                                kind: "Field",
-                                name: { kind: "Name", value: "configuration" },
-                                selectionSet: {
-                                  kind: "SelectionSet",
-                                  selections: [
-                                    { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                    {
-                                      kind: "InlineFragment",
-                                      typeCondition: { kind: "NamedType", name: { kind: "Name", value: "GadgetObjectFieldConfig" } },
-                                      selectionSet: {
-                                        kind: "SelectionSet",
-                                        selections: [
-                                          { kind: "Field", name: { kind: "Name", value: "name" } },
-                                          {
-                                            kind: "Field",
-                                            name: { kind: "Name", value: "fields" },
-                                            selectionSet: {
-                                              kind: "SelectionSet",
-                                              selections: [
-                                                { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } },
-                                                {
-                                                  kind: "Field",
-                                                  name: { kind: "Name", value: "configuration" },
-                                                  selectionSet: {
-                                                    kind: "SelectionSet",
-                                                    selections: [
-                                                      { kind: "Field", name: { kind: "Name", value: "__typename" } },
-                                                      {
-                                                        kind: "InlineFragment",
-                                                        typeCondition: {
-                                                          kind: "NamedType",
-                                                          name: { kind: "Name", value: "GadgetObjectFieldConfig" }
-                                                        },
-                                                        selectionSet: {
-                                                          kind: "SelectionSet",
-                                                          selections: [
-                                                            { kind: "Field", name: { kind: "Name", value: "name" } },
-                                                            {
-                                                              kind: "Field",
-                                                              name: { kind: "Name", value: "fields" },
-                                                              selectionSet: {
-                                                                kind: "SelectionSet",
-                                                                selections: [
-                                                                  { kind: "FragmentSpread", name: { kind: "Name", value: "FieldMetadata" } }
-                                                                ]
-                                                              }
-                                                            }
-                                                          ]
-                                                        }
-                                                      }
-                                                    ]
-                                                  }
-                                                }
-                                              ]
-                                            }
-                                          }
-                                        ]
-                                      }
-                                    }
-                                  ]
-                                }
-                              }
-                            ]
-                          }
-                        }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-  var RolesMetadataDocument = {
-    kind: "Document",
-    definitions: [
-      {
-        kind: "OperationDefinition",
-        operation: "query",
-        name: { kind: "Name", value: "RolesMetadata" },
-        selectionSet: {
-          kind: "SelectionSet",
-          selections: [
-            {
-              kind: "Field",
-              name: { kind: "Name", value: "gadgetMeta" },
-              selectionSet: {
-                kind: "SelectionSet",
-                selections: [
-                  {
-                    kind: "Field",
-                    name: { kind: "Name", value: "roles" },
-                    selectionSet: {
-                      kind: "SelectionSet",
-                      selections: [
-                        { kind: "Field", name: { kind: "Name", value: "name" } },
-                        { kind: "Field", name: { kind: "Name", value: "key" } },
-                        { kind: "Field", name: { kind: "Name", value: "selectable" } }
-                      ]
-                    }
-                  }
-                ]
-              }
-            }
-          ]
-        }
-      }
-    ]
-  };
-
-  // node_modules/@gadgetinc/react/dist/esm/internal/gql/gql.js
-  var documents = {
-    "\n  fragment RelatedModelFieldFragment on GadgetModelField {\n    name\n    apiIdentifier\n    fieldType\n  }\n": RelatedModelFieldFragmentFragmentDoc,
-    "\n  fragment FieldMetadata on GadgetField {\n    name\n    apiIdentifier\n    fieldType\n    requiredArgumentForInput\n    ... on GadgetModelField {\n      sortable\n      filterable\n    }\n    configuration {\n      __typename\n      fieldType\n      validations {\n        __typename\n        ... on GadgetRegexFieldValidation {\n          name\n          specID\n          pattern\n        }\n        ... on GadgetRangeFieldValidation {\n          name\n          specID\n          min\n          max\n        }\n        ... on GadgetOnlyImageFileFieldValidation {\n          name\n          specID\n          allowAnimatedImages\n        }\n        ... on GadgetGenericFieldValidation {\n          name\n          specID\n        }\n      }\n      ... on GadgetHasManyConfig {\n        relatedModel {\n          key\n          apiIdentifier\n          namespace\n          defaultDisplayField {\n            name\n            apiIdentifier\n            fieldType\n          }\n          fields @include(if: $includeRelatedFields) {\n            ...RelatedModelFieldFragment\n          }\n        }\n        inverseField {\n          apiIdentifier\n        }\n      }\n      ... on GadgetHasOneConfig {\n        relatedModel {\n          key\n          apiIdentifier\n          namespace\n          defaultDisplayField {\n            name\n            apiIdentifier\n            fieldType\n          }\n          fields @include(if: $includeRelatedFields) {\n            ...RelatedModelFieldFragment\n          }\n        }\n        inverseField {\n          apiIdentifier\n        }\n      }\n      ... on GadgetBelongsToConfig {\n        relatedModel {\n          key\n          apiIdentifier\n          namespace\n          defaultDisplayField {\n            name\n            apiIdentifier\n            fieldType\n          }\n          fields @include(if: $includeRelatedFields) {\n            ...RelatedModelFieldFragment\n          }\n        }\n      }\n      ... on GadgetEnumConfig {\n        allowMultiple\n        allowOther\n        options {\n          name\n          color\n        }\n      }\n      ... on GadgetDateTimeConfig {\n        includeTime\n      }\n      ... on GadgetNumberConfig {\n        decimals\n      }\n    }\n  }\n": FieldMetadataFragmentDoc,
-    "\n  query GetModelMetadata($apiIdentifier: String!, $namespace: [String!], $includeRelatedFields: Boolean!) {\n    gadgetMeta {\n      model(apiIdentifier: $apiIdentifier, namespace: $namespace) {\n        apiIdentifier\n        namespace\n        name\n        fields {\n          ...FieldMetadata\n        }\n      }\n    }\n  }\n": GetModelMetadataDocument,
-    "\n  fragment SubFields on GadgetField {\n    configuration {\n      __typename\n      ... on GadgetObjectFieldConfig {\n        name\n        fields {\n          ...FieldMetadata\n          configuration {\n            __typename\n            ... on GadgetObjectFieldConfig {\n              name\n              fields {\n                ...FieldMetadata\n                configuration {\n                  __typename\n                  ... on GadgetObjectFieldConfig {\n                    name\n                    fields {\n                      ...FieldMetadata\n                    }\n                  }\n                }\n              }\n            }\n          }\n        }\n      }\n    }\n  }\n": SubFieldsFragmentDoc,
-    "\n  query ModelActionMetadata($modelApiIdentifier: String!, $modelNamespace: [String!], $action: String!, $includeRelatedFields: Boolean!) {\n    gadgetMeta {\n      model(apiIdentifier: $modelApiIdentifier, namespace: $modelNamespace) {\n        name\n        apiIdentifier\n        defaultRecord\n        action(apiIdentifier: $action) {\n          name\n          apiIdentifier\n          operatesWithRecordIdentity\n          isDeleteAction\n          inputFields {\n            ...FieldMetadata\n            ...SubFields\n          }\n          triggers {\n            specID\n          }\n        }\n      }\n    }\n  }\n": ModelActionMetadataDocument,
-    "\n  query GlobalActionMetadata($apiIdentifier: String!, $namespace: [String!], $includeRelatedFields: Boolean = false) {\n    gadgetMeta {\n      globalAction(apiIdentifier: $apiIdentifier, namespace: $namespace) {\n        name\n        apiIdentifier\n        inputFields {\n          ...FieldMetadata\n          ...SubFields\n        }\n        triggers {\n          specID\n        }\n      }\n    }\n  }\n": GlobalActionMetadataDocument,
-    "\n  query RolesMetadata {\n    gadgetMeta {\n      roles {\n        name\n        key\n        selectable\n      }\n    }\n  }\n": RolesMetadataDocument
-  };
-  function graphql(source) {
-    var _a3;
-    return (_a3 = documents[source]) != null ? _a3 : {};
-  }
-
-  // node_modules/@gadgetinc/react/dist/esm/metadata.js
-  var FieldType = GadgetFieldType;
-  var RelatedModelFieldFragment = graphql(
-    /* GraphQL */
-    `
-  fragment RelatedModelFieldFragment on GadgetModelField {
-    name
-    apiIdentifier
-    fieldType
-  }
-`
-  );
-  var FieldMetadataFragment = graphql(
-    /* GraphQL */
-    `
-  fragment FieldMetadata on GadgetField {
-    name
-    apiIdentifier
-    fieldType
-    requiredArgumentForInput
-    ... on GadgetModelField {
-      sortable
-      filterable
+  // extensions/admin-block1223/src/fetchSmsTemplates.js
+  var fetchSmsTemplates = () => __async(void 0, null, function* () {
+    try {
+      const result = yield gadgetApi.smsTemplates.findMany();
+      return result;
+    } catch (err) {
+      console.error("Failed to fetch smsTemplates:", err);
+      throw new Error("Failed to fetch smsTemplates");
     }
-    configuration {
-      __typename
-      fieldType
-      validations {
-        __typename
-        ... on GadgetRegexFieldValidation {
-          name
-          specID
-          pattern
-        }
-        ... on GadgetRangeFieldValidation {
-          name
-          specID
-          min
-          max
-        }
-        ... on GadgetOnlyImageFileFieldValidation {
-          name
-          specID
-          allowAnimatedImages
-        }
-        ... on GadgetGenericFieldValidation {
-          name
-          specID
-        }
-      }
-      ... on GadgetHasManyConfig {
-        relatedModel {
-          key
-          apiIdentifier
-          namespace
-          defaultDisplayField {
-            name
-            apiIdentifier
-            fieldType
-          }
-          fields @include(if: $includeRelatedFields) {
-            ...RelatedModelFieldFragment
-          }
-        }
-        inverseField {
-          apiIdentifier
-        }
-      }
-      ... on GadgetHasOneConfig {
-        relatedModel {
-          key
-          apiIdentifier
-          namespace
-          defaultDisplayField {
-            name
-            apiIdentifier
-            fieldType
-          }
-          fields @include(if: $includeRelatedFields) {
-            ...RelatedModelFieldFragment
-          }
-        }
-        inverseField {
-          apiIdentifier
-        }
-      }
-      ... on GadgetBelongsToConfig {
-        relatedModel {
-          key
-          apiIdentifier
-          namespace
-          defaultDisplayField {
-            name
-            apiIdentifier
-            fieldType
-          }
-          fields @include(if: $includeRelatedFields) {
-            ...RelatedModelFieldFragment
-          }
-        }
-      }
-      ... on GadgetEnumConfig {
-        allowMultiple
-        allowOther
-        options {
-          name
-          color
-        }
-      }
-      ... on GadgetDateTimeConfig {
-        includeTime
-      }
-      ... on GadgetNumberConfig {
-        decimals
-      }
-    }
-  }
-`
-  );
-  var ModelMetadataQuery = graphql(
-    /* GraphQL */
-    `
-  query GetModelMetadata($apiIdentifier: String!, $namespace: [String!], $includeRelatedFields: Boolean!) {
-    gadgetMeta {
-      model(apiIdentifier: $apiIdentifier, namespace: $namespace) {
-        apiIdentifier
-        namespace
-        name
-        fields {
-          ...FieldMetadata
-        }
-      }
-    }
-  }
-`
-  );
-  var _SubFieldsFragment = graphql(
-    /* GraphQL */
-    `
-  fragment SubFields on GadgetField {
-    configuration {
-      __typename
-      ... on GadgetObjectFieldConfig {
-        name
-        fields {
-          ...FieldMetadata
-          configuration {
-            __typename
-            ... on GadgetObjectFieldConfig {
-              name
-              fields {
-                ...FieldMetadata
-                configuration {
-                  __typename
-                  ... on GadgetObjectFieldConfig {
-                    name
-                    fields {
-                      ...FieldMetadata
-                    }
-                  }
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-`
-  );
-  var ModelActionMetadataQuery = graphql(
-    /* GraphQL */
-    `
-  query ModelActionMetadata($modelApiIdentifier: String!, $modelNamespace: [String!], $action: String!, $includeRelatedFields: Boolean!) {
-    gadgetMeta {
-      model(apiIdentifier: $modelApiIdentifier, namespace: $modelNamespace) {
-        name
-        apiIdentifier
-        defaultRecord
-        action(apiIdentifier: $action) {
-          name
-          apiIdentifier
-          operatesWithRecordIdentity
-          isDeleteAction
-          inputFields {
-            ...FieldMetadata
-            ...SubFields
-          }
-          triggers {
-            specID
-          }
-        }
-      }
-    }
-  }
-`
-  );
-  var GlobalActionMetadataQuery = graphql(
-    /* GraphQL */
-    `
-  query GlobalActionMetadata($apiIdentifier: String!, $namespace: [String!], $includeRelatedFields: Boolean = false) {
-    gadgetMeta {
-      globalAction(apiIdentifier: $apiIdentifier, namespace: $namespace) {
-        name
-        apiIdentifier
-        inputFields {
-          ...FieldMetadata
-          ...SubFields
-        }
-        triggers {
-          specID
-        }
-      }
-    }
-  }
-`
-  );
-  var RolesMetadataQuery = graphql(
-    /* GraphQL */
-    `
-  query RolesMetadata {
-    gadgetMeta {
-      roles {
-        name
-        key
-        selectable
-      }
-    }
-  }
-`
-  );
-  var acceptedAutoFormFieldTypes = /* @__PURE__ */ new Set([
-    FieldType.Boolean,
-    FieldType.Color,
-    FieldType.Computed,
-    // Not rendered as an input
-    FieldType.DateTime,
-    FieldType.Email,
-    FieldType.EncryptedString,
-    FieldType.Enum,
-    FieldType.File,
-    FieldType.Json,
-    FieldType.Number,
-    FieldType.Password,
-    FieldType.RichText,
-    FieldType.RoleAssignments,
-    FieldType.String,
-    FieldType.Url,
-    FieldType.Vector,
-    // Not rendered as an input
-    FieldType.RichText,
-    // Relationships
-    FieldType.BelongsTo,
-    FieldType.HasMany,
-    FieldType.HasOne
-  ]);
-  var acceptedAutoTableFieldTypes = /* @__PURE__ */ new Set([
-    FieldType.Id,
-    FieldType.Boolean,
-    FieldType.Color,
-    FieldType.Computed,
-    FieldType.DateTime,
-    FieldType.Email,
-    FieldType.EncryptedString,
-    FieldType.Enum,
-    FieldType.File,
-    FieldType.Json,
-    FieldType.Number,
-    FieldType.RichText,
-    FieldType.RoleAssignments,
-    FieldType.String,
-    FieldType.Url,
-    FieldType.RichText,
-    // Relationships
-    FieldType.BelongsTo,
-    FieldType.HasMany,
-    FieldType.HasOne
-  ]);
+  });
 
-  // node_modules/@gadgetinc/react/dist/esm/useTableUtils/helpers.js
-  var import_react38 = __toESM(require_react(), 1);
+  // extensions/admin-block1223/src/sendSmsMessage.js
+  var sendSmsMessage = (receiverNumber, messageText) => __async(void 0, null, function* () {
+    const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        to: receiverNumber,
+        message: messageText
+      })
+    });
+    if (!res.ok) {
+      console.error("Network error");
+      throw new Error("Network error");
+    }
+    const json = yield res.json();
+    return json;
+  });
 
   // extensions/admin-block1223/src/BlockExtension.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
@@ -31080,61 +28377,70 @@ ${compileFieldSelection(operation.fields).join("\n")}
   var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     const { close, data, intents } = useApi(TARGET);
-    const [allIssues, setAllIssues] = (0, import_react40.useState)("init");
-    const [smsTemplates, setSmsTemplates] = (0, import_react40.useState)([]);
-    const [error2, setError] = (0, import_react40.useState)(null);
-    console.log("test4");
-    const fetchSmsTemplates = (0, import_react40.useCallback)(() => __async(this, null, function* () {
-      try {
-        const result = yield api.smsTemplates.findMany();
-        setSmsTemplates(result);
-      } catch (err) {
-        console.error("Failed to fetch smsTemplates:", err);
-        setError("Failed to fetch smsTemplates");
-      }
-    }), []);
-    (0, import_react40.useEffect)(() => {
-      fetchSmsTemplates();
-    }, [fetchSmsTemplates]);
-    const getIssueRecommendation = (0, import_react40.useCallback)(() => __async(this, null, function* () {
-      const receiverNumber = "380507025777";
-      const messageText = "Hello from front";
-      const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          to: receiverNumber,
-          message: messageText
-        })
+    const [smsStatus, setSmsStatus] = (0, import_react15.useState)("Ready to send SMS");
+    const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
+    const [selectedTemplate, setSelectedTemplate] = (0, import_react15.useState)([]);
+    const [loading, setLoading] = (0, import_react15.useState)(false);
+    const [error2, setError] = (0, import_react15.useState)(null);
+    (0, import_react15.useEffect)(() => {
+      const loadSmsTemplates = () => __async(this, null, function* () {
+        try {
+          const result = yield fetchSmsTemplates();
+          setSmsTemplates(result);
+        } catch (err) {
+          setError("Failed to fetch SMS templates");
+        }
       });
-      if (!res.ok) {
-        console.error("Network error");
-        setAllIssues("Network error");
+      loadSmsTemplates();
+    }, []);
+    const handleSendSms = () => __async(this, null, function* () {
+      const receiverNumber = "380507025777";
+      if (selectedTemplate.length === 0) {
+        setSmsStatus("Please select a template to send.");
+        return;
       }
-      const json = yield res.json();
-      setAllIssues(JSON.stringify(json));
-    }), [data.selected]);
+      setLoading(true);
+      setSmsStatus("Sending SMS...");
+      try {
+        const response = yield sendSmsMessage(
+          receiverNumber,
+          selectedTemplate[0]
+        );
+        setSmsStatus(`Success: ${JSON.stringify(response)}`);
+      } catch (err) {
+        setSmsStatus(`Error: ${err.message}`);
+      } finally {
+        setLoading(false);
+      }
+    });
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "loose", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Test12" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: allIssues }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Button2, { onPress: getIssueRecommendation, disabled: false, children: "Generate sms issue3" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "SMS Templates:" }),
-      error2 ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { color: "red", children: error2 }) : smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "tight", children: [
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text2, { children: [
-          "ID: ",
-          template.id
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text2, { children: [
-          "Title: ",
-          template.title
-        ] }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(Text2, { children: [
-          "Message: ",
-          template.smsText
-        ] })
-      ] }, template.id))
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { children: "SMS Control Center" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(InlineStack2, { spacing: "tight", wrap: false, alignment: "center", children: smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        Button2,
+        {
+          onPress: () => {
+            setSelectedTemplate([template.smsText]);
+            handleSendSms();
+          },
+          disabled: loading,
+          variant: "primary",
+          tone: "default",
+          children: loading ? "Sending..." : template.title
+        },
+        template.id
+      )) }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Divider2, {}),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "tight", children: [
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Status:" }),
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          Badge2,
+          {
+            status: smsStatus.startsWith("Success") ? "success" : smsStatus.startsWith("Error") ? "critical" : void 0,
+            children: smsStatus
+          }
+        )
+      ] }),
+      error2 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { color: "critical", children: error2 })
     ] });
   }
 })();
