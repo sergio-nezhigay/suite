@@ -12,6 +12,7 @@ import {
 } from '@shopify/ui-extensions-react/admin';
 import { fetchSmsTemplates } from './fetchSmsTemplates';
 import { sendSmsMessage } from './sendSmsMessage';
+import { replacePlaceholders } from './replacePlaceholders';
 
 const TARGET = 'admin.product-details.block.render';
 
@@ -19,10 +20,9 @@ export default reactExtension(TARGET, () => <App />);
 
 function App() {
   const { close, data, intents } = useApi(TARGET);
-  const [smsStatus, setSmsStatus] = useState('Ready to send SMS');
+  const [status, setStatus] = useState('Ready to send SMS'); // Renamed here
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const loadSmsTemplates = async () => {
@@ -30,7 +30,7 @@ function App() {
         const result = await fetchSmsTemplates();
         setSmsTemplates(result);
       } catch (err) {
-        setError('Failed to fetch SMS templates');
+        setStatus('Failed to fetch SMS templates'); // Renamed here
       }
     };
 
@@ -39,18 +39,38 @@ function App() {
 
   const handleSendSms = async (templateText) => {
     const receiverNumber = '380507025777';
+    const orderId = '12345';
     if (!templateText) {
-      setSmsStatus('Please select a template to send.');
+      setStatus('Please select a template to send.'); // Renamed here
       return;
     }
 
+    const processedTemplateText = replacePlaceholders(templateText, {
+      orderId,
+    });
+
     setLoading(true);
-    setSmsStatus('Sending SMS...');
+    setStatus('Sending SMS...'); // Renamed here
     try {
-      const response = await sendSmsMessage(receiverNumber, templateText);
-      setSmsStatus('Success: Message sent successfully.');
+      const response = await sendSmsMessage(
+        receiverNumber,
+        processedTemplateText
+      );
+
+      const messageID = response?.smsResponse?.messageID;
+      const date = response?.smsResponse?.sms?.date;
+
+      if (messageID && date) {
+        setStatus(
+          `Success: Message sent successfully at ${date}. Message ID: ${messageID}`
+        ); // Renamed here
+      } else {
+        setStatus(
+          'Success: Message sent successfully, but details are not available.'
+        ); // Renamed here
+      }
     } catch (err) {
-      setSmsStatus(`Error: ${err.message}`);
+      setStatus(`Error: ${err.message}`); // Renamed here
     } finally {
       setLoading(false);
     }
@@ -58,7 +78,7 @@ function App() {
 
   return (
     <BlockStack blockAlignment='space-between'>
-      <Heading size='2'>SMS Control Center</Heading>
+      <Heading size='2'>SMS Control Center2</Heading>
       <InlineStack
         inlineAlignment='center'
         blockAlignment='center'
@@ -84,19 +104,17 @@ function App() {
           {loading && <ProgressIndicator size='small-200' />}
           <Badge
             tone={
-              smsStatus.startsWith('Success')
+              status.startsWith('Success') // Updated condition
                 ? 'success'
-                : smsStatus.startsWith('Error')
+                : status.startsWith('Error') // Updated condition
                 ? 'critical'
                 : 'default'
             }
           >
-            {smsStatus}
+            {status} {/* Updated here */}
           </Badge>
         </InlineStack>
       </BlockStack>
-
-      {error && <Text color='critical'>{error}</Text>}
     </BlockStack>
   );
 }

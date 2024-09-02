@@ -28371,46 +28371,73 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return json;
   });
 
+  // extensions/admin-block1223/src/replacePlaceholders.js
+  var replacePlaceholders = (template, data) => {
+    let result = template;
+    for (const key2 in data) {
+      const placeholder = `{{${key2}}}`;
+      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
+    }
+    return result;
+  };
+
   // extensions/admin-block1223/src/BlockExtension.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var TARGET = "admin.product-details.block.render";
   var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     const { close, data, intents } = useApi(TARGET);
-    const [smsStatus, setSmsStatus] = (0, import_react15.useState)("Ready to send SMS");
+    const [status, setStatus] = (0, import_react15.useState)("Ready to send SMS");
     const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
     const [loading, setLoading] = (0, import_react15.useState)(false);
-    const [error2, setError] = (0, import_react15.useState)(null);
     (0, import_react15.useEffect)(() => {
       const loadSmsTemplates = () => __async(this, null, function* () {
         try {
           const result = yield fetchSmsTemplates();
           setSmsTemplates(result);
         } catch (err) {
-          setError("Failed to fetch SMS templates");
+          setStatus("Failed to fetch SMS templates");
         }
       });
       loadSmsTemplates();
     }, []);
     const handleSendSms = (templateText) => __async(this, null, function* () {
+      var _a3, _b2, _c2;
       const receiverNumber = "380507025777";
+      const orderId = "12345";
       if (!templateText) {
-        setSmsStatus("Please select a template to send.");
+        setStatus("Please select a template to send.");
         return;
       }
+      const processedTemplateText = replacePlaceholders(templateText, {
+        orderId
+      });
       setLoading(true);
-      setSmsStatus("Sending SMS...");
+      setStatus("Sending SMS...");
       try {
-        const response = yield sendSmsMessage(receiverNumber, templateText);
-        setSmsStatus("Success: Message sent successfully.");
+        const response = yield sendSmsMessage(
+          receiverNumber,
+          processedTemplateText
+        );
+        const messageID = (_a3 = response == null ? void 0 : response.smsResponse) == null ? void 0 : _a3.messageID;
+        const date = (_c2 = (_b2 = response == null ? void 0 : response.smsResponse) == null ? void 0 : _b2.sms) == null ? void 0 : _c2.date;
+        if (messageID && date) {
+          setStatus(
+            `Success: Message sent successfully at ${date}. Message ID: ${messageID}`
+          );
+        } else {
+          setStatus(
+            "Success: Message sent successfully, but details are not available."
+          );
+        }
       } catch (err) {
-        setSmsStatus(`Error: ${err.message}`);
+        setStatus(`Error: ${err.message}`);
       } finally {
         setLoading(false);
       }
     });
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { blockAlignment: "space-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { size: "2", children: "SMS Control Center" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { size: "2", children: "SMS Control Center2" }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         InlineStack2,
         {
@@ -28435,16 +28462,18 @@ ${compileFieldSelection(operation.fields).join("\n")}
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Status:" }),
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { inlineAlignment: "start", spacing: "tight", children: [
           loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ProgressIndicator2, { size: "small-200" }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
             Badge2,
             {
-              tone: smsStatus.startsWith("Success") ? "success" : smsStatus.startsWith("Error") ? "critical" : "default",
-              children: smsStatus
+              tone: status.startsWith("Success") ? "success" : status.startsWith("Error") ? "critical" : "default",
+              children: [
+                status,
+                " "
+              ]
             }
           )
         ] })
-      ] }),
-      error2 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { color: "critical", children: error2 })
+      ] })
     ] });
   }
 })();
