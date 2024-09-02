@@ -20432,14 +20432,14 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button = createRemoteComponent("Button");
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Divider/Divider.mjs
-  var Divider = createRemoteComponent("Divider");
-
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Heading/Heading.mjs
   var Heading = createRemoteComponent("Heading");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
   var InlineStack = createRemoteComponent("InlineStack");
+
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/ProgressIndicator/ProgressIndicator.mjs
+  var ProgressIndicator = createRemoteComponent("ProgressIndicator");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text = createRemoteComponent("Text");
@@ -20750,14 +20750,14 @@
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Button/Button.mjs
   var Button2 = createRemoteReactComponent(Button);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Divider/Divider.mjs
-  var Divider2 = createRemoteReactComponent(Divider);
-
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Heading/Heading.mjs
   var Heading2 = createRemoteReactComponent(Heading);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
   var InlineStack2 = createRemoteReactComponent(InlineStack);
+
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/ProgressIndicator/ProgressIndicator.mjs
+  var ProgressIndicator2 = createRemoteReactComponent(ProgressIndicator);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Text/Text.mjs
   var Text2 = createRemoteReactComponent(Text);
@@ -28379,7 +28379,6 @@ ${compileFieldSelection(operation.fields).join("\n")}
     const { close, data, intents } = useApi(TARGET);
     const [smsStatus, setSmsStatus] = (0, import_react15.useState)("Ready to send SMS");
     const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
-    const [selectedTemplate, setSelectedTemplate] = (0, import_react15.useState)([]);
     const [loading, setLoading] = (0, import_react15.useState)(false);
     const [error2, setError] = (0, import_react15.useState)(null);
     (0, import_react15.useEffect)(() => {
@@ -28393,52 +28392,57 @@ ${compileFieldSelection(operation.fields).join("\n")}
       });
       loadSmsTemplates();
     }, []);
-    const handleSendSms = () => __async(this, null, function* () {
+    const handleSendSms = (templateText) => __async(this, null, function* () {
       const receiverNumber = "380507025777";
-      if (selectedTemplate.length === 0) {
+      if (!templateText) {
         setSmsStatus("Please select a template to send.");
         return;
       }
       setLoading(true);
       setSmsStatus("Sending SMS...");
       try {
-        const response = yield sendSmsMessage(
-          receiverNumber,
-          selectedTemplate[0]
-        );
-        setSmsStatus(`Success: ${JSON.stringify(response)}`);
+        const response = yield sendSmsMessage(receiverNumber, templateText);
+        setSmsStatus("Success: Message sent successfully.");
       } catch (err) {
         setSmsStatus(`Error: ${err.message}`);
       } finally {
         setLoading(false);
       }
     });
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "loose", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { children: "SMS Control Center" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(InlineStack2, { spacing: "tight", wrap: false, alignment: "center", children: smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        Button2,
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { blockAlignment: "space-between", children: [
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { size: "2", children: "SMS Control Center" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+        InlineStack2,
         {
-          onPress: () => {
-            setSelectedTemplate([template.smsText]);
-            handleSendSms();
-          },
-          disabled: loading,
-          variant: "primary",
-          tone: "default",
-          children: loading ? "Sending..." : template.title
-        },
-        template.id
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Divider2, {}),
+          inlineAlignment: "center",
+          blockAlignment: "center",
+          gap: "large",
+          padding: "true",
+          children: smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+            Button2,
+            {
+              onPress: () => handleSendSms(template.smsText),
+              disabled: loading,
+              variant: "primary",
+              tone: "default",
+              children: template.title
+            },
+            template.id
+          ))
+        }
+      ),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { spacing: "tight", children: [
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Status:" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          Badge2,
-          {
-            status: smsStatus.startsWith("Success") ? "success" : smsStatus.startsWith("Error") ? "critical" : void 0,
-            children: smsStatus
-          }
-        )
+        /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { inlineAlignment: "start", spacing: "tight", children: [
+          loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ProgressIndicator2, { size: "small-200" }),
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+            Badge2,
+            {
+              tone: smsStatus.startsWith("Success") ? "success" : smsStatus.startsWith("Error") ? "critical" : "default",
+              children: smsStatus
+            }
+          )
+        ] })
       ] }),
       error2 && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { color: "critical", children: error2 })
     ] });

@@ -5,9 +5,9 @@ import {
   InlineStack,
   Text,
   Button,
-  Divider,
   Heading,
   reactExtension,
+  ProgressIndicator,
   useApi,
 } from '@shopify/ui-extensions-react/admin';
 import { fetchSmsTemplates } from './fetchSmsTemplates';
@@ -21,7 +21,6 @@ function App() {
   const { close, data, intents } = useApi(TARGET);
   const [smsStatus, setSmsStatus] = useState('Ready to send SMS');
   const [smsTemplates, setSmsTemplates] = useState([]);
-  const [selectedTemplate, setSelectedTemplate] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
@@ -38,9 +37,9 @@ function App() {
     loadSmsTemplates();
   }, []);
 
-  const handleSendSms = async () => {
-    const receiverNumber = '380507025777'; // Fixed receiver number
-    if (selectedTemplate.length === 0) {
+  const handleSendSms = async (templateText) => {
+    const receiverNumber = '380507025777';
+    if (!templateText) {
       setSmsStatus('Please select a template to send.');
       return;
     }
@@ -48,11 +47,8 @@ function App() {
     setLoading(true);
     setSmsStatus('Sending SMS...');
     try {
-      const response = await sendSmsMessage(
-        receiverNumber,
-        selectedTemplate[0]
-      );
-      setSmsStatus(`Success: ${JSON.stringify(response)}`);
+      const response = await sendSmsMessage(receiverNumber, templateText);
+      setSmsStatus('Success: Message sent successfully.');
     } catch (err) {
       setSmsStatus(`Error: ${err.message}`);
     } finally {
@@ -61,42 +57,43 @@ function App() {
   };
 
   return (
-    <BlockStack spacing='loose'>
-      <Heading>SMS Control Center</Heading>
-
-      {/* InlineStack to arrange buttons in a row with controlled spacing */}
-      <InlineStack spacing='tight' wrap={false} alignment='center'>
+    <BlockStack blockAlignment='space-between'>
+      <Heading size='2'>SMS Control Center</Heading>
+      <InlineStack
+        inlineAlignment='center'
+        blockAlignment='center'
+        gap='large'
+        padding='true'
+      >
         {smsTemplates.map((template) => (
           <Button
             key={template.id}
-            onPress={() => {
-              setSelectedTemplate([template.smsText]);
-              handleSendSms();
-            }}
+            onPress={() => handleSendSms(template.smsText)}
             disabled={loading}
-            variant='primary' // Use the primary variant to make buttons stand out
-            tone='default' // Default tone for normal button
+            variant='primary'
+            tone='default'
           >
-            {loading ? 'Sending...' : template.title}
+            {template.title}
           </Button>
         ))}
       </InlineStack>
 
-      <Divider />
-
       <BlockStack spacing='tight'>
         <Text fontWeight='bold'>Status:</Text>
-        <Badge
-          status={
-            smsStatus.startsWith('Success')
-              ? 'success'
-              : smsStatus.startsWith('Error')
-              ? 'critical'
-              : undefined
-          }
-        >
-          {smsStatus}
-        </Badge>
+        <InlineStack inlineAlignment='start' spacing='tight'>
+          {loading && <ProgressIndicator size='small-200' />}
+          <Badge
+            tone={
+              smsStatus.startsWith('Success')
+                ? 'success'
+                : smsStatus.startsWith('Error')
+                ? 'critical'
+                : 'default'
+            }
+          >
+            {smsStatus}
+          </Badge>
+        </InlineStack>
       </BlockStack>
 
       {error && <Text color='critical'>{error}</Text>}
