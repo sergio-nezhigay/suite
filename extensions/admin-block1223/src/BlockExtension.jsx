@@ -20,57 +20,48 @@ export default reactExtension(TARGET, () => <App />);
 
 function App() {
   const { close, data, intents } = useApi(TARGET);
-  const [status, setStatus] = useState('Ready to send SMS'); // Renamed here
+  const [status, setStatus] = useState('Loading...');
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
+  const orderId = '12345';
+  const orderTotal = '230';
 
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const result = await fetchSmsTemplates();
-        setSmsTemplates(result);
+        const results = await fetchSmsTemplates();
+        const resultsProcessed = results.map((res) => ({
+          ...res,
+          smsTextReplaced: replacePlaceholders(res.smsText, {
+            orderTotal,
+            orderId,
+          }),
+        }));
+        setSmsTemplates(resultsProcessed);
+        setStatus('Ready to send SMS');
       } catch (err) {
-        setStatus('Failed to fetch SMS templates'); // Renamed here
+        setStatus('Failed to fetch SMS templates' + JSON.stringify(err));
       }
     };
 
     loadSmsTemplates();
   }, []);
 
-  const handleSendSms = async (templateText) => {
+  const handleSendSms = async (smsText) => {
     const receiverNumber = '380507025777';
-    const orderId = '12345';
-    if (!templateText) {
-      setStatus('Please select a template to send.'); // Renamed here
+    if (!smsText) {
+      setStatus('Please select a template to send.');
       return;
     }
 
-    const processedTemplateText = replacePlaceholders(templateText, {
-      orderId,
-    });
-
     setLoading(true);
-    setStatus('Sending SMS...'); // Renamed here
+    setStatus('Sending SMS...');
     try {
-      const response = await sendSmsMessage(
-        receiverNumber,
-        processedTemplateText
-      );
+      const response = await sendSmsMessage(receiverNumber, smsText);
 
-      const messageID = response?.smsResponse?.messageID;
-      const date = response?.smsResponse?.sms?.date;
-
-      if (messageID && date) {
-        setStatus(
-          `Success: Message sent successfully at ${date}. Message ID: ${messageID}`
-        ); // Renamed here
-      } else {
-        setStatus(
-          'Success: Message sent successfully, but details are not available.'
-        ); // Renamed here
-      }
+      setStatus(`Success: Message sent successfully`);
     } catch (err) {
-      setStatus(`Error: ${err.message}`); // Renamed here
+      setStatus(`Error: ${err.message}`);
     } finally {
       setLoading(false);
     }
@@ -78,7 +69,7 @@ function App() {
 
   return (
     <BlockStack blockAlignment='space-between'>
-      <Heading size='2'>SMS Control Center2</Heading>
+      <Heading size='2'>SMS Control Center3</Heading>
       <InlineStack
         inlineAlignment='center'
         blockAlignment='center'
@@ -88,7 +79,7 @@ function App() {
         {smsTemplates.map((template) => (
           <Button
             key={template.id}
-            onPress={() => handleSendSms(template.smsText)}
+            onPress={() => handleSendSms(template.smsTextReplaced)}
             disabled={loading}
             variant='primary'
             tone='default'

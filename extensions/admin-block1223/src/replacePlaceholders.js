@@ -11,6 +11,5 @@ export const replacePlaceholders = (template, data) => {
     const placeholder = `{{${key}}}`;
     result = result.replace(new RegExp(placeholder, 'g'), data[key]);
   }
-
   return result;
 };

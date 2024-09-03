@@ -28387,49 +28387,40 @@ ${compileFieldSelection(operation.fields).join("\n")}
   var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     const { close, data, intents } = useApi(TARGET);
-    const [status, setStatus] = (0, import_react15.useState)("Ready to send SMS");
+    const [status, setStatus] = (0, import_react15.useState)("Loading...");
     const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
     const [loading, setLoading] = (0, import_react15.useState)(false);
+    const orderId = "12345";
+    const orderTotal = "230";
     (0, import_react15.useEffect)(() => {
       const loadSmsTemplates = () => __async(this, null, function* () {
         try {
-          const result = yield fetchSmsTemplates();
-          setSmsTemplates(result);
+          const results = yield fetchSmsTemplates();
+          const resultsProcessed = results.map((res) => __spreadProps(__spreadValues({}, res), {
+            smsTextReplaced: replacePlaceholders(res.smsText, {
+              orderTotal,
+              orderId
+            })
+          }));
+          setSmsTemplates(resultsProcessed);
+          setStatus("Ready to send SMS");
         } catch (err) {
-          setStatus("Failed to fetch SMS templates");
+          setStatus("Failed to fetch SMS templates" + JSON.stringify(err));
         }
       });
       loadSmsTemplates();
     }, []);
-    const handleSendSms = (templateText) => __async(this, null, function* () {
-      var _a3, _b2, _c2;
+    const handleSendSms = (smsText) => __async(this, null, function* () {
       const receiverNumber = "380507025777";
-      const orderId = "12345";
-      if (!templateText) {
+      if (!smsText) {
         setStatus("Please select a template to send.");
         return;
       }
-      const processedTemplateText = replacePlaceholders(templateText, {
-        orderId
-      });
       setLoading(true);
       setStatus("Sending SMS...");
       try {
-        const response = yield sendSmsMessage(
-          receiverNumber,
-          processedTemplateText
-        );
-        const messageID = (_a3 = response == null ? void 0 : response.smsResponse) == null ? void 0 : _a3.messageID;
-        const date = (_c2 = (_b2 = response == null ? void 0 : response.smsResponse) == null ? void 0 : _b2.sms) == null ? void 0 : _c2.date;
-        if (messageID && date) {
-          setStatus(
-            `Success: Message sent successfully at ${date}. Message ID: ${messageID}`
-          );
-        } else {
-          setStatus(
-            "Success: Message sent successfully, but details are not available."
-          );
-        }
+        const response = yield sendSmsMessage(receiverNumber, smsText);
+        setStatus(`Success: Message sent successfully`);
       } catch (err) {
         setStatus(`Error: ${err.message}`);
       } finally {
@@ -28437,7 +28428,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
       }
     });
     return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { blockAlignment: "space-between", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { size: "2", children: "SMS Control Center2" }),
+      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Heading2, { size: "2", children: "SMS Control Center3" }),
       /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
         InlineStack2,
         {
@@ -28448,7 +28439,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
           children: smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
             Button2,
             {
-              onPress: () => handleSendSms(template.smsText),
+              onPress: () => handleSendSms(template.smsTextReplaced),
               disabled: loading,
               variant: "primary",
               tone: "default",
