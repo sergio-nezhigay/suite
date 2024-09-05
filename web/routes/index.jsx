@@ -3,10 +3,27 @@ import { AutoForm, AutoTable } from '@gadgetinc/react/auto/polaris';
 import { api } from '../api';
 
 export default function () {
-  // use autocomponents to automatically create a form and table to manage allowedTag records
   return (
     <Page title='Messages manager'>
       <Layout>
+        <Layout.Section>
+          <Card>
+            <Text as='h2' variant='headingLg'>
+              How to create SMS Templates
+            </Text>
+            <Text as='p'>
+              To create SMS templates, use placeholders to represent dynamic
+              values. Placeholders should be wrapped in double curly braces. For
+              example, you can use <strong>{'{{orderNumber}}'}</strong> to
+              insert the order number, or <strong>{'{{orderTotal}}'}</strong>{' '}
+              for the total amount. Example template: <br />
+              <em>
+                "Order number: {'{{orderNumber}}'} has a total of{' '}
+                {'{{orderTotal}}'} UAH."
+              </em>
+            </Text>
+          </Card>
+        </Layout.Section>
         <Layout.Section>
           <Card>
             {/** AutoForm automatically calls allowedTag.create on form submission */}
@@ -19,10 +36,13 @@ export default function () {
         <Layout.Section>
           <Card>
             <Text as='h2' variant='headingLg'>
-              Manage sms211
+              Manage sms
             </Text>
             {/** AutoTable allows you to delete allowedTag records (in bulk!) */}
-            <AutoTable model={api.smsTemplates} columns={['title']} />
+            <AutoTable
+              model={api.smsTemplates}
+              columns={['title', 'smsText']}
+            />
           </Card>
         </Layout.Section>
       </Layout>

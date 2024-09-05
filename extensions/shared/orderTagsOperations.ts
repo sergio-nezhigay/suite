@@ -44,7 +44,7 @@ export async function getOrderTags(orderId: string): Promise<string[]> {
 
 interface OrderInfo {
   tags: string[];
-  name: string;
+  orderNumber: string;
   total: string;
 }
 
@@ -71,7 +71,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
 
   if (data?.order) {
     const { tags, name, totalPriceSet } = data?.order;
-    return { tags, name, total: totalPriceSet.shopMoney.amount };
+    return { tags, orderNumber: name, total: totalPriceSet.shopMoney.amount };
   }
   throw new Error(`Order ${orderId} not found`);
 }

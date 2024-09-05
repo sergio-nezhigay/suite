@@ -28417,7 +28417,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
       const { data } = yield makeGraphQLQuery(query, { id: orderId });
       if (data == null ? void 0 : data.order) {
         const { tags, name, totalPriceSet } = data == null ? void 0 : data.order;
-        return { tags, name, total: totalPriceSet.shopMoney.amount };
+        return { tags, orderNumber: name, total: totalPriceSet.shopMoney.amount };
       }
       throw new Error(`Order ${orderId} not found`);
     });
@@ -28434,41 +28434,25 @@ ${compileFieldSelection(operation.fields).join("\n")}
     const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
     const [loading, setLoading] = (0, import_react15.useState)(false);
     const orderId = (_a3 = data == null ? void 0 : data.selected[0]) == null ? void 0 : _a3.id;
-    console.log("\u{1F680} ~ orderId:", orderId);
-    const orderNumber = "12345";
-    const orderTotal = "230";
     (0, import_react15.useEffect)(() => {
       const loadSmsTemplates = () => __async(this, null, function* () {
         try {
+          const { tags, orderNumber, total } = yield getOrderInfo(orderId);
           const results = yield fetchSmsTemplates();
           const resultsProcessed = results.map((res) => __spreadProps(__spreadValues({}, res), {
             smsTextReplaced: replacePlaceholders(res.smsText, {
-              orderTotal,
+              orderTotal: total,
               orderNumber
             })
           }));
           setSmsTemplates(resultsProcessed);
+          setStatus("Ready to send SMS2");
         } catch (err) {
           setStatus("Failed to fetch SMS templates" + JSON.stringify(err));
         }
       });
       loadSmsTemplates();
     }, []);
-    (0, import_react15.useEffect)(() => {
-      const loadOrderInfo = () => __async(this, null, function* () {
-        try {
-          const { tags, name, total } = yield getOrderInfo(orderId);
-          console.log("\u{1F680} ~ tags, name, total:", tags, name, total);
-        } catch (err) {
-          console.log("\u{1F680} ~ err1:", err);
-        }
-      });
-      loadOrderInfo();
-    }, []);
-    (0, import_react15.useEffect)(() => {
-      if (smsTemplates.length > 0)
-        setStatus("Ready to send SMS2");
-    }, [smsTemplates]);
     const handleSendSms = (smsText) => __async(this, null, function* () {
       const receiverNumber = "380507025777";
       if (!smsText) {
@@ -28512,14 +28496,11 @@ ${compileFieldSelection(operation.fields).join("\n")}
         /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { fontWeight: "bold", children: "Status:" }),
         /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { inlineAlignment: "start", spacing: "tight", children: [
           loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ProgressIndicator2, { size: "small-200" }),
-          /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(
+          /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
             Badge2,
             {
               tone: status.startsWith("Success") ? "success" : status.startsWith("Error") ? "critical" : "default",
-              children: [
-                status,
-                " "
-              ]
+              children: status
             }
           )
         ] })

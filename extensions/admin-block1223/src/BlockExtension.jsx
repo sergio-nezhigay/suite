@@ -25,22 +25,21 @@ function App() {
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
   const orderId = data?.selected[0]?.id;
-  console.log('🚀 ~ orderId:', orderId);
-  const orderNumber = '12345';
-  const orderTotal = '230';
 
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
+        const { tags, orderNumber, total } = await getOrderInfo(orderId);
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
           smsTextReplaced: replacePlaceholders(res.smsText, {
-            orderTotal,
+            orderTotal: total,
             orderNumber,
           }),
         }));
         setSmsTemplates(resultsProcessed);
+        setStatus('Ready to send SMS2');
       } catch (err) {
         setStatus('Failed to fetch SMS templates' + JSON.stringify(err));
       }
@@ -48,23 +47,6 @@ function App() {
 
     loadSmsTemplates();
   }, []);
-
-  useEffect(() => {
-    const loadOrderInfo = async () => {
-      try {
-        const { tags, name, total } = await getOrderInfo(orderId);
-        console.log('🚀 ~ tags, name, total:', tags, name, total);
-      } catch (err) {
-        console.log('🚀 ~ err1:', err);
-      }
-    };
-
-    loadOrderInfo();
-  }, []);
-
-  useEffect(() => {
-    if (smsTemplates.length > 0) setStatus('Ready to send SMS2');
-  }, [smsTemplates]);
 
   const handleSendSms = async (smsText) => {
     const receiverNumber = '380507025777';
@@ -114,14 +96,14 @@ function App() {
           {loading && <ProgressIndicator size='small-200' />}
           <Badge
             tone={
-              status.startsWith('Success') // Updated condition
+              status.startsWith('Success')
                 ? 'success'
-                : status.startsWith('Error') // Updated condition
+                : status.startsWith('Error')
                 ? 'critical'
                 : 'default'
             }
           >
-            {status} {/* Updated here */}
+            {status}
           </Badge>
         </InlineStack>
       </BlockStack>
