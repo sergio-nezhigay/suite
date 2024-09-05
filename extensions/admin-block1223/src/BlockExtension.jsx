@@ -13,8 +13,9 @@ import {
 import { fetchSmsTemplates } from './fetchSmsTemplates';
 import { sendSmsMessage } from './sendSmsMessage';
 import { replacePlaceholders } from './replacePlaceholders';
+import { getOrderInfo } from '../../shared/orderTagsOperations';
 
-const TARGET = 'admin.product-details.block.render';
+const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
@@ -23,7 +24,9 @@ function App() {
   const [status, setStatus] = useState('Loading...');
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
-  const orderId = '12345';
+  const orderId = data?.selected[0]?.id;
+  console.log('🚀 ~ orderId:', orderId);
+  const orderNumber = '12345';
   const orderTotal = '230';
 
   useEffect(() => {
@@ -34,11 +37,10 @@ function App() {
           ...res,
           smsTextReplaced: replacePlaceholders(res.smsText, {
             orderTotal,
-            orderId,
+            orderNumber,
           }),
         }));
         setSmsTemplates(resultsProcessed);
-        setStatus('Ready to send SMS');
       } catch (err) {
         setStatus('Failed to fetch SMS templates' + JSON.stringify(err));
       }
@@ -46,6 +48,23 @@ function App() {
 
     loadSmsTemplates();
   }, []);
+
+  useEffect(() => {
+    const loadOrderInfo = async () => {
+      try {
+        const { tags, name, total } = await getOrderInfo(orderId);
+        console.log('🚀 ~ tags, name, total:', tags, name, total);
+      } catch (err) {
+        console.log('🚀 ~ err1:', err);
+      }
+    };
+
+    loadOrderInfo();
+  }, []);
+
+  useEffect(() => {
+    if (smsTemplates.length > 0) setStatus('Ready to send SMS2');
+  }, [smsTemplates]);
 
   const handleSendSms = async (smsText) => {
     const receiverNumber = '380507025777';

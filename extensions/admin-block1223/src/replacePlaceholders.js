@@ -1,7 +1,7 @@
 /**
  * Replaces placeholders in a template string with actual values from the data object.
- * @param {string} template - The template string containing placeholders (e.g., "Order ID: {{orderId}}").
- * @param {object} data - An object containing key-value pairs for replacements (e.g., { orderId: "12345" }).
+ * @param {string} template - The template string containing placeholders (e.g., "Order number: {{orderNumber}}").
+ * @param {object} data - An object containing key-value pairs for replacements (e.g., { orderNumber: "12345" }).
  * @returns {string} - The processed string with placeholders replaced.
  */
 export const replacePlaceholders = (template, data) => {

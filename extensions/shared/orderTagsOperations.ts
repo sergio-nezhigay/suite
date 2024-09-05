@@ -1,3 +1,4 @@
+import { log } from 'console';
 import { makeGraphQLQuery } from './makeGraphQLQuery';
 
 export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
@@ -39,6 +40,40 @@ export async function getOrderTags(orderId: string): Promise<string[]> {
   }
 
   return data?.order?.tags || [];
+}
+
+interface OrderInfo {
+  tags: string[];
+  name: string;
+  total: string;
+}
+
+export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
+  const query = `#graphql
+    query Order($id: ID!) {
+      order(id: $id) {
+        name
+        totalPriceSet {
+            shopMoney {
+                amount
+            }
+        }
+        tags
+      }
+    }`;
+  const { data } = await makeGraphQLQuery<{
+    order: {
+      tags: string[];
+      name: string;
+      totalPriceSet: { shopMoney: { amount: string } };
+    };
+  }>(query, { id: orderId });
+
+  if (data?.order) {
+    const { tags, name, totalPriceSet } = data?.order;
+    return { tags, name, total: totalPriceSet.shopMoney.amount };
+  }
+  throw new Error(`Order ${orderId} not found`);
 }
 
 export async function updateOrderTags({

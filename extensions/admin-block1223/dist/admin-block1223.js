@@ -28381,16 +28381,61 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return result;
   };
 
+  // extensions/shared/makeGraphQLQuery.ts
+  function makeGraphQLQuery(query, variables) {
+    return __async(this, null, function* () {
+      const graphQLQuery = { query, variables };
+      const res = yield fetch("shopify:admin/api/graphql.json", {
+        method: "POST",
+        body: JSON.stringify(graphQLQuery),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Network error");
+      }
+      return yield res.json();
+    });
+  }
+
+  // extensions/shared/orderTagsOperations.ts
+  function getOrderInfo(orderId) {
+    return __async(this, null, function* () {
+      const query = `#graphql
+    query Order($id: ID!) {
+      order(id: $id) {
+        name
+        totalPriceSet {
+            shopMoney {
+                amount
+            }
+        }
+        tags
+      }
+    }`;
+      const { data } = yield makeGraphQLQuery(query, { id: orderId });
+      if (data == null ? void 0 : data.order) {
+        const { tags, name, totalPriceSet } = data == null ? void 0 : data.order;
+        return { tags, name, total: totalPriceSet.shopMoney.amount };
+      }
+      throw new Error(`Order ${orderId} not found`);
+    });
+  }
+
   // extensions/admin-block1223/src/BlockExtension.jsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
-  var TARGET = "admin.product-details.block.render";
+  var TARGET = "admin.order-details.block.render";
   var BlockExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
+    var _a3;
     const { close, data, intents } = useApi(TARGET);
     const [status, setStatus] = (0, import_react15.useState)("Loading...");
     const [smsTemplates, setSmsTemplates] = (0, import_react15.useState)([]);
     const [loading, setLoading] = (0, import_react15.useState)(false);
-    const orderId = "12345";
+    const orderId = (_a3 = data == null ? void 0 : data.selected[0]) == null ? void 0 : _a3.id;
+    console.log("\u{1F680} ~ orderId:", orderId);
+    const orderNumber = "12345";
     const orderTotal = "230";
     (0, import_react15.useEffect)(() => {
       const loadSmsTemplates = () => __async(this, null, function* () {
@@ -28399,17 +28444,31 @@ ${compileFieldSelection(operation.fields).join("\n")}
           const resultsProcessed = results.map((res) => __spreadProps(__spreadValues({}, res), {
             smsTextReplaced: replacePlaceholders(res.smsText, {
               orderTotal,
-              orderId
+              orderNumber
             })
           }));
           setSmsTemplates(resultsProcessed);
-          setStatus("Ready to send SMS");
         } catch (err) {
           setStatus("Failed to fetch SMS templates" + JSON.stringify(err));
         }
       });
       loadSmsTemplates();
     }, []);
+    (0, import_react15.useEffect)(() => {
+      const loadOrderInfo = () => __async(this, null, function* () {
+        try {
+          const { tags, name, total } = yield getOrderInfo(orderId);
+          console.log("\u{1F680} ~ tags, name, total:", tags, name, total);
+        } catch (err) {
+          console.log("\u{1F680} ~ err1:", err);
+        }
+      });
+      loadOrderInfo();
+    }, []);
+    (0, import_react15.useEffect)(() => {
+      if (smsTemplates.length > 0)
+        setStatus("Ready to send SMS2");
+    }, [smsTemplates]);
     const handleSendSms = (smsText) => __async(this, null, function* () {
       const receiverNumber = "380507025777";
       if (!smsText) {
