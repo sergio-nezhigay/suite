@@ -10,7 +10,8 @@
     "dev": "shopify app dev",
     "info": "shopify app info",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy"
+    "deploy": "shopify app deploy",
+    "ggt": "npx ggt dev ./ --app=admin-action-block --env=development"
   },
   "dependencies": {
     "@gadget-client/admin-action-block": "link:.gadget/client",
@@ -24,7 +25,7 @@
     "react-dom": "^18.2.0",
     "react-router-dom": "6.15.0",
     "shopify-api-node": "^3.12.6",
-     "@fastify/cors": "^8.5.0"
+    "@fastify/cors": "^8.5.0"
   },
   "devDependencies": {
     "@shopify/cli": "^3.66.1",
