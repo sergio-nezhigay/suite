@@ -13,7 +13,11 @@ import {
 import { fetchSmsTemplates } from './fetchSmsTemplates';
 import { sendSmsMessage } from './sendSmsMessage';
 import { replacePlaceholders } from './replacePlaceholders';
-import { getOrderInfo, getCustomerPhone } from '../../shared/shopifyOperations';
+import {
+  getOrderInfo,
+  getCustomerPhone,
+  addOrderNote,
+} from '../../shared/shopifyOperations';
 
 const TARGET = 'admin.order-details.block.render';
 
@@ -57,9 +61,13 @@ function App() {
     setStatus('Sending SMS...');
     try {
       const response = await sendSmsMessage(customerPhone, smsText);
-      setStatus(`Success: Message sent successfully`);
+      const note = `SMS sent ${smsText}`;
+      setStatus(note);
+      await addOrderNote({ orderId, note });
     } catch (err) {
-      setStatus(`Error: ${err.message}`);
+      const note = `Error sending sms: ${err.message}`;
+      await addOrderNote({ orderId, note });
+      setStatus(note);
     } finally {
       setLoading(false);
     }

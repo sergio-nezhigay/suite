@@ -225,3 +225,53 @@ export async function getCustomerPhone(customerId: string) {
   if (!phone) return null;
   return phone.slice(-12);
 }
+
+export async function addOrderNote({
+  orderId,
+  note,
+}: {
+  orderId: string;
+  note: string;
+}) {
+  if (!orderId) {
+    throw new Error(`Order ID is required but was not provided`);
+  }
+  const mutation = `#graphql
+        mutation updateOrderNote($input: OrderInput!) {
+            orderUpdate(input: $input) {
+                order {
+                    id
+                    note
+                }
+                userErrors {
+                    field
+                    message
+                }
+            }
+        }
+      `;
+
+  const { data, errors } = await makeGraphQLQuery<{
+    orderUpdate: {
+      order: { id: string; note: string };
+      userErrors: { field: string; message: string }[];
+    };
+  }>(mutation, {
+    input: {
+      id: orderId,
+      note: `Status updated to: ${note}`,
+    },
+  });
+  if (errors) {
+    const errorMessages = errors.map((e) => e.message).join(', ');
+    throw new Error(`Failed to update order note: ${errorMessages}`);
+  }
+
+  if (data?.orderUpdate?.userErrors?.length) {
+    const userErrorMessages = data.orderUpdate.userErrors
+      .map((e) => `${e.field}: ${e.message}`)
+      .join(', ');
+    throw new Error(`Failed to update order note: ${userErrorMessages}`);
+  }
+  return data?.orderUpdate?.order?.note || '';
+}
