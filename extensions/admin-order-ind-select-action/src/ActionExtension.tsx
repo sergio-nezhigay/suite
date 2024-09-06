@@ -10,7 +10,7 @@ import {
 import {
   getOrdersTags,
   updateOrdersTags,
-} from '../../shared/orderTagsOperations';
+} from '../../shared/shopifyOperations';
 
 // The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
 const TARGET = 'admin.order-index.selection-action.render';

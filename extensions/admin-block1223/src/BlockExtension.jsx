@@ -13,23 +13,26 @@ import {
 import { fetchSmsTemplates } from './fetchSmsTemplates';
 import { sendSmsMessage } from './sendSmsMessage';
 import { replacePlaceholders } from './replacePlaceholders';
-import { getOrderInfo } from '../../shared/orderTagsOperations';
+import { getOrderInfo, getCustomerPhone } from '../../shared/shopifyOperations';
 
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
 function App() {
-  const { close, data, intents } = useApi(TARGET);
+  const { data } = useApi(TARGET);
   const [status, setStatus] = useState('Loading...');
   const [smsTemplates, setSmsTemplates] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [customerPhone, setCustomerPhone] = useState('');
   const orderId = data?.selected[0]?.id;
 
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const { tags, orderNumber, total } = await getOrderInfo(orderId);
+        const { tags, orderNumber, total, customerId } = await getOrderInfo(
+          orderId
+        );
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
@@ -39,27 +42,21 @@ function App() {
           }),
         }));
         setSmsTemplates(resultsProcessed);
-        setStatus('Ready to send SMS2');
+        const customerPhone = await getCustomerPhone(customerId);
+        setCustomerPhone(customerPhone);
+        setStatus('Ready to send SMS');
       } catch (err) {
         setStatus('Failed to fetch SMS templates' + JSON.stringify(err));
       }
     };
-
     loadSmsTemplates();
   }, []);
 
   const handleSendSms = async (smsText) => {
-    const receiverNumber = '380507025777';
-    if (!smsText) {
-      setStatus('Please select a template to send.');
-      return;
-    }
-
     setLoading(true);
     setStatus('Sending SMS...');
     try {
-      const response = await sendSmsMessage(receiverNumber, smsText);
-
+      const response = await sendSmsMessage(customerPhone, smsText);
       setStatus(`Success: Message sent successfully`);
     } catch (err) {
       setStatus(`Error: ${err.message}`);
@@ -70,7 +67,7 @@ function App() {
 
   return (
     <BlockStack blockAlignment='space-between'>
-      <Heading size='2'>SMS Control Center3</Heading>
+      <Heading size='2'>SMS Control Center</Heading>
       <InlineStack
         inlineAlignment='center'
         blockAlignment='center'
@@ -91,7 +88,7 @@ function App() {
       </InlineStack>
 
       <BlockStack spacing='tight'>
-        <Text fontWeight='bold'>Status:</Text>
+        <Text fontWeight='bold'>Status11:</Text>
         <InlineStack inlineAlignment='start' spacing='tight'>
           {loading && <ProgressIndicator size='small-200' />}
           <Badge

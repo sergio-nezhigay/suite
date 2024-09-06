@@ -46,6 +46,7 @@ interface OrderInfo {
   tags: string[];
   orderNumber: string;
   total: string;
+  customerId: string;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -59,19 +60,30 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
             }
         }
         tags
+        customer {
+            id
+        }
       }
     }`;
   const { data } = await makeGraphQLQuery<{
     order: {
       tags: string[];
       name: string;
-      totalPriceSet: { shopMoney: { amount: string } };
+      totalPriceSet: {
+        shopMoney: { amount: string };
+      };
+      customer: { id: string };
     };
   }>(query, { id: orderId });
 
   if (data?.order) {
-    const { tags, name, totalPriceSet } = data?.order;
-    return { tags, orderNumber: name, total: totalPriceSet.shopMoney.amount };
+    const { tags, name, totalPriceSet, customer } = data?.order;
+    return {
+      tags,
+      orderNumber: name,
+      total: totalPriceSet.shopMoney.amount,
+      customerId: customer?.id,
+    };
   }
   throw new Error(`Order ${orderId} not found`);
 }
@@ -192,4 +204,24 @@ export async function updateOrdersTags({
   }
 
   console.log('Tags successfully updated for all orders.');
+}
+
+export async function getCustomerPhone(customerId: string) {
+  const query = `#graphql
+  query GetCustomerPhone($customerId: ID!) {
+    customer(id: $customerId) {
+        phone
+  }
+  }`;
+  const { data, errors } = await makeGraphQLQuery<{
+    customer: { phone: string };
+  }>(query, { customerId });
+
+  if (errors) {
+    const errorMessages = errors.map((e) => e.message).join(', ');
+    throw new Error(`Failed to fetch order details: ${errorMessages}`);
+  }
+  const phone = data?.customer?.phone;
+  if (!phone) return null;
+  return phone.slice(-12);
 }

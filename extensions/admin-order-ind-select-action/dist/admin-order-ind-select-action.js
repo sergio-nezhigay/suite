@@ -19501,7 +19501,7 @@
     });
   }
 
-  // extensions/shared/orderTagsOperations.ts
+  // extensions/shared/shopifyOperations.ts
   function getOrdersTags(orderIds) {
     return __async(this, null, function* () {
       const orderTagPromises = orderIds.map((id) => {
