@@ -19589,6 +19589,7 @@
         console.error("Error adding tags:", error);
       }
       console.log("Tags successfully updated for all orders.");
+      return [value];
     });
   }
 

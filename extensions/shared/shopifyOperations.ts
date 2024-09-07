@@ -23,24 +23,24 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
-export async function getOrderTags(orderId: string): Promise<string[]> {
-  const query = `#graphql
-    query Order($id: ID!) {
-      order(id: $id) {
-        tags
-      }
-    }`;
-  const { data, errors } = await makeGraphQLQuery<{
-    order: { tags: string[] };
-  }>(query, { id: orderId });
+//export async function getOrderTags(orderId: string): Promise<string[]> {
+//  const query = `#graphql
+//    query Order($id: ID!) {
+//      order(id: $id) {
+//        tags
+//      }
+//    }`;
+//  const { data, errors } = await makeGraphQLQuery<{
+//    order: { tags: string[] };
+//  }>(query, { id: orderId });
 
-  if (errors) {
-    const errorMessages = errors.map((e) => e.message).join(', ');
-    throw new Error(`Failed to fetch order details: ${errorMessages}`);
-  }
+//  if (errors) {
+//    const errorMessages = errors.map((e) => e.message).join(', ');
+//    throw new Error(`Failed to fetch order details: ${errorMessages}`);
+//  }
 
-  return data?.order?.tags || [];
-}
+//  return data?.order?.tags || [];
+//}
 
 interface OrderInfo {
   tags: string[];
@@ -88,48 +88,48 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   throw new Error(`Order ${orderId} not found`);
 }
 
-export async function updateOrderTags({
-  value,
-  orderId,
-}: {
-  value: string;
-  orderId: string;
-}): Promise<void> {
-  const currentTags = await getOrderTags(orderId);
+//export async function updateOrderTags({
+//  value,
+//  orderId,
+//}: {
+//  value: string;
+//  orderId: string;
+//}): Promise<void> {
+//  const currentTags = await getOrderTags(orderId);
 
-  if (currentTags.length > 0) {
-    const removeTagsMutation = `#graphql
-      mutation RemoveTags($id: ID!, $tags: [String!]!) {
-        tagsRemove(id: $id, tags: $tags) {
-          userErrors {
-            field
-            message
-          }
-        }
-      }`;
-    await makeGraphQLQuery(removeTagsMutation, {
-      id: orderId,
-      tags: currentTags,
-    });
-  }
+//  if (currentTags.length > 0) {
+//    const removeTagsMutation = `#graphql
+//      mutation RemoveTags($id: ID!, $tags: [String!]!) {
+//        tagsRemove(id: $id, tags: $tags) {
+//          userErrors {
+//            field
+//            message
+//          }
+//        }
+//      }`;
+//    await makeGraphQLQuery(removeTagsMutation, {
+//      id: orderId,
+//      tags: currentTags,
+//    });
+//  }
 
-  const addTagsMutation = `#graphql
-    mutation AddTags($id: ID!, $tags: [String!]!) {
-      tagsAdd(id: $id, tags: $tags) {
-        userErrors {
-          field
-          message
-        }
-        node {
-          id
-        }
-      }
-    }`;
-  await makeGraphQLQuery(addTagsMutation, {
-    id: orderId,
-    tags: [value],
-  });
-}
+//  const addTagsMutation = `#graphql
+//    mutation AddTags($id: ID!, $tags: [String!]!) {
+//      tagsAdd(id: $id, tags: $tags) {
+//        userErrors {
+//          field
+//          message
+//        }
+//        node {
+//          id
+//        }
+//      }
+//    }`;
+//  await makeGraphQLQuery(addTagsMutation, {
+//    id: orderId,
+//    tags: [value],
+//  });
+//}
 
 export async function updateOrdersTags({
   value,
@@ -137,7 +137,7 @@ export async function updateOrdersTags({
 }: {
   value: string;
   orderIds: string[];
-}): Promise<void> {
+}): Promise<string[]> {
   console.log(
     'Starting updateOrdersTags with value:',
     value,
@@ -204,6 +204,7 @@ export async function updateOrdersTags({
   }
 
   console.log('Tags successfully updated for all orders.');
+  return [value];
 }
 
 export async function getCustomerPhone(customerId: string) {
