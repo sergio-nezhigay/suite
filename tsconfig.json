@@ -14,7 +14,7 @@
     "jsx": "react-jsx", // Use React's JSX handling
     "module": "ESNext", // Use modern ES module syntax
     "moduleResolution": "Bundler", // Use bundler-compatible module resolution
-    "target": "ES2022", // Compile to ES2022 target
+    "target": "ESNext", // Compile to ES2022 target
     "baseUrl": ".", // Base directory for module resolution
     "paths": {
       "~/*": ["./app/*"] // Path aliasing, useful for imports

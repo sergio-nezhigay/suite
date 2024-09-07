@@ -9,22 +9,19 @@
   var __getProtoOf = Object.getPrototypeOf;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
   var __propIsEnum = Object.prototype.propertyIsEnumerable;
-  var __knownSymbol = (name, symbol) => {
-    return (symbol = Symbol[name]) ? symbol : Symbol.for("Symbol." + name);
-  };
-  var __defNormalProp = (obj, key2, value2) => key2 in obj ? __defProp(obj, key2, { enumerable: true, configurable: true, writable: true, value: value2 }) : obj[key2] = value2;
-  var __spreadValues = (a2, b) => {
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+  var __spreadValues = (a, b) => {
     for (var prop in b || (b = {}))
       if (__hasOwnProp.call(b, prop))
-        __defNormalProp(a2, prop, b[prop]);
+        __defNormalProp(a, prop, b[prop]);
     if (__getOwnPropSymbols)
       for (var prop of __getOwnPropSymbols(b)) {
         if (__propIsEnum.call(b, prop))
-          __defNormalProp(a2, prop, b[prop]);
+          __defNormalProp(a, prop, b[prop]);
       }
-    return a2;
+    return a;
   };
-  var __spreadProps = (a2, b) => __defProps(a2, __getOwnPropDescs(b));
+  var __spreadProps = (a, b) => __defProps(a, __getOwnPropDescs(b));
   var __objRest = (source, exclude) => {
     var target = {};
     for (var prop in source)
@@ -37,21 +34,14 @@
       }
     return target;
   };
-  var __esm = (fn, res) => function __init() {
-    return fn && (res = (0, fn[__getOwnPropNames(fn)[0]])(fn = 0)), res;
-  };
   var __commonJS = (cb, mod) => function __require() {
     return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
   };
-  var __export = (target, all) => {
-    for (var name in all)
-      __defProp(target, name, { get: all[name], enumerable: true });
-  };
   var __copyProps = (to, from, except, desc) => {
     if (from && typeof from === "object" || typeof from === "function") {
-      for (let key2 of __getOwnPropNames(from))
-        if (!__hasOwnProp.call(to, key2) && key2 !== except)
-          __defProp(to, key2, { get: () => from[key2], enumerable: !(desc = __getOwnPropDesc(from, key2)) || desc.enumerable });
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
     }
     return to;
   };
@@ -64,76 +54,25 @@
     mod
   ));
   var __async = (__this, __arguments, generator) => {
-    return new Promise((resolve, reject2) => {
-      var fulfilled = (value2) => {
+    return new Promise((resolve, reject) => {
+      var fulfilled = (value) => {
         try {
-          step(generator.next(value2));
-        } catch (e3) {
-          reject2(e3);
+          step(generator.next(value));
+        } catch (e) {
+          reject(e);
         }
       };
-      var rejected = (value2) => {
+      var rejected = (value) => {
         try {
-          step(generator.throw(value2));
-        } catch (e3) {
-          reject2(e3);
+          step(generator.throw(value));
+        } catch (e) {
+          reject(e);
         }
       };
       var step = (x) => x.done ? resolve(x.value) : Promise.resolve(x.value).then(fulfilled, rejected);
       step((generator = generator.apply(__this, __arguments)).next());
     });
   };
-  var __await = function(promise, isYieldStar) {
-    this[0] = promise;
-    this[1] = isYieldStar;
-  };
-  var __asyncGenerator = (__this, __arguments, generator) => {
-    var resume = (k, v3, yes, no) => {
-      try {
-        var x = generator[k](v3), isAwait = (v3 = x.value) instanceof __await, done = x.done;
-        Promise.resolve(isAwait ? v3[0] : v3).then((y2) => isAwait ? resume(k === "return" ? k : "next", v3[1] ? { done: y2.done, value: y2.value } : y2, yes, no) : yes({ value: y2, done })).catch((e3) => resume("throw", e3, yes, no));
-      } catch (e3) {
-        no(e3);
-      }
-    };
-    var method = (k) => it[k] = (x) => new Promise((yes, no) => resume(k, x, yes, no));
-    var it = {};
-    return generator = generator.apply(__this, __arguments), it[__knownSymbol("asyncIterator")] = () => it, method("next"), method("throw"), method("return"), it;
-  };
-  var __yieldStar = (value2) => {
-    var obj = value2[__knownSymbol("asyncIterator")];
-    var isAwait = false;
-    var method;
-    var it = {};
-    if (obj == null) {
-      obj = value2[__knownSymbol("iterator")]();
-      method = (k) => it[k] = (x) => obj[k](x);
-    } else {
-      obj = obj.call(value2);
-      method = (k) => it[k] = (v3) => {
-        if (isAwait) {
-          isAwait = false;
-          if (k === "throw")
-            throw v3;
-          return v3;
-        }
-        isAwait = true;
-        return {
-          done: false,
-          value: new __await(new Promise((resolve) => {
-            var x = obj[k](v3);
-            if (!(x instanceof Object))
-              throw TypeError("Object expected");
-            resolve(x);
-          }), 1)
-        };
-      };
-    }
-    return it[__knownSymbol("iterator")] = () => it, method("next"), "throw" in obj ? method("throw") : it.throw = (x) => {
-      throw x;
-    }, "return" in obj && method("return"), it;
-  };
-  var __forAwait = (obj, it, method) => (it = obj[__knownSymbol("asyncIterator")]) ? it.call(obj) : (obj = obj[__knownSymbol("iterator")](), it = {}, method = (key2, fn) => (fn = obj[key2]) && (it[key2] = (arg) => new Promise((yes, no, done) => (arg = fn.call(obj, arg), done = arg.done, Promise.resolve(arg.value).then((value2) => yes({ value: value2, done }), no)))), method("next"), method("return"), it);
 
   // node_modules/react/cjs/react.development.js
   var require_react_development = __commonJS({
@@ -244,7 +183,7 @@
               }
             }
           }
-          function error2(format) {
+          function error(format) {
             {
               {
                 for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
@@ -278,7 +217,7 @@
               if (didWarnStateUpdateForUnmountedComponent[warningKey]) {
                 return;
               }
-              error2("Can't call %s on a component that is not yet mounted. This is a no-op, but it might indicate a bug in your application. Instead, assign to `this.state` directly or define a `state = {};` class property with the desired state in the %s component.", callerName, componentName);
+              error("Can't call %s on a component that is not yet mounted. This is a no-op, but it might indicate a bug in your application. Instead, assign to `this.state` directly or define a `state = {};` class property with the desired state in the %s component.", callerName, componentName);
               didWarnStateUpdateForUnmountedComponent[warningKey] = true;
             }
           }
@@ -406,34 +345,34 @@
             return refObject;
           }
           var isArrayImpl = Array.isArray;
-          function isArray(a2) {
-            return isArrayImpl(a2);
+          function isArray(a) {
+            return isArrayImpl(a);
           }
-          function typeName(value2) {
+          function typeName(value) {
             {
               var hasToStringTag = typeof Symbol === "function" && Symbol.toStringTag;
-              var type2 = hasToStringTag && value2[Symbol.toStringTag] || value2.constructor.name || "Object";
-              return type2;
+              var type = hasToStringTag && value[Symbol.toStringTag] || value.constructor.name || "Object";
+              return type;
             }
           }
-          function willCoercionThrow(value2) {
+          function willCoercionThrow(value) {
             {
               try {
-                testStringCoercion(value2);
+                testStringCoercion(value);
                 return false;
-              } catch (e3) {
+              } catch (e) {
                 return true;
               }
             }
           }
-          function testStringCoercion(value2) {
-            return "" + value2;
+          function testStringCoercion(value) {
+            return "" + value;
           }
-          function checkKeyStringCoercion(value2) {
+          function checkKeyStringCoercion(value) {
             {
-              if (willCoercionThrow(value2)) {
-                error2("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value2));
-                return testStringCoercion(value2);
+              if (willCoercionThrow(value)) {
+                error("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value));
+                return testStringCoercion(value);
               }
             }
           }
@@ -445,25 +384,25 @@
             var functionName = innerType.displayName || innerType.name || "";
             return functionName !== "" ? wrapperName + "(" + functionName + ")" : wrapperName;
           }
-          function getContextName(type2) {
-            return type2.displayName || "Context";
+          function getContextName(type) {
+            return type.displayName || "Context";
           }
-          function getComponentNameFromType(type2) {
-            if (type2 == null) {
+          function getComponentNameFromType(type) {
+            if (type == null) {
               return null;
             }
             {
-              if (typeof type2.tag === "number") {
-                error2("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
+              if (typeof type.tag === "number") {
+                error("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
               }
             }
-            if (typeof type2 === "function") {
-              return type2.displayName || type2.name || null;
+            if (typeof type === "function") {
+              return type.displayName || type.name || null;
             }
-            if (typeof type2 === "string") {
-              return type2;
+            if (typeof type === "string") {
+              return type;
             }
-            switch (type2) {
+            switch (type) {
               case REACT_FRAGMENT_TYPE:
                 return "Fragment";
               case REACT_PORTAL_TYPE:
@@ -477,24 +416,24 @@
               case REACT_SUSPENSE_LIST_TYPE:
                 return "SuspenseList";
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_CONTEXT_TYPE:
-                  var context = type2;
+                  var context = type;
                   return getContextName(context) + ".Consumer";
                 case REACT_PROVIDER_TYPE:
-                  var provider = type2;
+                  var provider = type;
                   return getContextName(provider._context) + ".Provider";
                 case REACT_FORWARD_REF_TYPE:
-                  return getWrappedName(type2, type2.render, "ForwardRef");
+                  return getWrappedName(type, type.render, "ForwardRef");
                 case REACT_MEMO_TYPE:
-                  var outerName = type2.displayName || null;
+                  var outerName = type.displayName || null;
                   if (outerName !== null) {
                     return outerName;
                   }
-                  return getComponentNameFromType(type2.type) || "Memo";
+                  return getComponentNameFromType(type.type) || "Memo";
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -545,7 +484,7 @@
               {
                 if (!specialPropKeyWarningShown) {
                   specialPropKeyWarningShown = true;
-                  error2("%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
+                  error("%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
                 }
               }
             };
@@ -560,7 +499,7 @@
               {
                 if (!specialPropRefWarningShown) {
                   specialPropRefWarningShown = true;
-                  error2("%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
+                  error("%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
                 }
               }
             };
@@ -575,19 +514,19 @@
               if (typeof config.ref === "string" && ReactCurrentOwner.current && config.__self && ReactCurrentOwner.current.stateNode !== config.__self) {
                 var componentName = getComponentNameFromType(ReactCurrentOwner.current.type);
                 if (!didWarnAboutStringRefs[componentName]) {
-                  error2('Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', componentName, config.ref);
+                  error('Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', componentName, config.ref);
                   didWarnAboutStringRefs[componentName] = true;
                 }
               }
             }
           }
-          var ReactElement = function(type2, key2, ref, self2, source, owner, props) {
+          var ReactElement = function(type, key, ref, self, source, owner, props) {
             var element = {
               // This tag allows us to uniquely identify this as a React Element
               $$typeof: REACT_ELEMENT_TYPE,
               // Built-in properties that belong on the element
-              type: type2,
-              key: key2,
+              type,
+              key,
               ref,
               props,
               // Record the component responsible for creating this element.
@@ -605,7 +544,7 @@
                 configurable: false,
                 enumerable: false,
                 writable: false,
-                value: self2
+                value: self
               });
               Object.defineProperty(element, "_source", {
                 configurable: false,
@@ -620,12 +559,12 @@
             }
             return element;
           };
-          function createElement(type2, config, children) {
+          function createElement(type, config, children) {
             var propName;
             var props = {};
-            var key2 = null;
+            var key = null;
             var ref = null;
-            var self2 = null;
+            var self = null;
             var source = null;
             if (config != null) {
               if (hasValidRef(config)) {
@@ -638,9 +577,9 @@
                 {
                   checkKeyStringCoercion(config.key);
                 }
-                key2 = "" + config.key;
+                key = "" + config.key;
               }
-              self2 = config.__self === void 0 ? null : config.__self;
+              self = config.__self === void 0 ? null : config.__self;
               source = config.__source === void 0 ? null : config.__source;
               for (propName in config) {
                 if (hasOwnProperty2.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
@@ -653,8 +592,8 @@
               props.children = children;
             } else if (childrenLength > 1) {
               var childArray = Array(childrenLength);
-              for (var i3 = 0; i3 < childrenLength; i3++) {
-                childArray[i3] = arguments[i3 + 2];
+              for (var i = 0; i < childrenLength; i++) {
+                childArray[i] = arguments[i + 2];
               }
               {
                 if (Object.freeze) {
@@ -663,8 +602,8 @@
               }
               props.children = childArray;
             }
-            if (type2 && type2.defaultProps) {
-              var defaultProps = type2.defaultProps;
+            if (type && type.defaultProps) {
+              var defaultProps = type.defaultProps;
               for (propName in defaultProps) {
                 if (props[propName] === void 0) {
                   props[propName] = defaultProps[propName];
@@ -672,9 +611,9 @@
               }
             }
             {
-              if (key2 || ref) {
-                var displayName = typeof type2 === "function" ? type2.displayName || type2.name || "Unknown" : type2;
-                if (key2) {
+              if (key || ref) {
+                var displayName = typeof type === "function" ? type.displayName || type.name || "Unknown" : type;
+                if (key) {
                   defineKeyPropWarningGetter(props, displayName);
                 }
                 if (ref) {
@@ -682,7 +621,7 @@
                 }
               }
             }
-            return ReactElement(type2, key2, ref, self2, source, ReactCurrentOwner.current, props);
+            return ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props);
           }
           function cloneAndReplaceKey(oldElement, newKey) {
             var newElement = ReactElement(oldElement.type, newKey, oldElement.ref, oldElement._self, oldElement._source, oldElement._owner, oldElement.props);
@@ -694,9 +633,9 @@
             }
             var propName;
             var props = assign({}, element.props);
-            var key2 = element.key;
+            var key = element.key;
             var ref = element.ref;
-            var self2 = element._self;
+            var self = element._self;
             var source = element._source;
             var owner = element._owner;
             if (config != null) {
@@ -708,7 +647,7 @@
                 {
                   checkKeyStringCoercion(config.key);
                 }
-                key2 = "" + config.key;
+                key = "" + config.key;
               }
               var defaultProps;
               if (element.type && element.type.defaultProps) {
@@ -729,25 +668,25 @@
               props.children = children;
             } else if (childrenLength > 1) {
               var childArray = Array(childrenLength);
-              for (var i3 = 0; i3 < childrenLength; i3++) {
-                childArray[i3] = arguments[i3 + 2];
+              for (var i = 0; i < childrenLength; i++) {
+                childArray[i] = arguments[i + 2];
               }
               props.children = childArray;
             }
-            return ReactElement(element.type, key2, ref, self2, source, owner, props);
+            return ReactElement(element.type, key, ref, self, source, owner, props);
           }
           function isValidElement2(object) {
             return typeof object === "object" && object !== null && object.$$typeof === REACT_ELEMENT_TYPE;
           }
           var SEPARATOR = ".";
           var SUBSEPARATOR = ":";
-          function escape(key2) {
+          function escape(key) {
             var escapeRegex = /[=:]/g;
             var escaperLookup = {
               "=": "=0",
               ":": "=2"
             };
-            var escapedString = key2.replace(escapeRegex, function(match) {
+            var escapedString = key.replace(escapeRegex, function(match) {
               return escaperLookup[match];
             });
             return "$" + escapedString;
@@ -767,15 +706,15 @@
             return index.toString(36);
           }
           function mapIntoArray(children, array, escapedPrefix, nameSoFar, callback) {
-            var type2 = typeof children;
-            if (type2 === "undefined" || type2 === "boolean") {
+            var type = typeof children;
+            if (type === "undefined" || type === "boolean") {
               children = null;
             }
             var invokeCallback = false;
             if (children === null) {
               invokeCallback = true;
             } else {
-              switch (type2) {
+              switch (type) {
                 case "string":
                 case "number":
                   invokeCallback = true;
@@ -797,8 +736,8 @@
                 if (childKey != null) {
                   escapedChildKey = escapeUserProvidedKey(childKey) + "/";
                 }
-                mapIntoArray(mappedChild, array, escapedChildKey, "", function(c2) {
-                  return c2;
+                mapIntoArray(mappedChild, array, escapedChildKey, "", function(c) {
+                  return c;
                 });
               } else if (mappedChild != null) {
                 if (isValidElement2(mappedChild)) {
@@ -828,9 +767,9 @@
             var subtreeCount = 0;
             var nextNamePrefix = nameSoFar === "" ? SEPARATOR : nameSoFar + SUBSEPARATOR;
             if (isArray(children)) {
-              for (var i3 = 0; i3 < children.length; i3++) {
-                child = children[i3];
-                nextName = nextNamePrefix + getElementKey(child, i3);
+              for (var i = 0; i < children.length; i++) {
+                child = children[i];
+                nextName = nextNamePrefix + getElementKey(child, i);
                 subtreeCount += mapIntoArray(child, array, escapedPrefix, nextName, callback);
               }
             } else {
@@ -853,7 +792,7 @@
                   nextName = nextNamePrefix + getElementKey(child, ii++);
                   subtreeCount += mapIntoArray(child, array, escapedPrefix, nextName, callback);
                 }
-              } else if (type2 === "object") {
+              } else if (type === "object") {
                 var childrenString = String(children);
                 throw new Error("Objects are not valid as a React child (found: " + (childrenString === "[object Object]" ? "object with keys {" + Object.keys(children).join(", ") + "}" : childrenString) + "). If you meant to render a collection of children, use an array instead.");
               }
@@ -872,11 +811,11 @@
             return result;
           }
           function countChildren(children) {
-            var n2 = 0;
+            var n = 0;
             mapChildren(children, function() {
-              n2++;
+              n++;
             });
-            return n2;
+            return n;
           }
           function forEachChildren(children, forEachFunc, forEachContext) {
             mapChildren(children, function() {
@@ -931,7 +870,7 @@
                   get: function() {
                     if (!hasWarnedAboutUsingConsumerProvider) {
                       hasWarnedAboutUsingConsumerProvider = true;
-                      error2("Rendering <Context.Consumer.Provider> is not supported and will be removed in a future major release. Did you mean to render <Context.Provider> instead?");
+                      error("Rendering <Context.Consumer.Provider> is not supported and will be removed in a future major release. Did you mean to render <Context.Provider> instead?");
                     }
                     return context.Provider;
                   },
@@ -967,7 +906,7 @@
                   get: function() {
                     if (!hasWarnedAboutUsingNestedContextConsumers) {
                       hasWarnedAboutUsingNestedContextConsumers = true;
-                      error2("Rendering <Context.Consumer.Consumer> is not supported and will be removed in a future major release. Did you mean to render <Context.Consumer> instead?");
+                      error("Rendering <Context.Consumer.Consumer> is not supported and will be removed in a future major release. Did you mean to render <Context.Consumer> instead?");
                     }
                     return context.Consumer;
                   }
@@ -995,7 +934,7 @@
           var Uninitialized = -1;
           var Pending = 0;
           var Resolved = 1;
-          var Rejected2 = 2;
+          var Rejected = 2;
           function lazyInitializer(payload) {
             if (payload._status === Uninitialized) {
               var ctor = payload._result;
@@ -1006,11 +945,11 @@
                   resolved._status = Resolved;
                   resolved._result = moduleObject2;
                 }
-              }, function(error3) {
+              }, function(error2) {
                 if (payload._status === Pending || payload._status === Uninitialized) {
                   var rejected = payload;
-                  rejected._status = Rejected2;
-                  rejected._result = error3;
+                  rejected._status = Rejected;
+                  rejected._result = error2;
                 }
               });
               if (payload._status === Uninitialized) {
@@ -1023,12 +962,12 @@
               var moduleObject = payload._result;
               {
                 if (moduleObject === void 0) {
-                  error2("lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))\n\nDid you accidentally put curly braces around the import?", moduleObject);
+                  error("lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))\n\nDid you accidentally put curly braces around the import?", moduleObject);
                 }
               }
               {
                 if (!("default" in moduleObject)) {
-                  error2("lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))", moduleObject);
+                  error("lazy: Expected the result of a dynamic import() call. Instead received: %s\n\nYour code should look like: \n  const MyComponent = lazy(() => import('./MyComponent'))", moduleObject);
                 }
               }
               return moduleObject.default;
@@ -1036,7 +975,7 @@
               throw payload._result;
             }
           }
-          function lazy2(ctor) {
+          function lazy(ctor) {
             var payload = {
               // We use these fields to store the result.
               _status: Uninitialized,
@@ -1057,7 +996,7 @@
                     return defaultProps;
                   },
                   set: function(newDefaultProps) {
-                    error2("React.lazy(...): It is not supported to assign `defaultProps` to a lazy component import. Either specify them where the component is defined, or create a wrapping component around it.");
+                    error("React.lazy(...): It is not supported to assign `defaultProps` to a lazy component import. Either specify them where the component is defined, or create a wrapping component around it.");
                     defaultProps = newDefaultProps;
                     Object.defineProperty(lazyType, "defaultProps", {
                       enumerable: true
@@ -1070,7 +1009,7 @@
                     return propTypes;
                   },
                   set: function(newPropTypes) {
-                    error2("React.lazy(...): It is not supported to assign `propTypes` to a lazy component import. Either specify them where the component is defined, or create a wrapping component around it.");
+                    error("React.lazy(...): It is not supported to assign `propTypes` to a lazy component import. Either specify them where the component is defined, or create a wrapping component around it.");
                     propTypes = newPropTypes;
                     Object.defineProperty(lazyType, "propTypes", {
                       enumerable: true
@@ -1084,17 +1023,17 @@
           function forwardRef(render2) {
             {
               if (render2 != null && render2.$$typeof === REACT_MEMO_TYPE) {
-                error2("forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...)).");
+                error("forwardRef requires a render function but received a `memo` component. Instead of forwardRef(memo(...)), use memo(forwardRef(...)).");
               } else if (typeof render2 !== "function") {
-                error2("forwardRef requires a render function but was given %s.", render2 === null ? "null" : typeof render2);
+                error("forwardRef requires a render function but was given %s.", render2 === null ? "null" : typeof render2);
               } else {
                 if (render2.length !== 0 && render2.length !== 2) {
-                  error2("forwardRef render functions accept exactly two parameters: props and ref. %s", render2.length === 1 ? "Did you forget to use the ref parameter?" : "Any additional parameter will be undefined.");
+                  error("forwardRef render functions accept exactly two parameters: props and ref. %s", render2.length === 1 ? "Did you forget to use the ref parameter?" : "Any additional parameter will be undefined.");
                 }
               }
               if (render2 != null) {
                 if (render2.defaultProps != null || render2.propTypes != null) {
-                  error2("forwardRef render functions do not support propTypes or defaultProps. Did you accidentally pass a React component?");
+                  error("forwardRef render functions do not support propTypes or defaultProps. Did you accidentally pass a React component?");
                 }
               }
             }
@@ -1124,34 +1063,34 @@
           {
             REACT_MODULE_REFERENCE = Symbol.for("react.module.reference");
           }
-          function isValidElementType(type2) {
-            if (typeof type2 === "string" || typeof type2 === "function") {
+          function isValidElementType(type) {
+            if (typeof type === "string" || typeof type === "function") {
               return true;
             }
-            if (type2 === REACT_FRAGMENT_TYPE || type2 === REACT_PROFILER_TYPE || enableDebugTracing || type2 === REACT_STRICT_MODE_TYPE || type2 === REACT_SUSPENSE_TYPE || type2 === REACT_SUSPENSE_LIST_TYPE || enableLegacyHidden || type2 === REACT_OFFSCREEN_TYPE || enableScopeAPI || enableCacheElement || enableTransitionTracing) {
+            if (type === REACT_FRAGMENT_TYPE || type === REACT_PROFILER_TYPE || enableDebugTracing || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || enableLegacyHidden || type === REACT_OFFSCREEN_TYPE || enableScopeAPI || enableCacheElement || enableTransitionTracing) {
               return true;
             }
-            if (typeof type2 === "object" && type2 !== null) {
-              if (type2.$$typeof === REACT_LAZY_TYPE || type2.$$typeof === REACT_MEMO_TYPE || type2.$$typeof === REACT_PROVIDER_TYPE || type2.$$typeof === REACT_CONTEXT_TYPE || type2.$$typeof === REACT_FORWARD_REF_TYPE || // This needs to include all possible module reference object
+            if (typeof type === "object" && type !== null) {
+              if (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || // This needs to include all possible module reference object
               // types supported by any Flight configuration anywhere since
               // we don't know which Flight build this will end up being used
               // with.
-              type2.$$typeof === REACT_MODULE_REFERENCE || type2.getModuleId !== void 0) {
+              type.$$typeof === REACT_MODULE_REFERENCE || type.getModuleId !== void 0) {
                 return true;
               }
             }
             return false;
           }
-          function memo2(type2, compare2) {
+          function memo2(type, compare) {
             {
-              if (!isValidElementType(type2)) {
-                error2("memo: The first argument must be a component. Instead received: %s", type2 === null ? "null" : typeof type2);
+              if (!isValidElementType(type)) {
+                error("memo: The first argument must be a component. Instead received: %s", type === null ? "null" : typeof type);
               }
             }
             var elementType = {
               $$typeof: REACT_MEMO_TYPE,
-              type: type2,
-              compare: compare2 === void 0 ? null : compare2
+              type,
+              compare: compare === void 0 ? null : compare
             };
             {
               var ownName;
@@ -1163,8 +1102,8 @@
                 },
                 set: function(name) {
                   ownName = name;
-                  if (!type2.name && !type2.displayName) {
-                    type2.displayName = name;
+                  if (!type.name && !type.displayName) {
+                    type.displayName = name;
                   }
                 }
               });
@@ -1175,7 +1114,7 @@
             var dispatcher = ReactCurrentDispatcher.current;
             {
               if (dispatcher === null) {
-                error2("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
+                error("Invalid hook call. Hooks can only be called inside of the body of a function component. This could happen for one of the following reasons:\n1. You might have mismatching versions of React and the renderer (such as React DOM)\n2. You might be breaking the Rules of Hooks\n3. You might have more than one copy of React in the same app\nSee https://reactjs.org/link/invalid-hook-call for tips about how to debug and fix this problem.");
               }
             }
             return dispatcher;
@@ -1186,9 +1125,9 @@
               if (Context._context !== void 0) {
                 var realContext = Context._context;
                 if (realContext.Consumer === Context) {
-                  error2("Calling useContext(Context.Consumer) is not supported, may cause bugs, and will be removed in a future major release. Did you mean to call useContext(Context) instead?");
+                  error("Calling useContext(Context.Consumer) is not supported, may cause bugs, and will be removed in a future major release. Did you mean to call useContext(Context) instead?");
                 } else if (realContext.Provider === Context) {
-                  error2("Calling useContext(Context.Provider) is not supported. Did you mean to call useContext(Context) instead?");
+                  error("Calling useContext(Context.Provider) is not supported. Did you mean to call useContext(Context) instead?");
                 }
               }
             }
@@ -1230,27 +1169,27 @@
             var dispatcher = resolveDispatcher();
             return dispatcher.useImperativeHandle(ref, create, deps);
           }
-          function useDebugValue(value2, formatterFn) {
+          function useDebugValue(value, formatterFn) {
             {
               var dispatcher = resolveDispatcher();
-              return dispatcher.useDebugValue(value2, formatterFn);
+              return dispatcher.useDebugValue(value, formatterFn);
             }
           }
           function useTransition() {
             var dispatcher = resolveDispatcher();
             return dispatcher.useTransition();
           }
-          function useDeferredValue(value2) {
+          function useDeferredValue(value) {
             var dispatcher = resolveDispatcher();
-            return dispatcher.useDeferredValue(value2);
+            return dispatcher.useDeferredValue(value);
           }
           function useId() {
             var dispatcher = resolveDispatcher();
             return dispatcher.useId();
           }
-          function useSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot) {
+          function useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
             var dispatcher = resolveDispatcher();
-            return dispatcher.useSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot);
+            return dispatcher.useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
           }
           var disabledDepth = 0;
           var prevLog;
@@ -1326,7 +1265,7 @@
                 });
               }
               if (disabledDepth < 0) {
-                error2("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
+                error("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
               }
             }
           }
@@ -1408,19 +1347,19 @@
               if (sample && control && typeof sample.stack === "string") {
                 var sampleLines = sample.stack.split("\n");
                 var controlLines = control.stack.split("\n");
-                var s2 = sampleLines.length - 1;
-                var c2 = controlLines.length - 1;
-                while (s2 >= 1 && c2 >= 0 && sampleLines[s2] !== controlLines[c2]) {
-                  c2--;
+                var s = sampleLines.length - 1;
+                var c = controlLines.length - 1;
+                while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
+                  c--;
                 }
-                for (; s2 >= 1 && c2 >= 0; s2--, c2--) {
-                  if (sampleLines[s2] !== controlLines[c2]) {
-                    if (s2 !== 1 || c2 !== 1) {
+                for (; s >= 1 && c >= 0; s--, c--) {
+                  if (sampleLines[s] !== controlLines[c]) {
+                    if (s !== 1 || c !== 1) {
                       do {
-                        s2--;
-                        c2--;
-                        if (c2 < 0 || sampleLines[s2] !== controlLines[c2]) {
-                          var _frame = "\n" + sampleLines[s2].replace(" at new ", " at ");
+                        s--;
+                        c--;
+                        if (c < 0 || sampleLines[s] !== controlLines[c]) {
+                          var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
                           if (fn.displayName && _frame.includes("<anonymous>")) {
                             _frame = _frame.replace("<anonymous>", fn.displayName);
                           }
@@ -1431,7 +1370,7 @@
                           }
                           return _frame;
                         }
-                      } while (s2 >= 1 && c2 >= 0);
+                      } while (s >= 1 && c >= 0);
                     }
                     break;
                   }
@@ -1463,32 +1402,32 @@
             var prototype = Component2.prototype;
             return !!(prototype && prototype.isReactComponent);
           }
-          function describeUnknownElementTypeFrameInDEV(type2, source, ownerFn) {
-            if (type2 == null) {
+          function describeUnknownElementTypeFrameInDEV(type, source, ownerFn) {
+            if (type == null) {
               return "";
             }
-            if (typeof type2 === "function") {
+            if (typeof type === "function") {
               {
-                return describeNativeComponentFrame(type2, shouldConstruct(type2));
+                return describeNativeComponentFrame(type, shouldConstruct(type));
               }
             }
-            if (typeof type2 === "string") {
-              return describeBuiltInComponentFrame(type2);
+            if (typeof type === "string") {
+              return describeBuiltInComponentFrame(type);
             }
-            switch (type2) {
+            switch (type) {
               case REACT_SUSPENSE_TYPE:
                 return describeBuiltInComponentFrame("Suspense");
               case REACT_SUSPENSE_LIST_TYPE:
                 return describeBuiltInComponentFrame("SuspenseList");
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_FORWARD_REF_TYPE:
-                  return describeFunctionComponentFrame(type2.render);
+                  return describeFunctionComponentFrame(type.render);
                 case REACT_MEMO_TYPE:
-                  return describeUnknownElementTypeFrameInDEV(type2.type, source, ownerFn);
+                  return describeUnknownElementTypeFrameInDEV(type.type, source, ownerFn);
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -1531,13 +1470,13 @@
                   }
                   if (error$1 && !(error$1 instanceof Error)) {
                     setCurrentlyValidatingElement(element);
-                    error2("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
+                    error("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
                     setCurrentlyValidatingElement(null);
                   }
                   if (error$1 instanceof Error && !(error$1.message in loggedTypeFailures)) {
                     loggedTypeFailures[error$1.message] = true;
                     setCurrentlyValidatingElement(element);
-                    error2("Failed %s type: %s", location, error$1.message);
+                    error("Failed %s type: %s", location, error$1.message);
                     setCurrentlyValidatingElement(null);
                   }
                 }
@@ -1609,7 +1548,7 @@
             }
             {
               setCurrentlyValidatingElement$1(element);
-              error2('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', currentComponentErrorInfo, childOwner);
+              error('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', currentComponentErrorInfo, childOwner);
               setCurrentlyValidatingElement$1(null);
             }
           }
@@ -1618,8 +1557,8 @@
               return;
             }
             if (isArray(node)) {
-              for (var i3 = 0; i3 < node.length; i3++) {
-                var child = node[i3];
+              for (var i = 0; i < node.length; i++) {
+                var child = node[i];
                 if (isValidElement2(child)) {
                   validateExplicitKey(child, parentType);
                 }
@@ -1645,57 +1584,57 @@
           }
           function validatePropTypes(element) {
             {
-              var type2 = element.type;
-              if (type2 === null || type2 === void 0 || typeof type2 === "string") {
+              var type = element.type;
+              if (type === null || type === void 0 || typeof type === "string") {
                 return;
               }
               var propTypes;
-              if (typeof type2 === "function") {
-                propTypes = type2.propTypes;
-              } else if (typeof type2 === "object" && (type2.$$typeof === REACT_FORWARD_REF_TYPE || // Note: Memo only checks outer props here.
+              if (typeof type === "function") {
+                propTypes = type.propTypes;
+              } else if (typeof type === "object" && (type.$$typeof === REACT_FORWARD_REF_TYPE || // Note: Memo only checks outer props here.
               // Inner props are checked in the reconciler.
-              type2.$$typeof === REACT_MEMO_TYPE)) {
-                propTypes = type2.propTypes;
+              type.$$typeof === REACT_MEMO_TYPE)) {
+                propTypes = type.propTypes;
               } else {
                 return;
               }
               if (propTypes) {
-                var name = getComponentNameFromType(type2);
+                var name = getComponentNameFromType(type);
                 checkPropTypes(propTypes, element.props, "prop", name, element);
-              } else if (type2.PropTypes !== void 0 && !propTypesMisspellWarningShown) {
+              } else if (type.PropTypes !== void 0 && !propTypesMisspellWarningShown) {
                 propTypesMisspellWarningShown = true;
-                var _name = getComponentNameFromType(type2);
-                error2("Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?", _name || "Unknown");
+                var _name = getComponentNameFromType(type);
+                error("Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?", _name || "Unknown");
               }
-              if (typeof type2.getDefaultProps === "function" && !type2.getDefaultProps.isReactClassApproved) {
-                error2("getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead.");
+              if (typeof type.getDefaultProps === "function" && !type.getDefaultProps.isReactClassApproved) {
+                error("getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead.");
               }
             }
           }
           function validateFragmentProps(fragment) {
             {
               var keys = Object.keys(fragment.props);
-              for (var i3 = 0; i3 < keys.length; i3++) {
-                var key2 = keys[i3];
-                if (key2 !== "children" && key2 !== "key") {
+              for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                if (key !== "children" && key !== "key") {
                   setCurrentlyValidatingElement$1(fragment);
-                  error2("Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.", key2);
+                  error("Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.", key);
                   setCurrentlyValidatingElement$1(null);
                   break;
                 }
               }
               if (fragment.ref !== null) {
                 setCurrentlyValidatingElement$1(fragment);
-                error2("Invalid attribute `ref` supplied to `React.Fragment`.");
+                error("Invalid attribute `ref` supplied to `React.Fragment`.");
                 setCurrentlyValidatingElement$1(null);
               }
             }
           }
-          function createElementWithValidation(type2, props, children) {
-            var validType = isValidElementType(type2);
+          function createElementWithValidation(type, props, children) {
+            var validType = isValidElementType(type);
             if (!validType) {
               var info = "";
-              if (type2 === void 0 || typeof type2 === "object" && type2 !== null && Object.keys(type2).length === 0) {
+              if (type === void 0 || typeof type === "object" && type !== null && Object.keys(type).length === 0) {
                 info += " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
               }
               var sourceInfo = getSourceInfoErrorAddendumForProps(props);
@@ -1705,18 +1644,18 @@
                 info += getDeclarationErrorAddendum();
               }
               var typeString;
-              if (type2 === null) {
+              if (type === null) {
                 typeString = "null";
-              } else if (isArray(type2)) {
+              } else if (isArray(type)) {
                 typeString = "array";
-              } else if (type2 !== void 0 && type2.$$typeof === REACT_ELEMENT_TYPE) {
-                typeString = "<" + (getComponentNameFromType(type2.type) || "Unknown") + " />";
+              } else if (type !== void 0 && type.$$typeof === REACT_ELEMENT_TYPE) {
+                typeString = "<" + (getComponentNameFromType(type.type) || "Unknown") + " />";
                 info = " Did you accidentally export a JSX literal instead of a component?";
               } else {
-                typeString = typeof type2;
+                typeString = typeof type;
               }
               {
-                error2("React.createElement: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", typeString, info);
+                error("React.createElement: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", typeString, info);
               }
             }
             var element = createElement.apply(this, arguments);
@@ -1724,11 +1663,11 @@
               return element;
             }
             if (validType) {
-              for (var i3 = 2; i3 < arguments.length; i3++) {
-                validateChildKeys(arguments[i3], type2);
+              for (var i = 2; i < arguments.length; i++) {
+                validateChildKeys(arguments[i], type);
               }
             }
-            if (type2 === REACT_FRAGMENT_TYPE) {
+            if (type === REACT_FRAGMENT_TYPE) {
               validateFragmentProps(element);
             } else {
               validatePropTypes(element);
@@ -1736,9 +1675,9 @@
             return element;
           }
           var didWarnAboutDeprecatedCreateFactory = false;
-          function createFactoryWithValidation(type2) {
-            var validatedFactory = createElementWithValidation.bind(null, type2);
-            validatedFactory.type = type2;
+          function createFactoryWithValidation(type) {
+            var validatedFactory = createElementWithValidation.bind(null, type);
+            validatedFactory.type = type;
             {
               if (!didWarnAboutDeprecatedCreateFactory) {
                 didWarnAboutDeprecatedCreateFactory = true;
@@ -1749,9 +1688,9 @@
                 get: function() {
                   warn("Factory.type is deprecated. Access the class directly before passing it to createFactory.");
                   Object.defineProperty(this, "type", {
-                    value: type2
+                    value: type
                   });
-                  return type2;
+                  return type;
                 }
               });
             }
@@ -1759,8 +1698,8 @@
           }
           function cloneElementWithValidation(element, props, children) {
             var newElement = cloneElement.apply(this, arguments);
-            for (var i3 = 2; i3 < arguments.length; i3++) {
-              validateChildKeys(arguments[i3], newElement.type);
+            for (var i = 2; i < arguments.length; i++) {
+              validateChildKeys(arguments[i], newElement.type);
             }
             validatePropTypes(newElement);
             return newElement;
@@ -1801,7 +1740,7 @@
                     if (didWarnAboutMessageChannel === false) {
                       didWarnAboutMessageChannel = true;
                       if (typeof MessageChannel === "undefined") {
-                        error2("This browser does not have a MessageChannel implementation, so enqueuing tasks via await act(async () => ...) will fail. Please file an issue at https://github.com/facebook/react/issues if you encounter this warning.");
+                        error("This browser does not have a MessageChannel implementation, so enqueuing tasks via await act(async () => ...) will fail. Please file an issue at https://github.com/facebook/react/issues if you encounter this warning.");
                       }
                     }
                   }
@@ -1834,9 +1773,9 @@
                     flushActQueue(queue);
                   }
                 }
-              } catch (error3) {
+              } catch (error2) {
                 popActScope(prevActScopeDepth);
-                throw error3;
+                throw error2;
               } finally {
                 ReactCurrentActQueue.isBatchingLegacy = prevIsBatchingLegacy;
               }
@@ -1844,18 +1783,18 @@
                 var thenableResult = result;
                 var wasAwaited = false;
                 var thenable = {
-                  then: function(resolve, reject2) {
+                  then: function(resolve, reject) {
                     wasAwaited = true;
                     thenableResult.then(function(returnValue2) {
                       popActScope(prevActScopeDepth);
                       if (actScopeDepth === 0) {
-                        recursivelyFlushAsyncActWork(returnValue2, resolve, reject2);
+                        recursivelyFlushAsyncActWork(returnValue2, resolve, reject);
                       } else {
                         resolve(returnValue2);
                       }
-                    }, function(error3) {
+                    }, function(error2) {
                       popActScope(prevActScopeDepth);
-                      reject2(error3);
+                      reject(error2);
                     });
                   }
                 };
@@ -1865,7 +1804,7 @@
                     }).then(function() {
                       if (!wasAwaited) {
                         didWarnNoAwaitAct = true;
-                        error2("You called act(async () => ...) without await. This could lead to unexpected testing behaviour, interleaving multiple act calls and mixing their scopes. You should - await act(async () => ...);");
+                        error("You called act(async () => ...) without await. This could lead to unexpected testing behaviour, interleaving multiple act calls and mixing their scopes. You should - await act(async () => ...);");
                       }
                     });
                   }
@@ -1881,10 +1820,10 @@
                     ReactCurrentActQueue.current = null;
                   }
                   var _thenable = {
-                    then: function(resolve, reject2) {
+                    then: function(resolve, reject) {
                       if (ReactCurrentActQueue.current === null) {
                         ReactCurrentActQueue.current = [];
-                        recursivelyFlushAsyncActWork(returnValue, resolve, reject2);
+                        recursivelyFlushAsyncActWork(returnValue, resolve, reject);
                       } else {
                         resolve(returnValue);
                       }
@@ -1893,7 +1832,7 @@
                   return _thenable;
                 } else {
                   var _thenable2 = {
-                    then: function(resolve, reject2) {
+                    then: function(resolve, reject) {
                       resolve(returnValue);
                     }
                   };
@@ -1905,12 +1844,12 @@
           function popActScope(prevActScopeDepth) {
             {
               if (prevActScopeDepth !== actScopeDepth - 1) {
-                error2("You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. ");
+                error("You seem to have overlapping act() calls, this is not supported. Be sure to await previous act() calls before making a new one. ");
               }
               actScopeDepth = prevActScopeDepth;
             }
           }
-          function recursivelyFlushAsyncActWork(returnValue, resolve, reject2) {
+          function recursivelyFlushAsyncActWork(returnValue, resolve, reject) {
             {
               var queue = ReactCurrentActQueue.current;
               if (queue !== null) {
@@ -1921,11 +1860,11 @@
                       ReactCurrentActQueue.current = null;
                       resolve(returnValue);
                     } else {
-                      recursivelyFlushAsyncActWork(returnValue, resolve, reject2);
+                      recursivelyFlushAsyncActWork(returnValue, resolve, reject);
                     }
                   });
-                } catch (error3) {
-                  reject2(error3);
+                } catch (error2) {
+                  reject(error2);
                 }
               } else {
                 resolve(returnValue);
@@ -1937,18 +1876,18 @@
             {
               if (!isFlushing) {
                 isFlushing = true;
-                var i3 = 0;
+                var i = 0;
                 try {
-                  for (; i3 < queue.length; i3++) {
-                    var callback = queue[i3];
+                  for (; i < queue.length; i++) {
+                    var callback = queue[i];
                     do {
                       callback = callback(true);
                     } while (callback !== null);
                   }
                   queue.length = 0;
-                } catch (error3) {
-                  queue = queue.slice(i3 + 1);
-                  throw error3;
+                } catch (error2) {
+                  queue = queue.slice(i + 1);
+                  throw error2;
                 } finally {
                   isFlushing = false;
                 }
@@ -1981,7 +1920,7 @@
           exports.createRef = createRef;
           exports.forwardRef = forwardRef;
           exports.isValidElement = isValidElement2;
-          exports.lazy = lazy2;
+          exports.lazy = lazy;
           exports.memo = memo2;
           exports.startTransition = startTransition;
           exports.unstable_act = act;
@@ -2034,7 +1973,7 @@
           var enableSchedulerDebugging = false;
           var enableProfiling = false;
           var frameYieldMs = 5;
-          function push3(heap, node) {
+          function push(heap, node) {
             var index = heap.length;
             heap.push(node);
             siftUp(heap, node, index);
@@ -2054,12 +1993,12 @@
             }
             return first;
           }
-          function siftUp(heap, node, i3) {
-            var index = i3;
+          function siftUp(heap, node, i) {
+            var index = i;
             while (index > 0) {
               var parentIndex = index - 1 >>> 1;
               var parent = heap[parentIndex];
-              if (compare2(parent, node) > 0) {
+              if (compare(parent, node) > 0) {
                 heap[parentIndex] = node;
                 heap[index] = parent;
                 index = parentIndex;
@@ -2068,8 +2007,8 @@
               }
             }
           }
-          function siftDown(heap, node, i3) {
-            var index = i3;
+          function siftDown(heap, node, i) {
+            var index = i;
             var length = heap.length;
             var halfLength = length >>> 1;
             while (index < halfLength) {
@@ -2077,8 +2016,8 @@
               var left = heap[leftIndex];
               var rightIndex = leftIndex + 1;
               var right = heap[rightIndex];
-              if (compare2(left, node) < 0) {
-                if (rightIndex < length && compare2(right, left) < 0) {
+              if (compare(left, node) < 0) {
+                if (rightIndex < length && compare(right, left) < 0) {
                   heap[index] = right;
                   heap[rightIndex] = node;
                   index = rightIndex;
@@ -2087,7 +2026,7 @@
                   heap[leftIndex] = node;
                   index = leftIndex;
                 }
-              } else if (rightIndex < length && compare2(right, node) < 0) {
+              } else if (rightIndex < length && compare(right, node) < 0) {
                 heap[index] = right;
                 heap[rightIndex] = node;
                 index = rightIndex;
@@ -2096,9 +2035,9 @@
               }
             }
           }
-          function compare2(a2, b) {
-            var diff = a2.sortIndex - b.sortIndex;
-            return diff !== 0 ? diff : a2.id - b.id;
+          function compare(a, b) {
+            var diff = a.sortIndex - b.sortIndex;
+            return diff !== 0 ? diff : a.id - b.id;
           }
           var ImmediatePriority = 1;
           var UserBlockingPriority = 2;
@@ -2146,7 +2085,7 @@
               } else if (timer.startTime <= currentTime) {
                 pop(timerQueue);
                 timer.sortIndex = timer.expirationTime;
-                push3(taskQueue, timer);
+                push(taskQueue, timer);
               } else {
                 return;
               }
@@ -2180,13 +2119,13 @@
               if (enableProfiling) {
                 try {
                   return workLoop(hasTimeRemaining, initialTime2);
-                } catch (error2) {
+                } catch (error) {
                   if (currentTask !== null) {
                     var currentTime = exports.unstable_now();
                     markTaskErrored(currentTask, currentTime);
                     currentTask.isQueued = false;
                   }
-                  throw error2;
+                  throw error;
                 }
               } else {
                 return workLoop(hasTimeRemaining, initialTime2);
@@ -2329,7 +2268,7 @@
             };
             if (startTime2 > currentTime) {
               newTask.sortIndex = startTime2;
-              push3(timerQueue, newTask);
+              push(timerQueue, newTask);
               if (peek(taskQueue) === null && newTask === peek(timerQueue)) {
                 if (isHostTimeoutScheduled) {
                   cancelHostTimeout();
@@ -2340,7 +2279,7 @@
               }
             } else {
               newTask.sortIndex = expirationTime;
-              push3(taskQueue, newTask);
+              push(taskQueue, newTask);
               if (!isHostCallbackScheduled && !isPerformingWork) {
                 isHostCallbackScheduled = true;
                 requestHostCallback(flushWork);
@@ -2510,7 +2449,7 @@
               }
             }
           }
-          function error2(format) {
+          function error(format) {
             {
               if (!suppressWarning) {
                 for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
@@ -2536,11 +2475,11 @@
             }
           }
           var assign = Object.assign;
-          function get3(key2) {
-            return key2._reactInternals;
+          function get(key) {
+            return key._reactInternals;
           }
-          function set(key2, value2) {
-            key2._reactInternals = value2;
+          function set(key, value) {
+            key._reactInternals = value;
           }
           var enableNewReconciler = false;
           var enableLazyContextPropagation = false;
@@ -2613,25 +2552,25 @@
             var functionName = innerType.displayName || innerType.name || "";
             return functionName !== "" ? wrapperName + "(" + functionName + ")" : wrapperName;
           }
-          function getContextName(type2) {
-            return type2.displayName || "Context";
+          function getContextName(type) {
+            return type.displayName || "Context";
           }
-          function getComponentNameFromType(type2) {
-            if (type2 == null) {
+          function getComponentNameFromType(type) {
+            if (type == null) {
               return null;
             }
             {
-              if (typeof type2.tag === "number") {
-                error2("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
+              if (typeof type.tag === "number") {
+                error("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
               }
             }
-            if (typeof type2 === "function") {
-              return type2.displayName || type2.name || null;
+            if (typeof type === "function") {
+              return type.displayName || type.name || null;
             }
-            if (typeof type2 === "string") {
-              return type2;
+            if (typeof type === "string") {
+              return type;
             }
-            switch (type2) {
+            switch (type) {
               case REACT_FRAGMENT_TYPE:
                 return "Fragment";
               case REACT_PORTAL_TYPE:
@@ -2645,24 +2584,24 @@
               case REACT_SUSPENSE_LIST_TYPE:
                 return "SuspenseList";
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_CONTEXT_TYPE:
-                  var context = type2;
+                  var context = type;
                   return getContextName(context) + ".Consumer";
                 case REACT_PROVIDER_TYPE:
-                  var provider = type2;
+                  var provider = type;
                   return getContextName(provider._context) + ".Provider";
                 case REACT_FORWARD_REF_TYPE:
-                  return getWrappedName(type2, type2.render, "ForwardRef");
+                  return getWrappedName(type, type.render, "ForwardRef");
                 case REACT_MEMO_TYPE:
-                  var outerName = type2.displayName || null;
+                  var outerName = type.displayName || null;
                   if (outerName !== null) {
                     return outerName;
                   }
-                  return getComponentNameFromType(type2.type) || "Memo";
+                  return getComponentNameFromType(type.type) || "Memo";
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -2679,28 +2618,28 @@
             var functionName = innerType.displayName || innerType.name || "";
             return outerType.displayName || (functionName !== "" ? wrapperName + "(" + functionName + ")" : wrapperName);
           }
-          function getContextName$1(type2) {
-            return type2.displayName || "Context";
+          function getContextName$1(type) {
+            return type.displayName || "Context";
           }
           function getComponentNameFromFiber(fiber) {
-            var tag = fiber.tag, type2 = fiber.type;
+            var tag = fiber.tag, type = fiber.type;
             switch (tag) {
               case CacheComponent:
                 return "Cache";
               case ContextConsumer:
-                var context = type2;
+                var context = type;
                 return getContextName$1(context) + ".Consumer";
               case ContextProvider:
-                var provider = type2;
+                var provider = type;
                 return getContextName$1(provider._context) + ".Provider";
               case DehydratedFragment:
                 return "DehydratedFragment";
               case ForwardRef:
-                return getWrappedName$1(type2, type2.render, "ForwardRef");
+                return getWrappedName$1(type, type.render, "ForwardRef");
               case Fragment:
                 return "Fragment";
               case HostComponent:
-                return type2;
+                return type;
               case HostPortal:
                 return "Portal";
               case HostRoot:
@@ -2708,9 +2647,9 @@
               case HostText:
                 return "Text";
               case LazyComponent:
-                return getComponentNameFromType(type2);
+                return getComponentNameFromType(type);
               case Mode:
-                if (type2 === REACT_STRICT_MODE_TYPE) {
+                if (type === REACT_STRICT_MODE_TYPE) {
                   return "StrictMode";
                 }
                 return "Mode";
@@ -2732,11 +2671,11 @@
               case IndeterminateComponent:
               case MemoComponent:
               case SimpleMemoComponent:
-                if (typeof type2 === "function") {
-                  return type2.displayName || type2.name || null;
+                if (typeof type === "function") {
+                  return type.displayName || type.name || null;
                 }
-                if (typeof type2 === "string") {
-                  return type2;
+                if (typeof type === "string") {
+                  return type;
                 }
                 break;
             }
@@ -2885,12 +2824,12 @@
                 var ownerFiber = owner;
                 var instance = ownerFiber.stateNode;
                 if (!instance._warnedAboutRefsInRender) {
-                  error2("%s is accessing isMounted inside its render() function. render() should be a pure function of props and state. It should never access something that requires stale data from the previous render, such as refs. Move this logic to componentDidMount and componentDidUpdate instead.", getComponentNameFromFiber(ownerFiber) || "A component");
+                  error("%s is accessing isMounted inside its render() function. render() should be a pure function of props and state. It should never access something that requires stale data from the previous render, such as refs. Move this logic to componentDidMount and componentDidUpdate instead.", getComponentNameFromFiber(ownerFiber) || "A component");
                 }
                 instance._warnedAboutRefsInRender = true;
               }
             }
-            var fiber = get3(component);
+            var fiber = get(component);
             if (!fiber) {
               return false;
             }
@@ -2913,10 +2852,10 @@
               }
               return fiber;
             }
-            var a2 = fiber;
+            var a = fiber;
             var b = alternate;
             while (true) {
-              var parentA = a2.return;
+              var parentA = a.return;
               if (parentA === null) {
                 break;
               }
@@ -2924,7 +2863,7 @@
               if (parentB === null) {
                 var nextParent = parentA.return;
                 if (nextParent !== null) {
-                  a2 = b = nextParent;
+                  a = b = nextParent;
                   continue;
                 }
                 break;
@@ -2932,7 +2871,7 @@
               if (parentA.child === parentB.child) {
                 var child = parentA.child;
                 while (child) {
-                  if (child === a2) {
+                  if (child === a) {
                     assertIsMounted(parentA);
                     return fiber;
                   }
@@ -2944,23 +2883,23 @@
                 }
                 throw new Error("Unable to find node on an unmounted component.");
               }
-              if (a2.return !== b.return) {
-                a2 = parentA;
+              if (a.return !== b.return) {
+                a = parentA;
                 b = parentB;
               } else {
                 var didFindChild = false;
                 var _child = parentA.child;
                 while (_child) {
-                  if (_child === a2) {
+                  if (_child === a) {
                     didFindChild = true;
-                    a2 = parentA;
+                    a = parentA;
                     b = parentB;
                     break;
                   }
                   if (_child === b) {
                     didFindChild = true;
                     b = parentA;
-                    a2 = parentB;
+                    a = parentB;
                     break;
                   }
                   _child = _child.sibling;
@@ -2968,16 +2907,16 @@
                 if (!didFindChild) {
                   _child = parentB.child;
                   while (_child) {
-                    if (_child === a2) {
+                    if (_child === a) {
                       didFindChild = true;
-                      a2 = parentB;
+                      a = parentB;
                       b = parentA;
                       break;
                     }
                     if (_child === b) {
                       didFindChild = true;
                       b = parentB;
-                      a2 = parentA;
+                      a = parentA;
                       break;
                     }
                     _child = _child.sibling;
@@ -2987,14 +2926,14 @@
                   }
                 }
               }
-              if (a2.alternate !== b) {
+              if (a.alternate !== b) {
                 throw new Error("Return fibers should always be each others' alternates. This error is likely caused by a bug in React. Please file an issue.");
               }
             }
-            if (a2.tag !== HostRoot) {
+            if (a.tag !== HostRoot) {
               throw new Error("Unable to find node on an unmounted component.");
             }
-            if (a2.stateNode.current === a2) {
+            if (a.stateNode.current === a) {
               return fiber;
             }
             return alternate;
@@ -3038,8 +2977,8 @@
             return null;
           }
           var isArrayImpl = Array.isArray;
-          function isArray(a2) {
-            return isArrayImpl(a2);
+          function isArray(a) {
+            return isArrayImpl(a);
           }
           var getPublicInstance = $$$hostConfig.getPublicInstance;
           var getRootHostContext = $$$hostConfig.getRootHostContext;
@@ -3209,7 +3148,7 @@
                 });
               }
               if (disabledDepth < 0) {
-                error2("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
+                error("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
               }
             }
           }
@@ -3291,19 +3230,19 @@
               if (sample && control && typeof sample.stack === "string") {
                 var sampleLines = sample.stack.split("\n");
                 var controlLines = control.stack.split("\n");
-                var s2 = sampleLines.length - 1;
-                var c2 = controlLines.length - 1;
-                while (s2 >= 1 && c2 >= 0 && sampleLines[s2] !== controlLines[c2]) {
-                  c2--;
+                var s = sampleLines.length - 1;
+                var c = controlLines.length - 1;
+                while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
+                  c--;
                 }
-                for (; s2 >= 1 && c2 >= 0; s2--, c2--) {
-                  if (sampleLines[s2] !== controlLines[c2]) {
-                    if (s2 !== 1 || c2 !== 1) {
+                for (; s >= 1 && c >= 0; s--, c--) {
+                  if (sampleLines[s] !== controlLines[c]) {
+                    if (s !== 1 || c !== 1) {
                       do {
-                        s2--;
-                        c2--;
-                        if (c2 < 0 || sampleLines[s2] !== controlLines[c2]) {
-                          var _frame = "\n" + sampleLines[s2].replace(" at new ", " at ");
+                        s--;
+                        c--;
+                        if (c < 0 || sampleLines[s] !== controlLines[c]) {
+                          var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
                           if (fn.displayName && _frame.includes("<anonymous>")) {
                             _frame = _frame.replace("<anonymous>", fn.displayName);
                           }
@@ -3314,7 +3253,7 @@
                           }
                           return _frame;
                         }
-                      } while (s2 >= 1 && c2 >= 0);
+                      } while (s >= 1 && c >= 0);
                     }
                     break;
                   }
@@ -3351,32 +3290,32 @@
             var prototype = Component.prototype;
             return !!(prototype && prototype.isReactComponent);
           }
-          function describeUnknownElementTypeFrameInDEV(type2, source, ownerFn) {
-            if (type2 == null) {
+          function describeUnknownElementTypeFrameInDEV(type, source, ownerFn) {
+            if (type == null) {
               return "";
             }
-            if (typeof type2 === "function") {
+            if (typeof type === "function") {
               {
-                return describeNativeComponentFrame(type2, shouldConstruct(type2));
+                return describeNativeComponentFrame(type, shouldConstruct(type));
               }
             }
-            if (typeof type2 === "string") {
-              return describeBuiltInComponentFrame(type2);
+            if (typeof type === "string") {
+              return describeBuiltInComponentFrame(type);
             }
-            switch (type2) {
+            switch (type) {
               case REACT_SUSPENSE_TYPE:
                 return describeBuiltInComponentFrame("Suspense");
               case REACT_SUSPENSE_LIST_TYPE:
                 return describeBuiltInComponentFrame("SuspenseList");
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_FORWARD_REF_TYPE:
-                  return describeFunctionComponentFrame(type2.render);
+                  return describeFunctionComponentFrame(type.render);
                 case REACT_MEMO_TYPE:
-                  return describeUnknownElementTypeFrameInDEV(type2.type, source, ownerFn);
+                  return describeUnknownElementTypeFrameInDEV(type.type, source, ownerFn);
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -3420,13 +3359,13 @@
                   }
                   if (error$1 && !(error$1 instanceof Error)) {
                     setCurrentlyValidatingElement(element);
-                    error2("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
+                    error("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
                     setCurrentlyValidatingElement(null);
                   }
                   if (error$1 instanceof Error && !(error$1.message in loggedTypeFailures)) {
                     loggedTypeFailures[error$1.message] = true;
                     setCurrentlyValidatingElement(element);
-                    error2("Failed %s type: %s", location, error$1.message);
+                    error("Failed %s type: %s", location, error$1.message);
                     setCurrentlyValidatingElement(null);
                   }
                 }
@@ -3447,13 +3386,13 @@
           function pop(cursor, fiber) {
             if (index < 0) {
               {
-                error2("Unexpected pop.");
+                error("Unexpected pop.");
               }
               return;
             }
             {
               if (fiber !== fiberStack[index]) {
-                error2("Unexpected Fiber popped.");
+                error("Unexpected Fiber popped.");
               }
             }
             cursor.current = valueStack[index];
@@ -3463,13 +3402,13 @@
             }
             index--;
           }
-          function push3(cursor, value2, fiber) {
+          function push(cursor, value, fiber) {
             index++;
             valueStack[index] = cursor.current;
             {
               fiberStack[index] = fiber;
             }
-            cursor.current = value2;
+            cursor.current = value;
           }
           var warnedAboutMissingGetChildContext;
           {
@@ -3499,8 +3438,8 @@
           }
           function getMaskedContext(workInProgress2, unmaskedContext) {
             {
-              var type2 = workInProgress2.type;
-              var contextTypes = type2.contextTypes;
+              var type = workInProgress2.type;
+              var contextTypes = type.contextTypes;
               if (!contextTypes) {
                 return emptyContextObject;
               }
@@ -3509,8 +3448,8 @@
                 return instance.__reactInternalMemoizedMaskedChildContext;
               }
               var context = {};
-              for (var key2 in contextTypes) {
-                context[key2] = unmaskedContext[key2];
+              for (var key in contextTypes) {
+                context[key] = unmaskedContext[key];
               }
               {
                 var name = getComponentNameFromFiber(workInProgress2) || "Unknown";
@@ -3527,9 +3466,9 @@
               return didPerformWorkStackCursor.current;
             }
           }
-          function isContextProvider(type2) {
+          function isContextProvider(type) {
             {
-              var childContextTypes = type2.childContextTypes;
+              var childContextTypes = type.childContextTypes;
               return childContextTypes !== null && childContextTypes !== void 0;
             }
           }
@@ -3550,20 +3489,20 @@
               if (contextStackCursor.current !== emptyContextObject) {
                 throw new Error("Unexpected context found on stack. This error is likely caused by a bug in React. Please file an issue.");
               }
-              push3(contextStackCursor, context, fiber);
-              push3(didPerformWorkStackCursor, didChange, fiber);
+              push(contextStackCursor, context, fiber);
+              push(didPerformWorkStackCursor, didChange, fiber);
             }
           }
-          function processChildContext(fiber, type2, parentContext) {
+          function processChildContext(fiber, type, parentContext) {
             {
               var instance = fiber.stateNode;
-              var childContextTypes = type2.childContextTypes;
+              var childContextTypes = type.childContextTypes;
               if (typeof instance.getChildContext !== "function") {
                 {
                   var componentName = getComponentNameFromFiber(fiber) || "Unknown";
                   if (!warnedAboutMissingGetChildContext[componentName]) {
                     warnedAboutMissingGetChildContext[componentName] = true;
-                    error2("%s.childContextTypes is specified but there is no getChildContext() method on the instance. You can either define getChildContext() on %s or remove childContextTypes from it.", componentName, componentName);
+                    error("%s.childContextTypes is specified but there is no getChildContext() method on the instance. You can either define getChildContext() on %s or remove childContextTypes from it.", componentName, componentName);
                   }
                 }
                 return parentContext;
@@ -3586,27 +3525,27 @@
               var instance = workInProgress2.stateNode;
               var memoizedMergedChildContext = instance && instance.__reactInternalMemoizedMergedChildContext || emptyContextObject;
               previousContext = contextStackCursor.current;
-              push3(contextStackCursor, memoizedMergedChildContext, workInProgress2);
-              push3(didPerformWorkStackCursor, didPerformWorkStackCursor.current, workInProgress2);
+              push(contextStackCursor, memoizedMergedChildContext, workInProgress2);
+              push(didPerformWorkStackCursor, didPerformWorkStackCursor.current, workInProgress2);
               return true;
             }
           }
-          function invalidateContextProvider(workInProgress2, type2, didChange) {
+          function invalidateContextProvider(workInProgress2, type, didChange) {
             {
               var instance = workInProgress2.stateNode;
               if (!instance) {
                 throw new Error("Expected to have an instance by this point. This error is likely caused by a bug in React. Please file an issue.");
               }
               if (didChange) {
-                var mergedContext = processChildContext(workInProgress2, type2, previousContext);
+                var mergedContext = processChildContext(workInProgress2, type, previousContext);
                 instance.__reactInternalMemoizedMergedChildContext = mergedContext;
                 pop(didPerformWorkStackCursor, workInProgress2);
                 pop(contextStackCursor, workInProgress2);
-                push3(contextStackCursor, mergedContext, workInProgress2);
-                push3(didPerformWorkStackCursor, didChange, workInProgress2);
+                push(contextStackCursor, mergedContext, workInProgress2);
+                push(didPerformWorkStackCursor, didChange, workInProgress2);
               } else {
                 pop(didPerformWorkStackCursor, workInProgress2);
-                push3(didPerformWorkStackCursor, didChange, workInProgress2);
+                push(didPerformWorkStackCursor, didChange, workInProgress2);
               }
             }
           }
@@ -3901,7 +3840,7 @@
                 return OffscreenLane;
               default:
                 {
-                  error2("Should have found matching lanes. This is a bug in React.");
+                  error("Should have found matching lanes. This is a bug in React.");
                 }
                 return lanes;
             }
@@ -4023,7 +3962,7 @@
                 return NoTimestamp;
               default:
                 {
-                  error2("Should have found matching lanes. This is a bug in React.");
+                  error("Should have found matching lanes. This is a bug in React.");
                 }
                 return NoTimestamp;
             }
@@ -4115,30 +4054,30 @@
           function laneToIndex(lane) {
             return pickArbitraryLaneIndex(lane);
           }
-          function includesSomeLane(a2, b) {
-            return (a2 & b) !== NoLanes;
+          function includesSomeLane(a, b) {
+            return (a & b) !== NoLanes;
           }
           function isSubsetOfLanes(set2, subset) {
             return (set2 & subset) === subset;
           }
-          function mergeLanes(a2, b) {
-            return a2 | b;
+          function mergeLanes(a, b) {
+            return a | b;
           }
           function removeLanes(set2, subset) {
             return set2 & ~subset;
           }
-          function intersectLanes(a2, b) {
-            return a2 & b;
+          function intersectLanes(a, b) {
+            return a & b;
           }
           function laneToLanes(lane) {
             return lane;
           }
-          function higherPriorityLane(a2, b) {
-            return a2 !== NoLane && a2 < b ? a2 : b;
+          function higherPriorityLane(a, b) {
+            return a !== NoLane && a < b ? a : b;
           }
           function createLaneMap(initial) {
             var laneMap = [];
-            for (var i3 = 0; i3 < TotalLanes; i3++) {
+            for (var i = 0; i < TotalLanes; i++) {
               laneMap.push(initial);
             }
             return laneMap;
@@ -4311,14 +4250,14 @@
               currentUpdatePriority = previousPriority;
             }
           }
-          function higherEventPriority(a2, b) {
-            return a2 !== 0 && a2 < b ? a2 : b;
+          function higherEventPriority(a, b) {
+            return a !== 0 && a < b ? a : b;
           }
-          function lowerEventPriority(a2, b) {
-            return a2 === 0 || a2 > b ? a2 : b;
+          function lowerEventPriority(a, b) {
+            return a === 0 || a > b ? a : b;
           }
-          function isHigherEventPriority(a2, b) {
-            return a2 !== 0 && a2 < b;
+          function isHigherEventPriority(a, b) {
+            return a !== 0 && a < b;
           }
           function lanesToEventPriority(lanes) {
             var lane = getHighestPriorityLane(lanes);
@@ -4359,7 +4298,7 @@
             }
             if (!hook.supportsFiber) {
               {
-                error2("The installed version of React DevTools is too old and will not work with the current version of React. Please update React DevTools. https://reactjs.org/link/react-devtools");
+                error("The installed version of React DevTools is too old and will not work with the current version of React. Please update React DevTools. https://reactjs.org/link/react-devtools");
               }
               return true;
             }
@@ -4374,7 +4313,7 @@
               injectedHook = hook;
             } catch (err) {
               {
-                error2("React instrumentation encountered an error: %s.", err);
+                error("React instrumentation encountered an error: %s.", err);
               }
             }
             if (hook.checkDCE) {
@@ -4391,7 +4330,7 @@
                 } catch (err) {
                   if (!hasLoggedError) {
                     hasLoggedError = true;
-                    error2("React instrumentation encountered an error: %s", err);
+                    error("React instrumentation encountered an error: %s", err);
                   }
                 }
               }
@@ -4428,7 +4367,7 @@
                 {
                   if (!hasLoggedError) {
                     hasLoggedError = true;
-                    error2("React instrumentation encountered an error: %s", err);
+                    error("React instrumentation encountered an error: %s", err);
                   }
                 }
               }
@@ -4442,7 +4381,7 @@
                 {
                   if (!hasLoggedError) {
                     hasLoggedError = true;
-                    error2("React instrumentation encountered an error: %s", err);
+                    error("React instrumentation encountered an error: %s", err);
                   }
                 }
               }
@@ -4456,7 +4395,7 @@
                 {
                   if (!hasLoggedError) {
                     hasLoggedError = true;
-                    error2("React instrumentation encountered an error: %s", err);
+                    error("React instrumentation encountered an error: %s", err);
                   }
                 }
               }
@@ -4475,7 +4414,7 @@
                   {
                     if (!hasLoggedError) {
                       hasLoggedError = true;
-                      error2("React instrumentation encountered an error: %s", err);
+                      error("React instrumentation encountered an error: %s", err);
                     }
                   }
                 }
@@ -4487,14 +4426,14 @@
           }
           function getLaneLabelMap() {
             {
-              var map2 = /* @__PURE__ */ new Map();
+              var map = /* @__PURE__ */ new Map();
               var lane = 1;
               for (var index2 = 0; index2 < TotalLanes; index2++) {
                 var label = getLabelForLane(lane);
-                map2.set(lane, label);
+                map.set(lane, label);
                 lane *= 2;
               }
-              return map2;
+              return map;
             }
           }
           function markCommitStarted(lanes) {
@@ -4665,8 +4604,8 @@
               }
             }
           }
-          function is(x, y2) {
-            return x === y2 && (x !== 0 || 1 / x === 1 / y2) || x !== x && y2 !== y2;
+          function is(x, y) {
+            return x === y && (x !== 0 || 1 / x === 1 / y) || x !== x && y !== y;
           }
           var objectIs = typeof Object.is === "function" ? Object.is : is;
           var syncQueue = null;
@@ -4691,26 +4630,26 @@
           function flushSyncCallbacks() {
             if (!isFlushingSyncQueue && syncQueue !== null) {
               isFlushingSyncQueue = true;
-              var i3 = 0;
+              var i = 0;
               var previousUpdatePriority = getCurrentUpdatePriority();
               try {
                 var isSync = true;
                 var queue = syncQueue;
                 setCurrentUpdatePriority(DiscreteEventPriority);
-                for (; i3 < queue.length; i3++) {
-                  var callback = queue[i3];
+                for (; i < queue.length; i++) {
+                  var callback = queue[i];
                   do {
                     callback = callback(isSync);
                   } while (callback !== null);
                 }
                 syncQueue = null;
                 includesLegacySyncCallbacks = false;
-              } catch (error3) {
+              } catch (error2) {
                 if (syncQueue !== null) {
-                  syncQueue = syncQueue.slice(i3 + 1);
+                  syncQueue = syncQueue.slice(i + 1);
                 }
                 scheduleCallback(ImmediatePriority, flushSyncCallbacks);
-                throw error3;
+                throw error2;
               } finally {
                 setCurrentUpdatePriority(previousUpdatePriority);
                 isFlushingSyncQueue = false;
@@ -4839,7 +4778,7 @@
           function warnIfNotHydrating() {
             {
               if (!getIsHydrating()) {
-                error2("Expected to be hydrating. This is a bug in React. Please file an issue.");
+                error("Expected to be hydrating. This is a bug in React. Please file an issue.");
               }
             }
           }
@@ -4851,7 +4790,7 @@
           function warnIfHydrating() {
             {
               if (isHydrating) {
-                error2("We should not be hydrating here. This is a bug in React. Please file a bug.");
+                error("We should not be hydrating here. This is a bug in React. Please file a bug.");
               }
             }
           }
@@ -4942,9 +4881,9 @@
                   var parentContainer = returnFiber.stateNode.containerInfo;
                   switch (fiber.tag) {
                     case HostComponent:
-                      var type2 = fiber.type;
+                      var type = fiber.type;
                       var props = fiber.pendingProps;
-                      didNotFindHydratableInstanceWithinContainer(parentContainer, type2, props);
+                      didNotFindHydratableInstanceWithinContainer(parentContainer, type, props);
                       break;
                     case HostText:
                       var text = fiber.pendingProps;
@@ -5028,9 +4967,9 @@
           function tryHydrate(fiber, nextInstance) {
             switch (fiber.tag) {
               case HostComponent: {
-                var type2 = fiber.type;
+                var type = fiber.type;
                 var props = fiber.pendingProps;
-                var instance = canHydrateInstance(nextInstance, type2, props);
+                var instance = canHydrateInstance(nextInstance, type, props);
                 if (instance !== null) {
                   fiber.stateNode = instance;
                   hydrationParentFiber = fiber;
@@ -5259,11 +5198,11 @@
           function getIsHydrating() {
             return isHydrating;
           }
-          function queueHydrationError(error3) {
+          function queueHydrationError(error2) {
             if (hydrationErrors === null) {
-              hydrationErrors = [error3];
+              hydrationErrors = [error2];
             } else {
-              hydrationErrors.push(error3);
+              hydrationErrors.push(error2);
             }
           }
           var ReactCurrentBatchConfig = ReactSharedInternals.ReactCurrentBatchConfig;
@@ -5283,8 +5222,8 @@
             if (keysA.length !== keysB.length) {
               return false;
             }
-            for (var i3 = 0; i3 < keysA.length; i3++) {
-              var currentKey = keysA[i3];
+            for (var i = 0; i < keysA.length; i++) {
+              var currentKey = keysA[i];
               if (!hasOwnProperty2.call(objB, currentKey) || !objectIs(objA[currentKey], objB[currentKey])) {
                 return false;
               }
@@ -5401,8 +5340,8 @@
             };
             var setToSortedString = function(set2) {
               var array = [];
-              set2.forEach(function(value2) {
-                array.push(value2);
+              set2.forEach(function(value) {
+                array.push(value);
               });
               return array.sort().join(", ");
             };
@@ -5488,15 +5427,15 @@
               }
               if (UNSAFE_componentWillMountUniqueNames.size > 0) {
                 var sortedNames = setToSortedString(UNSAFE_componentWillMountUniqueNames);
-                error2("Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move code with side effects to componentDidMount, and set initial state in the constructor.\n\nPlease update the following components: %s", sortedNames);
+                error("Using UNSAFE_componentWillMount in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move code with side effects to componentDidMount, and set initial state in the constructor.\n\nPlease update the following components: %s", sortedNames);
               }
               if (UNSAFE_componentWillReceivePropsUniqueNames.size > 0) {
                 var _sortedNames = setToSortedString(UNSAFE_componentWillReceivePropsUniqueNames);
-                error2("Using UNSAFE_componentWillReceiveProps in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move data fetching code or side effects to componentDidUpdate.\n* If you're updating state whenever props change, refactor your code to use memoization techniques or move it to static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state\n\nPlease update the following components: %s", _sortedNames);
+                error("Using UNSAFE_componentWillReceiveProps in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move data fetching code or side effects to componentDidUpdate.\n* If you're updating state whenever props change, refactor your code to use memoization techniques or move it to static getDerivedStateFromProps. Learn more at: https://reactjs.org/link/derived-state\n\nPlease update the following components: %s", _sortedNames);
               }
               if (UNSAFE_componentWillUpdateUniqueNames.size > 0) {
                 var _sortedNames2 = setToSortedString(UNSAFE_componentWillUpdateUniqueNames);
-                error2("Using UNSAFE_componentWillUpdate in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move data fetching code or side effects to componentDidUpdate.\n\nPlease update the following components: %s", _sortedNames2);
+                error("Using UNSAFE_componentWillUpdate in strict mode is not recommended and may indicate bugs in your code. See https://reactjs.org/link/unsafe-component-lifecycles for details.\n\n* Move data fetching code or side effects to componentDidUpdate.\n\nPlease update the following components: %s", _sortedNames2);
               }
               if (componentWillMountUniqueNames.size > 0) {
                 var _sortedNames3 = setToSortedString(componentWillMountUniqueNames);
@@ -5516,7 +5455,7 @@
             ReactStrictModeWarnings.recordLegacyContextWarning = function(fiber, instance) {
               var strictRoot = findStrictRoot(fiber);
               if (strictRoot === null) {
-                error2("Expected to find a StrictMode component in a strict mode tree. This error is likely caused by a bug in React. Please file an issue.");
+                error("Expected to find a StrictMode component in a strict mode tree. This error is likely caused by a bug in React. Please file an issue.");
                 return;
               }
               if (didWarnAboutLegacyContext.has(fiber.type)) {
@@ -5545,7 +5484,7 @@
                 var sortedNames = setToSortedString(uniqueNames);
                 try {
                   setCurrentFiber(firstFiber);
-                  error2("Legacy context API has been detected within a strict-mode tree.\n\nThe old API will be supported in all 16.x releases, but applications using it should migrate to the new version.\n\nPlease update the following components: %s\n\nLearn more about this warning here: https://reactjs.org/link/legacy-context", sortedNames);
+                  error("Legacy context API has been detected within a strict-mode tree.\n\nThe old API will be supported in all 16.x releases, but applications using it should migrate to the new version.\n\nPlease update the following components: %s\n\nLearn more about this warning here: https://reactjs.org/link/legacy-context", sortedNames);
                 } finally {
                   resetCurrentFiber();
                 }
@@ -5561,39 +5500,39 @@
               pendingLegacyContextWarning = /* @__PURE__ */ new Map();
             };
           }
-          function typeName(value2) {
+          function typeName(value) {
             {
               var hasToStringTag = typeof Symbol === "function" && Symbol.toStringTag;
-              var type2 = hasToStringTag && value2[Symbol.toStringTag] || value2.constructor.name || "Object";
-              return type2;
+              var type = hasToStringTag && value[Symbol.toStringTag] || value.constructor.name || "Object";
+              return type;
             }
           }
-          function willCoercionThrow(value2) {
+          function willCoercionThrow(value) {
             {
               try {
-                testStringCoercion(value2);
+                testStringCoercion(value);
                 return false;
-              } catch (e3) {
+              } catch (e) {
                 return true;
               }
             }
           }
-          function testStringCoercion(value2) {
-            return "" + value2;
+          function testStringCoercion(value) {
+            return "" + value;
           }
-          function checkKeyStringCoercion(value2) {
+          function checkKeyStringCoercion(value) {
             {
-              if (willCoercionThrow(value2)) {
-                error2("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value2));
-                return testStringCoercion(value2);
+              if (willCoercionThrow(value)) {
+                error("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value));
+                return testStringCoercion(value);
               }
             }
           }
-          function checkPropStringCoercion(value2, propName) {
+          function checkPropStringCoercion(value, propName) {
             {
-              if (willCoercionThrow(value2)) {
-                error2("The provided `%s` prop is an unsupported type %s. This value must be coerced to a string before before using it here.", propName, typeName(value2));
-                return testStringCoercion(value2);
+              if (willCoercionThrow(value)) {
+                error("The provided `%s` prop is an unsupported type %s. This value must be coerced to a string before before using it here.", propName, typeName(value));
+                return testStringCoercion(value);
               }
             }
           }
@@ -5639,20 +5578,20 @@
           }
           function pushProvider(providerFiber, context, nextValue) {
             if (isPrimaryRenderer) {
-              push3(valueCursor, context._currentValue, providerFiber);
+              push(valueCursor, context._currentValue, providerFiber);
               context._currentValue = nextValue;
               {
                 if (context._currentRenderer !== void 0 && context._currentRenderer !== null && context._currentRenderer !== rendererSigil) {
-                  error2("Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.");
+                  error("Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.");
                 }
                 context._currentRenderer = rendererSigil;
               }
             } else {
-              push3(valueCursor, context._currentValue2, providerFiber);
+              push(valueCursor, context._currentValue2, providerFiber);
               context._currentValue2 = nextValue;
               {
                 if (context._currentRenderer2 !== void 0 && context._currentRenderer2 !== null && context._currentRenderer2 !== rendererSigil) {
-                  error2("Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.");
+                  error("Detected multiple renderers concurrently rendering the same context provider. This is currently unsupported.");
                 }
                 context._currentRenderer2 = rendererSigil;
               }
@@ -5690,7 +5629,7 @@
             }
             {
               if (node !== propagationRoot) {
-                error2("Expected to find the propagation root when scheduling context work. This error is likely caused by a bug in React. Please file an issue.");
+                error("Expected to find the propagation root when scheduling context work. This error is likely caused by a bug in React. Please file an issue.");
               }
             }
           }
@@ -5800,16 +5739,16 @@
           function readContext(context) {
             {
               if (isDisallowedContextReadInDEV) {
-                error2("Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().");
+                error("Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().");
               }
             }
-            var value2 = isPrimaryRenderer ? context._currentValue : context._currentValue2;
+            var value = isPrimaryRenderer ? context._currentValue : context._currentValue2;
             if (lastFullyObservedContext === context)
               ;
             else {
               var contextItem = {
                 context,
-                memoizedValue: value2,
+                memoizedValue: value,
                 next: null
               };
               if (lastContextDependency === null) {
@@ -5825,7 +5764,7 @@
                 lastContextDependency = lastContextDependency.next = contextItem;
               }
             }
-            return value2;
+            return value;
           }
           var concurrentQueues = null;
           function pushConcurrentUpdateQueue(queue) {
@@ -5837,8 +5776,8 @@
           }
           function finishQueueingConcurrentUpdates() {
             if (concurrentQueues !== null) {
-              for (var i3 = 0; i3 < concurrentQueues.length; i3++) {
-                var queue = concurrentQueues[i3];
+              for (var i = 0; i < concurrentQueues.length; i++) {
+                var queue = concurrentQueues[i];
                 var lastInterleavedUpdate = queue.interleaved;
                 if (lastInterleavedUpdate !== null) {
                   queue.interleaved = null;
@@ -5987,7 +5926,7 @@
             var sharedQueue = updateQueue.shared;
             {
               if (currentlyProcessingQueue === sharedQueue && !didWarnUpdateInsideUpdate) {
-                error2("An update (setState, replaceState, or forceUpdate) was scheduled from inside an update function. Update functions should be pure, with zero side-effects. Consider using componentDidUpdate or a callback.");
+                error("An update (setState, replaceState, or forceUpdate) was scheduled from inside an update function. Update functions should be pure, with zero side-effects. Consider using componentDidUpdate or a callback.");
                 didWarnUpdateInsideUpdate = true;
               }
             }
@@ -6280,8 +6219,8 @@
             var effects = finishedQueue.effects;
             finishedQueue.effects = null;
             if (effects !== null) {
-              for (var i3 = 0; i3 < effects.length; i3++) {
-                var effect = effects[i3];
+              for (var i = 0; i < effects.length; i++) {
+                var effect = effects[i];
                 var callback = effect.callback;
                 if (callback !== null) {
                   effect.callback = null;
@@ -6316,18 +6255,18 @@
               if (callback === null || typeof callback === "function") {
                 return;
               }
-              var key2 = callerName + "_" + callback;
-              if (!didWarnOnInvalidCallback.has(key2)) {
-                didWarnOnInvalidCallback.add(key2);
-                error2("%s(...): Expected the last optional `callback` argument to be a function. Instead received: %s.", callerName, callback);
+              var key = callerName + "_" + callback;
+              if (!didWarnOnInvalidCallback.has(key)) {
+                didWarnOnInvalidCallback.add(key);
+                error("%s(...): Expected the last optional `callback` argument to be a function. Instead received: %s.", callerName, callback);
               }
             };
-            warnOnUndefinedDerivedState = function(type2, partialState) {
+            warnOnUndefinedDerivedState = function(type, partialState) {
               if (partialState === void 0) {
-                var componentName = getComponentNameFromType(type2) || "Component";
+                var componentName = getComponentNameFromType(type) || "Component";
                 if (!didWarnAboutUndefinedDerivedState.has(componentName)) {
                   didWarnAboutUndefinedDerivedState.add(componentName);
-                  error2("%s.getDerivedStateFromProps(): A valid state object (or null) must be returned. You have returned undefined.", componentName);
+                  error("%s.getDerivedStateFromProps(): A valid state object (or null) must be returned. You have returned undefined.", componentName);
                 }
               }
             };
@@ -6363,7 +6302,7 @@
           var classComponentUpdater = {
             isMounted,
             enqueueSetState: function(inst, payload, callback) {
-              var fiber = get3(inst);
+              var fiber = get(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6384,7 +6323,7 @@
               }
             },
             enqueueReplaceState: function(inst, payload, callback) {
-              var fiber = get3(inst);
+              var fiber = get(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6406,7 +6345,7 @@
               }
             },
             enqueueForceUpdate: function(inst, callback) {
-              var fiber = get3(inst);
+              var fiber = get(inst);
               var eventTime = requestEventTime();
               var lane = requestUpdateLane(fiber);
               var update = createUpdate(eventTime, lane);
@@ -6441,7 +6380,7 @@
                   }
                 }
                 if (shouldUpdate === void 0) {
-                  error2("%s.shouldComponentUpdate(): Returned undefined instead of a boolean value. Make sure to return true or false.", getComponentNameFromType(ctor) || "Component");
+                  error("%s.shouldComponentUpdate(): Returned undefined instead of a boolean value. Make sure to return true or false.", getComponentNameFromType(ctor) || "Component");
                 }
               }
               return shouldUpdate;
@@ -6458,76 +6397,76 @@
               var renderPresent = instance.render;
               if (!renderPresent) {
                 if (ctor.prototype && typeof ctor.prototype.render === "function") {
-                  error2("%s(...): No `render` method found on the returned component instance: did you accidentally return an object from the constructor?", name);
+                  error("%s(...): No `render` method found on the returned component instance: did you accidentally return an object from the constructor?", name);
                 } else {
-                  error2("%s(...): No `render` method found on the returned component instance: you may have forgotten to define `render`.", name);
+                  error("%s(...): No `render` method found on the returned component instance: you may have forgotten to define `render`.", name);
                 }
               }
               if (instance.getInitialState && !instance.getInitialState.isReactClassApproved && !instance.state) {
-                error2("getInitialState was defined on %s, a plain JavaScript class. This is only supported for classes created using React.createClass. Did you mean to define a state property instead?", name);
+                error("getInitialState was defined on %s, a plain JavaScript class. This is only supported for classes created using React.createClass. Did you mean to define a state property instead?", name);
               }
               if (instance.getDefaultProps && !instance.getDefaultProps.isReactClassApproved) {
-                error2("getDefaultProps was defined on %s, a plain JavaScript class. This is only supported for classes created using React.createClass. Use a static property to define defaultProps instead.", name);
+                error("getDefaultProps was defined on %s, a plain JavaScript class. This is only supported for classes created using React.createClass. Use a static property to define defaultProps instead.", name);
               }
               if (instance.propTypes) {
-                error2("propTypes was defined as an instance property on %s. Use a static property to define propTypes instead.", name);
+                error("propTypes was defined as an instance property on %s. Use a static property to define propTypes instead.", name);
               }
               if (instance.contextType) {
-                error2("contextType was defined as an instance property on %s. Use a static property to define contextType instead.", name);
+                error("contextType was defined as an instance property on %s. Use a static property to define contextType instead.", name);
               }
               {
                 if (instance.contextTypes) {
-                  error2("contextTypes was defined as an instance property on %s. Use a static property to define contextTypes instead.", name);
+                  error("contextTypes was defined as an instance property on %s. Use a static property to define contextTypes instead.", name);
                 }
                 if (ctor.contextType && ctor.contextTypes && !didWarnAboutContextTypeAndContextTypes.has(ctor)) {
                   didWarnAboutContextTypeAndContextTypes.add(ctor);
-                  error2("%s declares both contextTypes and contextType static properties. The legacy contextTypes property will be ignored.", name);
+                  error("%s declares both contextTypes and contextType static properties. The legacy contextTypes property will be ignored.", name);
                 }
               }
               if (typeof instance.componentShouldUpdate === "function") {
-                error2("%s has a method called componentShouldUpdate(). Did you mean shouldComponentUpdate()? The name is phrased as a question because the function is expected to return a value.", name);
+                error("%s has a method called componentShouldUpdate(). Did you mean shouldComponentUpdate()? The name is phrased as a question because the function is expected to return a value.", name);
               }
               if (ctor.prototype && ctor.prototype.isPureReactComponent && typeof instance.shouldComponentUpdate !== "undefined") {
-                error2("%s has a method called shouldComponentUpdate(). shouldComponentUpdate should not be used when extending React.PureComponent. Please extend React.Component if shouldComponentUpdate is used.", getComponentNameFromType(ctor) || "A pure component");
+                error("%s has a method called shouldComponentUpdate(). shouldComponentUpdate should not be used when extending React.PureComponent. Please extend React.Component if shouldComponentUpdate is used.", getComponentNameFromType(ctor) || "A pure component");
               }
               if (typeof instance.componentDidUnmount === "function") {
-                error2("%s has a method called componentDidUnmount(). But there is no such lifecycle method. Did you mean componentWillUnmount()?", name);
+                error("%s has a method called componentDidUnmount(). But there is no such lifecycle method. Did you mean componentWillUnmount()?", name);
               }
               if (typeof instance.componentDidReceiveProps === "function") {
-                error2("%s has a method called componentDidReceiveProps(). But there is no such lifecycle method. If you meant to update the state in response to changing props, use componentWillReceiveProps(). If you meant to fetch data or run side-effects or mutations after React has updated the UI, use componentDidUpdate().", name);
+                error("%s has a method called componentDidReceiveProps(). But there is no such lifecycle method. If you meant to update the state in response to changing props, use componentWillReceiveProps(). If you meant to fetch data or run side-effects or mutations after React has updated the UI, use componentDidUpdate().", name);
               }
               if (typeof instance.componentWillRecieveProps === "function") {
-                error2("%s has a method called componentWillRecieveProps(). Did you mean componentWillReceiveProps()?", name);
+                error("%s has a method called componentWillRecieveProps(). Did you mean componentWillReceiveProps()?", name);
               }
               if (typeof instance.UNSAFE_componentWillRecieveProps === "function") {
-                error2("%s has a method called UNSAFE_componentWillRecieveProps(). Did you mean UNSAFE_componentWillReceiveProps()?", name);
+                error("%s has a method called UNSAFE_componentWillRecieveProps(). Did you mean UNSAFE_componentWillReceiveProps()?", name);
               }
               var hasMutatedProps = instance.props !== newProps;
               if (instance.props !== void 0 && hasMutatedProps) {
-                error2("%s(...): When calling super() in `%s`, make sure to pass up the same props that your component's constructor was passed.", name, name);
+                error("%s(...): When calling super() in `%s`, make sure to pass up the same props that your component's constructor was passed.", name, name);
               }
               if (instance.defaultProps) {
-                error2("Setting defaultProps as an instance property on %s is not supported and will be ignored. Instead, define defaultProps as a static property on %s.", name, name);
+                error("Setting defaultProps as an instance property on %s is not supported and will be ignored. Instead, define defaultProps as a static property on %s.", name, name);
               }
               if (typeof instance.getSnapshotBeforeUpdate === "function" && typeof instance.componentDidUpdate !== "function" && !didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.has(ctor)) {
                 didWarnAboutGetSnapshotBeforeUpdateWithoutDidUpdate.add(ctor);
-                error2("%s: getSnapshotBeforeUpdate() should be used with componentDidUpdate(). This component defines getSnapshotBeforeUpdate() only.", getComponentNameFromType(ctor));
+                error("%s: getSnapshotBeforeUpdate() should be used with componentDidUpdate(). This component defines getSnapshotBeforeUpdate() only.", getComponentNameFromType(ctor));
               }
               if (typeof instance.getDerivedStateFromProps === "function") {
-                error2("%s: getDerivedStateFromProps() is defined as an instance method and will be ignored. Instead, declare it as a static method.", name);
+                error("%s: getDerivedStateFromProps() is defined as an instance method and will be ignored. Instead, declare it as a static method.", name);
               }
               if (typeof instance.getDerivedStateFromError === "function") {
-                error2("%s: getDerivedStateFromError() is defined as an instance method and will be ignored. Instead, declare it as a static method.", name);
+                error("%s: getDerivedStateFromError() is defined as an instance method and will be ignored. Instead, declare it as a static method.", name);
               }
               if (typeof ctor.getSnapshotBeforeUpdate === "function") {
-                error2("%s: getSnapshotBeforeUpdate() is defined as a static method and will be ignored. Instead, declare it as an instance method.", name);
+                error("%s: getSnapshotBeforeUpdate() is defined as a static method and will be ignored. Instead, declare it as an instance method.", name);
               }
               var _state = instance.state;
               if (_state && (typeof _state !== "object" || isArray(_state))) {
-                error2("%s.state: must be set to an object or null", name);
+                error("%s.state: must be set to an object or null", name);
               }
               if (typeof instance.getChildContext === "function" && typeof ctor.childContextTypes !== "object") {
-                error2("%s.getChildContext(): childContextTypes must be defined in order to use getChildContext().", name);
+                error("%s.getChildContext(): childContextTypes must be defined in order to use getChildContext().", name);
               }
             }
           }
@@ -6564,7 +6503,7 @@
                   } else {
                     addendum = " However, it is set to an object with keys {" + Object.keys(contextType).join(", ") + "}.";
                   }
-                  error2("%s defines an invalid contextType. contextType should point to the Context object returned by React.createContext().%s", getComponentNameFromType(ctor) || "Component", addendum);
+                  error("%s defines an invalid contextType. contextType should point to the Context object returned by React.createContext().%s", getComponentNameFromType(ctor) || "Component", addendum);
                 }
               }
             }
@@ -6594,7 +6533,7 @@
                 var componentName = getComponentNameFromType(ctor) || "Component";
                 if (!didWarnAboutUninitializedState.has(componentName)) {
                   didWarnAboutUninitializedState.add(componentName);
-                  error2("`%s` uses `getDerivedStateFromProps` but its initial state is %s. This is not recommended. Instead, define the initial state by assigning an object to `this.state` in the constructor of `%s`. This ensures that `getDerivedStateFromProps` arguments have a consistent shape.", componentName, instance.state === null ? "null" : "undefined", componentName);
+                  error("`%s` uses `getDerivedStateFromProps` but its initial state is %s. This is not recommended. Instead, define the initial state by assigning an object to `this.state` in the constructor of `%s`. This ensures that `getDerivedStateFromProps` arguments have a consistent shape.", componentName, instance.state === null ? "null" : "undefined", componentName);
                 }
               }
               if (typeof ctor.getDerivedStateFromProps === "function" || typeof instance.getSnapshotBeforeUpdate === "function") {
@@ -6621,7 +6560,7 @@
                   var newApiName = typeof ctor.getDerivedStateFromProps === "function" ? "getDerivedStateFromProps()" : "getSnapshotBeforeUpdate()";
                   if (!didWarnAboutLegacyLifecyclesAndDerivedState.has(_componentName)) {
                     didWarnAboutLegacyLifecyclesAndDerivedState.add(_componentName);
-                    error2("Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n%s uses %s but also contains the following legacy lifecycles:%s%s%s\n\nThe above lifecycles should be removed. Learn more about this warning here:\nhttps://reactjs.org/link/unsafe-component-lifecycles", _componentName, newApiName, foundWillMountName !== null ? "\n  " + foundWillMountName : "", foundWillReceivePropsName !== null ? "\n  " + foundWillReceivePropsName : "", foundWillUpdateName !== null ? "\n  " + foundWillUpdateName : "");
+                    error("Unsafe legacy lifecycles will not be called for components using new component APIs.\n\n%s uses %s but also contains the following legacy lifecycles:%s%s%s\n\nThe above lifecycles should be removed. Learn more about this warning here:\nhttps://reactjs.org/link/unsafe-component-lifecycles", _componentName, newApiName, foundWillMountName !== null ? "\n  " + foundWillMountName : "", foundWillReceivePropsName !== null ? "\n  " + foundWillReceivePropsName : "", foundWillUpdateName !== null ? "\n  " + foundWillUpdateName : "");
                   }
                 }
               }
@@ -6641,7 +6580,7 @@
             }
             if (oldState !== instance.state) {
               {
-                error2("%s.componentWillMount(): Assigning directly to this.state is deprecated (except inside a component's constructor). Use setState instead.", getComponentNameFromFiber(workInProgress2) || "Component");
+                error("%s.componentWillMount(): Assigning directly to this.state is deprecated (except inside a component's constructor). Use setState instead.", getComponentNameFromFiber(workInProgress2) || "Component");
               }
               classComponentUpdater.enqueueReplaceState(instance, instance.state, null);
             }
@@ -6659,7 +6598,7 @@
                 var componentName = getComponentNameFromFiber(workInProgress2) || "Component";
                 if (!didWarnAboutStateAssignmentForComponent.has(componentName)) {
                   didWarnAboutStateAssignmentForComponent.add(componentName);
-                  error2("%s.componentWillReceiveProps(): Assigning directly to this.state is deprecated (except inside a component's constructor). Use setState instead.", componentName);
+                  error("%s.componentWillReceiveProps(): Assigning directly to this.state is deprecated (except inside a component's constructor). Use setState instead.", componentName);
                 }
               }
               classComponentUpdater.enqueueReplaceState(instance, instance.state, null);
@@ -6686,7 +6625,7 @@
                 var componentName = getComponentNameFromType(ctor) || "Component";
                 if (!didWarnAboutDirectlyAssigningPropsToState.has(componentName)) {
                   didWarnAboutDirectlyAssigningPropsToState.add(componentName);
-                  error2("%s: It is not recommended to assign props directly to state because updates to props won't be reflected in state. In most cases, it is better to use props directly.", componentName);
+                  error("%s: It is not recommended to assign props directly to state because updates to props won't be reflected in state. In most cases, it is better to use props directly.", componentName);
                 }
               }
               if (workInProgress2.mode & StrictLegacyMode) {
@@ -6912,7 +6851,7 @@
                 return;
               }
               ownerHasKeyUseWarning[componentName] = true;
-              error2('Each child in a list should have a unique "key" prop. See https://reactjs.org/link/warning-keys for more information.');
+              error('Each child in a list should have a unique "key" prop. See https://reactjs.org/link/warning-keys for more information.');
             };
           }
           function coerceRef(returnFiber, current2, element) {
@@ -6926,7 +6865,7 @@
                   var componentName = getComponentNameFromFiber(returnFiber) || "Component";
                   if (!didWarnAboutStringRefs[componentName]) {
                     {
-                      error2('A string ref, "%s", has been found within a strict mode tree. String refs are a source of potential bugs and should be avoided. We recommend using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', mixedRef);
+                      error('A string ref, "%s", has been found within a strict mode tree. String refs are a source of potential bugs and should be avoided. We recommend using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', mixedRef);
                     }
                     didWarnAboutStringRefs[componentName] = true;
                   }
@@ -6953,15 +6892,15 @@
                 if (current2 !== null && current2.ref !== null && typeof current2.ref === "function" && current2.ref._stringRef === stringRef) {
                   return current2.ref;
                 }
-                var ref = function(value2) {
+                var ref = function(value) {
                   var refs = resolvedInst.refs;
                   if (refs === emptyRefsObject) {
                     refs = resolvedInst.refs = {};
                   }
-                  if (value2 === null) {
+                  if (value === null) {
                     delete refs[stringRef];
                   } else {
-                    refs[stringRef] = value2;
+                    refs[stringRef] = value;
                   }
                 };
                 ref._stringRef = stringRef;
@@ -6988,7 +6927,7 @@
                 return;
               }
               ownerHasFunctionTypeWarning[componentName] = true;
-              error2("Functions are not valid as a React child. This may happen if you return a Component instead of <Component /> from render. Or maybe you meant to call this function rather than return it.");
+              error("Functions are not valid as a React child. This may happen if you return a Component instead of <Component /> from render. Or maybe you meant to call this function rather than return it.");
             }
           }
           function resolveLazy(lazyType) {
@@ -7114,9 +7053,9 @@
                 return existing;
               }
             }
-            function updateFragment2(returnFiber, current2, fragment, lanes, key2) {
+            function updateFragment2(returnFiber, current2, fragment, lanes, key) {
               if (current2 === null || current2.tag !== Fragment) {
-                var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key2);
+                var created = createFiberFromFragment(fragment, returnFiber.mode, lanes, key);
                 created.return = returnFiber;
                 return created;
               } else {
@@ -7165,9 +7104,9 @@
               return null;
             }
             function updateSlot(returnFiber, oldFiber, newChild, lanes) {
-              var key2 = oldFiber !== null ? oldFiber.key : null;
+              var key = oldFiber !== null ? oldFiber.key : null;
               if (typeof newChild === "string" && newChild !== "" || typeof newChild === "number") {
-                if (key2 !== null) {
+                if (key !== null) {
                   return null;
                 }
                 return updateTextNode(returnFiber, oldFiber, "" + newChild, lanes);
@@ -7175,14 +7114,14 @@
               if (typeof newChild === "object" && newChild !== null) {
                 switch (newChild.$$typeof) {
                   case REACT_ELEMENT_TYPE: {
-                    if (newChild.key === key2) {
+                    if (newChild.key === key) {
                       return updateElement(returnFiber, oldFiber, newChild, lanes);
                     } else {
                       return null;
                     }
                   }
                   case REACT_PORTAL_TYPE: {
-                    if (newChild.key === key2) {
+                    if (newChild.key === key) {
                       return updatePortal(returnFiber, oldFiber, newChild, lanes);
                     } else {
                       return null;
@@ -7195,7 +7134,7 @@
                   }
                 }
                 if (isArray(newChild) || getIteratorFn(newChild)) {
-                  if (key2 !== null) {
+                  if (key !== null) {
                     return null;
                   }
                   return updateFragment2(returnFiber, oldFiber, newChild, lanes, null);
@@ -7251,20 +7190,20 @@
                   case REACT_ELEMENT_TYPE:
                   case REACT_PORTAL_TYPE:
                     warnForMissingKey(child, returnFiber);
-                    var key2 = child.key;
-                    if (typeof key2 !== "string") {
+                    var key = child.key;
+                    if (typeof key !== "string") {
                       break;
                     }
                     if (knownKeys === null) {
                       knownKeys = /* @__PURE__ */ new Set();
-                      knownKeys.add(key2);
+                      knownKeys.add(key);
                       break;
                     }
-                    if (!knownKeys.has(key2)) {
-                      knownKeys.add(key2);
+                    if (!knownKeys.has(key)) {
+                      knownKeys.add(key);
                       break;
                     }
-                    error2("Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted \u2014 the behavior is unsupported and could change in a future version.", key2);
+                    error("Encountered two children with the same key, `%s`. Keys should be unique so that components maintain their identity across updates. Non-unique keys may cause children to be duplicated and/or omitted \u2014 the behavior is unsupported and could change in a future version.", key);
                     break;
                   case REACT_LAZY_TYPE:
                     var payload = child._payload;
@@ -7278,8 +7217,8 @@
             function reconcileChildrenArray(returnFiber, currentFirstChild, newChildren, lanes) {
               {
                 var knownKeys = null;
-                for (var i3 = 0; i3 < newChildren.length; i3++) {
-                  var child = newChildren[i3];
+                for (var i = 0; i < newChildren.length; i++) {
+                  var child = newChildren[i];
                   knownKeys = warnOnInvalidKey(child, knownKeys, returnFiber);
                 }
               }
@@ -7383,13 +7322,13 @@
                 if (typeof Symbol === "function" && // $FlowFixMe Flow doesn't know about toStringTag
                 newChildrenIterable[Symbol.toStringTag] === "Generator") {
                   if (!didWarnAboutGenerators) {
-                    error2("Using Generators as children is unsupported and will likely yield unexpected results because enumerating a generator mutates it. You may convert it to an array with `Array.from()` or the `[...spread]` operator before rendering. Keep in mind you might need to polyfill these features for older browsers.");
+                    error("Using Generators as children is unsupported and will likely yield unexpected results because enumerating a generator mutates it. You may convert it to an array with `Array.from()` or the `[...spread]` operator before rendering. Keep in mind you might need to polyfill these features for older browsers.");
                   }
                   didWarnAboutGenerators = true;
                 }
                 if (newChildrenIterable.entries === iteratorFn) {
                   if (!didWarnAboutMaps) {
-                    error2("Using Maps as children is not supported. Use an array of keyed ReactElements instead.");
+                    error("Using Maps as children is not supported. Use an array of keyed ReactElements instead.");
                   }
                   didWarnAboutMaps = true;
                 }
@@ -7512,10 +7451,10 @@
               return created;
             }
             function reconcileSingleElement(returnFiber, currentFirstChild, element, lanes) {
-              var key2 = element.key;
+              var key = element.key;
               var child = currentFirstChild;
               while (child !== null) {
-                if (child.key === key2) {
+                if (child.key === key) {
                   var elementType = element.type;
                   if (elementType === REACT_FRAGMENT_TYPE) {
                     if (child.tag === Fragment) {
@@ -7565,10 +7504,10 @@
               }
             }
             function reconcileSinglePortal(returnFiber, currentFirstChild, portal, lanes) {
-              var key2 = portal.key;
+              var key = portal.key;
               var child = currentFirstChild;
               while (child !== null) {
-                if (child.key === key2) {
+                if (child.key === key) {
                   if (child.tag === HostPortal && child.stateNode.containerInfo === portal.containerInfo && child.stateNode.implementation === portal.implementation) {
                     deleteRemainingChildren(returnFiber, child.sibling);
                     var existing = useFiber(child, portal.children || []);
@@ -7654,23 +7593,23 @@
           var contextStackCursor$1 = createCursor(NO_CONTEXT);
           var contextFiberStackCursor = createCursor(NO_CONTEXT);
           var rootInstanceStackCursor = createCursor(NO_CONTEXT);
-          function requiredContext(c2) {
-            if (c2 === NO_CONTEXT) {
+          function requiredContext(c) {
+            if (c === NO_CONTEXT) {
               throw new Error("Expected host context to exist. This error is likely caused by a bug in React. Please file an issue.");
             }
-            return c2;
+            return c;
           }
           function getRootHostContainer() {
             var rootInstance = requiredContext(rootInstanceStackCursor.current);
             return rootInstance;
           }
           function pushHostContainer(fiber, nextRootInstance) {
-            push3(rootInstanceStackCursor, nextRootInstance, fiber);
-            push3(contextFiberStackCursor, fiber, fiber);
-            push3(contextStackCursor$1, NO_CONTEXT, fiber);
+            push(rootInstanceStackCursor, nextRootInstance, fiber);
+            push(contextFiberStackCursor, fiber, fiber);
+            push(contextStackCursor$1, NO_CONTEXT, fiber);
             var nextRootContext = getRootHostContext(nextRootInstance);
             pop(contextStackCursor$1, fiber);
-            push3(contextStackCursor$1, nextRootContext, fiber);
+            push(contextStackCursor$1, nextRootContext, fiber);
           }
           function popHostContainer(fiber) {
             pop(contextStackCursor$1, fiber);
@@ -7688,8 +7627,8 @@
             if (context === nextContext) {
               return;
             }
-            push3(contextFiberStackCursor, fiber, fiber);
-            push3(contextStackCursor$1, nextContext, fiber);
+            push(contextFiberStackCursor, fiber, fiber);
+            push(contextStackCursor$1, nextContext, fiber);
           }
           function popHostContext(fiber) {
             if (contextFiberStackCursor.current !== fiber) {
@@ -7716,7 +7655,7 @@
             return parentContext | subtreeContext;
           }
           function pushSuspenseContext(fiber, newContext) {
-            push3(suspenseStackCursor, newContext, fiber);
+            push(suspenseStackCursor, newContext, fiber);
           }
           function popSuspenseContext(fiber) {
             pop(suspenseStackCursor, fiber);
@@ -7793,8 +7732,8 @@
           );
           var workInProgressSources = [];
           function resetWorkInProgressVersions() {
-            for (var i3 = 0; i3 < workInProgressSources.length; i3++) {
-              var mutableSource = workInProgressSources[i3];
+            for (var i = 0; i < workInProgressSources.length; i++) {
+              var mutableSource = workInProgressSources[i];
               if (isPrimaryRenderer) {
                 mutableSource._workInProgressVersionPrimary = null;
               } else {
@@ -7855,7 +7794,7 @@
           function checkDepsAreArrayDev(deps) {
             {
               if (deps !== void 0 && deps !== null && !isArray(deps)) {
-                error2("%s received a final argument that is not an array (instead, received `%s`). When specified, the final argument must be an array.", currentHookNameInDev, typeof deps);
+                error("%s received a final argument that is not an array (instead, received `%s`). When specified, the final argument must be an array.", currentHookNameInDev, typeof deps);
               }
             }
           }
@@ -7867,17 +7806,17 @@
                 if (hookTypesDev !== null) {
                   var table = "";
                   var secondColumnStart = 30;
-                  for (var i3 = 0; i3 <= hookTypesUpdateIndexDev; i3++) {
-                    var oldHookName = hookTypesDev[i3];
-                    var newHookName = i3 === hookTypesUpdateIndexDev ? currentHookName : oldHookName;
-                    var row = i3 + 1 + ". " + oldHookName;
+                  for (var i = 0; i <= hookTypesUpdateIndexDev; i++) {
+                    var oldHookName = hookTypesDev[i];
+                    var newHookName = i === hookTypesUpdateIndexDev ? currentHookName : oldHookName;
+                    var row = i + 1 + ". " + oldHookName;
                     while (row.length < secondColumnStart) {
                       row += " ";
                     }
                     row += newHookName + "\n";
                     table += row;
                   }
-                  error2("React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", componentName, table);
+                  error("React has detected a change in the order of Hooks called by %s. This will lead to bugs and errors if not fixed. For more information, read the Rules of Hooks: https://reactjs.org/link/rules-of-hooks\n\n   Previous render            Next render\n   ------------------------------------------------------\n%s   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n", componentName, table);
                 }
               }
             }
@@ -7893,17 +7832,17 @@
             }
             if (prevDeps === null) {
               {
-                error2("%s received a final argument during this render, but not during the previous render. Even though the final argument is optional, its type cannot change between renders.", currentHookNameInDev);
+                error("%s received a final argument during this render, but not during the previous render. Even though the final argument is optional, its type cannot change between renders.", currentHookNameInDev);
               }
               return false;
             }
             {
               if (nextDeps.length !== prevDeps.length) {
-                error2("The final argument passed to %s changed size between renders. The order and size of this array must remain constant.\n\nPrevious: %s\nIncoming: %s", currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + nextDeps.join(", ") + "]");
+                error("The final argument passed to %s changed size between renders. The order and size of this array must remain constant.\n\nPrevious: %s\nIncoming: %s", currentHookNameInDev, "[" + prevDeps.join(", ") + "]", "[" + nextDeps.join(", ") + "]");
               }
             }
-            for (var i3 = 0; i3 < prevDeps.length && i3 < nextDeps.length; i3++) {
-              if (objectIs(nextDeps[i3], prevDeps[i3])) {
+            for (var i = 0; i < prevDeps.length && i < nextDeps.length; i++) {
+              if (objectIs(nextDeps[i], prevDeps[i])) {
                 continue;
               }
               return false;
@@ -7972,7 +7911,7 @@
               // now I'll disable the warning that most of the bugs that would trigger
               // it are either exclusive to concurrent mode or exist in both.
               (current2.mode & ConcurrentMode) !== NoMode) {
-                error2("Internal React error: Expected static flag was missing. Please notify the React team.");
+                error("Internal React error: Expected static flag was missing. Please notify the React team.");
               }
             }
             didScheduleRenderPhaseUpdate = false;
@@ -8127,7 +8066,7 @@
               }
               {
                 if (current2.baseQueue !== baseQueue) {
-                  error2("Internal error: Expected work-in-progress queue to be a clone. This is a bug in React.");
+                  error("Internal error: Expected work-in-progress queue to be a clone. This is a bug in React.");
                 }
               }
               current2.baseQueue = baseQueue = pendingQueue;
@@ -8239,17 +8178,17 @@
             }
             return [newState, dispatch];
           }
-          function mountMutableSource(source, getSnapshot, subscribe2) {
+          function mountMutableSource(source, getSnapshot, subscribe) {
             {
               return void 0;
             }
           }
-          function updateMutableSource(source, getSnapshot, subscribe2) {
+          function updateMutableSource(source, getSnapshot, subscribe) {
             {
               return void 0;
             }
           }
-          function mountSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot) {
+          function mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
             var fiber = currentlyRenderingFiber$1;
             var hook = mountWorkInProgressHook();
             var nextSnapshot;
@@ -8262,7 +8201,7 @@
               {
                 if (!didWarnUncachedGetSnapshot) {
                   if (nextSnapshot !== getServerSnapshot()) {
-                    error2("The result of getServerSnapshot should be cached to avoid an infinite loop");
+                    error("The result of getServerSnapshot should be cached to avoid an infinite loop");
                     didWarnUncachedGetSnapshot = true;
                   }
                 }
@@ -8273,7 +8212,7 @@
                 if (!didWarnUncachedGetSnapshot) {
                   var cachedSnapshot = getSnapshot();
                   if (!objectIs(nextSnapshot, cachedSnapshot)) {
-                    error2("The result of getSnapshot should be cached to avoid an infinite loop");
+                    error("The result of getSnapshot should be cached to avoid an infinite loop");
                     didWarnUncachedGetSnapshot = true;
                   }
                 }
@@ -8292,12 +8231,12 @@
               getSnapshot
             };
             hook.queue = inst;
-            mountEffect(subscribeToStore.bind(null, fiber, inst, subscribe2), [subscribe2]);
+            mountEffect(subscribeToStore.bind(null, fiber, inst, subscribe), [subscribe]);
             fiber.flags |= Passive;
             pushEffect(HasEffect | Passive$1, updateStoreInstance.bind(null, fiber, inst, nextSnapshot, getSnapshot), void 0, null);
             return nextSnapshot;
           }
-          function updateSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot) {
+          function updateSyncExternalStore(subscribe, getSnapshot, getServerSnapshot) {
             var fiber = currentlyRenderingFiber$1;
             var hook = updateWorkInProgressHook();
             var nextSnapshot = getSnapshot();
@@ -8305,7 +8244,7 @@
               if (!didWarnUncachedGetSnapshot) {
                 var cachedSnapshot = getSnapshot();
                 if (!objectIs(nextSnapshot, cachedSnapshot)) {
-                  error2("The result of getSnapshot should be cached to avoid an infinite loop");
+                  error("The result of getSnapshot should be cached to avoid an infinite loop");
                   didWarnUncachedGetSnapshot = true;
                 }
               }
@@ -8317,7 +8256,7 @@
               markWorkInProgressReceivedUpdate();
             }
             var inst = hook.queue;
-            updateEffect(subscribeToStore.bind(null, fiber, inst, subscribe2), [subscribe2]);
+            updateEffect(subscribeToStore.bind(null, fiber, inst, subscribe), [subscribe]);
             if (inst.getSnapshot !== getSnapshot || snapshotChanged || // Check if the susbcribe function changed. We can save some memory by
             // checking whether we scheduled a subscription effect above.
             workInProgressHook !== null && workInProgressHook.memoizedState.tag & HasEffect) {
@@ -8360,13 +8299,13 @@
               forceStoreRerender(fiber);
             }
           }
-          function subscribeToStore(fiber, inst, subscribe2) {
+          function subscribeToStore(fiber, inst, subscribe) {
             var handleStoreChange = function() {
               if (checkIfSnapshotChanged(inst)) {
                 forceStoreRerender(fiber);
               }
             };
-            return subscribe2(handleStoreChange);
+            return subscribe(handleStoreChange);
           }
           function checkIfSnapshotChanged(inst) {
             var latestGetSnapshot = inst.getSnapshot;
@@ -8374,7 +8313,7 @@
             try {
               var nextValue = latestGetSnapshot();
               return !objectIs(prevValue, nextValue);
-            } catch (error3) {
+            } catch (error2) {
               return true;
             }
           }
@@ -8514,7 +8453,7 @@
               var refObject = ref;
               {
                 if (!refObject.hasOwnProperty("current")) {
-                  error2("Expected useImperativeHandle() first argument to either be a ref callback or React.createRef() object. Instead received: %s.", "an object with keys {" + Object.keys(refObject).join(", ") + "}");
+                  error("Expected useImperativeHandle() first argument to either be a ref callback or React.createRef() object. Instead received: %s.", "an object with keys {" + Object.keys(refObject).join(", ") + "}");
                 }
               }
               var _inst2 = create();
@@ -8527,7 +8466,7 @@
           function mountImperativeHandle(ref, create, deps) {
             {
               if (typeof create !== "function") {
-                error2("Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.", create !== null ? typeof create : "null");
+                error("Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.", create !== null ? typeof create : "null");
               }
             }
             var effectDeps = deps !== null && deps !== void 0 ? deps.concat([ref]) : null;
@@ -8543,13 +8482,13 @@
           function updateImperativeHandle(ref, create, deps) {
             {
               if (typeof create !== "function") {
-                error2("Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.", create !== null ? typeof create : "null");
+                error("Expected useImperativeHandle() second argument to be a function that creates a handle. Instead received: %s.", create !== null ? typeof create : "null");
               }
             }
             var effectDeps = deps !== null && deps !== void 0 ? deps.concat([ref]) : null;
             return updateEffectImpl(Update, Layout, imperativeHandleEffect.bind(null, create, ref), effectDeps);
           }
-          function mountDebugValue(value2, formatterFn) {
+          function mountDebugValue(value, formatterFn) {
           }
           var updateDebugValue = mountDebugValue;
           function mountCallback(callback, deps) {
@@ -8596,31 +8535,31 @@
             hook.memoizedState = [nextValue, nextDeps];
             return nextValue;
           }
-          function mountDeferredValue(value2) {
+          function mountDeferredValue(value) {
             var hook = mountWorkInProgressHook();
-            hook.memoizedState = value2;
-            return value2;
+            hook.memoizedState = value;
+            return value;
           }
-          function updateDeferredValue(value2) {
+          function updateDeferredValue(value) {
             var hook = updateWorkInProgressHook();
             var resolvedCurrentHook = currentHook;
             var prevValue = resolvedCurrentHook.memoizedState;
-            return updateDeferredValueImpl(hook, prevValue, value2);
+            return updateDeferredValueImpl(hook, prevValue, value);
           }
-          function rerenderDeferredValue(value2) {
+          function rerenderDeferredValue(value) {
             var hook = updateWorkInProgressHook();
             if (currentHook === null) {
-              hook.memoizedState = value2;
-              return value2;
+              hook.memoizedState = value;
+              return value;
             } else {
               var prevValue = currentHook.memoizedState;
-              return updateDeferredValueImpl(hook, prevValue, value2);
+              return updateDeferredValueImpl(hook, prevValue, value);
             }
           }
-          function updateDeferredValueImpl(hook, prevValue, value2) {
+          function updateDeferredValueImpl(hook, prevValue, value) {
             var shouldDeferValue = !includesOnlyNonUrgentLanes(renderLanes);
             if (shouldDeferValue) {
-              if (!objectIs(value2, prevValue)) {
+              if (!objectIs(value, prevValue)) {
                 var deferredLane = claimNextTransitionLane();
                 currentlyRenderingFiber$1.lanes = mergeLanes(currentlyRenderingFiber$1.lanes, deferredLane);
                 markSkippedUpdateLanes(deferredLane);
@@ -8632,8 +8571,8 @@
                 hook.baseState = false;
                 markWorkInProgressReceivedUpdate();
               }
-              hook.memoizedState = value2;
-              return value2;
+              hook.memoizedState = value;
+              return value;
             }
           }
           function startTransition(setPending, callback, options) {
@@ -8665,22 +8604,22 @@
           }
           function mountTransition() {
             var _mountState = mountState(false), isPending = _mountState[0], setPending = _mountState[1];
-            var start2 = startTransition.bind(null, setPending);
+            var start = startTransition.bind(null, setPending);
             var hook = mountWorkInProgressHook();
-            hook.memoizedState = start2;
-            return [isPending, start2];
+            hook.memoizedState = start;
+            return [isPending, start];
           }
           function updateTransition() {
             var _updateState = updateState(), isPending = _updateState[0];
             var hook = updateWorkInProgressHook();
-            var start2 = hook.memoizedState;
-            return [isPending, start2];
+            var start = hook.memoizedState;
+            return [isPending, start];
           }
           function rerenderTransition() {
             var _rerenderState = rerenderState(), isPending = _rerenderState[0];
             var hook = updateWorkInProgressHook();
-            var start2 = hook.memoizedState;
-            return [isPending, start2];
+            var start = hook.memoizedState;
+            return [isPending, start];
           }
           var isUpdatingOpaqueValueInRenderPhase = false;
           function getIsUpdatingOpaqueValueInRenderPhaseInDEV() {
@@ -8716,7 +8655,7 @@
           function dispatchReducerAction(fiber, queue, action) {
             {
               if (typeof arguments[3] === "function") {
-                error2("State updates from the useState() and useReducer() Hooks don't support the second callback argument. To execute a side effect after rendering, declare it in the component body with useEffect().");
+                error("State updates from the useState() and useReducer() Hooks don't support the second callback argument. To execute a side effect after rendering, declare it in the component body with useEffect().");
               }
             }
             var lane = requestUpdateLane(fiber);
@@ -8742,7 +8681,7 @@
           function dispatchSetState(fiber, queue, action) {
             {
               if (typeof arguments[3] === "function") {
-                error2("State updates from the useState() and useReducer() Hooks don't support the second callback argument. To execute a side effect after rendering, declare it in the component body with useEffect().");
+                error("State updates from the useState() and useReducer() Hooks don't support the second callback argument. To execute a side effect after rendering, declare it in the component body with useEffect().");
               }
             }
             var lane = requestUpdateLane(fiber);
@@ -8774,7 +8713,7 @@
                       enqueueConcurrentHookUpdateAndEagerlyBailout(fiber, queue, update, lane);
                       return;
                     }
-                  } catch (error3) {
+                  } catch (error2) {
                   } finally {
                     {
                       ReactCurrentDispatcher$1.current = prevDispatcher;
@@ -8849,10 +8788,10 @@
           var InvalidNestedHooksDispatcherOnRerenderInDEV = null;
           {
             var warnInvalidContextAccess = function() {
-              error2("Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().");
+              error("Context can only be read while React is rendering. In classes, you can read it in the render method or getDerivedStateFromProps. In function components, you can read it directly in the function body, but not inside Hooks like useReducer() or useMemo().");
             };
             var warnInvalidHookAccess = function() {
-              error2("Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks. You can only call Hooks at the top level of your React function. For more information, see https://reactjs.org/link/rules-of-hooks");
+              error("Do not call Hooks inside useEffect(...), useMemo(...), or other built-in Hooks. You can only call Hooks at the top level of your React function. For more information, see https://reactjs.org/link/rules-of-hooks");
             };
             HooksDispatcherOnMountInDEV = {
               readContext: function(context) {
@@ -8932,30 +8871,30 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 mountHookTypesDev();
                 return mountDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 mountHookTypesDev();
-                return mountDeferredValue(value2);
+                return mountDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
                 mountHookTypesDev();
                 return mountTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 mountHookTypesDev();
                 return mountMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 mountHookTypesDev();
-                return mountSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot);
+                return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9036,30 +8975,30 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 updateHookTypesDev();
                 return mountDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 updateHookTypesDev();
-                return mountDeferredValue(value2);
+                return mountDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
                 updateHookTypesDev();
                 return mountTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 updateHookTypesDev();
                 return mountMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 updateHookTypesDev();
-                return mountSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot);
+                return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9140,30 +9079,30 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 updateHookTypesDev();
                 return updateDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 updateHookTypesDev();
-                return updateDeferredValue(value2);
+                return updateDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
                 updateHookTypesDev();
                 return updateTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 updateHookTypesDev();
                 return updateMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 updateHookTypesDev();
-                return updateSyncExternalStore(subscribe2, getSnapshot);
+                return updateSyncExternalStore(subscribe, getSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9244,30 +9183,30 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 updateHookTypesDev();
                 return updateDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 updateHookTypesDev();
-                return rerenderDeferredValue(value2);
+                return rerenderDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
                 updateHookTypesDev();
                 return rerenderTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 updateHookTypesDev();
                 return updateMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 updateHookTypesDev();
-                return updateSyncExternalStore(subscribe2, getSnapshot);
+                return updateSyncExternalStore(subscribe, getSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9359,17 +9298,17 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 warnInvalidHookAccess();
                 mountHookTypesDev();
                 return mountDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 warnInvalidHookAccess();
                 mountHookTypesDev();
-                return mountDeferredValue(value2);
+                return mountDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
@@ -9377,17 +9316,17 @@
                 mountHookTypesDev();
                 return mountTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 warnInvalidHookAccess();
                 mountHookTypesDev();
                 return mountMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 warnInvalidHookAccess();
                 mountHookTypesDev();
-                return mountSyncExternalStore(subscribe2, getSnapshot, getServerSnapshot);
+                return mountSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9480,17 +9419,17 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
                 return updateDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
-                return updateDeferredValue(value2);
+                return updateDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
@@ -9498,17 +9437,17 @@
                 updateHookTypesDev();
                 return updateTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
                 return updateMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
-                return updateSyncExternalStore(subscribe2, getSnapshot);
+                return updateSyncExternalStore(subscribe, getSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9601,17 +9540,17 @@
                   ReactCurrentDispatcher$1.current = prevDispatcher;
                 }
               },
-              useDebugValue: function(value2, formatterFn) {
+              useDebugValue: function(value, formatterFn) {
                 currentHookNameInDev = "useDebugValue";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
                 return updateDebugValue();
               },
-              useDeferredValue: function(value2) {
+              useDeferredValue: function(value) {
                 currentHookNameInDev = "useDeferredValue";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
-                return rerenderDeferredValue(value2);
+                return rerenderDeferredValue(value);
               },
               useTransition: function() {
                 currentHookNameInDev = "useTransition";
@@ -9619,17 +9558,17 @@
                 updateHookTypesDev();
                 return rerenderTransition();
               },
-              useMutableSource: function(source, getSnapshot, subscribe2) {
+              useMutableSource: function(source, getSnapshot, subscribe) {
                 currentHookNameInDev = "useMutableSource";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
                 return updateMutableSource();
               },
-              useSyncExternalStore: function(subscribe2, getSnapshot, getServerSnapshot) {
+              useSyncExternalStore: function(subscribe, getSnapshot, getServerSnapshot) {
                 currentHookNameInDev = "useSyncExternalStore";
                 warnInvalidHookAccess();
                 updateHookTypesDev();
-                return updateSyncExternalStore(subscribe2, getSnapshot);
+                return updateSyncExternalStore(subscribe, getSnapshot);
               },
               useId: function() {
                 currentHookNameInDev = "useId";
@@ -9749,17 +9688,17 @@
               child = child.sibling;
             }
           }
-          function createCapturedValueAtFiber(value2, source) {
+          function createCapturedValueAtFiber(value, source) {
             return {
-              value: value2,
+              value,
               source,
               stack: getStackByFiberInDevAndProd(source),
               digest: null
             };
           }
-          function createCapturedValue(value2, digest, stack) {
+          function createCapturedValue(value, digest, stack) {
             return {
-              value: value2,
+              value,
               source: null,
               stack: stack != null ? stack : null,
               digest: digest != null ? digest : null
@@ -9774,16 +9713,16 @@
               if (logError === false) {
                 return;
               }
-              var error3 = errorInfo.value;
+              var error2 = errorInfo.value;
               if (true) {
                 var source = errorInfo.source;
                 var stack = errorInfo.stack;
                 var componentStack = stack !== null ? stack : "";
-                if (error3 != null && error3._suppressLogging) {
+                if (error2 != null && error2._suppressLogging) {
                   if (boundary.tag === ClassComponent) {
                     return;
                   }
-                  console["error"](error3);
+                  console["error"](error2);
                 }
                 var componentName = source ? getComponentNameFromFiber(source) : null;
                 var componentNameMessage = componentName ? "The above error occurred in the <" + componentName + "> component:" : "The above error occurred in one of your React components:";
@@ -9797,11 +9736,11 @@
                 var combinedMessage = componentNameMessage + "\n" + componentStack + "\n\n" + ("" + errorBoundaryMessage);
                 console["error"](combinedMessage);
               } else {
-                console["error"](error3);
+                console["error"](error2);
               }
-            } catch (e3) {
+            } catch (e) {
               setTimeout(function() {
-                throw e3;
+                throw e;
               });
             }
           }
@@ -9812,9 +9751,9 @@
             update.payload = {
               element: null
             };
-            var error3 = errorInfo.value;
+            var error2 = errorInfo.value;
             update.callback = function() {
-              onUncaughtError(error3);
+              onUncaughtError(error2);
               logCapturedError(fiber, errorInfo);
             };
             return update;
@@ -9853,7 +9792,7 @@
                 {
                   if (typeof getDerivedStateFromError !== "function") {
                     if (!includesSomeLane(fiber.lanes, SyncLane)) {
-                      error2("%s: Error boundaries should implement getDerivedStateFromError(). In that method, return a state update to display an error message or fallback UI.", getComponentNameFromFiber(fiber) || "Unknown");
+                      error("%s: Error boundaries should implement getDerivedStateFromError(). In that method, return a state update to display an error message or fallback UI.", getComponentNameFromFiber(fiber) || "Unknown");
                     }
                   }
                 }
@@ -9946,15 +9885,15 @@
             suspenseBoundary.lanes = rootRenderLanes;
             return suspenseBoundary;
           }
-          function throwException(root, returnFiber, sourceFiber, value2, rootRenderLanes) {
+          function throwException(root, returnFiber, sourceFiber, value, rootRenderLanes) {
             sourceFiber.flags |= Incomplete;
             {
               if (isDevToolsPresent) {
                 restorePendingUpdaters(root, rootRenderLanes);
               }
             }
-            if (value2 !== null && typeof value2 === "object" && typeof value2.then === "function") {
-              var wakeable = value2;
+            if (value !== null && typeof value === "object" && typeof value.then === "function") {
+              var wakeable = value;
               resetSuspendedComponent(sourceFiber);
               {
                 if (getIsHydrating() && sourceFiber.mode & ConcurrentMode) {
@@ -9977,7 +9916,7 @@
                   return;
                 }
                 var uncaughtSuspenseError = new Error("A component suspended while responding to synchronous input. This will cause the UI to be replaced with a loading indicator. To fix, updates that suspend should be wrapped with startTransition.");
-                value2 = uncaughtSuspenseError;
+                value = uncaughtSuspenseError;
               }
             } else {
               if (getIsHydrating() && sourceFiber.mode & ConcurrentMode) {
@@ -9988,18 +9927,18 @@
                     _suspenseBoundary.flags |= ForceClientRender;
                   }
                   markSuspenseBoundaryShouldCapture(_suspenseBoundary, returnFiber, sourceFiber, root, rootRenderLanes);
-                  queueHydrationError(createCapturedValueAtFiber(value2, sourceFiber));
+                  queueHydrationError(createCapturedValueAtFiber(value, sourceFiber));
                   return;
                 }
               }
             }
-            value2 = createCapturedValueAtFiber(value2, sourceFiber);
-            renderDidError(value2);
+            value = createCapturedValueAtFiber(value, sourceFiber);
+            renderDidError(value);
             var workInProgress2 = returnFiber;
             do {
               switch (workInProgress2.tag) {
                 case HostRoot: {
-                  var _errorInfo = value2;
+                  var _errorInfo = value;
                   workInProgress2.flags |= ShouldCapture;
                   var lane = pickArbitraryLane(rootRenderLanes);
                   workInProgress2.lanes = mergeLanes(workInProgress2.lanes, lane);
@@ -10008,7 +9947,7 @@
                   return;
                 }
                 case ClassComponent:
-                  var errorInfo = value2;
+                  var errorInfo = value;
                   var ctor = workInProgress2.type;
                   var instance = workInProgress2.stateNode;
                   if ((workInProgress2.flags & DidCapture) === NoFlags && (typeof ctor.getDerivedStateFromError === "function" || instance !== null && typeof instance.componentDidCatch === "function" && !isAlreadyFailedLegacyErrorBoundary(instance))) {
@@ -10115,29 +10054,29 @@
           }
           function updateMemoComponent(current2, workInProgress2, Component, nextProps, renderLanes2) {
             if (current2 === null) {
-              var type2 = Component.type;
-              if (isSimpleFunctionComponent(type2) && Component.compare === null && // SimpleMemoComponent codepath doesn't resolve outer props either.
+              var type = Component.type;
+              if (isSimpleFunctionComponent(type) && Component.compare === null && // SimpleMemoComponent codepath doesn't resolve outer props either.
               Component.defaultProps === void 0) {
-                var resolvedType = type2;
+                var resolvedType = type;
                 {
-                  resolvedType = resolveFunctionForHotReloading(type2);
+                  resolvedType = resolveFunctionForHotReloading(type);
                 }
                 workInProgress2.tag = SimpleMemoComponent;
                 workInProgress2.type = resolvedType;
                 {
-                  validateFunctionComponentInDev(workInProgress2, type2);
+                  validateFunctionComponentInDev(workInProgress2, type);
                 }
                 return updateSimpleMemoComponent(current2, workInProgress2, resolvedType, nextProps, renderLanes2);
               }
               {
-                var innerPropTypes = type2.propTypes;
+                var innerPropTypes = type.propTypes;
                 if (innerPropTypes) {
                   checkPropTypes(
                     innerPropTypes,
                     nextProps,
                     // Resolved props
                     "prop",
-                    getComponentNameFromType(type2)
+                    getComponentNameFromType(type)
                   );
                 }
               }
@@ -10164,9 +10103,9 @@
             var hasScheduledUpdateOrContext = checkScheduledUpdateOrContext(current2, renderLanes2);
             if (!hasScheduledUpdateOrContext) {
               var prevProps = currentChild.memoizedProps;
-              var compare2 = Component.compare;
-              compare2 = compare2 !== null ? compare2 : shallowEqual;
-              if (compare2(prevProps, nextProps) && current2.ref === workInProgress2.ref) {
+              var compare = Component.compare;
+              compare = compare !== null ? compare : shallowEqual;
+              if (compare(prevProps, nextProps) && current2.ref === workInProgress2.ref) {
                 return bailoutOnAlreadyFinishedWork(current2, workInProgress2, renderLanes2);
               }
             }
@@ -10423,7 +10362,7 @@
               var inst = workInProgress2.stateNode;
               if (shouldUpdate && inst.props !== nextProps) {
                 if (!didWarnAboutReassigningProps) {
-                  error2("It looks like %s is reassigning its own `this.props` while rendering. This is not supported and can lead to confusing bugs.", getComponentNameFromFiber(workInProgress2) || "a component");
+                  error("It looks like %s is reassigning its own `this.props` while rendering. This is not supported and can lead to confusing bugs.", getComponentNameFromFiber(workInProgress2) || "a component");
                 }
                 didWarnAboutReassigningProps = true;
               }
@@ -10550,14 +10489,14 @@
             if (current2 === null) {
               tryToClaimNextHydratableInstance(workInProgress2);
             }
-            var type2 = workInProgress2.type;
+            var type = workInProgress2.type;
             var nextProps = workInProgress2.pendingProps;
             var prevProps = current2 !== null ? current2.memoizedProps : null;
             var nextChildren = nextProps.children;
-            var isDirectTextChild = shouldSetTextContent(type2, nextProps);
+            var isDirectTextChild = shouldSetTextContent(type, nextProps);
             if (isDirectTextChild) {
               nextChildren = null;
-            } else if (prevProps !== null && shouldSetTextContent(type2, prevProps)) {
+            } else if (prevProps !== null && shouldSetTextContent(type, prevProps)) {
               workInProgress2.flags |= ContentReset;
             }
             markRef(current2, workInProgress2);
@@ -10662,7 +10601,7 @@
               context = getMaskedContext(workInProgress2, unmaskedContext);
             }
             prepareToReadContext(workInProgress2, renderLanes2);
-            var value2;
+            var value;
             var hasId;
             {
               markComponentRenderStarted(workInProgress2);
@@ -10671,7 +10610,7 @@
               if (Component.prototype && typeof Component.prototype.render === "function") {
                 var componentName = getComponentNameFromType(Component) || "Unknown";
                 if (!didWarnAboutBadClass[componentName]) {
-                  error2("The <%s /> component appears to have a render method, but doesn't extend React.Component. This is likely to cause errors. Change %s to extend React.Component instead.", componentName, componentName);
+                  error("The <%s /> component appears to have a render method, but doesn't extend React.Component. This is likely to cause errors. Change %s to extend React.Component instead.", componentName, componentName);
                   didWarnAboutBadClass[componentName] = true;
                 }
               }
@@ -10680,7 +10619,7 @@
               }
               setIsRendering(true);
               ReactCurrentOwner$1.current = workInProgress2;
-              value2 = renderWithHooks(null, workInProgress2, Component, props, context, renderLanes2);
+              value = renderWithHooks(null, workInProgress2, Component, props, context, renderLanes2);
               hasId = checkDidRenderIdHook();
               setIsRendering(false);
             }
@@ -10689,10 +10628,10 @@
             }
             workInProgress2.flags |= PerformedWork;
             {
-              if (typeof value2 === "object" && value2 !== null && typeof value2.render === "function" && value2.$$typeof === void 0) {
+              if (typeof value === "object" && value !== null && typeof value.render === "function" && value.$$typeof === void 0) {
                 var _componentName = getComponentNameFromType(Component) || "Unknown";
                 if (!didWarnAboutModulePatternComponent[_componentName]) {
-                  error2("The <%s /> component appears to be a function component that returns a class instance. Change %s to a class that extends React.Component instead. If you can't use a class try assigning the prototype on the function as a workaround. `%s.prototype = React.Component.prototype`. Don't use an arrow function since it cannot be called with `new` by React.", _componentName, _componentName, _componentName);
+                  error("The <%s /> component appears to be a function component that returns a class instance. Change %s to a class that extends React.Component instead. If you can't use a class try assigning the prototype on the function as a workaround. `%s.prototype = React.Component.prototype`. Don't use an arrow function since it cannot be called with `new` by React.", _componentName, _componentName, _componentName);
                   didWarnAboutModulePatternComponent[_componentName] = true;
                 }
               }
@@ -10700,12 +10639,12 @@
             if (
               // Run these checks in production only if the flag is off.
               // Eventually we'll delete this branch altogether.
-              typeof value2 === "object" && value2 !== null && typeof value2.render === "function" && value2.$$typeof === void 0
+              typeof value === "object" && value !== null && typeof value.render === "function" && value.$$typeof === void 0
             ) {
               {
                 var _componentName2 = getComponentNameFromType(Component) || "Unknown";
                 if (!didWarnAboutModulePatternComponent[_componentName2]) {
-                  error2("The <%s /> component appears to be a function component that returns a class instance. Change %s to a class that extends React.Component instead. If you can't use a class try assigning the prototype on the function as a workaround. `%s.prototype = React.Component.prototype`. Don't use an arrow function since it cannot be called with `new` by React.", _componentName2, _componentName2, _componentName2);
+                  error("The <%s /> component appears to be a function component that returns a class instance. Change %s to a class that extends React.Component instead. If you can't use a class try assigning the prototype on the function as a workaround. `%s.prototype = React.Component.prototype`. Don't use an arrow function since it cannot be called with `new` by React.", _componentName2, _componentName2, _componentName2);
                   didWarnAboutModulePatternComponent[_componentName2] = true;
                 }
               }
@@ -10719,9 +10658,9 @@
               } else {
                 hasContext = false;
               }
-              workInProgress2.memoizedState = value2.state !== null && value2.state !== void 0 ? value2.state : null;
+              workInProgress2.memoizedState = value.state !== null && value.state !== void 0 ? value.state : null;
               initializeUpdateQueue(workInProgress2);
-              adoptClassInstance(workInProgress2, value2);
+              adoptClassInstance(workInProgress2, value);
               mountClassInstance(workInProgress2, Component, props, renderLanes2);
               return finishClassComponent(null, workInProgress2, Component, true, hasContext, renderLanes2);
             } else {
@@ -10730,7 +10669,7 @@
                 if (workInProgress2.mode & StrictLegacyMode) {
                   setIsStrictModeForDevtools(true);
                   try {
-                    value2 = renderWithHooks(null, workInProgress2, Component, props, context, renderLanes2);
+                    value = renderWithHooks(null, workInProgress2, Component, props, context, renderLanes2);
                     hasId = checkDidRenderIdHook();
                   } finally {
                     setIsStrictModeForDevtools(false);
@@ -10740,7 +10679,7 @@
               if (getIsHydrating() && hasId) {
                 pushMaterializedTreeId(workInProgress2);
               }
-              reconcileChildren(null, workInProgress2, value2, renderLanes2);
+              reconcileChildren(null, workInProgress2, value, renderLanes2);
               {
                 validateFunctionComponentInDev(workInProgress2, Component);
               }
@@ -10751,7 +10690,7 @@
             {
               if (Component) {
                 if (Component.childContextTypes) {
-                  error2("%s(...): childContextTypes cannot be defined on a function component.", Component.displayName || Component.name || "Component");
+                  error("%s(...): childContextTypes cannot be defined on a function component.", Component.displayName || Component.name || "Component");
                 }
               }
               if (workInProgress2.ref !== null) {
@@ -10767,20 +10706,20 @@
                 }
                 if (!didWarnAboutFunctionRefs[warningKey]) {
                   didWarnAboutFunctionRefs[warningKey] = true;
-                  error2("Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?%s", info);
+                  error("Function components cannot be given refs. Attempts to access this ref will fail. Did you mean to use React.forwardRef()?%s", info);
                 }
               }
               if (typeof Component.getDerivedStateFromProps === "function") {
                 var _componentName3 = getComponentNameFromType(Component) || "Unknown";
                 if (!didWarnAboutGetDerivedStateOnFunctionComponent[_componentName3]) {
-                  error2("%s: Function components do not support getDerivedStateFromProps.", _componentName3);
+                  error("%s: Function components do not support getDerivedStateFromProps.", _componentName3);
                   didWarnAboutGetDerivedStateOnFunctionComponent[_componentName3] = true;
                 }
               }
               if (typeof Component.contextType === "object" && Component.contextType !== null) {
                 var _componentName4 = getComponentNameFromType(Component) || "Unknown";
                 if (!didWarnAboutContextTypeOnFunctionComponent[_componentName4]) {
-                  error2("%s: Function components do not support contextType.", _componentName4);
+                  error("%s: Function components do not support contextType.", _componentName4);
                   didWarnAboutContextTypeOnFunctionComponent[_componentName4] = true;
                 }
               }
@@ -11038,7 +10977,7 @@
           function mountDehydratedSuspenseComponent(workInProgress2, suspenseInstance, renderLanes2) {
             if ((workInProgress2.mode & ConcurrentMode) === NoMode) {
               {
-                error2("Cannot hydrate Suspense in legacy mode. Switch from ReactDOM.hydrate(element, container) to ReactDOMClient.hydrateRoot(container, <App />).render(element) or remove the Suspense components from the server rendered components.");
+                error("Cannot hydrate Suspense in legacy mode. Switch from ReactDOM.hydrate(element, container) to ReactDOMClient.hydrateRoot(container, <App />).render(element) or remove the Suspense components from the server rendered components.");
               }
               workInProgress2.lanes = laneToLanes(SyncLane);
             } else if (isSuspenseInstanceFallback(suspenseInstance)) {
@@ -11070,13 +11009,13 @@
                   message = _getSuspenseInstanceF.message;
                   stack = _getSuspenseInstanceF.stack;
                 }
-                var error3;
+                var error2;
                 if (message) {
-                  error3 = new Error(message);
+                  error2 = new Error(message);
                 } else {
-                  error3 = new Error("The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering.");
+                  error2 = new Error("The server could not finish this Suspense boundary, likely due to an error during server rendering. Switched to client rendering.");
                 }
-                var capturedValue = createCapturedValue(error3, digest, stack);
+                var capturedValue = createCapturedValue(error2, digest, stack);
                 return retrySuspenseComponentWithoutHydrating(current2, workInProgress2, renderLanes2, capturedValue);
               }
               var hasContextChanged2 = includesSomeLane(renderLanes2, current2.childLanes);
@@ -11184,20 +11123,20 @@
                     case "together":
                     case "forwards":
                     case "backwards": {
-                      error2('"%s" is not a valid value for revealOrder on <SuspenseList />. Use lowercase "%s" instead.', revealOrder, revealOrder.toLowerCase());
+                      error('"%s" is not a valid value for revealOrder on <SuspenseList />. Use lowercase "%s" instead.', revealOrder, revealOrder.toLowerCase());
                       break;
                     }
                     case "forward":
                     case "backward": {
-                      error2('"%s" is not a valid value for revealOrder on <SuspenseList />. React uses the -s suffix in the spelling. Use "%ss" instead.', revealOrder, revealOrder.toLowerCase());
+                      error('"%s" is not a valid value for revealOrder on <SuspenseList />. React uses the -s suffix in the spelling. Use "%ss" instead.', revealOrder, revealOrder.toLowerCase());
                       break;
                     }
                     default:
-                      error2('"%s" is not a supported revealOrder on <SuspenseList />. Did you mean "together", "forwards" or "backwards"?', revealOrder);
+                      error('"%s" is not a supported revealOrder on <SuspenseList />. Did you mean "together", "forwards" or "backwards"?', revealOrder);
                       break;
                   }
                 } else {
-                  error2('%s is not a supported value for revealOrder on <SuspenseList />. Did you mean "together", "forwards" or "backwards"?', revealOrder);
+                  error('%s is not a supported value for revealOrder on <SuspenseList />. Did you mean "together", "forwards" or "backwards"?', revealOrder);
                 }
               }
             }
@@ -11207,10 +11146,10 @@
               if (tailMode !== void 0 && !didWarnAboutTailOptions[tailMode]) {
                 if (tailMode !== "collapsed" && tailMode !== "hidden") {
                   didWarnAboutTailOptions[tailMode] = true;
-                  error2('"%s" is not a supported value for tail on <SuspenseList />. Did you mean "collapsed" or "hidden"?', tailMode);
+                  error('"%s" is not a supported value for tail on <SuspenseList />. Did you mean "collapsed" or "hidden"?', tailMode);
                 } else if (revealOrder !== "forwards" && revealOrder !== "backwards") {
                   didWarnAboutTailOptions[tailMode] = true;
-                  error2('<SuspenseList tail="%s" /> is only valid if revealOrder is "forwards" or "backwards". Did you mean to specify revealOrder="forwards"?', tailMode);
+                  error('<SuspenseList tail="%s" /> is only valid if revealOrder is "forwards" or "backwards". Did you mean to specify revealOrder="forwards"?', tailMode);
                 }
               }
             }
@@ -11220,8 +11159,8 @@
               var isAnArray = isArray(childSlot);
               var isIterable = !isAnArray && typeof getIteratorFn(childSlot) === "function";
               if (isAnArray || isIterable) {
-                var type2 = isAnArray ? "array" : "iterable";
-                error2("A nested %s was passed to row #%s in <SuspenseList />. Wrap it in an additional SuspenseList to configure its revealOrder: <SuspenseList revealOrder=...> ... <SuspenseList revealOrder=...>{%s}</SuspenseList> ... </SuspenseList>", type2, index2, type2);
+                var type = isAnArray ? "array" : "iterable";
+                error("A nested %s was passed to row #%s in <SuspenseList />. Wrap it in an additional SuspenseList to configure its revealOrder: <SuspenseList revealOrder=...> ... <SuspenseList revealOrder=...>{%s}</SuspenseList> ... </SuspenseList>", type, index2, type);
                 return false;
               }
             }
@@ -11231,8 +11170,8 @@
             {
               if ((revealOrder === "forwards" || revealOrder === "backwards") && children !== void 0 && children !== null && children !== false) {
                 if (isArray(children)) {
-                  for (var i3 = 0; i3 < children.length; i3++) {
-                    if (!validateSuspenseListNestedChild(children[i3], i3)) {
+                  for (var i = 0; i < children.length; i++) {
+                    if (!validateSuspenseListNestedChild(children[i], i)) {
                       return;
                     }
                   }
@@ -11251,7 +11190,7 @@
                       }
                     }
                   } else {
-                    error2('A single row was passed to a <SuspenseList revealOrder="%s" />. This is not useful since it needs multiple rows. Did you mean to pass multiple children or an array?', revealOrder);
+                    error('A single row was passed to a <SuspenseList revealOrder="%s" />. This is not useful since it needs multiple rows. Did you mean to pass multiple children or an array?', revealOrder);
                   }
                 }
               }
@@ -11390,7 +11329,7 @@
               if (!("value" in newProps)) {
                 if (!hasWarnedAboutUsingNoValuePropOnContextProvider) {
                   hasWarnedAboutUsingNoValuePropOnContextProvider = true;
-                  error2("The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it?");
+                  error("The `value` prop is required for the `<Context.Provider>`. Did you misspell it or forget to pass it?");
                 }
               }
               var providerPropTypes = workInProgress2.type.propTypes;
@@ -11423,7 +11362,7 @@
                 if (context !== context.Consumer) {
                   if (!hasWarnedAboutUsingContextAsConsumer) {
                     hasWarnedAboutUsingContextAsConsumer = true;
-                    error2("Rendering <Context> directly is not supported and will be removed in a future major release. Did you mean to render <Context.Consumer> instead?");
+                    error("Rendering <Context> directly is not supported and will be removed in a future major release. Did you mean to render <Context.Consumer> instead?");
                   }
                 }
               } else {
@@ -11434,7 +11373,7 @@
             var render2 = newProps.children;
             {
               if (typeof render2 !== "function") {
-                error2("A context consumer was rendered with multiple children, or a child that isn't a function. A context consumer expects a single child that is a function. If you did pass a function, make sure there is no trailing or leading whitespace around it.");
+                error("A context consumer was rendered with multiple children, or a child that isn't a function. A context consumer expects a single child that is a function. If you did pass a function, make sure there is no trailing or leading whitespace around it.");
               }
             }
             prepareToReadContext(workInProgress2, renderLanes2);
@@ -11690,10 +11629,10 @@
               case HostPortal:
                 return updatePortalComponent(current2, workInProgress2, renderLanes2);
               case ForwardRef: {
-                var type2 = workInProgress2.type;
+                var type = workInProgress2.type;
                 var _unresolvedProps2 = workInProgress2.pendingProps;
-                var _resolvedProps2 = workInProgress2.elementType === type2 ? _unresolvedProps2 : resolveDefaultProps(type2, _unresolvedProps2);
-                return updateForwardRef(current2, workInProgress2, type2, _resolvedProps2, renderLanes2);
+                var _resolvedProps2 = workInProgress2.elementType === type ? _unresolvedProps2 : resolveDefaultProps(type, _unresolvedProps2);
+                return updateForwardRef(current2, workInProgress2, type, _resolvedProps2, renderLanes2);
               }
               case Fragment:
                 return updateFragment(current2, workInProgress2, renderLanes2);
@@ -11805,14 +11744,14 @@
             };
             updateHostContainer = function(current2, workInProgress2) {
             };
-            updateHostComponent$1 = function(current2, workInProgress2, type2, newProps, rootContainerInstance) {
+            updateHostComponent$1 = function(current2, workInProgress2, type, newProps, rootContainerInstance) {
               var oldProps = current2.memoizedProps;
               if (oldProps === newProps) {
                 return;
               }
               var instance = workInProgress2.stateNode;
               var currentHostContext = getHostContext();
-              var updatePayload = prepareUpdate(instance, type2, oldProps, newProps, rootContainerInstance, currentHostContext);
+              var updatePayload = prepareUpdate(instance, type, oldProps, newProps, rootContainerInstance, currentHostContext);
               workInProgress2.updateQueue = updatePayload;
               if (updatePayload) {
                 markUpdate(workInProgress2);
@@ -11831,8 +11770,8 @@
                   var instance = node.stateNode;
                   if (needsVisibilityToggle && isHidden) {
                     var props = node.memoizedProps;
-                    var type2 = node.type;
-                    instance = cloneHiddenInstance(instance, type2, props, node);
+                    var type = node.type;
+                    instance = cloneHiddenInstance(instance, type, props, node);
                   }
                   appendInitialChild(parent, instance);
                 } else if (node.tag === HostText) {
@@ -11876,8 +11815,8 @@
                   var instance = node.stateNode;
                   if (needsVisibilityToggle && isHidden) {
                     var props = node.memoizedProps;
-                    var type2 = node.type;
-                    instance = cloneHiddenInstance(instance, type2, props, node);
+                    var type = node.type;
+                    instance = cloneHiddenInstance(instance, type, props, node);
                   }
                   appendChildToContainerChildSet(containerChildSet, instance);
                 } else if (node.tag === HostText) {
@@ -11928,7 +11867,7 @@
                 finalizeContainerChildren(container, newChildSet);
               }
             };
-            updateHostComponent$1 = function(current2, workInProgress2, type2, newProps, rootContainerInstance) {
+            updateHostComponent$1 = function(current2, workInProgress2, type, newProps, rootContainerInstance) {
               var currentInstance = current2.stateNode;
               var oldProps = current2.memoizedProps;
               var childrenUnchanged = hadNoMutationsEffects(current2, workInProgress2);
@@ -11940,14 +11879,14 @@
               var currentHostContext = getHostContext();
               var updatePayload = null;
               if (oldProps !== newProps) {
-                updatePayload = prepareUpdate(recyclableInstance, type2, oldProps, newProps, rootContainerInstance, currentHostContext);
+                updatePayload = prepareUpdate(recyclableInstance, type, oldProps, newProps, rootContainerInstance, currentHostContext);
               }
               if (childrenUnchanged && updatePayload === null) {
                 workInProgress2.stateNode = currentInstance;
                 return;
               }
-              var newInstance = cloneInstance(currentInstance, updatePayload, type2, oldProps, newProps, workInProgress2, childrenUnchanged, recyclableInstance);
-              if (finalizeInitialChildren(newInstance, type2, newProps, rootContainerInstance, currentHostContext)) {
+              var newInstance = cloneInstance(currentInstance, updatePayload, type, oldProps, newProps, workInProgress2, childrenUnchanged, recyclableInstance);
+              if (finalizeInitialChildren(newInstance, type, newProps, rootContainerInstance, currentHostContext)) {
                 markUpdate(workInProgress2);
               }
               workInProgress2.stateNode = newInstance;
@@ -11970,7 +11909,7 @@
           } else {
             updateHostContainer = function(current2, workInProgress2) {
             };
-            updateHostComponent$1 = function(current2, workInProgress2, type2, newProps, rootContainerInstance) {
+            updateHostComponent$1 = function(current2, workInProgress2, type, newProps, rootContainerInstance) {
             };
             updateHostText$1 = function(current2, workInProgress2, oldText, newText) {
             };
@@ -12185,9 +12124,9 @@
               case HostComponent: {
                 popHostContext(workInProgress2);
                 var rootContainerInstance = getRootHostContainer();
-                var type2 = workInProgress2.type;
+                var type = workInProgress2.type;
                 if (current2 !== null && workInProgress2.stateNode != null) {
-                  updateHostComponent$1(current2, workInProgress2, type2, newProps, rootContainerInstance);
+                  updateHostComponent$1(current2, workInProgress2, type, newProps, rootContainerInstance);
                   if (current2.ref !== workInProgress2.ref) {
                     markRef$1(workInProgress2);
                   }
@@ -12206,10 +12145,10 @@
                       markUpdate(workInProgress2);
                     }
                   } else {
-                    var instance = createInstance(type2, newProps, rootContainerInstance, currentHostContext, workInProgress2);
+                    var instance = createInstance(type, newProps, rootContainerInstance, currentHostContext, workInProgress2);
                     appendAllChildren(instance, workInProgress2, false, false);
                     workInProgress2.stateNode = instance;
-                    if (finalizeInitialChildren(instance, type2, newProps, rootContainerInstance, currentHostContext)) {
+                    if (finalizeInitialChildren(instance, type, newProps, rootContainerInstance, currentHostContext)) {
                       markUpdate(workInProgress2);
                     }
                   }
@@ -12573,19 +12512,19 @@
                 break;
             }
           }
-          function invokeGuardedCallbackProd(name, func, context, a2, b, c2, d3, e3, f3) {
+          function invokeGuardedCallbackProd(name, func, context, a, b, c, d, e, f) {
             var funcArgs = Array.prototype.slice.call(arguments, 3);
             try {
               func.apply(context, funcArgs);
-            } catch (error3) {
-              this.onError(error3);
+            } catch (error2) {
+              this.onError(error2);
             }
           }
           var invokeGuardedCallbackImpl = invokeGuardedCallbackProd;
           {
             if (typeof window !== "undefined" && typeof window.dispatchEvent === "function" && typeof document !== "undefined" && typeof document.createEvent === "function") {
               var fakeNode = document.createElement("react");
-              invokeGuardedCallbackImpl = function invokeGuardedCallbackDev(name, func, context, a2, b, c2, d3, e3, f3) {
+              invokeGuardedCallbackImpl = function invokeGuardedCallbackDev(name, func, context, a, b, c, d, e, f) {
                 if (typeof document === "undefined" || document === null) {
                   throw new Error("The `document` global was defined when React was initialized, but is not defined anymore. This can happen in a test environment if a component schedules an update from an asynchronous callback, but the test has already finished running. To solve this, you can either unmount the component at the end of your test (and ensure that any asynchronous operations get canceled in `componentWillUnmount`), or you can change the test itself to be asynchronous.");
                 }
@@ -12607,19 +12546,19 @@
                   func.apply(context, funcArgs);
                   didError = false;
                 }
-                var error3;
+                var error2;
                 var didSetError = false;
                 var isCrossOriginError = false;
                 function handleWindowError(event) {
-                  error3 = event.error;
+                  error2 = event.error;
                   didSetError = true;
-                  if (error3 === null && event.colno === 0 && event.lineno === 0) {
+                  if (error2 === null && event.colno === 0 && event.lineno === 0) {
                     isCrossOriginError = true;
                   }
                   if (event.defaultPrevented) {
-                    if (error3 != null && typeof error3 === "object") {
+                    if (error2 != null && typeof error2 === "object") {
                       try {
-                        error3._suppressLogging = true;
+                        error2._suppressLogging = true;
                       } catch (inner) {
                       }
                     }
@@ -12635,11 +12574,11 @@
                 }
                 if (didCall && didError) {
                   if (!didSetError) {
-                    error3 = new Error(`An error was thrown inside one of your components, but React doesn't know what it was. This is likely due to browser flakiness. React does its best to preserve the "Pause on exceptions" behavior of the DevTools, which requires some DEV-mode only tricks. It's possible that these don't work in your browser. Try triggering the error in production mode, or switching to a modern browser. If you suspect that this is actually an issue with React, please file an issue.`);
+                    error2 = new Error(`An error was thrown inside one of your components, but React doesn't know what it was. This is likely due to browser flakiness. React does its best to preserve the "Pause on exceptions" behavior of the DevTools, which requires some DEV-mode only tricks. It's possible that these don't work in your browser. Try triggering the error in production mode, or switching to a modern browser. If you suspect that this is actually an issue with React, please file an issue.`);
                   } else if (isCrossOriginError) {
-                    error3 = new Error("A cross-origin error was thrown. React doesn't have access to the actual error object in development. See https://reactjs.org/link/crossorigin-error for more information.");
+                    error2 = new Error("A cross-origin error was thrown. React doesn't have access to the actual error object in development. See https://reactjs.org/link/crossorigin-error for more information.");
                   }
-                  this.onError(error3);
+                  this.onError(error2);
                 }
                 window.removeEventListener("error", handleWindowError);
                 if (!didCall) {
@@ -12653,12 +12592,12 @@
           var hasError = false;
           var caughtError = null;
           var reporter = {
-            onError: function(error3) {
+            onError: function(error2) {
               hasError = true;
-              caughtError = error3;
+              caughtError = error2;
             }
           };
-          function invokeGuardedCallback(name, func, context, a2, b, c2, d3, e3, f3) {
+          function invokeGuardedCallback(name, func, context, a, b, c, d, e, f) {
             hasError = false;
             caughtError = null;
             invokeGuardedCallbackImpl$1.apply(reporter, arguments);
@@ -12668,10 +12607,10 @@
           }
           function clearCaughtError() {
             if (hasError) {
-              var error3 = caughtError;
+              var error2 = caughtError;
               hasError = false;
               caughtError = null;
-              return error3;
+              return error2;
             } else {
               throw new Error("clearCaughtError was called but no error was captured. This error is likely caused by a bug in React. Please file an issue.");
             }
@@ -12686,10 +12625,10 @@
           var nextEffect = null;
           var inProgressLanes = null;
           var inProgressRoot = null;
-          function reportUncaughtErrorInDEV(error3) {
+          function reportUncaughtErrorInDEV(error2) {
             {
               invokeGuardedCallback(null, function() {
-                throw error3;
+                throw error2;
               });
               clearCaughtError();
             }
@@ -12711,29 +12650,29 @@
           function safelyCallCommitHookLayoutEffectListMount(current2, nearestMountedAncestor) {
             try {
               commitHookEffectListMount(Layout, current2);
-            } catch (error3) {
-              captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+            } catch (error2) {
+              captureCommitPhaseError(current2, nearestMountedAncestor, error2);
             }
           }
           function safelyCallComponentWillUnmount(current2, nearestMountedAncestor, instance) {
             try {
               callComponentWillUnmountWithTimer(current2, instance);
-            } catch (error3) {
-              captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+            } catch (error2) {
+              captureCommitPhaseError(current2, nearestMountedAncestor, error2);
             }
           }
           function safelyCallComponentDidMount(current2, nearestMountedAncestor, instance) {
             try {
               instance.componentDidMount();
-            } catch (error3) {
-              captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+            } catch (error2) {
+              captureCommitPhaseError(current2, nearestMountedAncestor, error2);
             }
           }
           function safelyAttachRef(current2, nearestMountedAncestor) {
             try {
               commitAttachRef(current2);
-            } catch (error3) {
-              captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+            } catch (error2) {
+              captureCommitPhaseError(current2, nearestMountedAncestor, error2);
             }
           }
           function safelyDetachRef(current2, nearestMountedAncestor) {
@@ -12752,12 +12691,12 @@
                   } else {
                     retVal = ref(null);
                   }
-                } catch (error3) {
-                  captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+                } catch (error2) {
+                  captureCommitPhaseError(current2, nearestMountedAncestor, error2);
                 }
                 {
                   if (typeof retVal === "function") {
-                    error2("Unexpected return value from a callback ref in %s. A callback ref should not return a function.", getComponentNameFromFiber(current2));
+                    error("Unexpected return value from a callback ref in %s. A callback ref should not return a function.", getComponentNameFromFiber(current2));
                   }
                 }
               } else {
@@ -12768,8 +12707,8 @@
           function safelyCallDestroy(current2, nearestMountedAncestor, destroy) {
             try {
               destroy();
-            } catch (error3) {
-              captureCommitPhaseError(current2, nearestMountedAncestor, error3);
+            } catch (error2) {
+              captureCommitPhaseError(current2, nearestMountedAncestor, error2);
             }
           }
           var focusedInstanceHandle = null;
@@ -12801,8 +12740,8 @@
               setCurrentFiber(fiber);
               try {
                 commitBeforeMutationEffectsOnFiber(fiber);
-              } catch (error3) {
-                captureCommitPhaseError(fiber, fiber.return, error3);
+              } catch (error2) {
+                captureCommitPhaseError(fiber, fiber.return, error2);
               }
               resetCurrentFiber();
               var sibling = fiber.sibling;
@@ -12833,10 +12772,10 @@
                     {
                       if (finishedWork.type === finishedWork.elementType && !didWarnAboutReassigningProps) {
                         if (instance.props !== finishedWork.memoizedProps) {
-                          error2("Expected %s props to match memoized props before getSnapshotBeforeUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                          error("Expected %s props to match memoized props before getSnapshotBeforeUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                         }
                         if (instance.state !== finishedWork.memoizedState) {
-                          error2("Expected %s state to match memoized state before getSnapshotBeforeUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                          error("Expected %s state to match memoized state before getSnapshotBeforeUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                         }
                       }
                     }
@@ -12845,7 +12784,7 @@
                       var didWarnSet = didWarnAboutUndefinedSnapshotBeforeUpdate;
                       if (snapshot === void 0 && !didWarnSet.has(finishedWork.type)) {
                         didWarnSet.add(finishedWork.type);
-                        error2("%s.getSnapshotBeforeUpdate(): A snapshot value (or null) must be returned. You have returned undefined.", getComponentNameFromFiber(finishedWork));
+                        error("%s.getSnapshotBeforeUpdate(): A snapshot value (or null) must be returned. You have returned undefined.", getComponentNameFromFiber(finishedWork));
                       }
                     }
                     instance.__reactInternalSnapshotBeforeUpdate = snapshot;
@@ -12966,7 +12905,7 @@
                       } else {
                         addendum = " You returned: " + destroy;
                       }
-                      error2("%s must not return anything besides a function, which is used for clean-up.%s", hookName, addendum);
+                      error("%s must not return anything besides a function, which is used for clean-up.%s", hookName, addendum);
                     }
                   }
                 }
@@ -13040,10 +12979,10 @@
                         {
                           if (finishedWork.type === finishedWork.elementType && !didWarnAboutReassigningProps) {
                             if (instance.props !== finishedWork.memoizedProps) {
-                              error2("Expected %s props to match memoized props before componentDidMount. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                              error("Expected %s props to match memoized props before componentDidMount. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                             }
                             if (instance.state !== finishedWork.memoizedState) {
-                              error2("Expected %s state to match memoized state before componentDidMount. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                              error("Expected %s state to match memoized state before componentDidMount. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                             }
                           }
                         }
@@ -13063,10 +13002,10 @@
                         {
                           if (finishedWork.type === finishedWork.elementType && !didWarnAboutReassigningProps) {
                             if (instance.props !== finishedWork.memoizedProps) {
-                              error2("Expected %s props to match memoized props before componentDidUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                              error("Expected %s props to match memoized props before componentDidUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                             }
                             if (instance.state !== finishedWork.memoizedState) {
-                              error2("Expected %s state to match memoized state before componentDidUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                              error("Expected %s state to match memoized state before componentDidUpdate. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                             }
                           }
                         }
@@ -13088,10 +13027,10 @@
                     {
                       if (finishedWork.type === finishedWork.elementType && !didWarnAboutReassigningProps) {
                         if (instance.props !== finishedWork.memoizedProps) {
-                          error2("Expected %s props to match memoized props before processing the update queue. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                          error("Expected %s props to match memoized props before processing the update queue. This might either be because of a bug in React, or because a component reassigns its own `this.props`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                         }
                         if (instance.state !== finishedWork.memoizedState) {
-                          error2("Expected %s state to match memoized state before processing the update queue. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
+                          error("Expected %s state to match memoized state before processing the update queue. This might either be because of a bug in React, or because a component reassigns its own `this.state`. Please file an issue.", getComponentNameFromFiber(finishedWork) || "instance");
                         }
                       }
                     }
@@ -13120,9 +13059,9 @@
                 case HostComponent: {
                   var _instance2 = finishedWork.stateNode;
                   if (current2 === null && finishedWork.flags & Update) {
-                    var type2 = finishedWork.type;
+                    var type = finishedWork.type;
                     var props = finishedWork.memoizedProps;
-                    commitMount(_instance2, type2, props, finishedWork);
+                    commitMount(_instance2, type, props, finishedWork);
                   }
                   break;
                 }
@@ -13240,8 +13179,8 @@
                       } else {
                         unhideInstance(node.stateNode, node.memoizedProps);
                       }
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 } else if (node.tag === HostText) {
@@ -13253,8 +13192,8 @@
                       } else {
                         unhideTextInstance(_instance3, node.memoizedProps);
                       }
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 } else if ((node.tag === OffscreenComponent || node.tag === LegacyHiddenComponent) && node.memoizedState !== null && node !== finishedWork)
@@ -13310,13 +13249,13 @@
                 }
                 {
                   if (typeof retVal === "function") {
-                    error2("Unexpected return value from a callback ref in %s. A callback ref should not return a function.", getComponentNameFromFiber(finishedWork));
+                    error("Unexpected return value from a callback ref in %s. A callback ref should not return a function.", getComponentNameFromFiber(finishedWork));
                   }
                 }
               } else {
                 {
                   if (!ref.hasOwnProperty("current")) {
-                    error2("Unexpected ref object provided for %s. Use either a ref-setter function or React.createRef().", getComponentNameFromFiber(finishedWork));
+                    error("Unexpected ref object provided for %s. Use either a ref-setter function or React.createRef().", getComponentNameFromFiber(finishedWork));
                   }
                 }
                 ref.current = instanceToUse;
@@ -13719,12 +13658,12 @@
           function recursivelyTraverseMutationEffects(root, parentFiber, lanes) {
             var deletions = parentFiber.deletions;
             if (deletions !== null) {
-              for (var i3 = 0; i3 < deletions.length; i3++) {
-                var childToDelete = deletions[i3];
+              for (var i = 0; i < deletions.length; i++) {
+                var childToDelete = deletions[i];
                 try {
                   commitDeletionEffects(root, parentFiber, childToDelete);
-                } catch (error3) {
-                  captureCommitPhaseError(childToDelete, parentFiber, error3);
+                } catch (error2) {
+                  captureCommitPhaseError(childToDelete, parentFiber, error2);
                 }
               }
             }
@@ -13753,22 +13692,22 @@
                   try {
                     commitHookEffectListUnmount(Insertion | HasEffect, finishedWork, finishedWork.return);
                     commitHookEffectListMount(Insertion | HasEffect, finishedWork);
-                  } catch (error3) {
-                    captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                   }
                   if (finishedWork.mode & ProfileMode) {
                     try {
                       startLayoutEffectTimer();
                       commitHookEffectListUnmount(Layout | HasEffect, finishedWork, finishedWork.return);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                     recordLayoutEffectDuration(finishedWork);
                   } else {
                     try {
                       commitHookEffectListUnmount(Layout | HasEffect, finishedWork, finishedWork.return);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 }
@@ -13797,8 +13736,8 @@
                     var instance = finishedWork.stateNode;
                     try {
                       resetTextContent(instance);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                   if (flags & Update) {
@@ -13806,14 +13745,14 @@
                     if (_instance4 != null) {
                       var newProps = finishedWork.memoizedProps;
                       var oldProps = current2 !== null ? current2.memoizedProps : newProps;
-                      var type2 = finishedWork.type;
+                      var type = finishedWork.type;
                       var updatePayload = finishedWork.updateQueue;
                       finishedWork.updateQueue = null;
                       if (updatePayload !== null) {
                         try {
-                          commitUpdate(_instance4, updatePayload, type2, oldProps, newProps, finishedWork);
-                        } catch (error3) {
-                          captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                          commitUpdate(_instance4, updatePayload, type, oldProps, newProps, finishedWork);
+                        } catch (error2) {
+                          captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                         }
                       }
                     }
@@ -13834,8 +13773,8 @@
                     var oldText = current2 !== null ? current2.memoizedProps : newText;
                     try {
                       commitTextUpdate(textInstance, oldText, newText);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 }
@@ -13851,8 +13790,8 @@
                       if (prevRootState.isDehydrated) {
                         try {
                           commitHydratedContainer(root.containerInfo);
-                        } catch (error3) {
-                          captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                        } catch (error2) {
+                          captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                         }
                       }
                     }
@@ -13862,8 +13801,8 @@
                     var pendingChildren = root.pendingChildren;
                     try {
                       replaceContainerChildren(containerInfo, pendingChildren);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 }
@@ -13879,8 +13818,8 @@
                     var _pendingChildren = portal.pendingChildren;
                     try {
                       replaceContainerChildren(_containerInfo, _pendingChildren);
-                    } catch (error3) {
-                      captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                    } catch (error2) {
+                      captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                     }
                   }
                 }
@@ -13905,8 +13844,8 @@
                 if (flags & Update) {
                   try {
                     commitSuspenseCallback(finishedWork);
-                  } catch (error3) {
-                    captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(finishedWork, finishedWork.return, error2);
                   }
                   attachSuspenseRetryListeners(finishedWork);
                 }
@@ -13976,8 +13915,8 @@
             if (flags & Placement) {
               try {
                 commitPlacement(finishedWork);
-              } catch (error3) {
-                captureCommitPhaseError(finishedWork, finishedWork.return, error3);
+              } catch (error2) {
+                captureCommitPhaseError(finishedWork, finishedWork.return, error2);
               }
               finishedWork.flags &= ~Placement;
             }
@@ -14050,8 +13989,8 @@
                 setCurrentFiber(fiber);
                 try {
                   commitLayoutEffectOnFiber(root, current2, fiber, committedLanes);
-                } catch (error3) {
-                  captureCommitPhaseError(fiber, fiber.return, error3);
+                } catch (error2) {
+                  captureCommitPhaseError(fiber, fiber.return, error2);
                 }
                 resetCurrentFiber();
               }
@@ -14159,8 +14098,8 @@
               setCurrentFiber(fiber);
               try {
                 reappearLayoutEffectsOnFiber(fiber);
-              } catch (error3) {
-                captureCommitPhaseError(fiber, fiber.return, error3);
+              } catch (error2) {
+                captureCommitPhaseError(fiber, fiber.return, error2);
               }
               resetCurrentFiber();
               if (fiber === subtreeRoot) {
@@ -14199,8 +14138,8 @@
                 setCurrentFiber(fiber);
                 try {
                   commitPassiveMountOnFiber(root, fiber, committedLanes, committedTransitions);
-                } catch (error3) {
-                  captureCommitPhaseError(fiber, fiber.return, error3);
+                } catch (error2) {
+                  captureCommitPhaseError(fiber, fiber.return, error2);
                 }
                 resetCurrentFiber();
               }
@@ -14247,8 +14186,8 @@
               if ((nextEffect.flags & ChildDeletion) !== NoFlags) {
                 var deletions = fiber.deletions;
                 if (deletions !== null) {
-                  for (var i3 = 0; i3 < deletions.length; i3++) {
-                    var fiberToDelete = deletions[i3];
+                  for (var i = 0; i < deletions.length; i++) {
+                    var fiberToDelete = deletions[i];
                     nextEffect = fiberToDelete;
                     commitPassiveUnmountEffectsInsideOfDeletedTree_begin(fiberToDelete, fiber);
                   }
@@ -14369,8 +14308,8 @@
                 case SimpleMemoComponent: {
                   try {
                     commitHookEffectListMount(Layout | HasEffect, fiber);
-                  } catch (error3) {
-                    captureCommitPhaseError(fiber, fiber.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(fiber, fiber.return, error2);
                   }
                   break;
                 }
@@ -14378,8 +14317,8 @@
                   var instance = fiber.stateNode;
                   try {
                     instance.componentDidMount();
-                  } catch (error3) {
-                    captureCommitPhaseError(fiber, fiber.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(fiber, fiber.return, error2);
                   }
                   break;
                 }
@@ -14394,8 +14333,8 @@
                 case SimpleMemoComponent: {
                   try {
                     commitHookEffectListMount(Passive$1 | HasEffect, fiber);
-                  } catch (error3) {
-                    captureCommitPhaseError(fiber, fiber.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(fiber, fiber.return, error2);
                   }
                   break;
                 }
@@ -14410,8 +14349,8 @@
                 case SimpleMemoComponent: {
                   try {
                     commitHookEffectListUnmount(Layout | HasEffect, fiber, fiber.return);
-                  } catch (error3) {
-                    captureCommitPhaseError(fiber, fiber.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(fiber, fiber.return, error2);
                   }
                   break;
                 }
@@ -14433,8 +14372,8 @@
                 case SimpleMemoComponent: {
                   try {
                     commitHookEffectListUnmount(Passive$1 | HasEffect, fiber, fiber.return);
-                  } catch (error3) {
-                    captureCommitPhaseError(fiber, fiber.return, error3);
+                  } catch (error2) {
+                    captureCommitPhaseError(fiber, fiber.return, error2);
                   }
                 }
               }
@@ -14666,8 +14605,8 @@
             }
             if (maxSelectorIndex < selectors.length) {
               var unmatchedNames = [];
-              for (var i3 = maxSelectorIndex; i3 < selectors.length; i3++) {
-                unmatchedNames.push(selectorToString(selectors[i3]));
+              for (var i = maxSelectorIndex; i < selectors.length; i++) {
+                unmatchedNames.push(selectorToString(selectors[i]));
               }
               return "findAllNodes was able to match part of the selector:\n" + ("  " + matchedNames.join(" > ") + "\n\n") + "No matching component was found for:\n" + ("  " + unmatchedNames.join(" > "));
             }
@@ -14679,8 +14618,8 @@
             }
             var instanceRoots = findAllNodes(hostRoot, selectors);
             var boundingRects = [];
-            for (var i3 = 0; i3 < instanceRoots.length; i3++) {
-              boundingRects.push(getBoundingRect(instanceRoots[i3]));
+            for (var i = 0; i < instanceRoots.length; i++) {
+              boundingRects.push(getBoundingRect(instanceRoots[i]));
             }
             for (var _i = boundingRects.length - 1; _i > 0; _i--) {
               var targetRect = boundingRects[_i];
@@ -14807,7 +14746,7 @@
                 typeof IS_REACT_ACT_ENVIRONMENT !== "undefined" ? IS_REACT_ACT_ENVIRONMENT : void 0
               );
               if (!isReactActEnvironmentGlobal && ReactCurrentActQueue.current !== null) {
-                error2("The current testing environment is not configured to support act(...)");
+                error("The current testing environment is not configured to support act(...)");
               }
               return isReactActEnvironmentGlobal;
             }
@@ -14933,7 +14872,7 @@
             checkForNestedUpdates();
             {
               if (isRunningInsertionEffect) {
-                error2("useInsertionEffect must not schedule updates.");
+                error("useInsertionEffect must not schedule updates.");
               }
             }
             {
@@ -15000,7 +14939,7 @@
             !(ReactCurrentActQueue$1.current !== null && existingCallbackNode !== fakeActCallbackNode)) {
               {
                 if (existingCallbackNode == null && existingCallbackPriority !== SyncLane) {
-                  error2("Expected scheduled callback to exist. This error is likely caused by a bug in React. Please file an issue.");
+                  error("Expected scheduled callback to exist. This error is likely caused by a bug in React. Please file an issue.");
                 }
               }
               return;
@@ -15220,15 +15159,15 @@
                 if (updateQueue !== null) {
                   var checks = updateQueue.stores;
                   if (checks !== null) {
-                    for (var i3 = 0; i3 < checks.length; i3++) {
-                      var check = checks[i3];
+                    for (var i = 0; i < checks.length; i++) {
+                      var check = checks[i];
                       var getSnapshot = check.getSnapshot;
                       var renderedValue = check.value;
                       try {
                         if (!objectIs(getSnapshot(), renderedValue)) {
                           return false;
                         }
-                      } catch (error3) {
+                      } catch (error2) {
                         return false;
                       }
                     }
@@ -15320,11 +15259,11 @@
               ReactCurrentBatchConfig$2.transition = prevTransition;
             }
           }
-          function batchedUpdates(fn, a2) {
+          function batchedUpdates(fn, a) {
             var prevExecutionContext = executionContext;
             executionContext |= BatchedContext;
             try {
-              return fn(a2);
+              return fn(a);
             } finally {
               executionContext = prevExecutionContext;
               if (executionContext === NoContext && // Treat `act` as if it's inside `batchedUpdates`, even in legacy mode.
@@ -15334,13 +15273,13 @@
               }
             }
           }
-          function discreteUpdates(fn, a2, b, c2, d3) {
+          function discreteUpdates(fn, a, b, c, d) {
             var previousPriority = getCurrentUpdatePriority();
             var prevTransition = ReactCurrentBatchConfig$2.transition;
             try {
               ReactCurrentBatchConfig$2.transition = null;
               setCurrentUpdatePriority(DiscreteEventPriority);
-              return fn(a2, b, c2, d3);
+              return fn(a, b, c, d);
             } finally {
               setCurrentUpdatePriority(previousPriority);
               ReactCurrentBatchConfig$2.transition = prevTransition;
@@ -15397,7 +15336,7 @@
             }
           }
           function pushRenderLanes(fiber, lanes) {
-            push3(subtreeRenderLanesCursor, subtreeRenderLanes, fiber);
+            push(subtreeRenderLanesCursor, subtreeRenderLanes, fiber);
             subtreeRenderLanes = mergeLanes(subtreeRenderLanes, lanes);
             workInProgressRootIncludedLanes = mergeLanes(workInProgressRootIncludedLanes, lanes);
           }
@@ -15510,14 +15449,14 @@
               markRootSuspended$1(workInProgressRoot, workInProgressRootRenderLanes);
             }
           }
-          function renderDidError(error3) {
+          function renderDidError(error2) {
             if (workInProgressRootExitStatus !== RootSuspendedWithDelay) {
               workInProgressRootExitStatus = RootErrored;
             }
             if (workInProgressRootConcurrentErrors === null) {
-              workInProgressRootConcurrentErrors = [error3];
+              workInProgressRootConcurrentErrors = [error2];
             } else {
-              workInProgressRootConcurrentErrors.push(error3);
+              workInProgressRootConcurrentErrors.push(error2);
             }
           }
           function renderHasNotSuspendedYet() {
@@ -15735,7 +15674,7 @@
             } else {
               {
                 if (lanes === NoLanes) {
-                  error2("root.finishedLanes should not be empty during a commit. This is a bug in React.");
+                  error("root.finishedLanes should not be empty during a commit. This is a bug in React.");
                 }
               }
             }
@@ -15829,8 +15768,8 @@
             ensureRootIsScheduled(root, now());
             if (recoverableErrors !== null) {
               var onRecoverableError = root.onRecoverableError;
-              for (var i3 = 0; i3 < recoverableErrors.length; i3++) {
-                var recoverableError = recoverableErrors[i3];
+              for (var i = 0; i < recoverableErrors.length; i++) {
+                var recoverableError = recoverableErrors[i];
                 var componentStack = recoverableError.stack;
                 var digest = recoverableError.digest;
                 onRecoverableError(recoverableError.value, {
@@ -15924,8 +15863,8 @@
             {
               var profilerEffects = pendingPassiveProfilerEffects;
               pendingPassiveProfilerEffects = [];
-              for (var i3 = 0; i3 < profilerEffects.length; i3++) {
-                var _fiber = profilerEffects[i3];
+              for (var i = 0; i < profilerEffects.length; i++) {
+                var _fiber = profilerEffects[i];
                 commitPassiveEffectDurations(root, _fiber);
               }
             }
@@ -15969,15 +15908,15 @@
               legacyErrorBoundariesThatAlreadyFailed.add(instance);
             }
           }
-          function prepareToThrowUncaughtError(error3) {
+          function prepareToThrowUncaughtError(error2) {
             if (!hasUncaughtError) {
               hasUncaughtError = true;
-              firstUncaughtError = error3;
+              firstUncaughtError = error2;
             }
           }
           var onUncaughtError = prepareToThrowUncaughtError;
-          function captureCommitPhaseErrorOnRoot(rootFiber, sourceFiber, error3) {
-            var errorInfo = createCapturedValueAtFiber(error3, sourceFiber);
+          function captureCommitPhaseErrorOnRoot(rootFiber, sourceFiber, error2) {
+            var errorInfo = createCapturedValueAtFiber(error2, sourceFiber);
             var update = createRootErrorUpdate(rootFiber, errorInfo, SyncLane);
             var root = enqueueUpdate(rootFiber, update, SyncLane);
             var eventTime = requestEventTime();
@@ -16021,7 +15960,7 @@
               fiber = fiber.return;
             }
             {
-              error2("Internal React error: Attempted to capture a commit phase error inside a detached tree. This indicates a bug in React. Likely causes include deleting the same fiber more than once, committing an already-finished tree, or an inconsistent return pointer.\n\nError message:\n\n%s", error$1);
+              error("Internal React error: Attempted to capture a commit phase error inside a detached tree. This indicates a bug in React. Likely causes include deleting the same fiber more than once, committing an already-finished tree, or an inconsistent return pointer.\n\nError message:\n\n%s", error$1);
             }
           }
           function pingSuspendedRoot(root, wakeable, pingedLanes) {
@@ -16095,7 +16034,7 @@
               if (nestedPassiveUpdateCount > NESTED_PASSIVE_UPDATE_LIMIT) {
                 nestedPassiveUpdateCount = 0;
                 rootWithPassiveNestedUpdates = null;
-                error2("Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.");
+                error("Maximum update depth exceeded. This can happen when a component calls setState inside useEffect, but useEffect either doesn't have a dependency array, or one of the dependencies changes on every render.");
               }
             }
           }
@@ -16167,7 +16106,7 @@
               var previousFiber = current;
               try {
                 setCurrentFiber(fiber);
-                error2("Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously later calls tries to update the component. Move this work to useEffect instead.");
+                error("Can't perform a React state update on a component that hasn't mounted yet. This indicates that you have a side-effect in your render function that asynchronously later calls tries to update the component. Move this work to useEffect instead.");
               } finally {
                 if (previousFiber) {
                   setCurrentFiber(fiber);
@@ -16223,13 +16162,13 @@
                     if (!didWarnAboutUpdateInRenderForAnotherComponent.has(dedupeKey)) {
                       didWarnAboutUpdateInRenderForAnotherComponent.add(dedupeKey);
                       var setStateComponentName = getComponentNameFromFiber(fiber) || "Unknown";
-                      error2("Cannot update a component (`%s`) while rendering a different component (`%s`). To locate the bad setState() call inside `%s`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render", setStateComponentName, renderingComponentName, renderingComponentName);
+                      error("Cannot update a component (`%s`) while rendering a different component (`%s`). To locate the bad setState() call inside `%s`, follow the stack trace as described in https://reactjs.org/link/setstate-in-render", setStateComponentName, renderingComponentName, renderingComponentName);
                     }
                     break;
                   }
                   case ClassComponent: {
                     if (!didWarnAboutUpdateInRender) {
-                      error2("Cannot update during an existing state transition (such as within `render`). Render methods should be a pure function of props and state.");
+                      error("Cannot update during an existing state transition (such as within `render`). Render methods should be a pure function of props and state.");
                       didWarnAboutUpdateInRender = true;
                     }
                     break;
@@ -16290,7 +16229,7 @@
                 var previousFiber = current;
                 try {
                   setCurrentFiber(fiber);
-                  error2("An update to %s inside a test was not wrapped in act(...).\n\nWhen testing, code that causes React state updates should be wrapped into act(...):\n\nact(() => {\n  /* fire events that update state */\n});\n/* assert on the output */\n\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act", getComponentNameFromFiber(fiber));
+                  error("An update to %s inside a test was not wrapped in act(...).\n\nWhen testing, code that causes React state updates should be wrapped into act(...):\n\nact(() => {\n  /* fire events that update state */\n});\n/* assert on the output */\n\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act", getComponentNameFromFiber(fiber));
                 } finally {
                   if (previousFiber) {
                     setCurrentFiber(fiber);
@@ -16304,7 +16243,7 @@
           function warnIfSuspenseResolutionNotWrappedWithActDEV(root) {
             {
               if (root.tag !== LegacyRoot && isConcurrentActEnvironment() && ReactCurrentActQueue$1.current === null) {
-                error2("A suspended resource finished loading inside a test, but the event was not wrapped in act(...).\n\nWhen testing, code that resolves suspended data should be wrapped into act(...):\n\nact(() => {\n  /* finish loading suspended data */\n});\n/* assert on the output */\n\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act");
+                error("A suspended resource finished loading inside a test, but the event was not wrapped in act(...).\n\nWhen testing, code that resolves suspended data should be wrapped into act(...):\n\nact(() => {\n  /* finish loading suspended data */\n});\n/* assert on the output */\n\nThis ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act");
               }
             }
           }
@@ -16320,42 +16259,42 @@
               resolveFamily = handler;
             }
           };
-          function resolveFunctionForHotReloading(type2) {
+          function resolveFunctionForHotReloading(type) {
             {
               if (resolveFamily === null) {
-                return type2;
+                return type;
               }
-              var family = resolveFamily(type2);
+              var family = resolveFamily(type);
               if (family === void 0) {
-                return type2;
+                return type;
               }
               return family.current;
             }
           }
-          function resolveClassForHotReloading(type2) {
-            return resolveFunctionForHotReloading(type2);
+          function resolveClassForHotReloading(type) {
+            return resolveFunctionForHotReloading(type);
           }
-          function resolveForwardRefForHotReloading(type2) {
+          function resolveForwardRefForHotReloading(type) {
             {
               if (resolveFamily === null) {
-                return type2;
+                return type;
               }
-              var family = resolveFamily(type2);
+              var family = resolveFamily(type);
               if (family === void 0) {
-                if (type2 !== null && type2 !== void 0 && typeof type2.render === "function") {
-                  var currentRender = resolveFunctionForHotReloading(type2.render);
-                  if (type2.render !== currentRender) {
+                if (type !== null && type !== void 0 && typeof type.render === "function") {
+                  var currentRender = resolveFunctionForHotReloading(type.render);
+                  if (type.render !== currentRender) {
                     var syntheticType = {
                       $$typeof: REACT_FORWARD_REF_TYPE,
                       render: currentRender
                     };
-                    if (type2.displayName !== void 0) {
-                      syntheticType.displayName = type2.displayName;
+                    if (type.displayName !== void 0) {
+                      syntheticType.displayName = type.displayName;
                     }
                     return syntheticType;
                   }
                 }
-                return type2;
+                return type;
               }
               return family.current;
             }
@@ -16452,16 +16391,16 @@
           };
           function scheduleFibersWithFamiliesRecursively(fiber, updatedFamilies, staleFamilies) {
             {
-              var alternate = fiber.alternate, child = fiber.child, sibling = fiber.sibling, tag = fiber.tag, type2 = fiber.type;
+              var alternate = fiber.alternate, child = fiber.child, sibling = fiber.sibling, tag = fiber.tag, type = fiber.type;
               var candidateType = null;
               switch (tag) {
                 case FunctionComponent:
                 case SimpleMemoComponent:
                 case ClassComponent:
-                  candidateType = type2;
+                  candidateType = type;
                   break;
                 case ForwardRef:
-                  candidateType = type2.render;
+                  candidateType = type.render;
                   break;
               }
               if (resolveFamily === null) {
@@ -16517,16 +16456,16 @@
           };
           function findHostInstancesForMatchingFibersRecursively(fiber, types, hostInstances) {
             {
-              var child = fiber.child, sibling = fiber.sibling, tag = fiber.tag, type2 = fiber.type;
+              var child = fiber.child, sibling = fiber.sibling, tag = fiber.tag, type = fiber.type;
               var candidateType = null;
               switch (tag) {
                 case FunctionComponent:
                 case SimpleMemoComponent:
                 case ClassComponent:
-                  candidateType = type2;
+                  candidateType = type;
                   break;
                 case ForwardRef:
-                  candidateType = type2.render;
+                  candidateType = type.render;
                   break;
               }
               var didMatch = false;
@@ -16608,13 +16547,13 @@
               var nonExtensibleObject = Object.preventExtensions({});
               /* @__PURE__ */ new Map([[nonExtensibleObject, null]]);
               /* @__PURE__ */ new Set([nonExtensibleObject]);
-            } catch (e3) {
+            } catch (e) {
               hasBadMapPolyfill = true;
             }
           }
-          function FiberNode(tag, pendingProps, key2, mode) {
+          function FiberNode(tag, pendingProps, key, mode) {
             this.tag = tag;
-            this.key = key2;
+            this.key = key;
             this.elementType = null;
             this.type = null;
             this.stateNode = null;
@@ -16655,15 +16594,15 @@
               }
             }
           }
-          var createFiber = function(tag, pendingProps, key2, mode) {
-            return new FiberNode(tag, pendingProps, key2, mode);
+          var createFiber = function(tag, pendingProps, key, mode) {
+            return new FiberNode(tag, pendingProps, key, mode);
           };
           function shouldConstruct$1(Component) {
             var prototype = Component.prototype;
             return !!(prototype && prototype.isReactComponent);
           }
-          function isSimpleFunctionComponent(type2) {
-            return typeof type2 === "function" && !shouldConstruct$1(type2) && type2.defaultProps === void 0;
+          function isSimpleFunctionComponent(type) {
+            return typeof type === "function" && !shouldConstruct$1(type) && type.defaultProps === void 0;
           }
           function resolveLazyComponentTag(Component) {
             if (typeof Component === "function") {
@@ -16798,11 +16737,11 @@
             }
             return createFiber(HostRoot, null, null, mode);
           }
-          function createFiberFromTypeAndProps(type2, key2, pendingProps, owner, mode, lanes) {
+          function createFiberFromTypeAndProps(type, key, pendingProps, owner, mode, lanes) {
             var fiberTag = IndeterminateComponent;
-            var resolvedType = type2;
-            if (typeof type2 === "function") {
-              if (shouldConstruct$1(type2)) {
+            var resolvedType = type;
+            if (typeof type === "function") {
+              if (shouldConstruct$1(type)) {
                 fiberTag = ClassComponent;
                 {
                   resolvedType = resolveClassForHotReloading(resolvedType);
@@ -16812,13 +16751,13 @@
                   resolvedType = resolveFunctionForHotReloading(resolvedType);
                 }
               }
-            } else if (typeof type2 === "string") {
+            } else if (typeof type === "string") {
               fiberTag = HostComponent;
             } else {
               getTag:
-                switch (type2) {
+                switch (type) {
                   case REACT_FRAGMENT_TYPE:
-                    return createFiberFromFragment(pendingProps.children, mode, lanes, key2);
+                    return createFiberFromFragment(pendingProps.children, mode, lanes, key);
                   case REACT_STRICT_MODE_TYPE:
                     fiberTag = Mode;
                     mode |= StrictLegacyMode;
@@ -16827,21 +16766,21 @@
                     }
                     break;
                   case REACT_PROFILER_TYPE:
-                    return createFiberFromProfiler(pendingProps, mode, lanes, key2);
+                    return createFiberFromProfiler(pendingProps, mode, lanes, key);
                   case REACT_SUSPENSE_TYPE:
-                    return createFiberFromSuspense(pendingProps, mode, lanes, key2);
+                    return createFiberFromSuspense(pendingProps, mode, lanes, key);
                   case REACT_SUSPENSE_LIST_TYPE:
-                    return createFiberFromSuspenseList(pendingProps, mode, lanes, key2);
+                    return createFiberFromSuspenseList(pendingProps, mode, lanes, key);
                   case REACT_OFFSCREEN_TYPE:
-                    return createFiberFromOffscreen(pendingProps, mode, lanes, key2);
+                    return createFiberFromOffscreen(pendingProps, mode, lanes, key);
                   case REACT_LEGACY_HIDDEN_TYPE:
                   case REACT_SCOPE_TYPE:
                   case REACT_CACHE_TYPE:
                   case REACT_TRACING_MARKER_TYPE:
                   case REACT_DEBUG_TRACING_MODE_TYPE:
                   default: {
-                    if (typeof type2 === "object" && type2 !== null) {
-                      switch (type2.$$typeof) {
+                    if (typeof type === "object" && type !== null) {
+                      switch (type.$$typeof) {
                         case REACT_PROVIDER_TYPE:
                           fiberTag = ContextProvider;
                           break getTag;
@@ -16865,7 +16804,7 @@
                     }
                     var info = "";
                     {
-                      if (type2 === void 0 || typeof type2 === "object" && type2 !== null && Object.keys(type2).length === 0) {
+                      if (type === void 0 || typeof type === "object" && type !== null && Object.keys(type).length === 0) {
                         info += " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
                       }
                       var ownerName = owner ? getComponentNameFromFiber(owner) : null;
@@ -16873,12 +16812,12 @@
                         info += "\n\nCheck the render method of `" + ownerName + "`.";
                       }
                     }
-                    throw new Error("Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) " + ("but got: " + (type2 == null ? type2 : typeof type2) + "." + info));
+                    throw new Error("Element type is invalid: expected a string (for built-in components) or a class/function (for composite components) " + ("but got: " + (type == null ? type : typeof type) + "." + info));
                   }
                 }
             }
-            var fiber = createFiber(fiberTag, pendingProps, key2, mode);
-            fiber.elementType = type2;
+            var fiber = createFiber(fiberTag, pendingProps, key, mode);
+            fiber.elementType = type;
             fiber.type = resolvedType;
             fiber.lanes = lanes;
             {
@@ -16891,28 +16830,28 @@
             {
               owner = element._owner;
             }
-            var type2 = element.type;
-            var key2 = element.key;
+            var type = element.type;
+            var key = element.key;
             var pendingProps = element.props;
-            var fiber = createFiberFromTypeAndProps(type2, key2, pendingProps, owner, mode, lanes);
+            var fiber = createFiberFromTypeAndProps(type, key, pendingProps, owner, mode, lanes);
             {
               fiber._debugSource = element._source;
               fiber._debugOwner = element._owner;
             }
             return fiber;
           }
-          function createFiberFromFragment(elements, mode, lanes, key2) {
-            var fiber = createFiber(Fragment, elements, key2, mode);
+          function createFiberFromFragment(elements, mode, lanes, key) {
+            var fiber = createFiber(Fragment, elements, key, mode);
             fiber.lanes = lanes;
             return fiber;
           }
-          function createFiberFromProfiler(pendingProps, mode, lanes, key2) {
+          function createFiberFromProfiler(pendingProps, mode, lanes, key) {
             {
               if (typeof pendingProps.id !== "string") {
-                error2('Profiler must specify an "id" of type `string` as a prop. Received the type `%s` instead.', typeof pendingProps.id);
+                error('Profiler must specify an "id" of type `string` as a prop. Received the type `%s` instead.', typeof pendingProps.id);
               }
             }
-            var fiber = createFiber(Profiler, pendingProps, key2, mode | ProfileMode);
+            var fiber = createFiber(Profiler, pendingProps, key, mode | ProfileMode);
             fiber.elementType = REACT_PROFILER_TYPE;
             fiber.lanes = lanes;
             {
@@ -16923,20 +16862,20 @@
             }
             return fiber;
           }
-          function createFiberFromSuspense(pendingProps, mode, lanes, key2) {
-            var fiber = createFiber(SuspenseComponent, pendingProps, key2, mode);
+          function createFiberFromSuspense(pendingProps, mode, lanes, key) {
+            var fiber = createFiber(SuspenseComponent, pendingProps, key, mode);
             fiber.elementType = REACT_SUSPENSE_TYPE;
             fiber.lanes = lanes;
             return fiber;
           }
-          function createFiberFromSuspenseList(pendingProps, mode, lanes, key2) {
-            var fiber = createFiber(SuspenseListComponent, pendingProps, key2, mode);
+          function createFiberFromSuspenseList(pendingProps, mode, lanes, key) {
+            var fiber = createFiber(SuspenseListComponent, pendingProps, key, mode);
             fiber.elementType = REACT_SUSPENSE_LIST_TYPE;
             fiber.lanes = lanes;
             return fiber;
           }
-          function createFiberFromOffscreen(pendingProps, mode, lanes, key2) {
-            var fiber = createFiber(OffscreenComponent, pendingProps, key2, mode);
+          function createFiberFromOffscreen(pendingProps, mode, lanes, key) {
+            var fiber = createFiber(OffscreenComponent, pendingProps, key, mode);
             fiber.elementType = REACT_OFFSCREEN_TYPE;
             fiber.lanes = lanes;
             var primaryChildInstance = {
@@ -17080,14 +17019,14 @@
           }
           var ReactVersion = "18.2.0";
           function createPortal(children, containerInfo, implementation) {
-            var key2 = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : null;
+            var key = arguments.length > 3 && arguments[3] !== void 0 ? arguments[3] : null;
             {
-              checkKeyStringCoercion(key2);
+              checkKeyStringCoercion(key);
             }
             return {
               // This tag allow us to uniquely identify this as a React Portal
               $$typeof: REACT_PORTAL_TYPE,
-              key: key2 == null ? null : "" + key2,
+              key: key == null ? null : "" + key,
               children,
               containerInfo,
               implementation
@@ -17103,7 +17042,7 @@
             if (!parentComponent) {
               return emptyContextObject;
             }
-            var fiber = get3(parentComponent);
+            var fiber = get(parentComponent);
             var parentContext = findCurrentUnmaskedContext(fiber);
             if (fiber.tag === ClassComponent) {
               var Component = fiber.type;
@@ -17114,7 +17053,7 @@
             return parentContext;
           }
           function findHostInstance(component) {
-            var fiber = get3(component);
+            var fiber = get(component);
             if (fiber === void 0) {
               if (typeof component.render === "function") {
                 throw new Error("Unable to find node on an unmounted component.");
@@ -17131,7 +17070,7 @@
           }
           function findHostInstanceWithWarning(component, methodName) {
             {
-              var fiber = get3(component);
+              var fiber = get(component);
               if (fiber === void 0) {
                 if (typeof component.render === "function") {
                   throw new Error("Unable to find node on an unmounted component.");
@@ -17152,9 +17091,9 @@
                   try {
                     setCurrentFiber(hostFiber);
                     if (fiber.mode & StrictLegacyMode) {
-                      error2("%s is deprecated in StrictMode. %s was passed an instance of %s which is inside StrictMode. Instead, add a ref directly to the element you want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node", methodName, methodName, componentName);
+                      error("%s is deprecated in StrictMode. %s was passed an instance of %s which is inside StrictMode. Instead, add a ref directly to the element you want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node", methodName, methodName, componentName);
                     } else {
-                      error2("%s is deprecated in StrictMode. %s was passed an instance of %s which renders StrictMode children. Instead, add a ref directly to the element you want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node", methodName, methodName, componentName);
+                      error("%s is deprecated in StrictMode. %s was passed an instance of %s which renders StrictMode children. Instead, add a ref directly to the element you want to reference. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-find-node", methodName, methodName, componentName);
                     }
                   } finally {
                     if (previousFiber) {
@@ -17205,7 +17144,7 @@
             {
               if (isRendering && current !== null && !didWarnAboutNestedUpdates) {
                 didWarnAboutNestedUpdates = true;
-                error2("Render methods should be a pure function of props and state; triggering nested component updates from render is not allowed. If necessary, trigger nested updates in componentDidUpdate.\n\nCheck the render method of %s.", getComponentNameFromFiber(current) || "Unknown");
+                error("Render methods should be a pure function of props and state; triggering nested component updates from render is not allowed. If necessary, trigger nested updates in componentDidUpdate.\n\nCheck the render method of %s.", getComponentNameFromFiber(current) || "Unknown");
               }
             }
             var update = createUpdate(eventTime, lane);
@@ -17216,7 +17155,7 @@
             if (callback !== null) {
               {
                 if (typeof callback !== "function") {
-                  error2("render(...): Expected the last optional `callback` argument to be a function. Instead received: %s.", callback);
+                  error("render(...): Expected the last optional `callback` argument to be a function. Instead received: %s.", callback);
                 }
               }
               update.callback = callback;
@@ -17343,17 +17282,17 @@
           var setSuspenseHandler = null;
           {
             var copyWithDeleteImpl = function(obj, path, index2) {
-              var key2 = path[index2];
+              var key = path[index2];
               var updated = isArray(obj) ? obj.slice() : assign({}, obj);
               if (index2 + 1 === path.length) {
                 if (isArray(updated)) {
-                  updated.splice(key2, 1);
+                  updated.splice(key, 1);
                 } else {
-                  delete updated[key2];
+                  delete updated[key];
                 }
                 return updated;
               }
-              updated[key2] = copyWithDeleteImpl(obj[key2], path, index2 + 1);
+              updated[key] = copyWithDeleteImpl(obj[key], path, index2 + 1);
               return updated;
             };
             var copyWithDelete = function(obj, path) {
@@ -17386,8 +17325,8 @@
                 warn("copyWithRename() expects paths of the same length");
                 return;
               } else {
-                for (var i3 = 0; i3 < newPath.length - 1; i3++) {
-                  if (oldPath[i3] !== newPath[i3]) {
+                for (var i = 0; i < newPath.length - 1; i++) {
+                  if (oldPath[i] !== newPath[i]) {
                     warn("copyWithRename() expects paths to be the same except for the deepest key");
                     return;
                   }
@@ -17395,17 +17334,17 @@
               }
               return copyWithRenameImpl(obj, oldPath, newPath, 0);
             };
-            var copyWithSetImpl = function(obj, path, index2, value2) {
+            var copyWithSetImpl = function(obj, path, index2, value) {
               if (index2 >= path.length) {
-                return value2;
+                return value;
               }
-              var key2 = path[index2];
+              var key = path[index2];
               var updated = isArray(obj) ? obj.slice() : assign({}, obj);
-              updated[key2] = copyWithSetImpl(obj[key2], path, index2 + 1, value2);
+              updated[key] = copyWithSetImpl(obj[key], path, index2 + 1, value);
               return updated;
             };
-            var copyWithSet = function(obj, path, value2) {
-              return copyWithSetImpl(obj, path, 0, value2);
+            var copyWithSet = function(obj, path, value) {
+              return copyWithSetImpl(obj, path, 0, value);
             };
             var findHook = function(fiber, id) {
               var currentHook2 = fiber.memoizedState;
@@ -17415,10 +17354,10 @@
               }
               return currentHook2;
             };
-            overrideHookState = function(fiber, id, path, value2) {
+            overrideHookState = function(fiber, id, path, value) {
               var hook = findHook(fiber, id);
               if (hook !== null) {
-                var newState = copyWithSet(hook.memoizedState, path, value2);
+                var newState = copyWithSet(hook.memoizedState, path, value);
                 hook.memoizedState = newState;
                 hook.baseState = newState;
                 fiber.memoizedProps = assign({}, fiber.memoizedProps);
@@ -17454,8 +17393,8 @@
                 }
               }
             };
-            overrideProps = function(fiber, path, value2) {
-              fiber.pendingProps = copyWithSet(fiber.memoizedProps, path, value2);
+            overrideProps = function(fiber, path, value) {
+              fiber.pendingProps = copyWithSet(fiber.memoizedProps, path, value);
               if (fiber.alternate) {
                 fiber.alternate.pendingProps = fiber.pendingProps;
               }
@@ -17629,7 +17568,7 @@
             return null;
           }
           var ReactSharedInternals = React.__SECRET_INTERNALS_DO_NOT_USE_OR_YOU_WILL_BE_FIRED;
-          function error2(format) {
+          function error(format) {
             {
               {
                 for (var _len2 = arguments.length, args = new Array(_len2 > 1 ? _len2 - 1 : 0), _key2 = 1; _key2 < _len2; _key2++) {
@@ -17663,19 +17602,19 @@
           {
             REACT_MODULE_REFERENCE = Symbol.for("react.module.reference");
           }
-          function isValidElementType(type2) {
-            if (typeof type2 === "string" || typeof type2 === "function") {
+          function isValidElementType(type) {
+            if (typeof type === "string" || typeof type === "function") {
               return true;
             }
-            if (type2 === REACT_FRAGMENT_TYPE || type2 === REACT_PROFILER_TYPE || enableDebugTracing || type2 === REACT_STRICT_MODE_TYPE || type2 === REACT_SUSPENSE_TYPE || type2 === REACT_SUSPENSE_LIST_TYPE || enableLegacyHidden || type2 === REACT_OFFSCREEN_TYPE || enableScopeAPI || enableCacheElement || enableTransitionTracing) {
+            if (type === REACT_FRAGMENT_TYPE || type === REACT_PROFILER_TYPE || enableDebugTracing || type === REACT_STRICT_MODE_TYPE || type === REACT_SUSPENSE_TYPE || type === REACT_SUSPENSE_LIST_TYPE || enableLegacyHidden || type === REACT_OFFSCREEN_TYPE || enableScopeAPI || enableCacheElement || enableTransitionTracing) {
               return true;
             }
-            if (typeof type2 === "object" && type2 !== null) {
-              if (type2.$$typeof === REACT_LAZY_TYPE || type2.$$typeof === REACT_MEMO_TYPE || type2.$$typeof === REACT_PROVIDER_TYPE || type2.$$typeof === REACT_CONTEXT_TYPE || type2.$$typeof === REACT_FORWARD_REF_TYPE || // This needs to include all possible module reference object
+            if (typeof type === "object" && type !== null) {
+              if (type.$$typeof === REACT_LAZY_TYPE || type.$$typeof === REACT_MEMO_TYPE || type.$$typeof === REACT_PROVIDER_TYPE || type.$$typeof === REACT_CONTEXT_TYPE || type.$$typeof === REACT_FORWARD_REF_TYPE || // This needs to include all possible module reference object
               // types supported by any Flight configuration anywhere since
               // we don't know which Flight build this will end up being used
               // with.
-              type2.$$typeof === REACT_MODULE_REFERENCE || type2.getModuleId !== void 0) {
+              type.$$typeof === REACT_MODULE_REFERENCE || type.getModuleId !== void 0) {
                 return true;
               }
             }
@@ -17689,25 +17628,25 @@
             var functionName = innerType.displayName || innerType.name || "";
             return functionName !== "" ? wrapperName + "(" + functionName + ")" : wrapperName;
           }
-          function getContextName(type2) {
-            return type2.displayName || "Context";
+          function getContextName(type) {
+            return type.displayName || "Context";
           }
-          function getComponentNameFromType(type2) {
-            if (type2 == null) {
+          function getComponentNameFromType(type) {
+            if (type == null) {
               return null;
             }
             {
-              if (typeof type2.tag === "number") {
-                error2("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
+              if (typeof type.tag === "number") {
+                error("Received an unexpected object in getComponentNameFromType(). This is likely a bug in React. Please file an issue.");
               }
             }
-            if (typeof type2 === "function") {
-              return type2.displayName || type2.name || null;
+            if (typeof type === "function") {
+              return type.displayName || type.name || null;
             }
-            if (typeof type2 === "string") {
-              return type2;
+            if (typeof type === "string") {
+              return type;
             }
-            switch (type2) {
+            switch (type) {
               case REACT_FRAGMENT_TYPE:
                 return "Fragment";
               case REACT_PORTAL_TYPE:
@@ -17721,24 +17660,24 @@
               case REACT_SUSPENSE_LIST_TYPE:
                 return "SuspenseList";
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_CONTEXT_TYPE:
-                  var context = type2;
+                  var context = type;
                   return getContextName(context) + ".Consumer";
                 case REACT_PROVIDER_TYPE:
-                  var provider = type2;
+                  var provider = type;
                   return getContextName(provider._context) + ".Provider";
                 case REACT_FORWARD_REF_TYPE:
-                  return getWrappedName(type2, type2.render, "ForwardRef");
+                  return getWrappedName(type, type.render, "ForwardRef");
                 case REACT_MEMO_TYPE:
-                  var outerName = type2.displayName || null;
+                  var outerName = type.displayName || null;
                   if (outerName !== null) {
                     return outerName;
                   }
-                  return getComponentNameFromType(type2.type) || "Memo";
+                  return getComponentNameFromType(type.type) || "Memo";
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -17826,7 +17765,7 @@
                 });
               }
               if (disabledDepth < 0) {
-                error2("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
+                error("disabledDepth fell below zero. This is a bug in React. Please file an issue.");
               }
             }
           }
@@ -17908,19 +17847,19 @@
               if (sample && control && typeof sample.stack === "string") {
                 var sampleLines = sample.stack.split("\n");
                 var controlLines = control.stack.split("\n");
-                var s2 = sampleLines.length - 1;
-                var c2 = controlLines.length - 1;
-                while (s2 >= 1 && c2 >= 0 && sampleLines[s2] !== controlLines[c2]) {
-                  c2--;
+                var s = sampleLines.length - 1;
+                var c = controlLines.length - 1;
+                while (s >= 1 && c >= 0 && sampleLines[s] !== controlLines[c]) {
+                  c--;
                 }
-                for (; s2 >= 1 && c2 >= 0; s2--, c2--) {
-                  if (sampleLines[s2] !== controlLines[c2]) {
-                    if (s2 !== 1 || c2 !== 1) {
+                for (; s >= 1 && c >= 0; s--, c--) {
+                  if (sampleLines[s] !== controlLines[c]) {
+                    if (s !== 1 || c !== 1) {
                       do {
-                        s2--;
-                        c2--;
-                        if (c2 < 0 || sampleLines[s2] !== controlLines[c2]) {
-                          var _frame = "\n" + sampleLines[s2].replace(" at new ", " at ");
+                        s--;
+                        c--;
+                        if (c < 0 || sampleLines[s] !== controlLines[c]) {
+                          var _frame = "\n" + sampleLines[s].replace(" at new ", " at ");
                           if (fn.displayName && _frame.includes("<anonymous>")) {
                             _frame = _frame.replace("<anonymous>", fn.displayName);
                           }
@@ -17931,7 +17870,7 @@
                           }
                           return _frame;
                         }
-                      } while (s2 >= 1 && c2 >= 0);
+                      } while (s >= 1 && c >= 0);
                     }
                     break;
                   }
@@ -17963,32 +17902,32 @@
             var prototype = Component.prototype;
             return !!(prototype && prototype.isReactComponent);
           }
-          function describeUnknownElementTypeFrameInDEV(type2, source, ownerFn) {
-            if (type2 == null) {
+          function describeUnknownElementTypeFrameInDEV(type, source, ownerFn) {
+            if (type == null) {
               return "";
             }
-            if (typeof type2 === "function") {
+            if (typeof type === "function") {
               {
-                return describeNativeComponentFrame(type2, shouldConstruct(type2));
+                return describeNativeComponentFrame(type, shouldConstruct(type));
               }
             }
-            if (typeof type2 === "string") {
-              return describeBuiltInComponentFrame(type2);
+            if (typeof type === "string") {
+              return describeBuiltInComponentFrame(type);
             }
-            switch (type2) {
+            switch (type) {
               case REACT_SUSPENSE_TYPE:
                 return describeBuiltInComponentFrame("Suspense");
               case REACT_SUSPENSE_LIST_TYPE:
                 return describeBuiltInComponentFrame("SuspenseList");
             }
-            if (typeof type2 === "object") {
-              switch (type2.$$typeof) {
+            if (typeof type === "object") {
+              switch (type.$$typeof) {
                 case REACT_FORWARD_REF_TYPE:
-                  return describeFunctionComponentFrame(type2.render);
+                  return describeFunctionComponentFrame(type.render);
                 case REACT_MEMO_TYPE:
-                  return describeUnknownElementTypeFrameInDEV(type2.type, source, ownerFn);
+                  return describeUnknownElementTypeFrameInDEV(type.type, source, ownerFn);
                 case REACT_LAZY_TYPE: {
-                  var lazyComponent = type2;
+                  var lazyComponent = type;
                   var payload = lazyComponent._payload;
                   var init = lazyComponent._init;
                   try {
@@ -18032,13 +17971,13 @@
                   }
                   if (error$1 && !(error$1 instanceof Error)) {
                     setCurrentlyValidatingElement(element);
-                    error2("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
+                    error("%s: type specification of %s `%s` is invalid; the type checker function must return `null` or an `Error` but returned a %s. You may have forgotten to pass an argument to the type checker creator (arrayOf, instanceOf, objectOf, oneOf, oneOfType, and shape all require an argument).", componentName || "React class", location, typeSpecName, typeof error$1);
                     setCurrentlyValidatingElement(null);
                   }
                   if (error$1 instanceof Error && !(error$1.message in loggedTypeFailures)) {
                     loggedTypeFailures[error$1.message] = true;
                     setCurrentlyValidatingElement(element);
-                    error2("Failed %s type: %s", location, error$1.message);
+                    error("Failed %s type: %s", location, error$1.message);
                     setCurrentlyValidatingElement(null);
                   }
                 }
@@ -18046,34 +17985,34 @@
             }
           }
           var isArrayImpl = Array.isArray;
-          function isArray(a2) {
-            return isArrayImpl(a2);
+          function isArray(a) {
+            return isArrayImpl(a);
           }
-          function typeName(value2) {
+          function typeName(value) {
             {
               var hasToStringTag = typeof Symbol === "function" && Symbol.toStringTag;
-              var type2 = hasToStringTag && value2[Symbol.toStringTag] || value2.constructor.name || "Object";
-              return type2;
+              var type = hasToStringTag && value[Symbol.toStringTag] || value.constructor.name || "Object";
+              return type;
             }
           }
-          function willCoercionThrow(value2) {
+          function willCoercionThrow(value) {
             {
               try {
-                testStringCoercion(value2);
+                testStringCoercion(value);
                 return false;
-              } catch (e3) {
+              } catch (e) {
                 return true;
               }
             }
           }
-          function testStringCoercion(value2) {
-            return "" + value2;
+          function testStringCoercion(value) {
+            return "" + value;
           }
-          function checkKeyStringCoercion(value2) {
+          function checkKeyStringCoercion(value) {
             {
-              if (willCoercionThrow(value2)) {
-                error2("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value2));
-                return testStringCoercion(value2);
+              if (willCoercionThrow(value)) {
+                error("The provided key is an unsupported type %s. This value must be coerced to a string before before using it here.", typeName(value));
+                return testStringCoercion(value);
               }
             }
           }
@@ -18112,12 +18051,12 @@
             }
             return config.key !== void 0;
           }
-          function warnIfStringRefCannotBeAutoConverted(config, self2) {
+          function warnIfStringRefCannotBeAutoConverted(config, self) {
             {
-              if (typeof config.ref === "string" && ReactCurrentOwner.current && self2 && ReactCurrentOwner.current.stateNode !== self2) {
+              if (typeof config.ref === "string" && ReactCurrentOwner.current && self && ReactCurrentOwner.current.stateNode !== self) {
                 var componentName = getComponentNameFromType(ReactCurrentOwner.current.type);
                 if (!didWarnAboutStringRefs[componentName]) {
-                  error2('Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', getComponentNameFromType(ReactCurrentOwner.current.type), config.ref);
+                  error('Component "%s" contains the string ref "%s". Support for string refs will be removed in a future major release. This case cannot be automatically converted to an arrow function. We ask you to manually fix this case by using useRef() or createRef() instead. Learn more about using refs safely here: https://reactjs.org/link/strict-mode-string-ref', getComponentNameFromType(ReactCurrentOwner.current.type), config.ref);
                   didWarnAboutStringRefs[componentName] = true;
                 }
               }
@@ -18128,7 +18067,7 @@
               var warnAboutAccessingKey = function() {
                 if (!specialPropKeyWarningShown) {
                   specialPropKeyWarningShown = true;
-                  error2("%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
+                  error("%s: `key` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
                 }
               };
               warnAboutAccessingKey.isReactWarning = true;
@@ -18143,7 +18082,7 @@
               var warnAboutAccessingRef = function() {
                 if (!specialPropRefWarningShown) {
                   specialPropRefWarningShown = true;
-                  error2("%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
+                  error("%s: `ref` is not a prop. Trying to access it will result in `undefined` being returned. If you need to access the same value within the child component, you should pass it as a different prop. (https://reactjs.org/link/special-props)", displayName);
                 }
               };
               warnAboutAccessingRef.isReactWarning = true;
@@ -18153,13 +18092,13 @@
               });
             }
           }
-          var ReactElement = function(type2, key2, ref, self2, source, owner, props) {
+          var ReactElement = function(type, key, ref, self, source, owner, props) {
             var element = {
               // This tag allows us to uniquely identify this as a React Element
               $$typeof: REACT_ELEMENT_TYPE,
               // Built-in properties that belong on the element
-              type: type2,
-              key: key2,
+              type,
+              key,
               ref,
               props,
               // Record the component responsible for creating this element.
@@ -18177,7 +18116,7 @@
                 configurable: false,
                 enumerable: false,
                 writable: false,
-                value: self2
+                value: self
               });
               Object.defineProperty(element, "_source", {
                 configurable: false,
@@ -18192,51 +18131,51 @@
             }
             return element;
           };
-          function jsxDEV(type2, config, maybeKey, source, self2) {
+          function jsxDEV(type, config, maybeKey, source, self) {
             {
               var propName;
               var props = {};
-              var key2 = null;
+              var key = null;
               var ref = null;
               if (maybeKey !== void 0) {
                 {
                   checkKeyStringCoercion(maybeKey);
                 }
-                key2 = "" + maybeKey;
+                key = "" + maybeKey;
               }
               if (hasValidKey(config)) {
                 {
                   checkKeyStringCoercion(config.key);
                 }
-                key2 = "" + config.key;
+                key = "" + config.key;
               }
               if (hasValidRef(config)) {
                 ref = config.ref;
-                warnIfStringRefCannotBeAutoConverted(config, self2);
+                warnIfStringRefCannotBeAutoConverted(config, self);
               }
               for (propName in config) {
                 if (hasOwnProperty2.call(config, propName) && !RESERVED_PROPS.hasOwnProperty(propName)) {
                   props[propName] = config[propName];
                 }
               }
-              if (type2 && type2.defaultProps) {
-                var defaultProps = type2.defaultProps;
+              if (type && type.defaultProps) {
+                var defaultProps = type.defaultProps;
                 for (propName in defaultProps) {
                   if (props[propName] === void 0) {
                     props[propName] = defaultProps[propName];
                   }
                 }
               }
-              if (key2 || ref) {
-                var displayName = typeof type2 === "function" ? type2.displayName || type2.name || "Unknown" : type2;
-                if (key2) {
+              if (key || ref) {
+                var displayName = typeof type === "function" ? type.displayName || type.name || "Unknown" : type;
+                if (key) {
                   defineKeyPropWarningGetter(props, displayName);
                 }
                 if (ref) {
                   defineRefPropWarningGetter(props, displayName);
                 }
               }
-              return ReactElement(type2, key2, ref, self2, source, ReactCurrentOwner.current, props);
+              return ReactElement(type, key, ref, self, source, ReactCurrentOwner.current, props);
             }
           }
           var ReactCurrentOwner$1 = ReactSharedInternals.ReactCurrentOwner;
@@ -18311,7 +18250,7 @@
                 childOwner = " It was passed a child from " + getComponentNameFromType(element._owner.type) + ".";
               }
               setCurrentlyValidatingElement$1(element);
-              error2('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', currentComponentErrorInfo, childOwner);
+              error('Each child in a list should have a unique "key" prop.%s%s See https://reactjs.org/link/warning-keys for more information.', currentComponentErrorInfo, childOwner);
               setCurrentlyValidatingElement$1(null);
             }
           }
@@ -18321,8 +18260,8 @@
                 return;
               }
               if (isArray(node)) {
-                for (var i3 = 0; i3 < node.length; i3++) {
-                  var child = node[i3];
+                for (var i = 0; i < node.length; i++) {
+                  var child = node[i];
                   if (isValidElement2(child)) {
                     validateExplicitKey(child, parentType);
                   }
@@ -18349,59 +18288,59 @@
           }
           function validatePropTypes(element) {
             {
-              var type2 = element.type;
-              if (type2 === null || type2 === void 0 || typeof type2 === "string") {
+              var type = element.type;
+              if (type === null || type === void 0 || typeof type === "string") {
                 return;
               }
               var propTypes;
-              if (typeof type2 === "function") {
-                propTypes = type2.propTypes;
-              } else if (typeof type2 === "object" && (type2.$$typeof === REACT_FORWARD_REF_TYPE || // Note: Memo only checks outer props here.
+              if (typeof type === "function") {
+                propTypes = type.propTypes;
+              } else if (typeof type === "object" && (type.$$typeof === REACT_FORWARD_REF_TYPE || // Note: Memo only checks outer props here.
               // Inner props are checked in the reconciler.
-              type2.$$typeof === REACT_MEMO_TYPE)) {
-                propTypes = type2.propTypes;
+              type.$$typeof === REACT_MEMO_TYPE)) {
+                propTypes = type.propTypes;
               } else {
                 return;
               }
               if (propTypes) {
-                var name = getComponentNameFromType(type2);
+                var name = getComponentNameFromType(type);
                 checkPropTypes(propTypes, element.props, "prop", name, element);
-              } else if (type2.PropTypes !== void 0 && !propTypesMisspellWarningShown) {
+              } else if (type.PropTypes !== void 0 && !propTypesMisspellWarningShown) {
                 propTypesMisspellWarningShown = true;
-                var _name = getComponentNameFromType(type2);
-                error2("Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?", _name || "Unknown");
+                var _name = getComponentNameFromType(type);
+                error("Component %s declared `PropTypes` instead of `propTypes`. Did you misspell the property assignment?", _name || "Unknown");
               }
-              if (typeof type2.getDefaultProps === "function" && !type2.getDefaultProps.isReactClassApproved) {
-                error2("getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead.");
+              if (typeof type.getDefaultProps === "function" && !type.getDefaultProps.isReactClassApproved) {
+                error("getDefaultProps is only used on classic React.createClass definitions. Use a static property named `defaultProps` instead.");
               }
             }
           }
           function validateFragmentProps(fragment) {
             {
               var keys = Object.keys(fragment.props);
-              for (var i3 = 0; i3 < keys.length; i3++) {
-                var key2 = keys[i3];
-                if (key2 !== "children" && key2 !== "key") {
+              for (var i = 0; i < keys.length; i++) {
+                var key = keys[i];
+                if (key !== "children" && key !== "key") {
                   setCurrentlyValidatingElement$1(fragment);
-                  error2("Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.", key2);
+                  error("Invalid prop `%s` supplied to `React.Fragment`. React.Fragment can only have `key` and `children` props.", key);
                   setCurrentlyValidatingElement$1(null);
                   break;
                 }
               }
               if (fragment.ref !== null) {
                 setCurrentlyValidatingElement$1(fragment);
-                error2("Invalid attribute `ref` supplied to `React.Fragment`.");
+                error("Invalid attribute `ref` supplied to `React.Fragment`.");
                 setCurrentlyValidatingElement$1(null);
               }
             }
           }
           var didWarnAboutKeySpread = {};
-          function jsxWithValidation(type2, props, key2, isStaticChildren, source, self2) {
+          function jsxWithValidation(type, props, key, isStaticChildren, source, self) {
             {
-              var validType = isValidElementType(type2);
+              var validType = isValidElementType(type);
               if (!validType) {
                 var info = "";
-                if (type2 === void 0 || typeof type2 === "object" && type2 !== null && Object.keys(type2).length === 0) {
+                if (type === void 0 || typeof type === "object" && type !== null && Object.keys(type).length === 0) {
                   info += " You likely forgot to export your component from the file it's defined in, or you might have mixed up default and named imports.";
                 }
                 var sourceInfo = getSourceInfoErrorAddendum(source);
@@ -18411,19 +18350,19 @@
                   info += getDeclarationErrorAddendum();
                 }
                 var typeString;
-                if (type2 === null) {
+                if (type === null) {
                   typeString = "null";
-                } else if (isArray(type2)) {
+                } else if (isArray(type)) {
                   typeString = "array";
-                } else if (type2 !== void 0 && type2.$$typeof === REACT_ELEMENT_TYPE) {
-                  typeString = "<" + (getComponentNameFromType(type2.type) || "Unknown") + " />";
+                } else if (type !== void 0 && type.$$typeof === REACT_ELEMENT_TYPE) {
+                  typeString = "<" + (getComponentNameFromType(type.type) || "Unknown") + " />";
                   info = " Did you accidentally export a JSX literal instead of a component?";
                 } else {
-                  typeString = typeof type2;
+                  typeString = typeof type;
                 }
-                error2("React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", typeString, info);
+                error("React.jsx: type is invalid -- expected a string (for built-in components) or a class/function (for composite components) but got: %s.%s", typeString, info);
               }
-              var element = jsxDEV(type2, props, key2, source, self2);
+              var element = jsxDEV(type, props, key, source, self);
               if (element == null) {
                 return element;
               }
@@ -18432,35 +18371,35 @@
                 if (children !== void 0) {
                   if (isStaticChildren) {
                     if (isArray(children)) {
-                      for (var i3 = 0; i3 < children.length; i3++) {
-                        validateChildKeys(children[i3], type2);
+                      for (var i = 0; i < children.length; i++) {
+                        validateChildKeys(children[i], type);
                       }
                       if (Object.freeze) {
                         Object.freeze(children);
                       }
                     } else {
-                      error2("React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead.");
+                      error("React.jsx: Static children should always be an array. You are likely explicitly calling React.jsxs or React.jsxDEV. Use the Babel transform instead.");
                     }
                   } else {
-                    validateChildKeys(children, type2);
+                    validateChildKeys(children, type);
                   }
                 }
               }
               {
                 if (hasOwnProperty2.call(props, "key")) {
-                  var componentName = getComponentNameFromType(type2);
+                  var componentName = getComponentNameFromType(type);
                   var keys = Object.keys(props).filter(function(k) {
                     return k !== "key";
                   });
                   var beforeExample = keys.length > 0 ? "{key: someKey, " + keys.join(": ..., ") + ": ...}" : "{key: someKey}";
                   if (!didWarnAboutKeySpread[componentName + beforeExample]) {
                     var afterExample = keys.length > 0 ? "{" + keys.join(": ..., ") + ": ...}" : "{}";
-                    error2('A props object containing a "key" prop is being spread into JSX:\n  let props = %s;\n  <%s {...props} />\nReact keys must be passed directly to JSX without using spread:\n  let props = %s;\n  <%s key={someKey} {...props} />', beforeExample, componentName, afterExample, componentName);
+                    error('A props object containing a "key" prop is being spread into JSX:\n  let props = %s;\n  <%s {...props} />\nReact keys must be passed directly to JSX without using spread:\n  let props = %s;\n  <%s key={someKey} {...props} />', beforeExample, componentName, afterExample, componentName);
                     didWarnAboutKeySpread[componentName + beforeExample] = true;
                   }
                 }
               }
-              if (type2 === REACT_FRAGMENT_TYPE) {
+              if (type === REACT_FRAGMENT_TYPE) {
                 validateFragmentProps(element);
               } else {
                 validatePropTypes(element);
@@ -18468,21 +18407,21 @@
               return element;
             }
           }
-          function jsxWithValidationStatic(type2, props, key2) {
+          function jsxWithValidationStatic(type, props, key) {
             {
-              return jsxWithValidation(type2, props, key2, true);
+              return jsxWithValidation(type, props, key, true);
             }
           }
-          function jsxWithValidationDynamic(type2, props, key2) {
+          function jsxWithValidationDynamic(type, props, key) {
             {
-              return jsxWithValidation(type2, props, key2, false);
+              return jsxWithValidation(type, props, key, false);
             }
           }
           var jsx5 = jsxWithValidationDynamic;
-          var jsxs2 = jsxWithValidationStatic;
+          var jsxs = jsxWithValidationStatic;
           exports.Fragment = REACT_FRAGMENT_TYPE;
           exports.jsx = jsx5;
-          exports.jsxs = jsxs2;
+          exports.jsxs = jsxs;
         })();
       }
     }
@@ -18500,1236 +18439,14 @@
     }
   });
 
-  // node_modules/cross-fetch/dist/browser-ponyfill.js
-  var require_browser_ponyfill = __commonJS({
-    "node_modules/cross-fetch/dist/browser-ponyfill.js"(exports, module) {
-      var __global__ = typeof globalThis !== "undefined" && globalThis || typeof self !== "undefined" && self || typeof global !== "undefined" && global;
-      var __globalThis__ = function() {
-        function F() {
-          this.fetch = false;
-          this.DOMException = __global__.DOMException;
-        }
-        F.prototype = __global__;
-        return new F();
-      }();
-      (function(globalThis2) {
-        var irrelevant = function(exports2) {
-          var global2 = typeof globalThis2 !== "undefined" && globalThis2 || typeof self !== "undefined" && self || typeof global2 !== "undefined" && global2;
-          var support = {
-            searchParams: "URLSearchParams" in global2,
-            iterable: "Symbol" in global2 && "iterator" in Symbol,
-            blob: "FileReader" in global2 && "Blob" in global2 && function() {
-              try {
-                new Blob();
-                return true;
-              } catch (e3) {
-                return false;
-              }
-            }(),
-            formData: "FormData" in global2,
-            arrayBuffer: "ArrayBuffer" in global2
-          };
-          function isDataView(obj) {
-            return obj && DataView.prototype.isPrototypeOf(obj);
-          }
-          if (support.arrayBuffer) {
-            var viewClasses = [
-              "[object Int8Array]",
-              "[object Uint8Array]",
-              "[object Uint8ClampedArray]",
-              "[object Int16Array]",
-              "[object Uint16Array]",
-              "[object Int32Array]",
-              "[object Uint32Array]",
-              "[object Float32Array]",
-              "[object Float64Array]"
-            ];
-            var isArrayBufferView = ArrayBuffer.isView || function(obj) {
-              return obj && viewClasses.indexOf(Object.prototype.toString.call(obj)) > -1;
-            };
-          }
-          function normalizeName(name) {
-            if (typeof name !== "string") {
-              name = String(name);
-            }
-            if (/[^a-z0-9\-#$%&'*+.^_`|~!]/i.test(name) || name === "") {
-              throw new TypeError('Invalid character in header field name: "' + name + '"');
-            }
-            return name.toLowerCase();
-          }
-          function normalizeValue(value2) {
-            if (typeof value2 !== "string") {
-              value2 = String(value2);
-            }
-            return value2;
-          }
-          function iteratorFor(items) {
-            var iterator = {
-              next: function() {
-                var value2 = items.shift();
-                return { done: value2 === void 0, value: value2 };
-              }
-            };
-            if (support.iterable) {
-              iterator[Symbol.iterator] = function() {
-                return iterator;
-              };
-            }
-            return iterator;
-          }
-          function Headers(headers) {
-            this.map = {};
-            if (headers instanceof Headers) {
-              headers.forEach(function(value2, name) {
-                this.append(name, value2);
-              }, this);
-            } else if (Array.isArray(headers)) {
-              headers.forEach(function(header) {
-                this.append(header[0], header[1]);
-              }, this);
-            } else if (headers) {
-              Object.getOwnPropertyNames(headers).forEach(function(name) {
-                this.append(name, headers[name]);
-              }, this);
-            }
-          }
-          Headers.prototype.append = function(name, value2) {
-            name = normalizeName(name);
-            value2 = normalizeValue(value2);
-            var oldValue = this.map[name];
-            this.map[name] = oldValue ? oldValue + ", " + value2 : value2;
-          };
-          Headers.prototype["delete"] = function(name) {
-            delete this.map[normalizeName(name)];
-          };
-          Headers.prototype.get = function(name) {
-            name = normalizeName(name);
-            return this.has(name) ? this.map[name] : null;
-          };
-          Headers.prototype.has = function(name) {
-            return this.map.hasOwnProperty(normalizeName(name));
-          };
-          Headers.prototype.set = function(name, value2) {
-            this.map[normalizeName(name)] = normalizeValue(value2);
-          };
-          Headers.prototype.forEach = function(callback, thisArg) {
-            for (var name in this.map) {
-              if (this.map.hasOwnProperty(name)) {
-                callback.call(thisArg, this.map[name], name, this);
-              }
-            }
-          };
-          Headers.prototype.keys = function() {
-            var items = [];
-            this.forEach(function(value2, name) {
-              items.push(name);
-            });
-            return iteratorFor(items);
-          };
-          Headers.prototype.values = function() {
-            var items = [];
-            this.forEach(function(value2) {
-              items.push(value2);
-            });
-            return iteratorFor(items);
-          };
-          Headers.prototype.entries = function() {
-            var items = [];
-            this.forEach(function(value2, name) {
-              items.push([name, value2]);
-            });
-            return iteratorFor(items);
-          };
-          if (support.iterable) {
-            Headers.prototype[Symbol.iterator] = Headers.prototype.entries;
-          }
-          function consumed(body) {
-            if (body.bodyUsed) {
-              return Promise.reject(new TypeError("Already read"));
-            }
-            body.bodyUsed = true;
-          }
-          function fileReaderReady(reader) {
-            return new Promise(function(resolve, reject2) {
-              reader.onload = function() {
-                resolve(reader.result);
-              };
-              reader.onerror = function() {
-                reject2(reader.error);
-              };
-            });
-          }
-          function readBlobAsArrayBuffer(blob) {
-            var reader = new FileReader();
-            var promise = fileReaderReady(reader);
-            reader.readAsArrayBuffer(blob);
-            return promise;
-          }
-          function readBlobAsText(blob) {
-            var reader = new FileReader();
-            var promise = fileReaderReady(reader);
-            reader.readAsText(blob);
-            return promise;
-          }
-          function readArrayBufferAsText(buf) {
-            var view = new Uint8Array(buf);
-            var chars = new Array(view.length);
-            for (var i3 = 0; i3 < view.length; i3++) {
-              chars[i3] = String.fromCharCode(view[i3]);
-            }
-            return chars.join("");
-          }
-          function bufferClone(buf) {
-            if (buf.slice) {
-              return buf.slice(0);
-            } else {
-              var view = new Uint8Array(buf.byteLength);
-              view.set(new Uint8Array(buf));
-              return view.buffer;
-            }
-          }
-          function Body() {
-            this.bodyUsed = false;
-            this._initBody = function(body) {
-              this.bodyUsed = this.bodyUsed;
-              this._bodyInit = body;
-              if (!body) {
-                this._bodyText = "";
-              } else if (typeof body === "string") {
-                this._bodyText = body;
-              } else if (support.blob && Blob.prototype.isPrototypeOf(body)) {
-                this._bodyBlob = body;
-              } else if (support.formData && FormData.prototype.isPrototypeOf(body)) {
-                this._bodyFormData = body;
-              } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-                this._bodyText = body.toString();
-              } else if (support.arrayBuffer && support.blob && isDataView(body)) {
-                this._bodyArrayBuffer = bufferClone(body.buffer);
-                this._bodyInit = new Blob([this._bodyArrayBuffer]);
-              } else if (support.arrayBuffer && (ArrayBuffer.prototype.isPrototypeOf(body) || isArrayBufferView(body))) {
-                this._bodyArrayBuffer = bufferClone(body);
-              } else {
-                this._bodyText = body = Object.prototype.toString.call(body);
-              }
-              if (!this.headers.get("content-type")) {
-                if (typeof body === "string") {
-                  this.headers.set("content-type", "text/plain;charset=UTF-8");
-                } else if (this._bodyBlob && this._bodyBlob.type) {
-                  this.headers.set("content-type", this._bodyBlob.type);
-                } else if (support.searchParams && URLSearchParams.prototype.isPrototypeOf(body)) {
-                  this.headers.set("content-type", "application/x-www-form-urlencoded;charset=UTF-8");
-                }
-              }
-            };
-            if (support.blob) {
-              this.blob = function() {
-                var rejected = consumed(this);
-                if (rejected) {
-                  return rejected;
-                }
-                if (this._bodyBlob) {
-                  return Promise.resolve(this._bodyBlob);
-                } else if (this._bodyArrayBuffer) {
-                  return Promise.resolve(new Blob([this._bodyArrayBuffer]));
-                } else if (this._bodyFormData) {
-                  throw new Error("could not read FormData body as blob");
-                } else {
-                  return Promise.resolve(new Blob([this._bodyText]));
-                }
-              };
-              this.arrayBuffer = function() {
-                if (this._bodyArrayBuffer) {
-                  var isConsumed = consumed(this);
-                  if (isConsumed) {
-                    return isConsumed;
-                  }
-                  if (ArrayBuffer.isView(this._bodyArrayBuffer)) {
-                    return Promise.resolve(
-                      this._bodyArrayBuffer.buffer.slice(
-                        this._bodyArrayBuffer.byteOffset,
-                        this._bodyArrayBuffer.byteOffset + this._bodyArrayBuffer.byteLength
-                      )
-                    );
-                  } else {
-                    return Promise.resolve(this._bodyArrayBuffer);
-                  }
-                } else {
-                  return this.blob().then(readBlobAsArrayBuffer);
-                }
-              };
-            }
-            this.text = function() {
-              var rejected = consumed(this);
-              if (rejected) {
-                return rejected;
-              }
-              if (this._bodyBlob) {
-                return readBlobAsText(this._bodyBlob);
-              } else if (this._bodyArrayBuffer) {
-                return Promise.resolve(readArrayBufferAsText(this._bodyArrayBuffer));
-              } else if (this._bodyFormData) {
-                throw new Error("could not read FormData body as text");
-              } else {
-                return Promise.resolve(this._bodyText);
-              }
-            };
-            if (support.formData) {
-              this.formData = function() {
-                return this.text().then(decode);
-              };
-            }
-            this.json = function() {
-              return this.text().then(JSON.parse);
-            };
-            return this;
-          }
-          var methods = ["DELETE", "GET", "HEAD", "OPTIONS", "POST", "PUT"];
-          function normalizeMethod(method) {
-            var upcased = method.toUpperCase();
-            return methods.indexOf(upcased) > -1 ? upcased : method;
-          }
-          function Request(input, options) {
-            if (!(this instanceof Request)) {
-              throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
-            }
-            options = options || {};
-            var body = options.body;
-            if (input instanceof Request) {
-              if (input.bodyUsed) {
-                throw new TypeError("Already read");
-              }
-              this.url = input.url;
-              this.credentials = input.credentials;
-              if (!options.headers) {
-                this.headers = new Headers(input.headers);
-              }
-              this.method = input.method;
-              this.mode = input.mode;
-              this.signal = input.signal;
-              if (!body && input._bodyInit != null) {
-                body = input._bodyInit;
-                input.bodyUsed = true;
-              }
-            } else {
-              this.url = String(input);
-            }
-            this.credentials = options.credentials || this.credentials || "same-origin";
-            if (options.headers || !this.headers) {
-              this.headers = new Headers(options.headers);
-            }
-            this.method = normalizeMethod(options.method || this.method || "GET");
-            this.mode = options.mode || this.mode || null;
-            this.signal = options.signal || this.signal;
-            this.referrer = null;
-            if ((this.method === "GET" || this.method === "HEAD") && body) {
-              throw new TypeError("Body not allowed for GET or HEAD requests");
-            }
-            this._initBody(body);
-            if (this.method === "GET" || this.method === "HEAD") {
-              if (options.cache === "no-store" || options.cache === "no-cache") {
-                var reParamSearch = /([?&])_=[^&]*/;
-                if (reParamSearch.test(this.url)) {
-                  this.url = this.url.replace(reParamSearch, "$1_=" + (/* @__PURE__ */ new Date()).getTime());
-                } else {
-                  var reQueryString = /\?/;
-                  this.url += (reQueryString.test(this.url) ? "&" : "?") + "_=" + (/* @__PURE__ */ new Date()).getTime();
-                }
-              }
-            }
-          }
-          Request.prototype.clone = function() {
-            return new Request(this, { body: this._bodyInit });
-          };
-          function decode(body) {
-            var form = new FormData();
-            body.trim().split("&").forEach(function(bytes) {
-              if (bytes) {
-                var split2 = bytes.split("=");
-                var name = split2.shift().replace(/\+/g, " ");
-                var value2 = split2.join("=").replace(/\+/g, " ");
-                form.append(decodeURIComponent(name), decodeURIComponent(value2));
-              }
-            });
-            return form;
-          }
-          function parseHeaders(rawHeaders) {
-            var headers = new Headers();
-            var preProcessedHeaders = rawHeaders.replace(/\r?\n[\t ]+/g, " ");
-            preProcessedHeaders.split("\r").map(function(header) {
-              return header.indexOf("\n") === 0 ? header.substr(1, header.length) : header;
-            }).forEach(function(line) {
-              var parts = line.split(":");
-              var key2 = parts.shift().trim();
-              if (key2) {
-                var value2 = parts.join(":").trim();
-                headers.append(key2, value2);
-              }
-            });
-            return headers;
-          }
-          Body.call(Request.prototype);
-          function Response(bodyInit, options) {
-            if (!(this instanceof Response)) {
-              throw new TypeError('Please use the "new" operator, this DOM object constructor cannot be called as a function.');
-            }
-            if (!options) {
-              options = {};
-            }
-            this.type = "default";
-            this.status = options.status === void 0 ? 200 : options.status;
-            this.ok = this.status >= 200 && this.status < 300;
-            this.statusText = options.statusText === void 0 ? "" : "" + options.statusText;
-            this.headers = new Headers(options.headers);
-            this.url = options.url || "";
-            this._initBody(bodyInit);
-          }
-          Body.call(Response.prototype);
-          Response.prototype.clone = function() {
-            return new Response(this._bodyInit, {
-              status: this.status,
-              statusText: this.statusText,
-              headers: new Headers(this.headers),
-              url: this.url
-            });
-          };
-          Response.error = function() {
-            var response = new Response(null, { status: 0, statusText: "" });
-            response.type = "error";
-            return response;
-          };
-          var redirectStatuses = [301, 302, 303, 307, 308];
-          Response.redirect = function(url, status) {
-            if (redirectStatuses.indexOf(status) === -1) {
-              throw new RangeError("Invalid status code");
-            }
-            return new Response(null, { status, headers: { location: url } });
-          };
-          exports2.DOMException = global2.DOMException;
-          try {
-            new exports2.DOMException();
-          } catch (err) {
-            exports2.DOMException = function(message, name) {
-              this.message = message;
-              this.name = name;
-              var error2 = Error(message);
-              this.stack = error2.stack;
-            };
-            exports2.DOMException.prototype = Object.create(Error.prototype);
-            exports2.DOMException.prototype.constructor = exports2.DOMException;
-          }
-          function fetch2(input, init) {
-            return new Promise(function(resolve, reject2) {
-              var request = new Request(input, init);
-              if (request.signal && request.signal.aborted) {
-                return reject2(new exports2.DOMException("Aborted", "AbortError"));
-              }
-              var xhr = new XMLHttpRequest();
-              function abortXhr() {
-                xhr.abort();
-              }
-              xhr.onload = function() {
-                var options = {
-                  status: xhr.status,
-                  statusText: xhr.statusText,
-                  headers: parseHeaders(xhr.getAllResponseHeaders() || "")
-                };
-                options.url = "responseURL" in xhr ? xhr.responseURL : options.headers.get("X-Request-URL");
-                var body = "response" in xhr ? xhr.response : xhr.responseText;
-                setTimeout(function() {
-                  resolve(new Response(body, options));
-                }, 0);
-              };
-              xhr.onerror = function() {
-                setTimeout(function() {
-                  reject2(new TypeError("Network request failed"));
-                }, 0);
-              };
-              xhr.ontimeout = function() {
-                setTimeout(function() {
-                  reject2(new TypeError("Network request failed"));
-                }, 0);
-              };
-              xhr.onabort = function() {
-                setTimeout(function() {
-                  reject2(new exports2.DOMException("Aborted", "AbortError"));
-                }, 0);
-              };
-              function fixUrl(url) {
-                try {
-                  return url === "" && global2.location.href ? global2.location.href : url;
-                } catch (e3) {
-                  return url;
-                }
-              }
-              xhr.open(request.method, fixUrl(request.url), true);
-              if (request.credentials === "include") {
-                xhr.withCredentials = true;
-              } else if (request.credentials === "omit") {
-                xhr.withCredentials = false;
-              }
-              if ("responseType" in xhr) {
-                if (support.blob) {
-                  xhr.responseType = "blob";
-                } else if (support.arrayBuffer && request.headers.get("Content-Type") && request.headers.get("Content-Type").indexOf("application/octet-stream") !== -1) {
-                  xhr.responseType = "arraybuffer";
-                }
-              }
-              if (init && typeof init.headers === "object" && !(init.headers instanceof Headers)) {
-                Object.getOwnPropertyNames(init.headers).forEach(function(name) {
-                  xhr.setRequestHeader(name, normalizeValue(init.headers[name]));
-                });
-              } else {
-                request.headers.forEach(function(value2, name) {
-                  xhr.setRequestHeader(name, value2);
-                });
-              }
-              if (request.signal) {
-                request.signal.addEventListener("abort", abortXhr);
-                xhr.onreadystatechange = function() {
-                  if (xhr.readyState === 4) {
-                    request.signal.removeEventListener("abort", abortXhr);
-                  }
-                };
-              }
-              xhr.send(typeof request._bodyInit === "undefined" ? null : request._bodyInit);
-            });
-          }
-          fetch2.polyfill = true;
-          if (!global2.fetch) {
-            global2.fetch = fetch2;
-            global2.Headers = Headers;
-            global2.Request = Request;
-            global2.Response = Response;
-          }
-          exports2.Headers = Headers;
-          exports2.Request = Request;
-          exports2.Response = Response;
-          exports2.fetch = fetch2;
-          return exports2;
-        }({});
-      })(__globalThis__);
-      __globalThis__.fetch.ponyfill = true;
-      delete __globalThis__.fetch.polyfill;
-      var ctx = __global__.fetch ? __global__ : __globalThis__;
-      exports = ctx.fetch;
-      exports.default = ctx.fetch;
-      exports.fetch = ctx.fetch;
-      exports.Headers = ctx.Headers;
-      exports.Request = ctx.Request;
-      exports.Response = ctx.Response;
-      module.exports = exports;
-    }
-  });
-
-  // node_modules/@n1ru4l/json-patch-plus/esm/lcs.js
-  var init_lcs = __esm({
-    "node_modules/@n1ru4l/json-patch-plus/esm/lcs.js"() {
-    }
-  });
-
-  // node_modules/@n1ru4l/json-patch-plus/esm/diff.js
-  var init_diff = __esm({
-    "node_modules/@n1ru4l/json-patch-plus/esm/diff.js"() {
-      init_lcs();
-    }
-  });
-
-  // node_modules/@n1ru4l/json-patch-plus/esm/patch.js
-  function patch(params) {
-    const context = {
-      left: params.left,
-      delta: params.delta,
-      children: void 0,
-      name: void 0,
-      nested: false,
-      stopped: false
-    };
-    function process2(context2) {
-      var _a3;
-      const steps = [
-        nested_collectChildrenPatchFilter,
-        array_collectChildrenPatchFilter,
-        trivial_patchFilter,
-        nested_patchFilter,
-        array_patchFilter
-      ];
-      for (const step of steps) {
-        step(context2);
-        if (context2.stopped) {
-          context2.stopped = false;
-          break;
-        }
-      }
-      if (context2.children) {
-        for (const childrenContext of context2.children) {
-          process2(childrenContext);
-          context2.result = (_a3 = context2.result) !== null && _a3 !== void 0 ? _a3 : context2.left;
-          if ("result" in childrenContext === false) {
-            delete context2.result[childrenContext.name];
-          } else {
-            context2.result[childrenContext.name] = childrenContext.result;
-          }
-        }
-      }
-    }
-    process2(context);
-    return context.result;
-  }
-  function nested_collectChildrenPatchFilter(context) {
-    if (!context || !context.children) {
-      return;
-    }
-    if (context.delta._t) {
-      return;
-    }
-    for (let child of context.children) {
-      if (Object.prototype.hasOwnProperty.call(context.left, child.name) && child.result === void 0) {
-        delete context.left[child.name];
-      } else if (context.left[child.name] !== child.result) {
-        context.left[child.name] = child.result;
-      }
-    }
-    context.result = context.left;
-    context.stopped = true;
-  }
-  function array_collectChildrenPatchFilter(context) {
-    if (!context || !context.children) {
-      return;
-    }
-    if (context.delta._t !== "a") {
-      return;
-    }
-    let length = context.children.length;
-    let child;
-    for (let index = 0; index < length; index++) {
-      child = context.children[index];
-      context.left[child.name] = child.result;
-    }
-    context.result = context.left;
-    context.stopped = true;
-  }
-  function trivial_patchFilter(context) {
-    if (typeof context.delta === "undefined") {
-      context.result = context.left;
-      return;
-    }
-    context.nested = !Array.isArray(context.delta);
-    if (context.nested) {
-      return;
-    }
-    if (context.delta.length === 1) {
-      context.result = context.delta[0];
-      context.stopped = true;
-      return;
-    }
-    if (context.delta.length === 2) {
-      context.result = context.delta[1];
-      context.stopped = true;
-      return;
-    }
-    if (context.delta.length === 3 && context.delta[2] === 0) {
-      context.stopped = true;
-    }
-  }
-  function nested_patchFilter(context) {
-    if (!context.nested) {
-      return;
-    }
-    if (context.delta._t) {
-      return;
-    }
-    for (let name in context.delta) {
-      if (context.children === void 0) {
-        context.children = [];
-      }
-      context.children.push({
-        left: context.left[name],
-        delta: context.delta[name],
-        name,
-        stopped: false
-      });
-    }
-    context.stopped = true;
-  }
-  function array_patchFilter(context) {
-    if (!context.nested) {
-      return;
-    }
-    if (context.delta._t !== "a") {
-      return;
-    }
-    let index;
-    let index1;
-    let delta = context.delta;
-    let array = context.left;
-    let toRemove = [];
-    let toInsert = [];
-    let toModify = [];
-    for (index in delta) {
-      if (index !== "_t") {
-        if (index[0] === "_") {
-          if (delta[index][2] === 0 || delta[index][2] === ARRAY_MOVE) {
-            toRemove.push(parseInt(index.slice(1), 10));
-          } else {
-            throw new Error(`only removal or move can be applied at original array indices, invalid diff type: ${delta[index][2]}`);
-          }
-        } else {
-          if (delta[index].length === 1) {
-            toInsert.push({
-              index: parseInt(index, 10),
-              value: delta[index][0]
-            });
-          } else {
-            toModify.push({
-              index: parseInt(index, 10),
-              delta: delta[index]
-            });
-          }
-        }
-      }
-    }
-    toRemove = toRemove.sort(compare.numerically);
-    for (index = toRemove.length - 1; index >= 0; index--) {
-      index1 = toRemove[index];
-      let indexDiff = delta[`_${index1}`];
-      let removedValue = array.splice(index1, 1)[0];
-      if (indexDiff[2] === ARRAY_MOVE) {
-        toInsert.push({
-          index: indexDiff[1],
-          value: removedValue
-        });
-      }
-    }
-    toInsert = toInsert.sort(compare.numericallyBy("index"));
-    let toInsertLength = toInsert.length;
-    for (index = 0; index < toInsertLength; index++) {
-      let insertion = toInsert[index];
-      array.splice(insertion.index, 0, insertion.value);
-    }
-    let toModifyLength = toModify.length;
-    if (toModifyLength > 0) {
-      for (index = 0; index < toModifyLength; index++) {
-        let modification = toModify[index];
-        if (context.children === void 0) {
-          context.children = [];
-        }
-        context.children.push({
-          left: context.left[modification.index],
-          delta: modification.delta,
-          name: modification.index,
-          stopped: false
-        });
-      }
-    }
-    if (!context.children) {
-      context.result = context.left;
-      context.stopped = true;
-      return;
-    }
-  }
-  var ARRAY_MOVE, compare;
-  var init_patch = __esm({
-    "node_modules/@n1ru4l/json-patch-plus/esm/patch.js"() {
-      ARRAY_MOVE = 3;
-      compare = {
-        numerically(a2, b) {
-          return a2 - b;
-        },
-        numericallyBy(name) {
-          return (a2, b) => a2[name] - b[name];
-        }
-      };
-    }
-  });
-
-  // node_modules/@n1ru4l/json-patch-plus/esm/index.js
-  var init_esm = __esm({
-    "node_modules/@n1ru4l/json-patch-plus/esm/index.js"() {
-      init_diff();
-      init_patch();
-    }
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/repeater/index.js
-  function swallow(value2) {
-    if (value2 != null && typeof value2.then === "function") {
-      value2.then(NOOP, NOOP);
-    }
-  }
-  function consumeExecution(r2) {
-    const err = r2.err;
-    const execution = Promise.resolve(r2.execution).then((value2) => {
-      if (err != null) {
-        throw err;
-      }
-      return value2;
-    });
-    r2.err = void 0;
-    r2.execution = execution.then(() => void 0, () => void 0);
-    return r2.pending === void 0 ? execution : r2.pending.then(() => execution);
-  }
-  function createIteration(r2, value2) {
-    const done = r2.state >= Done;
-    return Promise.resolve(value2).then((value3) => {
-      if (!done && r2.state >= Rejected) {
-        return consumeExecution(r2).then((value4) => ({
-          value: value4,
-          done: true
-        }));
-      }
-      return { value: value3, done };
-    });
-  }
-  function stop(r2, err) {
-    if (r2.state >= Stopped) {
-      return;
-    }
-    r2.state = Stopped;
-    r2.onnext();
-    r2.onstop();
-    if (r2.err == null) {
-      r2.err = err;
-    }
-    if (r2.pushes.length === 0 && (typeof r2.buffer === "undefined" || r2.buffer.empty)) {
-      finish(r2);
-    } else {
-      for (const push3 of r2.pushes) {
-        push3.resolve();
-      }
-    }
-  }
-  function finish(r2) {
-    if (r2.state >= Done) {
-      return;
-    }
-    if (r2.state < Stopped) {
-      stop(r2);
-    }
-    r2.state = Done;
-    r2.buffer = void 0;
-    for (const next of r2.nexts) {
-      const execution = r2.pending === void 0 ? consumeExecution(r2) : r2.pending.then(() => consumeExecution(r2));
-      next.resolve(createIteration(r2, execution));
-    }
-    r2.pushes = [];
-    r2.nexts = [];
-  }
-  function reject(r2) {
-    if (r2.state >= Rejected) {
-      return;
-    }
-    if (r2.state < Done) {
-      finish(r2);
-    }
-    r2.state = Rejected;
-  }
-  function push2(r2, value2) {
-    swallow(value2);
-    if (r2.pushes.length >= MAX_QUEUE_LENGTH) {
-      throw new RepeaterOverflowError(`No more than ${MAX_QUEUE_LENGTH} pending calls to push are allowed on a single repeater.`);
-    } else if (r2.state >= Stopped) {
-      return Promise.resolve(void 0);
-    }
-    let valueP = r2.pending === void 0 ? Promise.resolve(value2) : r2.pending.then(() => value2);
-    valueP = valueP.catch((err) => {
-      if (r2.state < Stopped) {
-        r2.err = err;
-      }
-      reject(r2);
-      return void 0;
-    });
-    let nextP;
-    if (r2.nexts.length) {
-      const next2 = r2.nexts.shift();
-      next2.resolve(createIteration(r2, valueP));
-      if (r2.nexts.length) {
-        nextP = Promise.resolve(r2.nexts[0].value);
-      } else {
-        nextP = new Promise((resolve) => r2.onnext = resolve);
-      }
-    } else if (typeof r2.buffer !== "undefined" && !r2.buffer.full) {
-      r2.buffer.add(valueP);
-      nextP = Promise.resolve(void 0);
-    } else {
-      nextP = new Promise((resolve) => r2.pushes.push({ resolve, value: valueP }));
-    }
-    let floating = true;
-    const next = {};
-    const unhandled = nextP.catch((err) => {
-      if (floating) {
-        throw err;
-      }
-      return void 0;
-    });
-    next.then = (onfulfilled, onrejected) => {
-      floating = false;
-      return Promise.prototype.then.call(nextP, onfulfilled, onrejected);
-    };
-    next.catch = (onrejected) => {
-      floating = false;
-      return Promise.prototype.catch.call(nextP, onrejected);
-    };
-    next.finally = nextP.finally.bind(nextP);
-    r2.pending = valueP.then(() => unhandled).catch((err) => {
-      r2.err = err;
-      reject(r2);
-    });
-    return next;
-  }
-  function createStop(r2) {
-    const stop1 = stop.bind(null, r2);
-    const stopP = new Promise((resolve) => r2.onstop = resolve);
-    stop1.then = stopP.then.bind(stopP);
-    stop1.catch = stopP.catch.bind(stopP);
-    stop1.finally = stopP.finally.bind(stopP);
-    return stop1;
-  }
-  function execute(r2) {
-    if (r2.state >= Started) {
-      return;
-    }
-    r2.state = Started;
-    const push1 = push2.bind(null, r2);
-    const stop1 = createStop(r2);
-    r2.execution = new Promise((resolve) => resolve(r2.executor(push1, stop1)));
-    r2.execution.catch(() => stop(r2));
-  }
-  var RepeaterOverflowError, Initial, Started, Stopped, Done, Rejected, MAX_QUEUE_LENGTH, NOOP, records, Repeater;
-  var init_repeater = __esm({
-    ".gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/repeater/index.js"() {
-      RepeaterOverflowError = class extends Error {
-        constructor(message) {
-          super(message);
-          Object.defineProperty(this, "name", {
-            value: "RepeaterOverflowError",
-            enumerable: false
-          });
-          if (typeof Object.setPrototypeOf === "function") {
-            Object.setPrototypeOf(this, this.constructor.prototype);
-          } else {
-            this.__proto__ = this.constructor.prototype;
-          }
-          if (typeof Error.captureStackTrace === "function") {
-            Error.captureStackTrace(this, this.constructor);
-          }
-        }
-      };
-      Initial = 0;
-      Started = 1;
-      Stopped = 2;
-      Done = 3;
-      Rejected = 4;
-      MAX_QUEUE_LENGTH = 1024;
-      NOOP = () => {
-      };
-      records = /* @__PURE__ */ new WeakMap();
-      Repeater = class {
-        constructor(executor, buffer) {
-          records.set(this, {
-            executor,
-            buffer,
-            err: void 0,
-            state: Initial,
-            pushes: [],
-            nexts: [],
-            pending: void 0,
-            execution: void 0,
-            onnext: NOOP,
-            onstop: NOOP
-          });
-        }
-        next(value2) {
-          swallow(value2);
-          const r2 = records.get(this);
-          if (r2 === void 0) {
-            throw new Error("WeakMap error");
-          }
-          if (r2.nexts.length >= MAX_QUEUE_LENGTH) {
-            throw new RepeaterOverflowError(`No more than ${MAX_QUEUE_LENGTH} pending calls to next are allowed on a single repeater.`);
-          }
-          if (r2.state <= Initial) {
-            execute(r2);
-          }
-          r2.onnext(value2);
-          if (typeof r2.buffer !== "undefined" && !r2.buffer.empty) {
-            const result = createIteration(r2, r2.buffer.remove());
-            if (r2.pushes.length) {
-              const push3 = r2.pushes.shift();
-              r2.buffer.add(push3.value);
-              r2.onnext = push3.resolve;
-            }
-            return result;
-          } else if (r2.pushes.length) {
-            const push3 = r2.pushes.shift();
-            r2.onnext = push3.resolve;
-            return createIteration(r2, push3.value);
-          } else if (r2.state >= Stopped) {
-            finish(r2);
-            return createIteration(r2, consumeExecution(r2));
-          }
-          return new Promise((resolve) => r2.nexts.push({ resolve, value: value2 }));
-        }
-        return(value2) {
-          swallow(value2);
-          const r2 = records.get(this);
-          if (r2 === void 0) {
-            throw new Error("WeakMap error");
-          }
-          finish(r2);
-          r2.execution = Promise.resolve(r2.execution).then(() => value2);
-          return createIteration(r2, consumeExecution(r2));
-        }
-        throw(err) {
-          const r2 = records.get(this);
-          if (r2 === void 0) {
-            throw new Error("WeakMap error");
-          }
-          if (r2.state <= Initial || r2.state >= Stopped || typeof r2.buffer !== "undefined" && !r2.buffer.empty) {
-            finish(r2);
-            if (r2.err == null) {
-              r2.err = err;
-            }
-            return createIteration(r2, consumeExecution(r2));
-          }
-          return this.next(Promise.reject(err));
-        }
-        [Symbol.asyncIterator]() {
-          return this;
-        }
-      };
-    }
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/graphql-live-query-utils/createApplyLiveQueryPatch.js
-  var createApplyLiveQueryPatch;
-  var init_createApplyLiveQueryPatch = __esm({
-    ".gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/graphql-live-query-utils/createApplyLiveQueryPatch.js"() {
-      init_repeater();
-      createApplyLiveQueryPatch = (applyPatch) => (source) => new Repeater((push3, stop2) => __async(void 0, null, function* () {
-        const iterator = source[Symbol.asyncIterator]();
-        stop2.then(() => {
-          var _a3;
-          return (_a3 = iterator.return) === null || _a3 === void 0 ? void 0 : _a3.call(iterator);
-        }).catch(console.log);
-        let mutableData = null;
-        let lastRevision = 0;
-        let next;
-        while ((next = yield iterator.next()).done === false) {
-          if ("revision" in next.value && next.value.revision) {
-            const valueToPublish = {};
-            if (next.value.revision === 1) {
-              if (!next.value.data) {
-                throw new Error("Missing data.");
-              }
-              valueToPublish.data = next.value.data;
-              mutableData = next.value.data;
-              lastRevision = 1;
-            } else {
-              if (!mutableData) {
-                throw new Error("No previousData available.");
-              }
-              if (!next.value.patch) {
-                throw new Error("Missing patch.");
-              }
-              if (lastRevision + 1 !== next.value.revision) {
-                throw new Error("Wrong revision received.");
-              }
-              mutableData = applyPatch(mutableData, next.value.patch);
-              valueToPublish.data = __spreadValues({}, mutableData);
-              lastRevision++;
-            }
-            if (next.value.extensions) {
-              valueToPublish.extensions = next.value.extensions;
-            }
-            if (next.value.errors) {
-              valueToPublish.errors = next.value.errors;
-            }
-            yield push3(valueToPublish);
-            continue;
-          }
-          yield push3(next.value);
-        }
-        stop2();
-      }));
-    }
-  });
-
-  // node_modules/@n1ru4l/push-pull-async-iterable-iterator/index.mjs
-  function withHandlers(source, onReturn, onThrow) {
-    const stream = function withReturnSource() {
-      return __asyncGenerator(this, null, function* () {
-        yield* __yieldStar(source);
-      });
-    }();
-    const originalReturn = stream.return.bind(stream);
-    if (onReturn) {
-      stream.return = (...args) => {
-        onReturn();
-        return originalReturn(...args);
-      };
-    }
-    if (onThrow) {
-      const originalThrow = stream.throw.bind(stream);
-      stream.throw = (err) => {
-        onThrow(err);
-        return originalThrow(err);
-      };
-    }
-    return stream;
-  }
-  function createDeferred() {
-    const d3 = {};
-    d3.promise = new Promise((resolve, reject2) => {
-      d3.resolve = resolve;
-      d3.reject = reject2;
-    });
-    return d3;
-  }
-  function makePushPullAsyncIterableIterator() {
-    let state = {
-      type: "running"
-      /* running */
-    };
-    let next = createDeferred();
-    const values = [];
-    function pushValue(value2) {
-      if (state.type !== "running") {
-        return;
-      }
-      values.push(value2);
-      next.resolve();
-      next = createDeferred();
-    }
-    const source = function PushPullAsyncIterableIterator() {
-      return __asyncGenerator(this, null, function* () {
-        while (true) {
-          if (values.length > 0) {
-            yield values.shift();
-          } else {
-            if (state.type === "error") {
-              throw state.error;
-            }
-            if (state.type === "finished") {
-              return;
-            }
-            yield new __await(next.promise);
-          }
-        }
-      });
-    }();
-    const stream = withHandlers(source, () => {
-      if (state.type !== "running") {
-        return;
-      }
-      state = {
-        type: "finished"
-        /* finished */
-      };
-      next.resolve();
-    }, (error2) => {
-      if (state.type !== "running") {
-        return;
-      }
-      state = {
-        type: "error",
-        error: error2
-      };
-      next.resolve();
-    });
-    return {
-      pushValue,
-      asyncIterableIterator: stream
-    };
-  }
-  function applyAsyncIterableIteratorToSink(asyncIterableIterator, sink) {
-    const run = () => __async(this, null, function* () {
-      try {
-        try {
-          for (var iter = __forAwait(asyncIterableIterator), more, temp, error2; more = !(temp = yield iter.next()).done; more = false) {
-            const value2 = temp.value;
-            sink.next(value2);
-          }
-        } catch (temp) {
-          error2 = [temp];
-        } finally {
-          try {
-            more && (temp = iter.return) && (yield temp.call(iter));
-          } finally {
-            if (error2)
-              throw error2[0];
-          }
-        }
-        sink.complete();
-      } catch (err) {
-        sink.error(err);
-      }
-    });
-    run();
-    return () => {
-      var _a3;
-      (_a3 = asyncIterableIterator.return) === null || _a3 === void 0 ? void 0 : _a3.call(asyncIterableIterator);
-    };
-  }
-  var makeAsyncIterableIteratorFromSink;
-  var init_push_pull_async_iterable_iterator = __esm({
-    "node_modules/@n1ru4l/push-pull-async-iterable-iterator/index.mjs"() {
-      makeAsyncIterableIteratorFromSink = (make2) => {
-        const { pushValue, asyncIterableIterator } = makePushPullAsyncIterableIterator();
-        const dispose = make2({
-          next: (value2) => {
-            pushValue(value2);
-          },
-          complete: () => {
-            asyncIterableIterator.return();
-          },
-          error: (err) => {
-            asyncIterableIterator.throw(err);
-          }
-        });
-        const originalReturn = asyncIterableIterator.return;
-        let returnValue = void 0;
-        asyncIterableIterator.return = () => {
-          if (returnValue === void 0) {
-            dispose();
-            returnValue = originalReturn();
-          }
-          return returnValue;
-        };
-        return asyncIterableIterator;
-      };
-    }
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/graphql-live-query-utils/index.js
-  var graphql_live_query_utils_exports = {};
-  __export(graphql_live_query_utils_exports, {
-    applyAsyncIterableIteratorToSink: () => applyAsyncIterableIteratorToSink,
-    applyJSONDiffPatch: () => applyJSONDiffPatch,
-    applyLiveQueryJSONDiffPatch: () => applyLiveQueryJSONDiffPatch,
-    makeAsyncIterableIteratorFromSink: () => makeAsyncIterableIteratorFromSink
-  });
-  var applyJSONDiffPatch, applyLiveQueryJSONDiffPatch;
-  var init_graphql_live_query_utils = __esm({
-    ".gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/graphql-live-query-utils/index.js"() {
-      init_esm();
-      init_createApplyLiveQueryPatch();
-      init_push_pull_async_iterable_iterator();
-      applyJSONDiffPatch = (left, delta) => patch({
-        left,
-        delta
-      });
-      applyLiveQueryJSONDiffPatch = createApplyLiveQueryPatch(applyJSONDiffPatch);
-    }
-  });
-
-  // extensions/sms-control/src/SmsControl.jsx
+  // extensions/stage-control-order-details/src/App.tsx
   var import_react13 = __toESM(require_react());
 
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
-  function isBasicObject(value2) {
-    if (value2 == null || typeof value2 !== "object")
+  function isBasicObject(value) {
+    if (value == null || typeof value !== "object")
       return false;
-    const prototype = Object.getPrototypeOf(value2);
+    const prototype = Object.getPrototypeOf(value);
     return prototype == null || prototype === Object.prototype;
   }
 
@@ -19788,19 +18505,19 @@
       get children() {
         return rootInternals.children;
       },
-      createComponent(type2, ...rest) {
-        if (components && components.indexOf(type2) < 0) {
-          throw new Error(`Unsupported component: ${type2}`);
+      createComponent(type, ...rest) {
+        if (components && components.indexOf(type) < 0) {
+          throw new Error(`Unsupported component: ${type}`);
         }
         const [initialProps, initialChildren, ...moreChildren] = rest;
         const normalizedInitialProps = initialProps !== null && initialProps !== void 0 ? initialProps : {};
         const normalizedInitialChildren = [];
         const normalizedInternalProps = {};
         if (initialProps) {
-          for (const key2 of Object.keys(initialProps)) {
-            if (key2 === "children")
+          for (const key of Object.keys(initialProps)) {
+            if (key === "children")
               continue;
-            normalizedInternalProps[key2] = makeValueHotSwappable(serializeProp(initialProps[key2]));
+            normalizedInternalProps[key] = makeValueHotSwappable(serializeProp(initialProps[key]));
           }
         }
         if (initialChildren) {
@@ -19843,7 +18560,7 @@
         }, EMPTY_OBJECT);
         rootInternals.components.set(component, internals);
         Object.defineProperty(component, "type", {
-          value: type2,
+          value: type,
           configurable: false,
           writable: false,
           enumerable: true
@@ -19961,24 +18678,24 @@
     const normalizedNewProps = {};
     const hotSwapFunctions = [];
     let hasRemoteChange = false;
-    for (const key2 of Object.keys(newProps)) {
-      if (key2 === "children")
+    for (const key of Object.keys(newProps)) {
+      if (key === "children")
         continue;
-      const currentExternalValue = currentExternalProps[key2];
-      const newExternalValue = newProps[key2];
-      const currentValue = currentProps[key2];
+      const currentExternalValue = currentExternalProps[key];
+      const newExternalValue = newProps[key];
+      const currentValue = currentProps[key];
       const newValue = serializeProp(newExternalValue);
       if (currentValue === newValue && (newValue == null || typeof newValue !== "object")) {
         continue;
       }
-      const [value2, hotSwaps] = tryHotSwappingValues(currentValue, newValue);
+      const [value, hotSwaps] = tryHotSwappingValues(currentValue, newValue);
       if (hotSwaps) {
         hotSwapFunctions.push(...hotSwaps);
       }
-      if (value2 === IGNORE)
+      if (value === IGNORE)
         continue;
       hasRemoteChange = true;
-      normalizedNewProps[key2] = value2;
+      normalizedNewProps[key] = value;
       if (isRemoteFragment(currentExternalValue)) {
         removeNodeFromContainer(currentExternalValue, rootInternals);
       }
@@ -20022,31 +18739,31 @@
     const result = [currentValue === newValue ? IGNORE : newValue];
     return result;
   }
-  function makeValueHotSwappable(value2, seen = /* @__PURE__ */ new Map()) {
-    const seenValue = seen.get(value2);
+  function makeValueHotSwappable(value, seen = /* @__PURE__ */ new Map()) {
+    const seenValue = seen.get(value);
     if (seenValue)
       return seenValue;
-    if (isRemoteFragment(value2)) {
-      seen.set(value2, value2);
-      return value2;
+    if (isRemoteFragment(value)) {
+      seen.set(value, value);
+      return value;
     }
-    if (Array.isArray(value2)) {
+    if (Array.isArray(value)) {
       const result = [];
-      seen.set(value2, result);
-      for (const nested of value2) {
+      seen.set(value, result);
+      for (const nested of value) {
         result.push(makeValueHotSwappable(nested, seen));
       }
       return result;
     }
-    if (isBasicObject(value2)) {
+    if (isBasicObject(value)) {
       const result = {};
-      seen.set(value2, result);
-      for (const key2 of Object.keys(value2)) {
-        result[key2] = makeValueHotSwappable(value2[key2], seen);
+      seen.set(value, result);
+      for (const key of Object.keys(value)) {
+        result[key] = makeValueHotSwappable(value[key], seen);
       }
       return result;
     }
-    if (typeof value2 === "function") {
+    if (typeof value === "function") {
       const wrappedFunction = (...args) => {
         return wrappedFunction[FUNCTION_CURRENT_IMPLEMENTATION_KEY](...args);
       };
@@ -20054,32 +18771,32 @@
         enumerable: false,
         configurable: false,
         writable: true,
-        value: value2
+        value
       });
-      seen.set(value2, wrappedFunction);
+      seen.set(value, wrappedFunction);
       return wrappedFunction;
     }
-    seen.set(value2, value2);
-    return value2;
+    seen.set(value, value);
+    return value;
   }
-  function collectNestedHotSwappableValues(value2, seen = /* @__PURE__ */ new Set()) {
-    if (seen.has(value2))
+  function collectNestedHotSwappableValues(value, seen = /* @__PURE__ */ new Set()) {
+    if (seen.has(value))
       return void 0;
-    seen.add(value2);
-    if (Array.isArray(value2)) {
-      return value2.reduce((all, element) => {
+    seen.add(value);
+    if (Array.isArray(value)) {
+      return value.reduce((all, element) => {
         const nested = collectNestedHotSwappableValues(element, seen);
         return nested ? [...all, ...nested] : all;
       }, []);
     }
-    if (isBasicObject(value2)) {
-      return Object.keys(value2).reduce((all, key2) => {
-        const nested = collectNestedHotSwappableValues(value2[key2], seen);
+    if (isBasicObject(value)) {
+      return Object.keys(value).reduce((all, key) => {
+        const nested = collectNestedHotSwappableValues(value[key], seen);
         return nested ? [...all, ...nested] : all;
       }, []);
     }
-    if (typeof value2 === "function") {
-      return FUNCTION_CURRENT_IMPLEMENTATION_KEY in value2 ? [value2] : void 0;
+    if (typeof value === "function") {
+      return FUNCTION_CURRENT_IMPLEMENTATION_KEY in value ? [value] : void 0;
     }
     return void 0;
   }
@@ -20235,8 +18952,8 @@
     if (node.kind !== KIND_COMPONENT)
       return;
     const props = node.remoteProps;
-    for (const key2 of Object.keys(props !== null && props !== void 0 ? props : {})) {
-      const prop = props[key2];
+    for (const key of Object.keys(props !== null && props !== void 0 ? props : {})) {
+      const prop = props[key];
       if (!isRemoteFragment(prop))
         continue;
       removeNodeFromContainer(prop, rootInternals);
@@ -20263,17 +18980,17 @@
       enumerable: true
     });
   }
-  function serializeChild(value2) {
-    return value2.kind === KIND_TEXT ? {
-      id: value2.id,
-      kind: value2.kind,
-      text: value2.text
+  function serializeChild(value) {
+    return value.kind === KIND_TEXT ? {
+      id: value.id,
+      kind: value.kind,
+      text: value.text
     } : {
-      id: value2.id,
-      kind: value2.kind,
-      type: value2.type,
-      props: value2.remoteProps,
-      children: value2.children.map((child) => serializeChild(child))
+      id: value.id,
+      kind: value.kind,
+      type: value.type,
+      props: value.remoteProps,
+      children: value.children.map((child) => serializeChild(child))
     };
   }
   function serializeProp(prop) {
@@ -20282,12 +18999,12 @@
     }
     return prop;
   }
-  function serializeFragment(value2) {
+  function serializeFragment(value) {
     return {
-      id: value2.id,
-      kind: value2.kind,
+      id: value.id,
+      kind: value.kind,
       get children() {
-        return value2.children.map((child) => serializeChild(child));
+        return value.children.map((child) => serializeChild(child));
       }
     };
   }
@@ -20300,14 +19017,14 @@
     }
     return rootInternals.components.get(currentParent);
   }
-  function makeRemote(value2, id, root) {
-    Object.defineProperty(value2, "id", {
+  function makeRemote(value, id, root) {
+    Object.defineProperty(value, "id", {
       value: id,
       configurable: true,
       writable: false,
       enumerable: false
     });
-    Object.defineProperty(value2, "root", {
+    Object.defineProperty(value, "root", {
       value: root,
       configurable: true,
       writable: false,
@@ -20322,30 +19039,30 @@
     let hasChanged = false;
     const hotSwaps = [];
     const normalizedNewValue = {};
-    for (const key2 in currentValue) {
-      const currentObjectValue = currentValue[key2];
-      if (!(key2 in newValue)) {
+    for (const key in currentValue) {
+      const currentObjectValue = currentValue[key];
+      if (!(key in newValue)) {
         hasChanged = true;
         const nestedHotSwappables = collectNestedHotSwappableValues(currentObjectValue);
         if (nestedHotSwappables) {
           hotSwaps.push(...nestedHotSwappables.map((hotSwappable) => [hotSwappable, void 0]));
         }
       }
-      const newObjectValue = newValue[key2];
+      const newObjectValue = newValue[key];
       const [updatedValue, elementHotSwaps] = tryHotSwappingValues(currentObjectValue, newObjectValue, seen);
       if (elementHotSwaps) {
         hotSwaps.push(...elementHotSwaps);
       }
       if (updatedValue !== IGNORE) {
         hasChanged = true;
-        normalizedNewValue[key2] = updatedValue;
+        normalizedNewValue[key] = updatedValue;
       }
     }
-    for (const key2 in newValue) {
-      if (key2 in normalizedNewValue)
+    for (const key in newValue) {
+      if (key in normalizedNewValue)
         continue;
       hasChanged = true;
-      normalizedNewValue[key2] = makeValueHotSwappable(newValue[key2]);
+      normalizedNewValue[key] = makeValueHotSwappable(newValue[key]);
     }
     return [hasChanged ? normalizedNewValue : IGNORE, hotSwaps];
   }
@@ -20360,24 +19077,24 @@
     const currentLength = currentValue.length;
     const maxLength = Math.max(currentLength, newLength);
     const normalizedNewValue = [];
-    for (let i3 = 0; i3 < maxLength; i3++) {
-      const currentArrayValue = currentValue[i3];
-      const newArrayValue = newValue[i3];
-      if (i3 < newLength) {
-        if (i3 >= currentLength) {
+    for (let i = 0; i < maxLength; i++) {
+      const currentArrayValue = currentValue[i];
+      const newArrayValue = newValue[i];
+      if (i < newLength) {
+        if (i >= currentLength) {
           hasChanged = true;
-          normalizedNewValue[i3] = makeValueHotSwappable(newArrayValue);
+          normalizedNewValue[i] = makeValueHotSwappable(newArrayValue);
           continue;
         }
         const [updatedValue, elementHotSwaps] = tryHotSwappingValues(currentArrayValue, newArrayValue, seen);
         if (elementHotSwaps)
           hotSwaps.push(...elementHotSwaps);
         if (updatedValue === IGNORE) {
-          normalizedNewValue[i3] = currentArrayValue;
+          normalizedNewValue[i] = currentArrayValue;
           continue;
         }
         hasChanged = true;
-        normalizedNewValue[i3] = updatedValue;
+        normalizedNewValue[i] = updatedValue;
       } else {
         hasChanged = true;
         const nestedHotSwappables = collectNestedHotSwappableValues(currentArrayValue);
@@ -20423,20 +19140,20 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/extension.mjs
   var extension = createExtensionRegistrationFunction();
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Badge/Badge.mjs
-  var Badge = createRemoteComponent("Badge");
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
+  var AdminBlock = createRemoteComponent("AdminBlock");
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
-  var BlockStack = createRemoteComponent("BlockStack");
-
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Button/Button.mjs
-  var Button = createRemoteComponent("Button");
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Form/Form.mjs
+  var Form = createRemoteComponent("Form");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
   var InlineStack = createRemoteComponent("InlineStack");
 
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/ProgressIndicator/ProgressIndicator.mjs
   var ProgressIndicator = createRemoteComponent("ProgressIndicator");
+
+  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Select/Select.mjs
+  var Select = createRemoteComponent("Select");
 
   // node_modules/@remote-ui/react/build/esm/render.mjs
   var import_react2 = __toESM(require_react(), 1);
@@ -20478,13 +19195,13 @@
       createTextInstance(text, root) {
         return root.createText(text);
       },
-      createInstance(type2, allProps, root) {
-        const _a3 = allProps, {
+      createInstance(type, allProps, root) {
+        const _a = allProps, {
           children: _children
-        } = _a3, props = __objRest(_a3, [
+        } = _a, props = __objRest(_a, [
           "children"
         ]);
-        return root.createComponent(type2, props);
+        return root.createComponent(type, props);
       },
       // Updates
       commitTextUpdate(text, _oldText, newText) {
@@ -20493,25 +19210,25 @@
       prepareUpdate(_instance, _type, oldProps, newProps) {
         const updateProps2 = {};
         let needsUpdate = false;
-        for (const key2 in oldProps) {
-          if (!has(oldProps, key2) || key2 === "children") {
+        for (const key in oldProps) {
+          if (!has(oldProps, key) || key === "children") {
             continue;
           }
-          if (!(key2 in newProps)) {
+          if (!(key in newProps)) {
             needsUpdate = true;
-            updateProps2[key2] = void 0;
-          } else if (oldProps[key2] !== newProps[key2]) {
+            updateProps2[key] = void 0;
+          } else if (oldProps[key] !== newProps[key]) {
             needsUpdate = true;
-            updateProps2[key2] = newProps[key2];
+            updateProps2[key] = newProps[key];
           }
         }
-        for (const key2 in newProps) {
-          if (!has(newProps, key2) || key2 === "children") {
+        for (const key in newProps) {
+          if (!has(newProps, key) || key === "children") {
             continue;
           }
-          if (!(key2 in oldProps)) {
+          if (!(key in oldProps)) {
             needsUpdate = true;
-            updateProps2[key2] = newProps[key2];
+            updateProps2[key] = newProps[key];
           }
         }
         return needsUpdate ? updateProps2 : null;
@@ -20572,9 +19289,9 @@
   function scheduleMicrotask(callback) {
     return typeof queueMicrotask === "function" ? queueMicrotask : Promise.resolve(null).then(callback).catch(handleErrorInNextTick);
   }
-  function handleErrorInNextTick(error2) {
+  function handleErrorInNextTick(error) {
     setTimeout(() => {
-      throw error2;
+      throw error;
     });
   }
   var {
@@ -20598,7 +19315,7 @@
     if (!cached) {
       var _version$split;
       const major = Number(((_version$split = import_react2.version.split(".")) === null || _version$split === void 0 ? void 0 : _version$split[0]) || 18);
-      const value2 = {
+      const value = {
         container: major >= 18 ? reconciler.createContainer(
           root,
           LEGACY_ROOT,
@@ -20620,8 +19337,8 @@
           reconciler
         }
       };
-      cache.set(root, value2);
-      cached = value2;
+      cache.set(root, value);
+      cached = value;
     }
     const {
       container,
@@ -20660,10 +19377,10 @@
   }
   function createComponentWrapper(componentType, fragmentProps) {
     const Component = componentType;
-    return /* @__PURE__ */ (0, import_react4.memo)(function ComponentWrapper(_a3) {
-      var _b2 = _a3, {
+    return /* @__PURE__ */ (0, import_react4.memo)(function ComponentWrapper(_a) {
+      var _b = _a, {
         children: externalChildren = []
-      } = _b2, externalProps = __objRest(_b2, [
+      } = _b, externalProps = __objRest(_b, [
         "children"
       ]);
       const fragments = (0, import_react4.useRef)({});
@@ -20677,26 +19394,26 @@
       } = (0, import_react4.useMemo)(() => {
         const portals = [];
         const props2 = {};
-        for (const key2 of Object.keys(externalProps)) {
-          const element = externalProps[key2];
-          if (fragmentProps.includes(key2) && /* @__PURE__ */ (0, import_react4.isValidElement)(element)) {
-            const currentFragment = fragments.current[key2];
+        for (const key of Object.keys(externalProps)) {
+          const element = externalProps[key];
+          if (fragmentProps.includes(key) && /* @__PURE__ */ (0, import_react4.isValidElement)(element)) {
+            const currentFragment = fragments.current[key];
             const fragment = isRemoteFragment(currentFragment) ? currentFragment : root.createFragment();
-            fragments.current[key2] = fragment;
+            fragments.current[key] = fragment;
             Object.assign(fragment, {
               createText(...args) {
                 return root.createText(...args);
               },
-              createComponent(type2, ...args) {
-                return root.createComponent(type2, ...args);
+              createComponent(type, ...args) {
+                return root.createComponent(type, ...args);
               }
             });
             const portal = reconciler.createPortal(element, fragment, null, null);
             portals.push(portal);
-            props2[key2] = fragment;
+            props2[key] = fragment;
           } else {
-            props2[key2] = element;
-            delete fragments.current[key2];
+            props2[key] = element;
+            delete fragments.current[key];
           }
         }
         return {
@@ -20719,7 +19436,7 @@
   function reactExtension(target, render$1) {
     return extension(target, (root, api) => __async(this, null, function* () {
       const element = yield render$1(api);
-      yield new Promise((resolve, reject2) => {
+      yield new Promise((resolve, reject) => {
         try {
           render(/* @__PURE__ */ (0, import_jsx_runtime3.jsx)(ExtensionApiContext.Provider, {
             value: api,
@@ -20727,28 +19444,28 @@
           }), root, () => {
             resolve();
           });
-        } catch (error2) {
-          console.error(error2);
-          reject2(error2);
+        } catch (error) {
+          console.error(error);
+          reject(error);
         }
       });
     }));
   }
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Badge/Badge.mjs
-  var Badge2 = createRemoteReactComponent(Badge);
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
+  var AdminBlock2 = createRemoteReactComponent(AdminBlock);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/BlockStack/BlockStack.mjs
-  var BlockStack2 = createRemoteReactComponent(BlockStack);
-
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Button/Button.mjs
-  var Button2 = createRemoteReactComponent(Button);
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Form/Form.mjs
+  var Form2 = createRemoteReactComponent(Form);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/InlineStack/InlineStack.mjs
   var InlineStack2 = createRemoteReactComponent(InlineStack);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/ProgressIndicator/ProgressIndicator.mjs
   var ProgressIndicator2 = createRemoteReactComponent(ProgressIndicator);
+
+  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Select/Select.mjs
+  var Select2 = createRemoteReactComponent(Select);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
   var import_react12 = __toESM(require_react(), 1);
@@ -20770,8551 +19487,6 @@
     return api;
   }
 
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/AnyClient.js
-  var $modelRelationships = Symbol.for("gadget/modelRelationships");
-
-  // node_modules/wonka/dist/wonka.mjs
-  var teardownPlaceholder = () => {
-  };
-  var e = teardownPlaceholder;
-  function start(e3) {
-    return {
-      tag: 0,
-      0: e3
-    };
-  }
-  function push(e3) {
-    return {
-      tag: 1,
-      0: e3
-    };
-  }
-  var asyncIteratorSymbol = () => "function" == typeof Symbol && Symbol.asyncIterator || "@@asyncIterator";
-  var identity = (e3) => e3;
-  function filter(r2) {
-    return (t3) => (i3) => {
-      var a2 = e;
-      t3((e3) => {
-        if (0 === e3) {
-          i3(0);
-        } else if (0 === e3.tag) {
-          a2 = e3[0];
-          i3(e3);
-        } else if (!r2(e3[0])) {
-          a2(0);
-        } else {
-          i3(e3);
-        }
-      });
-    };
-  }
-  function map(e3) {
-    return (r2) => (t3) => r2((r3) => {
-      if (0 === r3 || 0 === r3.tag) {
-        t3(r3);
-      } else {
-        t3(push(e3(r3[0])));
-      }
-    });
-  }
-  function mergeMap(r2) {
-    return (t3) => (i3) => {
-      var a2 = [];
-      var f3 = e;
-      var n2 = false;
-      var s2 = false;
-      t3((t4) => {
-        if (s2) {
-        } else if (0 === t4) {
-          s2 = true;
-          if (!a2.length) {
-            i3(0);
-          }
-        } else if (0 === t4.tag) {
-          f3 = t4[0];
-        } else {
-          n2 = false;
-          !function applyInnerSource(r3) {
-            var t5 = e;
-            r3((e3) => {
-              if (0 === e3) {
-                if (a2.length) {
-                  var r4 = a2.indexOf(t5);
-                  if (r4 > -1) {
-                    (a2 = a2.slice()).splice(r4, 1);
-                  }
-                  if (!a2.length) {
-                    if (s2) {
-                      i3(0);
-                    } else if (!n2) {
-                      n2 = true;
-                      f3(0);
-                    }
-                  }
-                }
-              } else if (0 === e3.tag) {
-                a2.push(t5 = e3[0]);
-                t5(0);
-              } else if (a2.length) {
-                i3(e3);
-                t5(0);
-              }
-            });
-          }(r2(t4[0]));
-          if (!n2) {
-            n2 = true;
-            f3(0);
-          }
-        }
-      });
-      i3(start((e3) => {
-        if (1 === e3) {
-          if (!s2) {
-            s2 = true;
-            f3(1);
-          }
-          for (var r3 = 0, t4 = a2, i4 = a2.length; r3 < i4; r3++) {
-            t4[r3](1);
-          }
-          a2.length = 0;
-        } else {
-          if (!s2 && !n2) {
-            n2 = true;
-            f3(0);
-          } else {
-            n2 = false;
-          }
-          for (var l3 = 0, u3 = a2, o2 = a2.length; l3 < o2; l3++) {
-            u3[l3](0);
-          }
-        }
-      }));
-    };
-  }
-  function mergeAll(e3) {
-    return mergeMap(identity)(e3);
-  }
-  function merge(e3) {
-    return mergeAll(r(e3));
-  }
-  function onEnd(e3) {
-    return (r2) => (t3) => {
-      var i3 = false;
-      r2((r3) => {
-        if (i3) {
-        } else if (0 === r3) {
-          i3 = true;
-          t3(0);
-          e3();
-        } else if (0 === r3.tag) {
-          var a2 = r3[0];
-          t3(start((r4) => {
-            if (1 === r4) {
-              i3 = true;
-              a2(1);
-              e3();
-            } else {
-              a2(r4);
-            }
-          }));
-        } else {
-          t3(r3);
-        }
-      });
-    };
-  }
-  function onPush(e3) {
-    return (r2) => (t3) => {
-      var i3 = false;
-      r2((r3) => {
-        if (i3) {
-        } else if (0 === r3) {
-          i3 = true;
-          t3(0);
-        } else if (0 === r3.tag) {
-          var a2 = r3[0];
-          t3(start((e4) => {
-            if (1 === e4) {
-              i3 = true;
-            }
-            a2(e4);
-          }));
-        } else {
-          e3(r3[0]);
-          t3(r3);
-        }
-      });
-    };
-  }
-  function onStart(e3) {
-    return (r2) => (t3) => r2((r3) => {
-      if (0 === r3) {
-        t3(0);
-      } else if (0 === r3.tag) {
-        t3(r3);
-        e3();
-      } else {
-        t3(r3);
-      }
-    });
-  }
-  function share(r2) {
-    var t3 = [];
-    var i3 = e;
-    var a2 = false;
-    return (e3) => {
-      t3.push(e3);
-      if (1 === t3.length) {
-        r2((e4) => {
-          if (0 === e4) {
-            for (var r3 = 0, f3 = t3, n2 = t3.length; r3 < n2; r3++) {
-              f3[r3](0);
-            }
-            t3.length = 0;
-          } else if (0 === e4.tag) {
-            i3 = e4[0];
-          } else {
-            a2 = false;
-            for (var s2 = 0, l3 = t3, u3 = t3.length; s2 < u3; s2++) {
-              l3[s2](e4);
-            }
-          }
-        });
-      }
-      e3(start((r3) => {
-        if (1 === r3) {
-          var f3 = t3.indexOf(e3);
-          if (f3 > -1) {
-            (t3 = t3.slice()).splice(f3, 1);
-          }
-          if (!t3.length) {
-            i3(1);
-          }
-        } else if (!a2) {
-          a2 = true;
-          i3(0);
-        }
-      }));
-    };
-  }
-  function switchMap(r2) {
-    return (t3) => (i3) => {
-      var a2 = e;
-      var f3 = e;
-      var n2 = false;
-      var s2 = false;
-      var l3 = false;
-      var u3 = false;
-      t3((t4) => {
-        if (u3) {
-        } else if (0 === t4) {
-          u3 = true;
-          if (!l3) {
-            i3(0);
-          }
-        } else if (0 === t4.tag) {
-          a2 = t4[0];
-        } else {
-          if (l3) {
-            f3(1);
-            f3 = e;
-          }
-          if (!n2) {
-            n2 = true;
-            a2(0);
-          } else {
-            n2 = false;
-          }
-          !function applyInnerSource(e3) {
-            l3 = true;
-            e3((e4) => {
-              if (!l3) {
-              } else if (0 === e4) {
-                l3 = false;
-                if (u3) {
-                  i3(0);
-                } else if (!n2) {
-                  n2 = true;
-                  a2(0);
-                }
-              } else if (0 === e4.tag) {
-                s2 = false;
-                (f3 = e4[0])(0);
-              } else {
-                i3(e4);
-                if (!s2) {
-                  f3(0);
-                } else {
-                  s2 = false;
-                }
-              }
-            });
-          }(r2(t4[0]));
-        }
-      });
-      i3(start((e3) => {
-        if (1 === e3) {
-          if (!u3) {
-            u3 = true;
-            a2(1);
-          }
-          if (l3) {
-            l3 = false;
-            f3(1);
-          }
-        } else {
-          if (!u3 && !n2) {
-            n2 = true;
-            a2(0);
-          }
-          if (l3 && !s2) {
-            s2 = true;
-            f3(0);
-          }
-        }
-      }));
-    };
-  }
-  function take(r2) {
-    return (t3) => (i3) => {
-      var a2 = e;
-      var f3 = false;
-      var n2 = 0;
-      t3((e3) => {
-        if (f3) {
-        } else if (0 === e3) {
-          f3 = true;
-          i3(0);
-        } else if (0 === e3.tag) {
-          if (r2 <= 0) {
-            f3 = true;
-            i3(0);
-            e3[0](1);
-          } else {
-            a2 = e3[0];
-          }
-        } else if (n2++ < r2) {
-          i3(e3);
-          if (!f3 && n2 >= r2) {
-            f3 = true;
-            i3(0);
-            a2(1);
-          }
-        } else {
-          i3(e3);
-        }
-      });
-      i3(start((e3) => {
-        if (1 === e3 && !f3) {
-          f3 = true;
-          a2(1);
-        } else if (0 === e3 && !f3 && n2 < r2) {
-          a2(0);
-        }
-      }));
-    };
-  }
-  function takeUntil(r2) {
-    return (t3) => (i3) => {
-      var a2 = e;
-      var f3 = e;
-      var n2 = false;
-      t3((e3) => {
-        if (n2) {
-        } else if (0 === e3) {
-          n2 = true;
-          f3(1);
-          i3(0);
-        } else if (0 === e3.tag) {
-          a2 = e3[0];
-          r2((e4) => {
-            if (0 === e4) {
-            } else if (0 === e4.tag) {
-              (f3 = e4[0])(0);
-            } else {
-              n2 = true;
-              f3(1);
-              a2(1);
-              i3(0);
-            }
-          });
-        } else {
-          i3(e3);
-        }
-      });
-      i3(start((e3) => {
-        if (1 === e3 && !n2) {
-          n2 = true;
-          a2(1);
-          f3(1);
-        } else if (!n2) {
-          a2(0);
-        }
-      }));
-    };
-  }
-  function takeWhile(r2, t3) {
-    return (i3) => (a2) => {
-      var f3 = e;
-      var n2 = false;
-      i3((e3) => {
-        if (n2) {
-        } else if (0 === e3) {
-          n2 = true;
-          a2(0);
-        } else if (0 === e3.tag) {
-          f3 = e3[0];
-          a2(e3);
-        } else if (!r2(e3[0])) {
-          n2 = true;
-          if (t3) {
-            a2(e3);
-          }
-          a2(0);
-          f3(1);
-        } else {
-          a2(e3);
-        }
-      });
-    };
-  }
-  function lazy(e3) {
-    return (r2) => e3()(r2);
-  }
-  function fromAsyncIterable(e3) {
-    return (r2) => {
-      var t3 = e3[asyncIteratorSymbol()] && e3[asyncIteratorSymbol()]() || e3;
-      var i3 = false;
-      var a2 = false;
-      var f3 = false;
-      var n2;
-      r2(start((e4) => __async(this, null, function* () {
-        if (1 === e4) {
-          i3 = true;
-          if (t3.return) {
-            t3.return();
-          }
-        } else if (a2) {
-          f3 = true;
-        } else {
-          for (f3 = a2 = true; f3 && !i3; ) {
-            if ((n2 = yield t3.next()).done) {
-              i3 = true;
-              if (t3.return) {
-                yield t3.return();
-              }
-              r2(0);
-            } else {
-              try {
-                f3 = false;
-                r2(push(n2.value));
-              } catch (e5) {
-                if (t3.throw) {
-                  if (i3 = !!(yield t3.throw(e5)).done) {
-                    r2(0);
-                  }
-                } else {
-                  throw e5;
-                }
-              }
-            }
-          }
-          a2 = false;
-        }
-      })));
-    };
-  }
-  function fromIterable(e3) {
-    if (e3[Symbol.asyncIterator]) {
-      return fromAsyncIterable(e3);
-    }
-    return (r2) => {
-      var t3 = e3[Symbol.iterator]();
-      var i3 = false;
-      var a2 = false;
-      var f3 = false;
-      var n2;
-      r2(start((e4) => {
-        if (1 === e4) {
-          i3 = true;
-          if (t3.return) {
-            t3.return();
-          }
-        } else if (a2) {
-          f3 = true;
-        } else {
-          for (f3 = a2 = true; f3 && !i3; ) {
-            if ((n2 = t3.next()).done) {
-              i3 = true;
-              if (t3.return) {
-                t3.return();
-              }
-              r2(0);
-            } else {
-              try {
-                f3 = false;
-                r2(push(n2.value));
-              } catch (e5) {
-                if (t3.throw) {
-                  if (i3 = !!t3.throw(e5).done) {
-                    r2(0);
-                  }
-                } else {
-                  throw e5;
-                }
-              }
-            }
-          }
-          a2 = false;
-        }
-      }));
-    };
-  }
-  var r = fromIterable;
-  function fromValue(e3) {
-    return (r2) => {
-      var t3 = false;
-      r2(start((i3) => {
-        if (1 === i3) {
-          t3 = true;
-        } else if (!t3) {
-          t3 = true;
-          r2(push(e3));
-          r2(0);
-        }
-      }));
-    };
-  }
-  function make(e3) {
-    return (r2) => {
-      var t3 = false;
-      var i3 = e3({
-        next(e4) {
-          if (!t3) {
-            r2(push(e4));
-          }
-        },
-        complete() {
-          if (!t3) {
-            t3 = true;
-            r2(0);
-          }
-        }
-      });
-      r2(start((e4) => {
-        if (1 === e4 && !t3) {
-          t3 = true;
-          i3();
-        }
-      }));
-    };
-  }
-  function makeSubject() {
-    var e3;
-    var r2;
-    return {
-      source: share(make((t3) => {
-        e3 = t3.next;
-        r2 = t3.complete;
-        return teardownPlaceholder;
-      })),
-      next(r3) {
-        if (e3) {
-          e3(r3);
-        }
-      },
-      complete() {
-        if (r2) {
-          r2();
-        }
-      }
-    };
-  }
-  function fromPromise(e3) {
-    return make((r2) => {
-      e3.then((e4) => {
-        Promise.resolve(e4).then(() => {
-          r2.next(e4);
-          r2.complete();
-        });
-      });
-      return teardownPlaceholder;
-    });
-  }
-  function subscribe(r2) {
-    return (t3) => {
-      var i3 = e;
-      var a2 = false;
-      t3((e3) => {
-        if (0 === e3) {
-          a2 = true;
-        } else if (0 === e3.tag) {
-          (i3 = e3[0])(0);
-        } else if (!a2) {
-          r2(e3[0]);
-          i3(0);
-        }
-      });
-      return {
-        unsubscribe() {
-          if (!a2) {
-            a2 = true;
-            i3(1);
-          }
-        }
-      };
-    };
-  }
-  function publish(e3) {
-    subscribe((e4) => {
-    })(e3);
-  }
-  var t = {
-    done: true
-  };
-  var toAsyncIterable = (r2) => {
-    var i3 = [];
-    var a2 = false;
-    var f3 = false;
-    var n2 = false;
-    var s2 = e;
-    var l3;
-    return {
-      next() {
-        return __async(this, null, function* () {
-          if (!f3) {
-            f3 = true;
-            r2((e3) => {
-              if (a2) {
-              } else if (0 === e3) {
-                if (l3) {
-                  l3 = l3(t);
-                }
-                a2 = true;
-              } else if (0 === e3.tag) {
-                n2 = true;
-                (s2 = e3[0])(0);
-              } else {
-                n2 = false;
-                if (l3) {
-                  l3 = l3({
-                    value: e3[0],
-                    done: false
-                  });
-                } else {
-                  i3.push(e3[0]);
-                }
-              }
-            });
-          }
-          if (a2 && !i3.length) {
-            return t;
-          } else if (!a2 && !n2 && i3.length <= 1) {
-            n2 = true;
-            s2(0);
-          }
-          return i3.length ? {
-            value: i3.shift(),
-            done: false
-          } : new Promise((e3) => l3 = e3);
-        });
-      },
-      return() {
-        return __async(this, null, function* () {
-          if (!a2) {
-            l3 = s2(1);
-          }
-          a2 = true;
-          return t;
-        });
-      },
-      [asyncIteratorSymbol()]() {
-        return this;
-      }
-    };
-  };
-  function toPromise(r2) {
-    return new Promise((t3) => {
-      var i3 = e;
-      var a2;
-      r2((e3) => {
-        if (0 === e3) {
-          Promise.resolve(a2).then(t3);
-        } else if (0 === e3.tag) {
-          (i3 = e3[0])(0);
-        } else {
-          a2 = e3[0];
-          i3(0);
-        }
-      });
-    });
-  }
-  var pipe = (...e3) => {
-    var r2 = e3[0];
-    for (var t3 = 1, i3 = e3.length; t3 < i3; t3++) {
-      r2 = e3[t3](r2);
-    }
-    return r2;
-  };
-
-  // node_modules/@0no-co/graphql.web/dist/graphql.web.mjs
-  var e2 = {
-    NAME: "Name",
-    DOCUMENT: "Document",
-    OPERATION_DEFINITION: "OperationDefinition",
-    VARIABLE_DEFINITION: "VariableDefinition",
-    SELECTION_SET: "SelectionSet",
-    FIELD: "Field",
-    ARGUMENT: "Argument",
-    FRAGMENT_SPREAD: "FragmentSpread",
-    INLINE_FRAGMENT: "InlineFragment",
-    FRAGMENT_DEFINITION: "FragmentDefinition",
-    VARIABLE: "Variable",
-    INT: "IntValue",
-    FLOAT: "FloatValue",
-    STRING: "StringValue",
-    BOOLEAN: "BooleanValue",
-    NULL: "NullValue",
-    ENUM: "EnumValue",
-    LIST: "ListValue",
-    OBJECT: "ObjectValue",
-    OBJECT_FIELD: "ObjectField",
-    DIRECTIVE: "Directive",
-    NAMED_TYPE: "NamedType",
-    LIST_TYPE: "ListType",
-    NON_NULL_TYPE: "NonNullType"
-  };
-  var GraphQLError = class extends Error {
-    constructor(e3, r2, i3, n2, a2, t3, l3) {
-      super(e3);
-      this.name = "GraphQLError";
-      this.message = e3;
-      if (a2) {
-        this.path = a2;
-      }
-      if (r2) {
-        this.nodes = Array.isArray(r2) ? r2 : [r2];
-      }
-      if (i3) {
-        this.source = i3;
-      }
-      if (n2) {
-        this.positions = n2;
-      }
-      if (t3) {
-        this.originalError = t3;
-      }
-      var o2 = l3;
-      if (!o2 && t3) {
-        var u3 = t3.extensions;
-        if (u3 && "object" == typeof u3) {
-          o2 = u3;
-        }
-      }
-      this.extensions = o2 || {};
-    }
-    toJSON() {
-      return __spreadProps(__spreadValues({}, this), {
-        message: this.message
-      });
-    }
-    toString() {
-      return this.message;
-    }
-    get [Symbol.toStringTag]() {
-      return "GraphQLError";
-    }
-  };
-  var i;
-  var n;
-  function error(e3) {
-    return new GraphQLError(`Syntax Error: Unexpected token at ${n} in ${e3}`);
-  }
-  function advance(e3) {
-    e3.lastIndex = n;
-    if (e3.test(i)) {
-      return i.slice(n, n = e3.lastIndex);
-    }
-  }
-  var a = / +(?=[^\s])/y;
-  function blockString(e3) {
-    var r2 = e3.split("\n");
-    var i3 = "";
-    var n2 = 0;
-    var t3 = 0;
-    var l3 = r2.length - 1;
-    for (var o2 = 0; o2 < r2.length; o2++) {
-      a.lastIndex = 0;
-      if (a.test(r2[o2])) {
-        if (o2 && (!n2 || a.lastIndex < n2)) {
-          n2 = a.lastIndex;
-        }
-        t3 = t3 || o2;
-        l3 = o2;
-      }
-    }
-    for (var u3 = t3; u3 <= l3; u3++) {
-      if (u3 !== t3) {
-        i3 += "\n";
-      }
-      i3 += r2[u3].slice(n2).replace(/\\"""/g, '"""');
-    }
-    return i3;
-  }
-  function ignored() {
-    for (var e3 = 0 | i.charCodeAt(n++); 9 === e3 || 10 === e3 || 13 === e3 || 32 === e3 || 35 === e3 || 44 === e3 || 65279 === e3; e3 = 0 | i.charCodeAt(n++)) {
-      if (35 === e3) {
-        while (10 !== (e3 = i.charCodeAt(n++)) && 13 !== e3) {
-        }
-      }
-    }
-    n--;
-  }
-  var t2 = /[_A-Za-z]\w*/y;
-  var l = new RegExp("(?:(null|true|false)|\\$(" + t2.source + ')|(-?\\d+)((?:\\.\\d+)?[eE][+-]?\\d+|\\.\\d+)?|("""(?:"""|(?:[\\s\\S]*?[^\\\\])"""))|("(?:"|[^\\r\\n]*?[^\\\\]"))|(' + t2.source + "))", "y");
-  var o = function(e3) {
-    e3[e3.Const = 1] = "Const";
-    e3[e3.Var = 2] = "Var";
-    e3[e3.Int = 3] = "Int";
-    e3[e3.Float = 4] = "Float";
-    e3[e3.BlockString = 5] = "BlockString";
-    e3[e3.String = 6] = "String";
-    e3[e3.Enum = 7] = "Enum";
-    return e3;
-  }(o || {});
-  var u = /\\/;
-  function value(e3) {
-    var r2;
-    var a2;
-    l.lastIndex = n;
-    if (91 === i.charCodeAt(n)) {
-      n++;
-      ignored();
-      var d3 = [];
-      while (93 !== i.charCodeAt(n)) {
-        d3.push(value(e3));
-      }
-      n++;
-      ignored();
-      return {
-        kind: "ListValue",
-        values: d3
-      };
-    } else if (123 === i.charCodeAt(n)) {
-      n++;
-      ignored();
-      var v3 = [];
-      while (125 !== i.charCodeAt(n)) {
-        if (null == (r2 = advance(t2))) {
-          throw error("ObjectField");
-        }
-        ignored();
-        if (58 !== i.charCodeAt(n++)) {
-          throw error("ObjectField");
-        }
-        ignored();
-        v3.push({
-          kind: "ObjectField",
-          name: {
-            kind: "Name",
-            value: r2
-          },
-          value: value(e3)
-        });
-      }
-      n++;
-      ignored();
-      return {
-        kind: "ObjectValue",
-        fields: v3
-      };
-    } else if (null != (a2 = l.exec(i))) {
-      n = l.lastIndex;
-      ignored();
-      if (null != (r2 = a2[o.Const])) {
-        return "null" === r2 ? {
-          kind: "NullValue"
-        } : {
-          kind: "BooleanValue",
-          value: "true" === r2
-        };
-      } else if (null != (r2 = a2[o.Var])) {
-        if (e3) {
-          throw error("Variable");
-        } else {
-          return {
-            kind: "Variable",
-            name: {
-              kind: "Name",
-              value: r2
-            }
-          };
-        }
-      } else if (null != (r2 = a2[o.Int])) {
-        var s2;
-        if (null != (s2 = a2[o.Float])) {
-          return {
-            kind: "FloatValue",
-            value: r2 + s2
-          };
-        } else {
-          return {
-            kind: "IntValue",
-            value: r2
-          };
-        }
-      } else if (null != (r2 = a2[o.BlockString])) {
-        return {
-          kind: "StringValue",
-          value: blockString(r2.slice(3, -3)),
-          block: true
-        };
-      } else if (null != (r2 = a2[o.String])) {
-        return {
-          kind: "StringValue",
-          value: u.test(r2) ? JSON.parse(r2) : r2.slice(1, -1),
-          block: false
-        };
-      } else if (null != (r2 = a2[o.Enum])) {
-        return {
-          kind: "EnumValue",
-          value: r2
-        };
-      }
-    }
-    throw error("Value");
-  }
-  function arguments_(e3) {
-    if (40 === i.charCodeAt(n)) {
-      var r2 = [];
-      n++;
-      ignored();
-      var a2;
-      do {
-        if (null == (a2 = advance(t2))) {
-          throw error("Argument");
-        }
-        ignored();
-        if (58 !== i.charCodeAt(n++)) {
-          throw error("Argument");
-        }
-        ignored();
-        r2.push({
-          kind: "Argument",
-          name: {
-            kind: "Name",
-            value: a2
-          },
-          value: value(e3)
-        });
-      } while (41 !== i.charCodeAt(n));
-      n++;
-      ignored();
-      return r2;
-    }
-  }
-  function directives(e3) {
-    if (64 === i.charCodeAt(n)) {
-      var r2 = [];
-      var a2;
-      do {
-        n++;
-        if (null == (a2 = advance(t2))) {
-          throw error("Directive");
-        }
-        ignored();
-        r2.push({
-          kind: "Directive",
-          name: {
-            kind: "Name",
-            value: a2
-          },
-          arguments: arguments_(e3)
-        });
-      } while (64 === i.charCodeAt(n));
-      return r2;
-    }
-  }
-  function type() {
-    var e3;
-    var r2 = 0;
-    while (91 === i.charCodeAt(n)) {
-      r2++;
-      n++;
-      ignored();
-    }
-    if (null == (e3 = advance(t2))) {
-      throw error("NamedType");
-    }
-    ignored();
-    var a2 = {
-      kind: "NamedType",
-      name: {
-        kind: "Name",
-        value: e3
-      }
-    };
-    do {
-      if (33 === i.charCodeAt(n)) {
-        n++;
-        ignored();
-        a2 = {
-          kind: "NonNullType",
-          type: a2
-        };
-      }
-      if (r2) {
-        if (93 !== i.charCodeAt(n++)) {
-          throw error("NamedType");
-        }
-        ignored();
-        a2 = {
-          kind: "ListType",
-          type: a2
-        };
-      }
-    } while (r2--);
-    return a2;
-  }
-  var d = new RegExp("(?:(\\.{3})|(" + t2.source + "))", "y");
-  var v = function(e3) {
-    e3[e3.Spread = 1] = "Spread";
-    e3[e3.Name = 2] = "Name";
-    return e3;
-  }(v || {});
-  function selectionSet() {
-    var e3 = [];
-    var r2;
-    var a2;
-    do {
-      d.lastIndex = n;
-      if (null != (a2 = d.exec(i))) {
-        n = d.lastIndex;
-        if (null != a2[v.Spread]) {
-          ignored();
-          var l3 = advance(t2);
-          if (null != l3 && "on" !== l3) {
-            ignored();
-            e3.push({
-              kind: "FragmentSpread",
-              name: {
-                kind: "Name",
-                value: l3
-              },
-              directives: directives(false)
-            });
-          } else {
-            ignored();
-            if ("on" === l3) {
-              if (null == (l3 = advance(t2))) {
-                throw error("NamedType");
-              }
-              ignored();
-            }
-            var o2 = directives(false);
-            if (123 !== i.charCodeAt(n++)) {
-              throw error("InlineFragment");
-            }
-            ignored();
-            e3.push({
-              kind: "InlineFragment",
-              typeCondition: l3 ? {
-                kind: "NamedType",
-                name: {
-                  kind: "Name",
-                  value: l3
-                }
-              } : void 0,
-              directives: o2,
-              selectionSet: selectionSet()
-            });
-          }
-        } else if (null != (r2 = a2[v.Name])) {
-          var u3 = void 0;
-          ignored();
-          if (58 === i.charCodeAt(n)) {
-            n++;
-            ignored();
-            u3 = r2;
-            if (null == (r2 = advance(t2))) {
-              throw error("Field");
-            }
-            ignored();
-          }
-          var s2 = arguments_(false);
-          ignored();
-          var c2 = directives(false);
-          var f3 = void 0;
-          if (123 === i.charCodeAt(n)) {
-            n++;
-            ignored();
-            f3 = selectionSet();
-          }
-          e3.push({
-            kind: "Field",
-            alias: u3 ? {
-              kind: "Name",
-              value: u3
-            } : void 0,
-            name: {
-              kind: "Name",
-              value: r2
-            },
-            arguments: s2,
-            directives: c2,
-            selectionSet: f3
-          });
-        }
-      } else {
-        throw error("SelectionSet");
-      }
-    } while (125 !== i.charCodeAt(n));
-    n++;
-    ignored();
-    return {
-      kind: "SelectionSet",
-      selections: e3
-    };
-  }
-  function fragmentDefinition() {
-    var e3;
-    var r2;
-    if (null == (e3 = advance(t2))) {
-      throw error("FragmentDefinition");
-    }
-    ignored();
-    if ("on" !== advance(t2)) {
-      throw error("FragmentDefinition");
-    }
-    ignored();
-    if (null == (r2 = advance(t2))) {
-      throw error("FragmentDefinition");
-    }
-    ignored();
-    var a2 = directives(false);
-    if (123 !== i.charCodeAt(n++)) {
-      throw error("FragmentDefinition");
-    }
-    ignored();
-    return {
-      kind: "FragmentDefinition",
-      name: {
-        kind: "Name",
-        value: e3
-      },
-      typeCondition: {
-        kind: "NamedType",
-        name: {
-          kind: "Name",
-          value: r2
-        }
-      },
-      directives: a2,
-      selectionSet: selectionSet()
-    };
-  }
-  var s = /(?:query|mutation|subscription|fragment)/y;
-  function operationDefinition(e3) {
-    var r2;
-    var a2;
-    var l3;
-    if (e3) {
-      ignored();
-      r2 = advance(t2);
-      a2 = function variableDefinitions() {
-        ignored();
-        if (40 === i.charCodeAt(n)) {
-          var e4 = [];
-          n++;
-          ignored();
-          var r3;
-          do {
-            if (36 !== i.charCodeAt(n++)) {
-              throw error("Variable");
-            }
-            if (null == (r3 = advance(t2))) {
-              throw error("Variable");
-            }
-            ignored();
-            if (58 !== i.charCodeAt(n++)) {
-              throw error("VariableDefinition");
-            }
-            ignored();
-            var a3 = type();
-            var l4 = void 0;
-            if (61 === i.charCodeAt(n)) {
-              n++;
-              ignored();
-              l4 = value(true);
-            }
-            ignored();
-            e4.push({
-              kind: "VariableDefinition",
-              variable: {
-                kind: "Variable",
-                name: {
-                  kind: "Name",
-                  value: r3
-                }
-              },
-              type: a3,
-              defaultValue: l4,
-              directives: directives(true)
-            });
-          } while (41 !== i.charCodeAt(n));
-          n++;
-          ignored();
-          return e4;
-        }
-      }();
-      l3 = directives(false);
-    }
-    if (123 === i.charCodeAt(n)) {
-      n++;
-      ignored();
-      return {
-        kind: "OperationDefinition",
-        operation: e3 || "query",
-        name: r2 ? {
-          kind: "Name",
-          value: r2
-        } : void 0,
-        variableDefinitions: a2,
-        directives: l3,
-        selectionSet: selectionSet()
-      };
-    }
-  }
-  function parse(e3, r2) {
-    i = "string" == typeof e3.body ? e3.body : e3;
-    n = 0;
-    return function document2() {
-      var e4;
-      var r3;
-      ignored();
-      var a2 = [];
-      do {
-        if ("fragment" === (e4 = advance(s))) {
-          ignored();
-          a2.push(fragmentDefinition());
-        } else if (null != (r3 = operationDefinition(e4))) {
-          a2.push(r3);
-        } else {
-          throw error("Document");
-        }
-      } while (n < i.length);
-      return {
-        kind: "Document",
-        definitions: a2
-      };
-    }();
-  }
-  function mapJoin(e3, r2, i3) {
-    var n2 = "";
-    for (var a2 = 0; a2 < e3.length; a2++) {
-      if (a2) {
-        n2 += r2;
-      }
-      n2 += i3(e3[a2]);
-    }
-    return n2;
-  }
-  function printString(e3) {
-    return JSON.stringify(e3);
-  }
-  function printBlockString(e3) {
-    return '"""\n' + e3.replace(/"""/g, '\\"""') + '\n"""';
-  }
-  var f = "\n";
-  var m = {
-    OperationDefinition(e3) {
-      var r2 = e3.operation;
-      if (e3.name) {
-        r2 += " " + e3.name.value;
-      }
-      if (e3.variableDefinitions && e3.variableDefinitions.length) {
-        if (!e3.name) {
-          r2 += " ";
-        }
-        r2 += "(" + mapJoin(e3.variableDefinitions, ", ", m.VariableDefinition) + ")";
-      }
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      return "query" !== r2 ? r2 + " " + m.SelectionSet(e3.selectionSet) : m.SelectionSet(e3.selectionSet);
-    },
-    VariableDefinition(e3) {
-      var r2 = m.Variable(e3.variable) + ": " + _print(e3.type);
-      if (e3.defaultValue) {
-        r2 += " = " + _print(e3.defaultValue);
-      }
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      return r2;
-    },
-    Field(e3) {
-      var r2 = e3.alias ? e3.alias.value + ": " + e3.name.value : e3.name.value;
-      if (e3.arguments && e3.arguments.length) {
-        var i3 = mapJoin(e3.arguments, ", ", m.Argument);
-        if (r2.length + i3.length + 2 > 80) {
-          r2 += "(" + (f += "  ") + mapJoin(e3.arguments, f, m.Argument) + (f = f.slice(0, -2)) + ")";
-        } else {
-          r2 += "(" + i3 + ")";
-        }
-      }
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      if (e3.selectionSet) {
-        r2 += " " + m.SelectionSet(e3.selectionSet);
-      }
-      return r2;
-    },
-    StringValue(e3) {
-      if (e3.block) {
-        return printBlockString(e3.value).replace(/\n/g, f);
-      } else {
-        return printString(e3.value);
-      }
-    },
-    BooleanValue: (e3) => "" + e3.value,
-    NullValue: (e3) => "null",
-    IntValue: (e3) => e3.value,
-    FloatValue: (e3) => e3.value,
-    EnumValue: (e3) => e3.value,
-    Name: (e3) => e3.value,
-    Variable: (e3) => "$" + e3.name.value,
-    ListValue: (e3) => "[" + mapJoin(e3.values, ", ", _print) + "]",
-    ObjectValue: (e3) => "{" + mapJoin(e3.fields, ", ", m.ObjectField) + "}",
-    ObjectField: (e3) => e3.name.value + ": " + _print(e3.value),
-    Document(e3) {
-      if (!e3.definitions || !e3.definitions.length) {
-        return "";
-      }
-      return mapJoin(e3.definitions, "\n\n", _print);
-    },
-    SelectionSet: (e3) => "{" + (f += "  ") + mapJoin(e3.selections, f, _print) + (f = f.slice(0, -2)) + "}",
-    Argument: (e3) => e3.name.value + ": " + _print(e3.value),
-    FragmentSpread(e3) {
-      var r2 = "..." + e3.name.value;
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      return r2;
-    },
-    InlineFragment(e3) {
-      var r2 = "...";
-      if (e3.typeCondition) {
-        r2 += " on " + e3.typeCondition.name.value;
-      }
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      return r2 += " " + m.SelectionSet(e3.selectionSet);
-    },
-    FragmentDefinition(e3) {
-      var r2 = "fragment " + e3.name.value;
-      r2 += " on " + e3.typeCondition.name.value;
-      if (e3.directives && e3.directives.length) {
-        r2 += " " + mapJoin(e3.directives, " ", m.Directive);
-      }
-      return r2 + " " + m.SelectionSet(e3.selectionSet);
-    },
-    Directive(e3) {
-      var r2 = "@" + e3.name.value;
-      if (e3.arguments && e3.arguments.length) {
-        r2 += "(" + mapJoin(e3.arguments, ", ", m.Argument) + ")";
-      }
-      return r2;
-    },
-    NamedType: (e3) => e3.name.value,
-    ListType: (e3) => "[" + _print(e3.type) + "]",
-    NonNullType: (e3) => _print(e3.type) + "!"
-  };
-  var _print = (e3) => m[e3.kind](e3);
-  function print(e3) {
-    f = "\n";
-    return m[e3.kind] ? m[e3.kind](e3) : "";
-  }
-
-  // node_modules/@urql/core/dist/urql-core-chunk.mjs
-  var rehydrateGraphQlError = (r2) => {
-    if (r2 && r2.message && (r2.extensions || "GraphQLError" === r2.name)) {
-      return r2;
-    } else if ("object" == typeof r2 && r2.message) {
-      return new GraphQLError(r2.message, r2.nodes, r2.source, r2.positions, r2.path, r2, r2.extensions || {});
-    } else {
-      return new GraphQLError(r2);
-    }
-  };
-  var CombinedError = class extends Error {
-    constructor(e3) {
-      var r2 = (e3.graphQLErrors || []).map(rehydrateGraphQlError);
-      var t3 = ((e4, r3) => {
-        var t4 = "";
-        if (e4) {
-          return `[Network] ${e4.message}`;
-        }
-        if (r3) {
-          for (var a2 of r3) {
-            if (t4) {
-              t4 += "\n";
-            }
-            t4 += `[GraphQL] ${a2.message}`;
-          }
-        }
-        return t4;
-      })(e3.networkError, r2);
-      super(t3);
-      this.name = "CombinedError";
-      this.message = t3;
-      this.graphQLErrors = r2;
-      this.networkError = e3.networkError;
-      this.response = e3.response;
-    }
-    toString() {
-      return this.message;
-    }
-  };
-  var phash = (e3, r2) => {
-    var t3 = 0 | (r2 || 5381);
-    for (var a2 = 0, o2 = 0 | e3.length; a2 < o2; a2++) {
-      t3 = (t3 << 5) + t3 + e3.charCodeAt(a2);
-    }
-    return t3;
-  };
-  var i2 = /* @__PURE__ */ new Set();
-  var f2 = /* @__PURE__ */ new WeakMap();
-  var stringify = (e3) => {
-    if (null === e3 || i2.has(e3)) {
-      return "null";
-    } else if ("object" != typeof e3) {
-      return JSON.stringify(e3) || "";
-    } else if (e3.toJSON) {
-      return stringify(e3.toJSON());
-    } else if (Array.isArray(e3)) {
-      var r2 = "[";
-      for (var t3 of e3) {
-        if (r2.length > 1) {
-          r2 += ",";
-        }
-        r2 += stringify(t3) || "null";
-      }
-      return r2 += "]";
-    } else if (l2 !== NoopConstructor && e3 instanceof l2 || c !== NoopConstructor && e3 instanceof c) {
-      return "null";
-    }
-    var a2 = Object.keys(e3).sort();
-    if (!a2.length && e3.constructor && Object.getPrototypeOf(e3).constructor !== Object.prototype.constructor) {
-      var o2 = f2.get(e3) || Math.random().toString(36).slice(2);
-      f2.set(e3, o2);
-      return stringify({
-        __key: o2
-      });
-    }
-    i2.add(e3);
-    var n2 = "{";
-    for (var s2 of a2) {
-      var d3 = stringify(e3[s2]);
-      if (d3) {
-        if (n2.length > 1) {
-          n2 += ",";
-        }
-        n2 += stringify(s2) + ":" + d3;
-      }
-    }
-    i2.delete(e3);
-    return n2 += "}";
-  };
-  var extract = (e3, r2, t3) => {
-    if (null == t3 || "object" != typeof t3 || t3.toJSON || i2.has(t3)) {
-    } else if (Array.isArray(t3)) {
-      for (var a2 = 0, o2 = t3.length; a2 < o2; a2++) {
-        extract(e3, `${r2}.${a2}`, t3[a2]);
-      }
-    } else if (t3 instanceof l2 || t3 instanceof c) {
-      e3.set(r2, t3);
-    } else {
-      i2.add(t3);
-      for (var n2 of Object.keys(t3)) {
-        extract(e3, `${r2}.${n2}`, t3[n2]);
-      }
-    }
-  };
-  var stringifyVariables = (e3) => {
-    i2.clear();
-    return stringify(e3);
-  };
-  var NoopConstructor = class {
-  };
-  var l2 = "undefined" != typeof File ? File : NoopConstructor;
-  var c = "undefined" != typeof Blob ? Blob : NoopConstructor;
-  var d2 = /("{3}[\s\S]*"{3}|"(?:\\.|[^"])*")/g;
-  var v2 = /(?:#[^\n\r]+)?(?:[\r\n]+|$)/g;
-  var replaceOutsideStrings = (e3, r2) => r2 % 2 == 0 ? e3.replace(v2, "\n") : e3;
-  var sanitizeDocument = (e3) => e3.split(d2).map(replaceOutsideStrings).join("").trim();
-  var p = /* @__PURE__ */ new Map();
-  var u2 = /* @__PURE__ */ new Map();
-  var stringifyDocument = (e3) => {
-    var t3;
-    if ("string" == typeof e3) {
-      t3 = sanitizeDocument(e3);
-    } else if (e3.loc && u2.get(e3.__key) === e3) {
-      t3 = e3.loc.source.body;
-    } else {
-      t3 = p.get(e3) || sanitizeDocument(print(e3));
-      p.set(e3, t3);
-    }
-    if ("string" != typeof e3 && !e3.loc) {
-      e3.loc = {
-        start: 0,
-        end: t3.length,
-        source: {
-          body: t3,
-          name: "gql",
-          locationOffset: {
-            line: 1,
-            column: 1
-          }
-        }
-      };
-    }
-    return t3;
-  };
-  var hashDocument = (e3) => {
-    var r2 = phash(stringifyDocument(e3));
-    if (e3.definitions) {
-      var t3 = getOperationName(e3);
-      if (t3) {
-        r2 = phash(`
-# ${t3}`, r2);
-      }
-    }
-    return r2;
-  };
-  var keyDocument = (e3) => {
-    var r2;
-    var a2;
-    if ("string" == typeof e3) {
-      r2 = hashDocument(e3);
-      a2 = u2.get(r2) || parse(e3, {
-        noLocation: true
-      });
-    } else {
-      r2 = e3.__key || hashDocument(e3);
-      a2 = u2.get(r2) || e3;
-    }
-    if (!a2.loc) {
-      stringifyDocument(a2);
-    }
-    a2.__key = r2;
-    u2.set(r2, a2);
-    return a2;
-  };
-  var createRequest = (e3, r2, t3) => {
-    var a2 = r2 || {};
-    var o2 = keyDocument(e3);
-    var n2 = stringifyVariables(a2);
-    var s2 = o2.__key;
-    if ("{}" !== n2) {
-      s2 = phash(n2, s2);
-    }
-    return {
-      key: s2,
-      query: o2,
-      variables: a2,
-      extensions: t3
-    };
-  };
-  var getOperationName = (e3) => {
-    for (var r2 of e3.definitions) {
-      if (r2.kind === e2.OPERATION_DEFINITION) {
-        return r2.name ? r2.name.value : void 0;
-      }
-    }
-  };
-  var getOperationType = (e3) => {
-    for (var r2 of e3.definitions) {
-      if (r2.kind === e2.OPERATION_DEFINITION) {
-        return r2.operation;
-      }
-    }
-  };
-  var makeResult = (e3, r2, t3) => {
-    if (!("data" in r2 || "errors" in r2 && Array.isArray(r2.errors))) {
-      throw new Error("No Content");
-    }
-    var a2 = "subscription" === e3.kind;
-    return {
-      operation: e3,
-      data: r2.data,
-      error: Array.isArray(r2.errors) ? new CombinedError({
-        graphQLErrors: r2.errors,
-        response: t3
-      }) : void 0,
-      extensions: r2.extensions ? __spreadValues({}, r2.extensions) : void 0,
-      hasNext: null == r2.hasNext ? a2 : r2.hasNext,
-      stale: false
-    };
-  };
-  var deepMerge = (e3, r2) => {
-    if ("object" == typeof e3 && null != e3) {
-      if (!e3.constructor || e3.constructor === Object || Array.isArray(e3)) {
-        e3 = Array.isArray(e3) ? [...e3] : __spreadValues({}, e3);
-        for (var t3 of Object.keys(r2)) {
-          e3[t3] = deepMerge(e3[t3], r2[t3]);
-        }
-        return e3;
-      }
-    }
-    return r2;
-  };
-  var mergeResultPatch = (e3, r2, t3, a2) => {
-    var o2 = e3.error ? e3.error.graphQLErrors : [];
-    var n2 = !!e3.extensions || !!(r2.payload || r2).extensions;
-    var s2 = __spreadValues(__spreadValues({}, e3.extensions), (r2.payload || r2).extensions);
-    var i3 = r2.incremental;
-    if ("path" in r2) {
-      i3 = [r2];
-    }
-    var f3 = {
-      data: e3.data
-    };
-    if (i3) {
-      var _loop = function(e4) {
-        if (Array.isArray(e4.errors)) {
-          o2.push(...e4.errors);
-        }
-        if (e4.extensions) {
-          Object.assign(s2, e4.extensions);
-          n2 = true;
-        }
-        var r3 = "data";
-        var t4 = f3;
-        var i4 = [];
-        if (e4.path) {
-          i4 = e4.path;
-        } else if (a2) {
-          var l4 = a2.find((r4) => r4.id === e4.id);
-          if (e4.subPath) {
-            i4 = [...l4.path, ...e4.subPath];
-          } else {
-            i4 = l4.path;
-          }
-        }
-        for (var c2 = 0, d3 = i4.length; c2 < d3; r3 = i4[c2++]) {
-          t4 = t4[r3] = Array.isArray(t4[r3]) ? [...t4[r3]] : __spreadValues({}, t4[r3]);
-        }
-        if (e4.items) {
-          var v3 = +r3 >= 0 ? r3 : 0;
-          for (var p2 = 0, u3 = e4.items.length; p2 < u3; p2++) {
-            t4[v3 + p2] = deepMerge(t4[v3 + p2], e4.items[p2]);
-          }
-        } else if (void 0 !== e4.data) {
-          t4[r3] = deepMerge(t4[r3], e4.data);
-        }
-      };
-      for (var l3 of i3) {
-        _loop(l3);
-      }
-    } else {
-      f3.data = (r2.payload || r2).data || e3.data;
-      o2 = r2.errors || r2.payload && r2.payload.errors || o2;
-    }
-    return {
-      operation: e3.operation,
-      data: f3.data,
-      error: o2.length ? new CombinedError({
-        graphQLErrors: o2,
-        response: t3
-      }) : void 0,
-      extensions: n2 ? s2 : void 0,
-      hasNext: null != r2.hasNext ? r2.hasNext : e3.hasNext,
-      stale: false
-    };
-  };
-  var makeErrorResult = (e3, r2, t3) => ({
-    operation: e3,
-    data: void 0,
-    error: new CombinedError({
-      networkError: r2,
-      response: t3
-    }),
-    extensions: void 0,
-    hasNext: false,
-    stale: false
-  });
-  function makeFetchBody(e3) {
-    var r2 = {
-      query: void 0,
-      documentId: void 0,
-      operationName: getOperationName(e3.query),
-      variables: e3.variables || void 0,
-      extensions: e3.extensions
-    };
-    if ("documentId" in e3.query && e3.query.documentId && (!e3.query.definitions || !e3.query.definitions.length)) {
-      r2.documentId = e3.query.documentId;
-    } else if (!e3.extensions || !e3.extensions.persistedQuery || e3.extensions.persistedQuery.miss) {
-      r2.query = stringifyDocument(e3.query);
-    }
-    return r2;
-  }
-  var makeFetchURL = (e3, r2) => {
-    var t3 = "query" === e3.kind && e3.context.preferGetMethod;
-    if (!t3 || !r2) {
-      return e3.context.url;
-    }
-    var a2 = splitOutSearchParams(e3.context.url);
-    for (var o2 in r2) {
-      var n2 = r2[o2];
-      if (n2) {
-        a2[1].set(o2, "object" == typeof n2 ? stringifyVariables(n2) : n2);
-      }
-    }
-    var s2 = a2.join("?");
-    if (s2.length > 2047 && "force" !== t3) {
-      e3.context.preferGetMethod = false;
-      return e3.context.url;
-    }
-    return s2;
-  };
-  var splitOutSearchParams = (e3) => {
-    var r2 = e3.indexOf("?");
-    return r2 > -1 ? [e3.slice(0, r2), new URLSearchParams(e3.slice(r2 + 1))] : [e3, new URLSearchParams()];
-  };
-  var serializeBody = (e3, r2) => {
-    if (r2 && !("query" === e3.kind && !!e3.context.preferGetMethod)) {
-      var t3 = stringifyVariables(r2);
-      var a2 = ((e4) => {
-        var r3 = /* @__PURE__ */ new Map();
-        if (l2 !== NoopConstructor || c !== NoopConstructor) {
-          i2.clear();
-          extract(r3, "variables", e4);
-        }
-        return r3;
-      })(r2.variables);
-      if (a2.size) {
-        var o2 = new FormData();
-        o2.append("operations", t3);
-        o2.append("map", stringifyVariables(__spreadValues({}, [...a2.keys()].map((e4) => [e4]))));
-        var n2 = 0;
-        for (var s2 of a2.values()) {
-          o2.append("" + n2++, s2);
-        }
-        return o2;
-      }
-      return t3;
-    }
-  };
-  var makeFetchOptions = (e3, r2) => {
-    var t3 = {
-      accept: "subscription" === e3.kind ? "text/event-stream, multipart/mixed" : "application/graphql-response+json, application/graphql+json, application/json, text/event-stream, multipart/mixed"
-    };
-    var a2 = ("function" == typeof e3.context.fetchOptions ? e3.context.fetchOptions() : e3.context.fetchOptions) || {};
-    if (a2.headers) {
-      if (((e4) => "has" in e4 && !Object.keys(e4).length)(a2.headers)) {
-        a2.headers.forEach((e4, r3) => {
-          t3[r3] = e4;
-        });
-      } else if (Array.isArray(a2.headers)) {
-        a2.headers.forEach((e4, r3) => {
-          if (Array.isArray(e4)) {
-            if (t3[e4[0]]) {
-              t3[e4[0]] = `${t3[e4[0]]},${e4[1]}`;
-            } else {
-              t3[e4[0]] = e4[1];
-            }
-          } else {
-            t3[r3] = e4;
-          }
-        });
-      } else {
-        for (var o2 in a2.headers) {
-          t3[o2.toLowerCase()] = a2.headers[o2];
-        }
-      }
-    }
-    var n2 = serializeBody(e3, r2);
-    if ("string" == typeof n2 && !t3["content-type"]) {
-      t3["content-type"] = "application/json";
-    }
-    return __spreadProps(__spreadValues({}, a2), {
-      method: n2 ? "POST" : "GET",
-      body: n2,
-      headers: t3
-    });
-  };
-  var y = "undefined" != typeof TextDecoder ? new TextDecoder() : null;
-  var h = /boundary="?([^=";]+)"?/i;
-  var m2 = /data: ?([^\n]+)/;
-  var toString = (e3) => "Buffer" === e3.constructor.name ? e3.toString() : y.decode(e3);
-  function streamBody(e3) {
-    return __asyncGenerator(this, null, function* () {
-      if (e3.body[Symbol.asyncIterator]) {
-        try {
-          for (var iter = __forAwait(e3.body), more, temp, error2; more = !(temp = yield new __await(iter.next())).done; more = false) {
-            var r2 = temp.value;
-            yield toString(r2);
-          }
-        } catch (temp) {
-          error2 = [temp];
-        } finally {
-          try {
-            more && (temp = iter.return) && (yield new __await(temp.call(iter)));
-          } finally {
-            if (error2)
-              throw error2[0];
-          }
-        }
-      } else {
-        var t3 = e3.body.getReader();
-        var a2;
-        try {
-          while (!(a2 = yield new __await(t3.read())).done) {
-            yield toString(a2.value);
-          }
-        } finally {
-          t3.cancel();
-        }
-      }
-    });
-  }
-  function split(e3, r2) {
-    return __asyncGenerator(this, null, function* () {
-      var t3 = "";
-      var a2;
-      try {
-        for (var iter = __forAwait(e3), more, temp, error2; more = !(temp = yield new __await(iter.next())).done; more = false) {
-          var o2 = temp.value;
-          t3 += o2;
-          while ((a2 = t3.indexOf(r2)) > -1) {
-            yield t3.slice(0, a2);
-            t3 = t3.slice(a2 + r2.length);
-          }
-        }
-      } catch (temp) {
-        error2 = [temp];
-      } finally {
-        try {
-          more && (temp = iter.return) && (yield new __await(temp.call(iter)));
-        } finally {
-          if (error2)
-            throw error2[0];
-        }
-      }
-    });
-  }
-  function fetchOperation(e3, r2, t3) {
-    return __asyncGenerator(this, null, function* () {
-      var a2 = true;
-      var o2 = null;
-      var n2;
-      try {
-        yield yield new __await(Promise.resolve());
-        var s2 = (n2 = yield new __await((e3.context.fetch || fetch)(r2, t3))).headers.get("Content-Type") || "";
-        var i3;
-        if (/multipart\/mixed/i.test(s2)) {
-          i3 = function parseMultipartMixed(e4, r3) {
-            return __asyncGenerator(this, null, function* () {
-              var t4 = e4.match(h);
-              var a3 = "--" + (t4 ? t4[1] : "-");
-              var o3 = true;
-              var n3;
-              try {
-                for (var iter2 = __forAwait(split(streamBody(r3), "\r\n" + a3)), more2, temp2, error3; more2 = !(temp2 = yield new __await(iter2.next())).done; more2 = false) {
-                  var s3 = temp2.value;
-                  if (o3) {
-                    o3 = false;
-                    var i4 = s3.indexOf(a3);
-                    if (i4 > -1) {
-                      s3 = s3.slice(i4 + a3.length);
-                    } else {
-                      continue;
-                    }
-                  }
-                  try {
-                    yield n3 = JSON.parse(s3.slice(s3.indexOf("\r\n\r\n") + 4));
-                  } catch (e5) {
-                    if (!n3) {
-                      throw e5;
-                    }
-                  }
-                  if (n3 && false === n3.hasNext) {
-                    break;
-                  }
-                }
-              } catch (temp2) {
-                error3 = [temp2];
-              } finally {
-                try {
-                  more2 && (temp2 = iter2.return) && (yield new __await(temp2.call(iter2)));
-                } finally {
-                  if (error3)
-                    throw error3[0];
-                }
-              }
-              if (n3 && false !== n3.hasNext) {
-                yield {
-                  hasNext: false
-                };
-              }
-            });
-          }(s2, n2);
-        } else if (/text\/event-stream/i.test(s2)) {
-          i3 = function parseEventStream(e4) {
-            return __asyncGenerator(this, null, function* () {
-              var r3;
-              try {
-                for (var iter2 = __forAwait(split(streamBody(e4), "\n\n")), more2, temp2, error3; more2 = !(temp2 = yield new __await(iter2.next())).done; more2 = false) {
-                  var t4 = temp2.value;
-                  var a3 = t4.match(m2);
-                  if (a3) {
-                    var o3 = a3[1];
-                    try {
-                      yield r3 = JSON.parse(o3);
-                    } catch (e5) {
-                      if (!r3) {
-                        throw e5;
-                      }
-                    }
-                    if (r3 && false === r3.hasNext) {
-                      break;
-                    }
-                  }
-                }
-              } catch (temp2) {
-                error3 = [temp2];
-              } finally {
-                try {
-                  more2 && (temp2 = iter2.return) && (yield new __await(temp2.call(iter2)));
-                } finally {
-                  if (error3)
-                    throw error3[0];
-                }
-              }
-              if (r3 && false !== r3.hasNext) {
-                yield {
-                  hasNext: false
-                };
-              }
-            });
-          }(n2);
-        } else if (!/text\//i.test(s2)) {
-          i3 = function parseJSON(e4) {
-            return __asyncGenerator(this, null, function* () {
-              yield JSON.parse(yield new __await(e4.text()));
-            });
-          }(n2);
-        } else {
-          i3 = function parseMaybeJSON(e4) {
-            return __asyncGenerator(this, null, function* () {
-              var r3 = yield new __await(e4.text());
-              try {
-                var t4 = JSON.parse(r3);
-                if (true) {
-                  console.warn('Found response with content-type "text/plain" but it had a valid "application/json" response.');
-                }
-                yield t4;
-              } catch (e5) {
-                throw new Error(r3);
-              }
-            });
-          }(n2);
-        }
-        var f3;
-        try {
-          for (var iter = __forAwait(i3), more, temp, error2; more = !(temp = yield new __await(iter.next())).done; more = false) {
-            var l3 = temp.value;
-            if (l3.pending && !o2) {
-              f3 = l3.pending;
-            } else if (l3.pending) {
-              f3 = [...f3, ...l3.pending];
-            }
-            o2 = o2 ? mergeResultPatch(o2, l3, n2, f3) : makeResult(e3, l3, n2);
-            a2 = false;
-            yield o2;
-            a2 = true;
-          }
-        } catch (temp) {
-          error2 = [temp];
-        } finally {
-          try {
-            more && (temp = iter.return) && (yield new __await(temp.call(iter)));
-          } finally {
-            if (error2)
-              throw error2[0];
-          }
-        }
-        if (!o2) {
-          yield o2 = makeResult(e3, {}, n2);
-        }
-      } catch (r3) {
-        if (!a2) {
-          throw r3;
-        }
-        yield makeErrorResult(e3, n2 && (n2.status < 200 || n2.status >= 300) && n2.statusText ? new Error(n2.statusText) : r3, n2);
-      }
-    });
-  }
-  function makeFetchSource(e3, r2, t3) {
-    var a2;
-    if ("undefined" != typeof AbortController) {
-      t3.signal = (a2 = new AbortController()).signal;
-    }
-    return onEnd(() => {
-      if (a2) {
-        a2.abort();
-      }
-    })(filter((e4) => !!e4)(fromAsyncIterable(fetchOperation(e3, r2, t3))));
-  }
-
-  // node_modules/@urql/core/dist/urql-core.mjs
-  var collectTypes = (e3, r2) => {
-    if (Array.isArray(e3)) {
-      for (var t3 of e3) {
-        collectTypes(t3, r2);
-      }
-    } else if ("object" == typeof e3 && null !== e3) {
-      for (var n2 in e3) {
-        if ("__typename" === n2 && "string" == typeof e3[n2]) {
-          r2.add(e3[n2]);
-        } else {
-          collectTypes(e3[n2], r2);
-        }
-      }
-    }
-    return r2;
-  };
-  var formatNode = (r2) => {
-    if ("definitions" in r2) {
-      var t3 = [];
-      for (var n2 of r2.definitions) {
-        var a2 = formatNode(n2);
-        t3.push(a2);
-      }
-      return __spreadProps(__spreadValues({}, r2), {
-        definitions: t3
-      });
-    }
-    if ("directives" in r2 && r2.directives && r2.directives.length) {
-      var o2 = [];
-      var i3 = {};
-      for (var s2 of r2.directives) {
-        var c2 = s2.name.value;
-        if ("_" !== c2[0]) {
-          o2.push(s2);
-        } else {
-          c2 = c2.slice(1);
-        }
-        i3[c2] = s2;
-      }
-      r2 = __spreadProps(__spreadValues({}, r2), {
-        directives: o2,
-        _directives: i3
-      });
-    }
-    if ("selectionSet" in r2) {
-      var u3 = [];
-      var p2 = r2.kind === e2.OPERATION_DEFINITION;
-      if (r2.selectionSet) {
-        for (var d3 of r2.selectionSet.selections || []) {
-          p2 = p2 || d3.kind === e2.FIELD && "__typename" === d3.name.value && !d3.alias;
-          var v3 = formatNode(d3);
-          u3.push(v3);
-        }
-        if (!p2) {
-          u3.push({
-            kind: e2.FIELD,
-            name: {
-              kind: e2.NAME,
-              value: "__typename"
-            },
-            _generated: true
-          });
-        }
-        return __spreadProps(__spreadValues({}, r2), {
-          selectionSet: __spreadProps(__spreadValues({}, r2.selectionSet), {
-            selections: u3
-          })
-        });
-      }
-    }
-    return r2;
-  };
-  var I = /* @__PURE__ */ new Map();
-  var formatDocument = (e3) => {
-    var t3 = keyDocument(e3);
-    var n2 = I.get(t3.__key);
-    if (!n2) {
-      I.set(t3.__key, n2 = formatNode(t3));
-      Object.defineProperty(n2, "__key", {
-        value: t3.__key,
-        enumerable: false
-      });
-    }
-    return n2;
-  };
-  var maskTypename = (e3, r2) => {
-    if (!e3 || "object" != typeof e3) {
-      return e3;
-    } else if (Array.isArray(e3)) {
-      return e3.map((e4) => maskTypename(e4));
-    } else if (e3 && "object" == typeof e3 && (r2 || "__typename" in e3)) {
-      var t3 = {};
-      for (var n2 in e3) {
-        if ("__typename" === n2) {
-          Object.defineProperty(t3, "__typename", {
-            enumerable: false,
-            value: e3.__typename
-          });
-        } else {
-          t3[n2] = maskTypename(e3[n2]);
-        }
-      }
-      return t3;
-    } else {
-      return e3;
-    }
-  };
-  function withPromise(e3) {
-    var source$ = (r2) => e3(r2);
-    source$.toPromise = () => toPromise(take(1)(filter((e4) => !e4.stale && !e4.hasNext)(source$)));
-    source$.then = (e4, r2) => source$.toPromise().then(e4, r2);
-    source$.subscribe = (e4) => subscribe(e4)(source$);
-    return source$;
-  }
-  function makeOperation(e3, r2, t3) {
-    return __spreadProps(__spreadValues({}, r2), {
-      kind: e3,
-      context: r2.context ? __spreadValues(__spreadValues({}, r2.context), t3) : t3 || r2.context
-    });
-  }
-  var addMetadata = (e3, r2) => makeOperation(e3.kind, e3, {
-    meta: __spreadValues(__spreadValues({}, e3.context.meta), r2)
-  });
-  var noop = () => {
-  };
-  var shouldSkip = ({ kind: e3 }) => "mutation" !== e3 && "query" !== e3;
-  var mapTypeNames = (e3) => {
-    var r2 = formatDocument(e3.query);
-    if (r2 !== e3.query) {
-      var t3 = makeOperation(e3.kind, e3);
-      t3.query = r2;
-      return t3;
-    } else {
-      return e3;
-    }
-  };
-  var cacheExchange = ({ forward: e3, client: r2, dispatchDebug: t3 }) => {
-    var a2 = /* @__PURE__ */ new Map();
-    var o2 = /* @__PURE__ */ new Map();
-    var isOperationCached = (e4) => "query" === e4.kind && "network-only" !== e4.context.requestPolicy && ("cache-only" === e4.context.requestPolicy || a2.has(e4.key));
-    return (i3) => {
-      var s2 = map((e4) => {
-        var o3 = a2.get(e4.key);
-        t3(__spreadProps(__spreadValues({
-          operation: e4
-        }, o3 ? {
-          type: "cacheHit",
-          message: "The result was successfully retried from the cache"
-        } : {
-          type: "cacheMiss",
-          message: "The result could not be retrieved from the cache"
-        }), {
-          source: "cacheExchange"
-        }));
-        var i4 = o3 || makeResult(e4, {
-          data: null
-        });
-        i4 = __spreadProps(__spreadValues({}, i4), {
-          operation: true ? addMetadata(e4, {
-            cacheOutcome: o3 ? "hit" : "miss"
-          }) : e4
-        });
-        if ("cache-and-network" === e4.context.requestPolicy) {
-          i4.stale = true;
-          reexecuteOperation(r2, e4);
-        }
-        return i4;
-      })(filter((e4) => !shouldSkip(e4) && isOperationCached(e4))(i3));
-      var c2 = onPush((e4) => {
-        var { operation: n2 } = e4;
-        if (!n2) {
-          return;
-        }
-        var i4 = n2.context.additionalTypenames || [];
-        if ("subscription" !== e4.operation.kind) {
-          i4 = ((e5) => [...collectTypes(e5, /* @__PURE__ */ new Set())])(e4.data).concat(i4);
-        }
-        if ("mutation" === e4.operation.kind || "subscription" === e4.operation.kind) {
-          var s3 = /* @__PURE__ */ new Set();
-          t3({
-            type: "cacheInvalidation",
-            message: `The following typenames have been invalidated: ${i4}`,
-            operation: n2,
-            data: {
-              typenames: i4,
-              response: e4
-            },
-            source: "cacheExchange"
-          });
-          for (var c3 = 0; c3 < i4.length; c3++) {
-            var u3 = i4[c3];
-            var p2 = o2.get(u3);
-            if (!p2) {
-              o2.set(u3, p2 = /* @__PURE__ */ new Set());
-            }
-            for (var d3 of p2.values()) {
-              s3.add(d3);
-            }
-            p2.clear();
-          }
-          for (var v3 of s3.values()) {
-            if (a2.has(v3)) {
-              n2 = a2.get(v3).operation;
-              a2.delete(v3);
-              reexecuteOperation(r2, n2);
-            }
-          }
-        } else if ("query" === n2.kind && e4.data) {
-          a2.set(n2.key, e4);
-          for (var f3 = 0; f3 < i4.length; f3++) {
-            var l3 = i4[f3];
-            var h2 = o2.get(l3);
-            if (!h2) {
-              o2.set(l3, h2 = /* @__PURE__ */ new Set());
-            }
-            h2.add(n2.key);
-          }
-        }
-      })(e3(filter((e4) => "query" !== e4.kind || "cache-only" !== e4.context.requestPolicy)(map((e4) => true ? addMetadata(e4, {
-        cacheOutcome: "miss"
-      }) : e4)(merge([map(mapTypeNames)(filter((e4) => !shouldSkip(e4) && !isOperationCached(e4))(i3)), filter((e4) => shouldSkip(e4))(i3)])))));
-      return merge([s2, c2]);
-    };
-  };
-  var reexecuteOperation = (e3, r2) => e3.reexecuteOperation(makeOperation(r2.kind, r2, {
-    requestPolicy: "network-only"
-  }));
-  var subscriptionExchange = ({ forwardSubscription: e3, enableAllOperations: r2, isSubscriptionOperation: t3 }) => ({ client: a2, forward: i3 }) => {
-    var u3 = t3 || ((e4) => "subscription" === e4.kind || !!r2 && ("query" === e4.kind || "mutation" === e4.kind));
-    return (r3) => {
-      var t4 = mergeMap((t5) => {
-        var { key: i4 } = t5;
-        var u4 = filter((e4) => "teardown" === e4.kind && e4.key === i4)(r3);
-        return takeUntil(u4)(((r4) => {
-          var t6 = e3(makeFetchBody(r4), r4);
-          return make((e4) => {
-            var o2 = false;
-            var i5;
-            var u5;
-            function nextResult(t7) {
-              e4.next(u5 = u5 ? mergeResultPatch(u5, t7) : makeResult(r4, t7));
-            }
-            Promise.resolve().then(() => {
-              if (o2) {
-                return;
-              }
-              i5 = t6.subscribe({
-                next: nextResult,
-                error(t7) {
-                  if (Array.isArray(t7)) {
-                    nextResult({
-                      errors: t7
-                    });
-                  } else {
-                    e4.next(makeErrorResult(r4, t7));
-                  }
-                  e4.complete();
-                },
-                complete() {
-                  if (!o2) {
-                    o2 = true;
-                    if ("subscription" === r4.kind) {
-                      a2.reexecuteOperation(makeOperation("teardown", r4, r4.context));
-                    }
-                    if (u5 && u5.hasNext) {
-                      nextResult({
-                        hasNext: false
-                      });
-                    }
-                    e4.complete();
-                  }
-                }
-              });
-            });
-            return () => {
-              o2 = true;
-              if (i5) {
-                i5.unsubscribe();
-              }
-            };
-          });
-        })(t5));
-      })(filter((e4) => "teardown" !== e4.kind && u3(e4))(r3));
-      var p2 = i3(filter((e4) => "teardown" === e4.kind || !u3(e4))(r3));
-      return merge([t4, p2]);
-    };
-  };
-  var fetchExchange = ({ forward: e3, dispatchDebug: r2 }) => (t3) => {
-    var n2 = mergeMap((e4) => {
-      var n3 = makeFetchBody(e4);
-      var a3 = makeFetchURL(e4, n3);
-      var i3 = makeFetchOptions(e4, n3);
-      r2({
-        type: "fetchRequest",
-        message: "A fetch request is being executed.",
-        operation: e4,
-        data: {
-          url: a3,
-          fetchOptions: i3
-        },
-        source: "fetchExchange"
-      });
-      var s2 = takeUntil(filter((r3) => "teardown" === r3.kind && r3.key === e4.key)(t3))(makeFetchSource(e4, a3, i3));
-      if (true) {
-        return onPush((t4) => {
-          var n4 = !t4.data ? t4.error : void 0;
-          r2({
-            type: n4 ? "fetchError" : "fetchSuccess",
-            message: `A ${n4 ? "failed" : "successful"} fetch response has been returned.`,
-            operation: e4,
-            data: {
-              url: a3,
-              fetchOptions: i3,
-              value: n4 || t4
-            },
-            source: "fetchExchange"
-          });
-        })(s2);
-      }
-      return s2;
-    })(filter((e4) => "teardown" !== e4.kind && ("subscription" !== e4.kind || !!e4.context.fetchSubscriptions))(t3));
-    var a2 = e3(filter((e4) => "teardown" === e4.kind || "subscription" === e4.kind && !e4.context.fetchSubscriptions)(t3));
-    return merge([n2, a2]);
-  };
-  var composeExchanges = (e3) => ({ client: r2, forward: t3, dispatchDebug: n2 }) => e3.reduceRight((e4, t4) => {
-    var a2 = false;
-    return t4({
-      client: r2,
-      forward(r3) {
-        if (true) {
-          if (a2) {
-            throw new Error("forward() must only be called once in each Exchange.");
-          }
-          a2 = true;
-        }
-        return share(e4(share(r3)));
-      },
-      dispatchDebug(e5) {
-        n2(__spreadValues({
-          timestamp: Date.now(),
-          source: t4.name
-        }, e5));
-      }
-    });
-  }, t3);
-  var mapExchange = ({ onOperation: e3, onResult: r2, onError: t3 }) => ({ forward: n2 }) => (a2) => mergeMap((e4) => {
-    if (t3 && e4.error) {
-      t3(e4.error, e4.operation);
-    }
-    var n3 = r2 && r2(e4) || e4;
-    return "then" in n3 ? fromPromise(n3) : fromValue(n3);
-  })(n2(mergeMap((r3) => {
-    var t4 = e3 && e3(r3) || r3;
-    return "then" in t4 ? fromPromise(t4) : fromValue(t4);
-  })(a2)));
-  var fallbackExchange = ({ dispatchDebug: e3 }) => (r2) => {
-    if (true) {
-      r2 = onPush((r3) => {
-        if ("teardown" !== r3.kind && true) {
-          var t3 = `No exchange has handled operations of kind "${r3.kind}". Check whether you've added an exchange responsible for these operations.`;
-          e3({
-            type: "fallbackCatch",
-            message: t3,
-            operation: r3,
-            source: "fallbackExchange"
-          });
-          console.warn(t3);
-        }
-      })(r2);
-    }
-    return filter((e4) => false)(r2);
-  };
-  var C = function Client(e3) {
-    if (!e3.url) {
-      throw new Error("You are creating an urql-client without a url.");
-    }
-    var r2 = 0;
-    var t3 = /* @__PURE__ */ new Map();
-    var n2 = /* @__PURE__ */ new Map();
-    var a2 = /* @__PURE__ */ new Set();
-    var o2 = [];
-    var i3 = {
-      url: e3.url,
-      fetchSubscriptions: e3.fetchSubscriptions,
-      fetchOptions: e3.fetchOptions,
-      fetch: e3.fetch,
-      preferGetMethod: e3.preferGetMethod,
-      requestPolicy: e3.requestPolicy || "cache-first"
-    };
-    var s2 = makeSubject();
-    function nextOperation(e4) {
-      if ("mutation" === e4.kind || "teardown" === e4.kind || !a2.has(e4.key)) {
-        if ("teardown" === e4.kind) {
-          a2.delete(e4.key);
-        } else if ("mutation" !== e4.kind) {
-          a2.add(e4.key);
-        }
-        s2.next(e4);
-      }
-    }
-    var c2 = false;
-    function dispatchOperation(e4) {
-      if (e4) {
-        nextOperation(e4);
-      }
-      if (!c2) {
-        c2 = true;
-        while (c2 && (e4 = o2.shift())) {
-          nextOperation(e4);
-        }
-        c2 = false;
-      }
-    }
-    var makeResultSource = (r3) => {
-      var i4 = takeUntil(filter((e4) => "teardown" === e4.kind && e4.key === r3.key)(s2.source))(filter((e4) => e4.operation.kind === r3.kind && e4.operation.key === r3.key && (!e4.operation.context._instance || e4.operation.context._instance === r3.context._instance))(O));
-      if (e3.maskTypename) {
-        i4 = map((e4) => __spreadProps(__spreadValues({}, e4), {
-          data: maskTypename(e4.data, true)
-        }))(i4);
-      }
-      if ("query" !== r3.kind) {
-        i4 = takeWhile((e4) => !!e4.hasNext, true)(i4);
-      } else {
-        i4 = switchMap((e4) => {
-          var t4 = fromValue(e4);
-          return e4.stale || e4.hasNext ? t4 : merge([t4, map(() => {
-            e4.stale = true;
-            return e4;
-          })(take(1)(filter((e5) => e5.key === r3.key)(s2.source)))]);
-        })(i4);
-      }
-      if ("mutation" !== r3.kind) {
-        i4 = onEnd(() => {
-          a2.delete(r3.key);
-          t3.delete(r3.key);
-          n2.delete(r3.key);
-          c2 = false;
-          for (var e4 = o2.length - 1; e4 >= 0; e4--) {
-            if (o2[e4].key === r3.key) {
-              o2.splice(e4, 1);
-            }
-          }
-          nextOperation(makeOperation("teardown", r3, r3.context));
-        })(onPush((e4) => {
-          if (e4.stale) {
-            for (var n3 of o2) {
-              if (n3.key === e4.operation.key) {
-                a2.delete(n3.key);
-                break;
-              }
-            }
-          } else if (!e4.hasNext) {
-            a2.delete(r3.key);
-          }
-          t3.set(r3.key, e4);
-        })(i4));
-      } else {
-        i4 = onStart(() => {
-          nextOperation(r3);
-        })(i4);
-      }
-      return share(i4);
-    };
-    var u3 = this instanceof Client ? this : Object.create(Client.prototype);
-    var p2 = Object.assign(u3, {
-      suspense: !!e3.suspense,
-      operations$: s2.source,
-      reexecuteOperation(e4) {
-        if ("teardown" === e4.kind) {
-          dispatchOperation(e4);
-        } else if ("mutation" === e4.kind || n2.has(e4.key)) {
-          var r3 = false;
-          for (var t4 = 0; t4 < o2.length; t4++) {
-            r3 = r3 || o2[t4].key === e4.key;
-          }
-          if (!r3) {
-            a2.delete(e4.key);
-          }
-          o2.push(e4);
-          Promise.resolve().then(dispatchOperation);
-        }
-      },
-      createRequestOperation(e4, t4, n3) {
-        if (!n3) {
-          n3 = {};
-        }
-        var a3;
-        if ("teardown" !== e4 && (a3 = getOperationType(t4.query)) !== e4) {
-          throw new Error(`Expected operation of type "${e4}" but found "${a3}"`);
-        }
-        return makeOperation(e4, t4, __spreadProps(__spreadValues(__spreadValues({
-          _instance: "mutation" === e4 ? r2 = r2 + 1 | 0 : void 0
-        }, i3), n3), {
-          requestPolicy: n3.requestPolicy || i3.requestPolicy,
-          suspense: n3.suspense || false !== n3.suspense && p2.suspense
-        }));
-      },
-      executeRequestOperation(e4) {
-        if ("mutation" === e4.kind) {
-          return withPromise(makeResultSource(e4));
-        }
-        return withPromise(lazy(() => {
-          var r3 = n2.get(e4.key);
-          if (!r3) {
-            n2.set(e4.key, r3 = makeResultSource(e4));
-          }
-          r3 = onStart(() => {
-            dispatchOperation(e4);
-          })(r3);
-          var a3 = t3.get(e4.key);
-          if ("query" === e4.kind && a3 && (a3.stale || a3.hasNext)) {
-            return switchMap(fromValue)(merge([r3, filter((r4) => r4 === t3.get(e4.key))(fromValue(a3))]));
-          } else {
-            return r3;
-          }
-        }));
-      },
-      executeQuery(e4, r3) {
-        var t4 = p2.createRequestOperation("query", e4, r3);
-        return p2.executeRequestOperation(t4);
-      },
-      executeSubscription(e4, r3) {
-        var t4 = p2.createRequestOperation("subscription", e4, r3);
-        return p2.executeRequestOperation(t4);
-      },
-      executeMutation(e4, r3) {
-        var t4 = p2.createRequestOperation("mutation", e4, r3);
-        return p2.executeRequestOperation(t4);
-      },
-      readQuery(e4, r3, t4) {
-        var n3 = null;
-        subscribe((e5) => {
-          n3 = e5;
-        })(p2.query(e4, r3, t4)).unsubscribe();
-        return n3;
-      },
-      query: (e4, r3, t4) => p2.executeQuery(createRequest(e4, r3), t4),
-      subscription: (e4, r3, t4) => p2.executeSubscription(createRequest(e4, r3), t4),
-      mutation: (e4, r3, t4) => p2.executeMutation(createRequest(e4, r3), t4)
-    });
-    var d3 = noop;
-    if (true) {
-      var { next: l3, source: x } = makeSubject();
-      p2.subscribeToDebugTarget = (e4) => subscribe(e4)(x);
-      d3 = l3;
-    }
-    var g = composeExchanges(e3.exchanges);
-    var O = share(g({
-      client: p2,
-      dispatchDebug: d3,
-      forward: fallbackExchange({
-        dispatchDebug: d3
-      })
-    })(s2.source));
-    publish(O);
-    return p2;
-  };
-
-  // node_modules/tiny-graphql-query-compiler/dist/esm/index.js
-  var compileFieldSelection = (fields) => {
-    return Object.entries(fields).flatMap(([field, value2]) => {
-      if (typeof value2 === "boolean") {
-        return value2 ? field : false;
-      } else if (value2 instanceof FieldCall) {
-        let args = "";
-        const signatures = Object.entries(value2.args).filter(([_, value3]) => value3 !== null && value3 !== void 0).map(([name, value3]) => {
-          var _a3;
-          return `${name}: ${value3 instanceof Variable ? `$${(_a3 = value3.name) !== null && _a3 !== void 0 ? _a3 : name}` : JSON.stringify(value3)}`;
-        });
-        if (signatures.length > 0) {
-          args = `(${signatures.join(", ")})`;
-        }
-        if (value2.subselection) {
-          return [`${field}${args} {`, ...compileFieldSelection(value2.subselection), `}`];
-        } else {
-          return `${field}${args}`;
-        }
-      } else {
-        return [`${field} {`, ...compileFieldSelection(value2), `}`];
-      }
-    }).filter((value2) => !!value2).map((line) => "  " + line);
-  };
-  var extractVariables = (fields) => {
-    const variables = {};
-    const nextName = (name) => {
-      let count = 1;
-      if (variables[name]) {
-        while (variables[`${name}${count}`]) {
-          count++;
-        }
-        return `${name}${count}`;
-      }
-      return name;
-    };
-    Object.entries(fields).forEach(([_field, value2]) => {
-      if (value2 instanceof FieldCall) {
-        Object.entries(value2.args).forEach(([name, value3]) => {
-          var _a3;
-          if (value3 instanceof Variable) {
-            variables[(_a3 = value3.name) !== null && _a3 !== void 0 ? _a3 : nextName(name)] = value3;
-          }
-        });
-        if (value2.subselection) {
-          Object.assign(variables, extractVariables(value2.subselection));
-        }
-      } else if (typeof value2 === "object" && value2 !== null) {
-        Object.assign(variables, extractVariables(value2));
-      }
-    });
-    return variables;
-  };
-  var compileVariables = (operation) => {
-    const variables = extractVariables(operation.fields);
-    if (Object.keys(variables).length === 0)
-      return "";
-    const signatures = Object.entries(variables).map(([name, variable]) => {
-      return `$${name}: ${variable.type}`;
-    });
-    return `(${signatures.join(", ")})`;
-  };
-  var FieldCall = class {
-    constructor(args, subselection) {
-      Object.defineProperty(this, "args", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: args
-      });
-      Object.defineProperty(this, "subselection", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: subselection
-      });
-    }
-  };
-  var Variable = class {
-    constructor(type2, name, value2) {
-      Object.defineProperty(this, "type", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: type2
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: name
-      });
-      Object.defineProperty(this, "value", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: value2
-      });
-    }
-    present() {
-      return this.value != null;
-    }
-  };
-  var Call = (args, subselection) => new FieldCall(args, subselection);
-  var Var = (options) => new Variable(options.type + (options.required ? "!" : ""), options.name, options.value);
-  var compile = (operation) => {
-    var _a3;
-    const signature = compileVariables(operation);
-    const directives2 = operation.directives && operation.directives.length > 0 ? ` ${operation.directives.join(" ")}` : "";
-    return `${operation.type} ${(_a3 = operation.name) !== null && _a3 !== void 0 ? _a3 : ""}${signature}${directives2} {
-${compileFieldSelection(operation.fields).join("\n")}
-}`;
-  };
-  var compileWithVariableValues = (operation) => {
-    const variables = extractVariables(operation.fields);
-    return {
-      query: compile(operation),
-      variables: Object.entries(variables !== null && variables !== void 0 ? variables : {}).reduce((acc, [name, variable]) => {
-        if (typeof variable.value !== "undefined") {
-          acc[name] = variable.value;
-        }
-        return acc;
-      }, {})
-    };
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/DataHydrator.js
-  var Hydrators = {
-    DateTime(value2) {
-      return new Date(value2);
-    }
-  };
-  var DataHydrator = class {
-    constructor(plan) {
-      Object.defineProperty(this, "plan", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: plan
-      });
-    }
-    apply(source) {
-      if (Array.isArray(source)) {
-        return source.map((object) => this.hydrateObject(object));
-      } else {
-        return this.hydrateObject(source);
-      }
-    }
-    hydrateObject(object) {
-      const hydrated = __spreadValues({}, object);
-      for (const [key2, hydrator] of Object.entries(this.plan)) {
-        const value2 = hydrated[key2];
-        if (value2 != null) {
-          hydrated[key2] = Hydrators[hydrator](value2);
-        }
-      }
-      return hydrated;
-    }
-  };
-
-  // node_modules/klona/dist/index.mjs
-  function klona(x) {
-    if (typeof x !== "object")
-      return x;
-    var k, tmp, str = Object.prototype.toString.call(x);
-    if (str === "[object Object]") {
-      if (x.constructor !== Object && typeof x.constructor === "function") {
-        tmp = new x.constructor();
-        for (k in x) {
-          if (x.hasOwnProperty(k) && tmp[k] !== x[k]) {
-            tmp[k] = klona(x[k]);
-          }
-        }
-      } else {
-        tmp = {};
-        for (k in x) {
-          if (k === "__proto__") {
-            Object.defineProperty(tmp, k, {
-              value: klona(x[k]),
-              configurable: true,
-              enumerable: true,
-              writable: true
-            });
-          } else {
-            tmp[k] = klona(x[k]);
-          }
-        }
-      }
-      return tmp;
-    }
-    if (str === "[object Array]") {
-      k = x.length;
-      for (tmp = Array(k); k--; ) {
-        tmp[k] = klona(x[k]);
-      }
-      return tmp;
-    }
-    if (str === "[object Set]") {
-      tmp = /* @__PURE__ */ new Set();
-      x.forEach(function(val) {
-        tmp.add(klona(val));
-      });
-      return tmp;
-    }
-    if (str === "[object Map]") {
-      tmp = /* @__PURE__ */ new Map();
-      x.forEach(function(val, key2) {
-        tmp.set(klona(key2), klona(val));
-      });
-      return tmp;
-    }
-    if (str === "[object Date]") {
-      return /* @__PURE__ */ new Date(+x);
-    }
-    if (str === "[object RegExp]") {
-      tmp = new RegExp(x.source, x.flags);
-      tmp.lastIndex = x.lastIndex;
-      return tmp;
-    }
-    if (str === "[object DataView]") {
-      return new x.constructor(klona(x.buffer));
-    }
-    if (str === "[object ArrayBuffer]") {
-      return x.slice(0);
-    }
-    if (str.slice(-6) === "Array]") {
-      return new x.constructor(x);
-    }
-    return x;
-  }
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/GadgetRecord.js
-  var _a;
-  var _b;
-  var _c;
-  var _d;
-  var _e;
-  var ChangeTracking;
-  (function(ChangeTracking2) {
-    ChangeTracking2[ChangeTracking2["SinceLoaded"] = 0] = "SinceLoaded";
-    ChangeTracking2[ChangeTracking2["SinceLastPersisted"] = 1] = "SinceLastPersisted";
-  })(ChangeTracking || (ChangeTracking = {}));
-  var kFields = Symbol.for("g/fields");
-  var kInstantiatedFields = Symbol.for("g/if");
-  var kPersistedFields = Symbol.for("g/pf");
-  var kFieldKeys = Symbol.for("g/fk");
-  var kTouched = Symbol.for("g/t");
-  var GadgetRecord_ = class {
-    constructor(data) {
-      var _f, _g;
-      Object.defineProperty(this, _a, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: {}
-      });
-      Object.defineProperty(this, _b, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: {}
-      });
-      Object.defineProperty(this, _c, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: {}
-      });
-      Object.defineProperty(this, _d, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, _e, {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-      Object.defineProperty(this, "empty", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-      this[kInstantiatedFields] = (_f = klona(data)) !== null && _f !== void 0 ? _f : {};
-      this[kPersistedFields] = (_g = klona(data)) !== null && _g !== void 0 ? _g : {};
-      Object.assign(this[kFields], data);
-      if (!data || Object.keys(data).length === 0) {
-        this.empty = true;
-        this[kFieldKeys] = /* @__PURE__ */ new Set();
-      } else {
-        this[kFieldKeys] = new Set(Object.keys(this[kFields]));
-      }
-      const self2 = this;
-      const handler = {
-        get: (obj, prop) => {
-          if (prop in self2 || typeof prop == "symbol") {
-            let val = self2[prop];
-            if (typeof val == "function") {
-              val = val.bind(self2);
-            }
-            return val;
-          } else if (prop in obj) {
-            return obj[prop];
-          }
-        },
-        set: (obj, prop, value2) => {
-          self2.trackKey(prop);
-          obj[prop.toString()] = value2;
-          return true;
-        }
-      };
-      return new Proxy(this[kFields], handler);
-    }
-    /** Makes sure our data keys are all tracked, to avoid repeated runtime object-to-array conversions */
-    trackKey(key2) {
-      const trackingKey = key2.toString();
-      this[kFieldKeys].add(trackingKey);
-    }
-    /** Returns true if even a single field has changed */
-    hasChanges(tracking = ChangeTracking.SinceLoaded) {
-      if (this[kTouched])
-        return true;
-      const diffFields = tracking == ChangeTracking.SinceLoaded ? this[kInstantiatedFields] : this[kPersistedFields];
-      return [...this[kFieldKeys]].some((key2) => !isEqual(diffFields[key2], this[kFields][key2]));
-    }
-    /** Checks if the original constructor data was empty or not */
-    isEmpty() {
-      return this.empty;
-    }
-    /** Returns the value of the field for the given `apiIdentifier`. These properties may also be accessed on this record directly. This method can be used if your model field `apiIdentifier` conflicts with the `GadgetRecord` helper functions. */
-    getField(apiIdentifier) {
-      return this[kFields][apiIdentifier];
-    }
-    /** Sets the value of the field for the given `apiIdentifier`. These properties may also be accessed on this record directly. This method can be used if your model field `apiIdentifier` conflicts with the `GadgetRecord` helper functions. */
-    setField(apiIdentifier, value2) {
-      this.trackKey(apiIdentifier);
-      return this[kFields][apiIdentifier] = value2;
-    }
-    changes(prop, tracking = ChangeTracking.SinceLoaded) {
-      const trackChangesSince = typeof prop == "string" ? tracking : prop || tracking;
-      const diffFields = trackChangesSince == ChangeTracking.SinceLoaded ? this[kInstantiatedFields] : this[kPersistedFields];
-      if (prop && typeof prop == "string") {
-        const previous = diffFields[prop];
-        const current = this[kFields][prop];
-        const changed = !isEqual(current, previous);
-        return changed ? { changed, current, previous } : { changed };
-      } else {
-        const diff = {};
-        for (const key2 of this[kFieldKeys]) {
-          if (!isEqual(diffFields[key2], this[kFields][key2])) {
-            diff[key2] = { current: this[kFields][key2], previous: diffFields[key2] };
-          }
-        }
-        return diff;
-      }
-    }
-    /** Returns all current values for fields that have changed */
-    toChangedJSON(tracking = ChangeTracking.SinceLoaded) {
-      const diffFields = tracking == ChangeTracking.SinceLoaded ? this[kInstantiatedFields] : this[kPersistedFields];
-      const current = {};
-      for (const key2 of this[kFieldKeys]) {
-        if (!isEqual(diffFields[key2], this[kFields][key2])) {
-          current[key2] = this[kFields][key2];
-        }
-      }
-      return current;
-    }
-    changed(prop, tracking = ChangeTracking.SinceLoaded) {
-      if (prop && typeof prop == "string") {
-        return this.changes(prop, tracking).changed;
-      } else {
-        return this.hasChanges(prop === void 0 ? tracking : prop);
-      }
-    }
-    /** Flushes all `changes` and starts tracking new changes from the current state of the record. */
-    flushChanges(tracking = ChangeTracking.SinceLoaded) {
-      if (tracking == ChangeTracking.SinceLoaded) {
-        this[kInstantiatedFields] = klona(this[kFields]);
-      } else if (tracking == ChangeTracking.SinceLastPersisted) {
-        this[kPersistedFields] = klona(this[kFields]);
-      }
-      this[kTouched] = false;
-    }
-    /** Reverts all `changes` on the record, and returns to either the values this record were instantiated with, or the values at the time of the last `flushChanges` call. */
-    revertChanges(tracking = ChangeTracking.SinceLoaded) {
-      let persistedKeys;
-      if (tracking == ChangeTracking.SinceLoaded) {
-        persistedKeys = Object.keys(this[kInstantiatedFields]);
-      } else {
-        persistedKeys = Object.keys(this[kPersistedFields]);
-      }
-      for (const key2 of this[kFieldKeys]) {
-        if (!persistedKeys.includes(key2))
-          delete this[kFields][key2];
-      }
-      if (tracking == ChangeTracking.SinceLoaded) {
-        Object.assign(this[kFields], klona(this[kInstantiatedFields]));
-      } else {
-        Object.assign(this[kFields], klona(this[kPersistedFields]));
-      }
-      this[kTouched] = false;
-    }
-    /** Returns a JSON representation of all fields on this record. */
-    toJSON() {
-      return toPrimitiveObject(__spreadValues({}, this[kFields]));
-    }
-    /** Marks this record as changed so that the next save will save it and adjust any `updatedAt` timestamps */
-    touch() {
-      this[kTouched] = true;
-    }
-  };
-  _a = kFields, _b = kInstantiatedFields, _c = kPersistedFields, _d = kFieldKeys, _e = kTouched;
-  var GadgetRecord = GadgetRecord_;
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/support.js
-  var GadgetInternalError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_INTERNAL_ERROR"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "InternalError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 500
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-  };
-  var GadgetClientError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_CLIENT_ERROR"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "ClientError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 500
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: true
-      });
-    }
-  };
-  var GadgetOperationError = class extends Error {
-    constructor(incomingMessage, code) {
-      super(incomingMessage.startsWith("GGT_") ? incomingMessage : `${code}: ${incomingMessage}`);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: code
-      });
-    }
-  };
-  var GadgetUnexpectedCloseError = class extends Error {
-    constructor(event) {
-      let message;
-      if (isCloseEvent(event)) {
-        message = `GraphQL websocket closed unexpectedly by the server with error code ${event.code} and reason "${event.reason}"`;
-      } else {
-        message = "GraphQL websocket closed unexpectedly by the server";
-      }
-      super(message);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_UNKNOWN"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "UnexpectedCloseError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 500
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-      Object.defineProperty(this, "event", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      this.event = event;
-    }
-  };
-  var GadgetWebsocketConnectionTimeoutError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_WEBSOCKET_CONNECTION_TIMEOUT"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "WebsocketConnectionTimeoutError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 500
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-  };
-  var GadgetTooManyRequestsError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_TOO_MANY_REQUESTS"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "TooManyRequestsError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 429
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-  };
-  var InvalidRecordError = class extends Error {
-    constructor(message, validationErrors, modelApiIdentifier16, record) {
-      const firstErrors = validationErrors.slice(0, 3);
-      const extraErrorMessage = validationErrors.length > 3 ? `, and ${validationErrors.length - 3} more error${validationErrors.length > 4 ? "s" : ""} need${validationErrors.length > 4 ? "" : "s"} to be corrected` : "";
-      super(message !== null && message !== void 0 ? message : `GGT_INVALID_RECORD: ${modelApiIdentifier16 !== null && modelApiIdentifier16 !== void 0 ? modelApiIdentifier16 : "Record"} is invalid and can't be saved. ${firstErrors.map(({ apiIdentifier, message: message2 }) => `${apiIdentifier} ${message2}`).join(", ")}${extraErrorMessage}.`);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_INVALID_RECORD"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "InvalidRecordError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 422
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: true
-      });
-      Object.defineProperty(this, "validationErrors", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "modelApiIdentifier", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "record", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      this.validationErrors = validationErrors;
-      this.modelApiIdentifier = modelApiIdentifier16;
-      this.record = record;
-    }
-  };
-  var GadgetNonUniqueDataError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_NON_UNIQUE_DATA"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "NonUniqueDataError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 417
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-  };
-  var GadgetNotFoundError = class extends Error {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "code", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "GGT_RECORD_NOT_FOUND"
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "RecordNotFoundError"
-      });
-      Object.defineProperty(this, "statusCode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: 404
-      });
-      Object.defineProperty(this, "causedByClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-  };
-  var GadgetErrorGroup = class extends Error {
-    constructor(errors, results) {
-      super(errors.length > 1 ? "Multiple errors occurred" : errors[0].message);
-      Object.defineProperty(this, "errors", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: errors
-      });
-      Object.defineProperty(this, "results", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: results
-      });
-      Object.defineProperty(this, "name", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: "ErrorGroup"
-      });
-    }
-    get code() {
-      return `GGT_ERROR_GROUP(${this.errors.slice(0, 10).map((error2) => {
-        var _a3;
-        return (_a3 = error2.code) !== null && _a3 !== void 0 ? _a3 : "GGT_UNKNOWN";
-      }).join(",")})`;
-    }
-    /** @private */
-    get statusCode() {
-      return Math.max(...this.errors.map((error2) => {
-        var _a3;
-        return (_a3 = error2.statusCode) !== null && _a3 !== void 0 ? _a3 : 500;
-      }));
-    }
-  };
-  function assert(value2, message) {
-    if (!value2) {
-      throw new Error("assertion error" + (message ? `: ${message}` : ""));
-    }
-    return value2;
-  }
-  var get = (object, path) => {
-    const length = path.length;
-    let index = 0;
-    while (object != null && index < length) {
-      object = object[path[index++]];
-    }
-    return index && index == length ? object : void 0;
-  };
-  var isCloseEvent = (event) => (event === null || event === void 0 ? void 0 : event.type) == "close";
-  var capitalizeIdentifier = (str, capitalizeFirstCharacter2) => {
-    if (typeof str !== "string")
-      return "";
-    return camelize(str, capitalizeFirstCharacter2);
-  };
-  var capitalizeFirstCharacter = (str) => {
-    const result = str === null || str === void 0 ? "" : String(str);
-    return result.charAt(0).toUpperCase() + result.slice(1);
-  };
-  var camelize = (term, uppercaseFirstLetter = true) => {
-    let result = "" + term;
-    if (uppercaseFirstLetter) {
-      result = result.replace(/^[a-z\d]*/, (a2) => {
-        return capitalizeFirstCharacter(a2);
-      });
-    } else {
-      result = result.replace(new RegExp("^(?:(?=\\b|[A-Z_])|\\w)"), (a2) => {
-        return a2.toLowerCase();
-      });
-    }
-    result = result.replace(/(?:_|(\/))([a-z\d]*)/gi, (_match, a2, b, _idx, _string) => {
-      a2 || (a2 = "");
-      return "" + a2 + capitalizeFirstCharacter(b);
-    });
-    return result;
-  };
-  var namespacedGraphQLTypeName = (modelApiIdentifier16, givenNamespaces) => {
-    const namespaces = Array.isArray(givenNamespaces) ? givenNamespaces : givenNamespaces ? [givenNamespaces] : [];
-    const segments = [...namespaces, modelApiIdentifier16];
-    return segments.map((segment) => camelize(segment)).join("");
-  };
-  var sortTypeName = (modelApiIdentifier16, namespace) => `${namespacedGraphQLTypeName(modelApiIdentifier16, namespace)}Sort`;
-  var filterTypeName = (modelApiIdentifier16, namespace) => `${namespacedGraphQLTypeName(modelApiIdentifier16, namespace)}Filter`;
-  var getNonUniqueDataError = (modelApiIdentifier16, fieldName, fieldValue) => new GadgetNonUniqueDataError(`More than one record found for ${modelApiIdentifier16}.${fieldName} = ${fieldValue}. Please confirm your unique validation is not reporting an error.`);
-  var assertOperationSuccess = (response, dataPath, throwOnEmptyData = false) => {
-    var _a3;
-    if (response.error) {
-      if (response.error instanceof CombinedError && ((_a3 = response.error.networkError) === null || _a3 === void 0 ? void 0 : _a3.length)) {
-        response.error.message = response.error.networkError.map((error2) => "[Network] " + error2.message).join("\n");
-      }
-      throw response.error;
-    }
-    const result = get(response.data, dataPath);
-    const edges = get(result, ["edges"]);
-    const dataArray = edges !== null && edges !== void 0 ? edges : result;
-    if (result === void 0) {
-      throw new GadgetInternalError(`Internal Error: Gadget API didn't return expected data. Nothing found in response at ${dataPath.join(".")}`);
-    } else if (result === null || throwOnEmptyData && Array.isArray(dataArray) && dataArray.length === 0) {
-      throw new GadgetNotFoundError(`Record Not Found Error: Gadget API returned no data at ${dataPath.join(".")}`);
-    }
-    return result;
-  };
-  var assertNullableOperationSuccess = (response, dataPath) => {
-    var _a3;
-    if (response.error) {
-      if (response.error instanceof CombinedError && ((_a3 = response.error.networkError) === null || _a3 === void 0 ? void 0 : _a3.length)) {
-        response.error.message = response.error.networkError.map((error2) => "[Network] " + error2.message).join("\n");
-      }
-      throw response.error;
-    }
-    const result = get(response.data, dataPath);
-    return result !== null && result !== void 0 ? result : null;
-  };
-  var gadgetErrorFor = (error2) => {
-    var _a3;
-    if (error2.code == "GGT_INVALID_RECORD") {
-      return new InvalidRecordError(error2.message, error2.validationErrors, (_a3 = error2.model) === null || _a3 === void 0 ? void 0 : _a3.apiIdentifier, error2.record);
-    } else if (error2.code == "GGT_UNKNOWN" && error2.message.includes("duplicate key value violates unique constraint")) {
-      return new GadgetNonUniqueDataError(error2.message);
-    } else {
-      return new GadgetOperationError(error2.message, error2.code);
-    }
-  };
-  var assertMutationSuccess = (response, dataPath) => {
-    const operationResponse = assertOperationSuccess(response, dataPath);
-    return assertResponseSuccess(operationResponse);
-  };
-  var assertResponseSuccess = (operationResponse) => {
-    if (!operationResponse.success) {
-      const firstErrorBlob = operationResponse.errors && operationResponse.errors[0];
-      if (firstErrorBlob) {
-        throw gadgetErrorFor(firstErrorBlob);
-      } else {
-        throw new GadgetOperationError(`Gadget API operation not successful.`, "GGT_UNKNOWN");
-      }
-    }
-    return operationResponse;
-  };
-  var getHydrator = (response) => {
-    var _a3, _b2, _c2, _d2;
-    if ((_b2 = (_a3 = response.data) === null || _a3 === void 0 ? void 0 : _a3.gadgetMeta) === null || _b2 === void 0 ? void 0 : _b2.hydrations) {
-      return new DataHydrator((_d2 = (_c2 = response.data) === null || _c2 === void 0 ? void 0 : _c2.gadgetMeta) === null || _d2 === void 0 ? void 0 : _d2.hydrations);
-    }
-  };
-  var hydrateRecord = (response, record) => {
-    const hydrator = getHydrator(response);
-    if (hydrator) {
-      record = hydrator.apply(record);
-    }
-    return new GadgetRecord(record);
-  };
-  var hydrateRecordArray = (response, records2) => {
-    const hydrator = getHydrator(response);
-    if (hydrator) {
-      records2 = hydrator.apply(records2);
-    }
-    return records2 === null || records2 === void 0 ? void 0 : records2.map((record) => new GadgetRecord(record));
-  };
-  var hydrateConnection = (response, connection) => {
-    const nodes = connection.edges.map((edge) => edge.node);
-    return hydrateRecordArray(response, nodes);
-  };
-  var objObjType = "[object Object]";
-  var stringObjType = "[object String]";
-  var toPrimitiveObject = (value2) => {
-    if (value2 != null && typeof value2.toJSON === "function")
-      value2 = value2.toJSON();
-    if (value2 === void 0)
-      return void 0;
-    if (value2 === null)
-      return null;
-    if (typeof value2 === "boolean")
-      return value2;
-    if (typeof value2 === "string")
-      return value2;
-    if (typeof value2 === "number")
-      return Number.isFinite(value2) ? value2 : null;
-    if (typeof value2 === "object") {
-      if (Array.isArray(value2)) {
-        const arr = [];
-        for (let i3 = 0; i3 < value2.length; i3++) {
-          const v3 = value2[i3];
-          arr[i3] = v3 === void 0 ? null : toPrimitiveObject(v3);
-        }
-        return arr;
-      }
-      if (Object.prototype.toString.call(value2) === "[object Error]")
-        return {};
-      if (Object.prototype.toString.call(value2) === objObjType) {
-        const obj = {};
-        for (const key2 of Object.keys(value2)) {
-          const parsed = toPrimitiveObject(value2[key2]);
-          if (parsed !== void 0)
-            obj[key2] = parsed;
-        }
-        return obj;
-      }
-    }
-  };
-  var key = "gstk";
-  var storageAvailable = (type2) => {
-    try {
-      const storage = window[type2];
-      storage.setItem(key, key);
-      storage.removeItem(key);
-      return true;
-    } catch (e3) {
-      return false;
-    }
-  };
-  var toString2 = Object.prototype.toString;
-  var getPrototypeOf = Object.getPrototypeOf;
-  var getOwnProperties = Object.getOwnPropertySymbols ? (c2) => Object.keys(c2).concat(Object.getOwnPropertySymbols(c2)) : Object.keys;
-  var checkEquality = (a2, b, refs) => {
-    if (a2 === b)
-      return true;
-    if (a2 == null || b == null)
-      return false;
-    if (refs.indexOf(a2) > -1 && refs.indexOf(b) > -1)
-      return true;
-    const aType = toString2.call(a2);
-    const bType = toString2.call(b);
-    let aElements, bElements, element;
-    refs.push(a2, b);
-    if (aType == objObjType && bType == stringObjType && "_link" in a2 && Object.keys(a2).length == 1) {
-      return a2._link === b;
-    } else if (bType == objObjType && aType == stringObjType && "_link" in b && Object.keys(b).length == 1) {
-      return b._link === a2;
-    }
-    if (aType != bType)
-      return false;
-    aElements = getOwnProperties(a2);
-    bElements = getOwnProperties(b);
-    if (aElements.length != bElements.length || aElements.some(function(key2) {
-      return !checkEquality(a2[key2], b[key2], refs);
-    })) {
-      return false;
-    }
-    switch (aType.slice(8, -1)) {
-      case "Symbol":
-        return a2.valueOf() == b.valueOf();
-      case "Date":
-      case "Number":
-        return +a2 == +b || +a2 != +a2 && +b != +b;
-      case "RegExp":
-      case "Function":
-      case "String":
-      case "Boolean":
-        return "" + a2 == "" + b;
-      case "Set":
-      case "Map": {
-        aElements = a2.entries();
-        bElements = b.entries();
-        do {
-          element = aElements.next();
-          if (!checkEquality(element.value, bElements.next().value, refs)) {
-            return false;
-          }
-        } while (!element.done);
-        return true;
-      }
-      case "ArrayBuffer":
-        a2 = new Uint8Array(a2), b = new Uint8Array(b);
-      case "DataView":
-        a2 = new Uint8Array(a2.buffer), b = new Uint8Array(b.buffer);
-      case "Float32Array":
-      case "Float64Array":
-      case "Int8Array":
-      case "Int16Array":
-      case "Int32Array":
-      case "Uint8Array":
-      case "Uint16Array":
-      case "Uint32Array":
-      case "Uint8ClampedArray":
-      case "Arguments":
-      case "Array":
-        if (a2.length != b.length)
-          return false;
-        for (element = 0; element < a2.length; element++) {
-          if (!(element in a2) && !(element in b))
-            continue;
-          if (element in a2 != element in b || !checkEquality(a2[element], b[element], refs))
-            return false;
-        }
-        return true;
-      case "Object":
-        return checkEquality(getPrototypeOf(a2), getPrototypeOf(b), refs);
-      default:
-        return false;
-    }
-  };
-  var isEqual = (a2, b) => checkEquality(a2, b, []);
-  var disambiguateActionVariables = (action, variables) => {
-    var _a3, _b2, _c2;
-    variables !== null && variables !== void 0 ? variables : variables = {};
-    if (!("hasAmbiguousIdentifier" in action) && !("acceptsModelInput" in action))
-      return variables;
-    if (action.hasAmbiguousIdentifier) {
-      if (Object.keys(variables).some((key2) => {
-        var _a4;
-        return key2 !== "id" && !((_a4 = action.paramOnlyVariables) === null || _a4 === void 0 ? void 0 : _a4.includes(key2)) && key2 !== action.modelApiIdentifier;
-      })) {
-        throw Error(`Invalid arguments found in variables. Did you mean to use ({ ${action.modelApiIdentifier}: { ... } })?`);
-      }
-    }
-    let newVariables;
-    const shouldExtractId = (_a3 = action.operatesWithRecordIdentity) !== null && _a3 !== void 0 ? _a3 : true;
-    if ((_b2 = action.acceptsModelInput) !== null && _b2 !== void 0 ? _b2 : action.hasCreateOrUpdateEffect) {
-      if (action.modelApiIdentifier in variables && typeof variables[action.modelApiIdentifier] === "object" && variables[action.modelApiIdentifier] != null) {
-        newVariables = variables;
-      } else {
-        newVariables = {
-          [action.modelApiIdentifier]: {}
-        };
-        for (const [key2, value2] of Object.entries(variables)) {
-          if ((_c2 = action.paramOnlyVariables) === null || _c2 === void 0 ? void 0 : _c2.includes(key2)) {
-            newVariables[key2] = value2;
-          } else {
-            if (key2 == "id" && shouldExtractId) {
-              newVariables.id = value2;
-            } else {
-              newVariables[action.modelApiIdentifier][key2] = value2;
-            }
-          }
-        }
-      }
-    } else {
-      newVariables = variables;
-    }
-    return newVariables;
-  };
-  var disambiguateBulkActionVariables = (action, inputs = {}) => {
-    var _a3;
-    if (action.variables["ids"]) {
-      return Array.isArray(inputs) ? { ids: inputs } : inputs;
-    } else {
-      const inputsArray = (_a3 = Array.isArray(inputs) ? inputs : inputs.inputs) !== null && _a3 !== void 0 ? _a3 : [];
-      return {
-        inputs: inputsArray.map((input) => disambiguateActionVariables(action, input))
-      };
-    }
-  };
-  var setVariableOptionValues = (variableOptions, values) => {
-    const result = {};
-    for (const [key2, variable] of Object.entries(variableOptions)) {
-      result[key2] = __spreadProps(__spreadValues({}, variable), { value: values[key2] });
-    }
-    return result;
-  };
-  var namespaceDataPath = (dataPath, namespace) => {
-    if (namespace) {
-      dataPath.unshift(...Array.isArray(namespace) ? namespace : [namespace]);
-    }
-    return dataPath;
-  };
-  var hydrationSelection = (modelApiIdentifier16, namespace) => {
-    const fullyQualifiedIdentifier = namespace ? [...Array.isArray(namespace) ? namespace : [namespace], modelApiIdentifier16].join(".") : modelApiIdentifier16;
-    return {
-      gadgetMeta: {
-        hydrations: Call({ modelName: fullyQualifiedIdentifier })
-      }
-    };
-  };
-  function namespacify(namespace, fields) {
-    if (!namespace)
-      return fields;
-    if (!Array.isArray(namespace)) {
-      namespace = [namespace];
-    }
-    if (namespace) {
-      for (let i3 = namespace.length - 1; i3 >= 0; i3--) {
-        fields = {
-          [namespace[i3]]: fields
-        };
-      }
-    }
-    return fields;
-  }
-  var ErrorsSelection = {
-    errors: {
-      message: true,
-      code: true,
-      "... on InvalidRecordError": {
-        model: {
-          apiIdentifier: true
-        },
-        validationErrors: {
-          message: true,
-          apiIdentifier: true
-        }
-      }
-    }
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/GadgetRecordList.js
-  var GadgetRecordList = class _GadgetRecordList extends Array {
-    constructor() {
-      super(...arguments);
-      Object.defineProperty(this, "modelManager", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "pagination", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-    }
-    /** Internal method used to create a list. Should not be used by applications. */
-    static boot(modelManager, records2, pagination) {
-      const list = new _GadgetRecordList();
-      list.push(...records2);
-      list.modelManager = modelManager;
-      list.pagination = pagination;
-      Object.freeze(list);
-      return list;
-    }
-    static get [Symbol.species]() {
-      return Array;
-    }
-    firstOrThrow() {
-      if (!this[0]) {
-        throw new GadgetOperationError("No records found.", "GGT_RECORD_NOT_FOUND");
-      }
-      return this[0];
-    }
-    toJSON() {
-      return this.map((record) => record.toJSON());
-    }
-    get hasNextPage() {
-      return this.pagination.pageInfo.hasNextPage;
-    }
-    get hasPreviousPage() {
-      return this.pagination.pageInfo.hasPreviousPage;
-    }
-    get startCursor() {
-      return this.pagination.pageInfo.startCursor;
-    }
-    get endCursor() {
-      return this.pagination.pageInfo.endCursor;
-    }
-    nextPage() {
-      return __async(this, null, function* () {
-        var _a3;
-        if (!this.hasNextPage)
-          throw new GadgetClientError("Cannot request next page because there isn't one, should check 'hasNextPage' to see if it exists");
-        const _a4 = (_a3 = this.pagination.options) !== null && _a3 !== void 0 ? _a3 : {}, { first, last, before: _before } = _a4, options = __objRest(_a4, ["first", "last", "before"]);
-        const nextPage = this.modelManager.findMany(__spreadProps(__spreadValues({}, options), {
-          after: this.pagination.pageInfo.endCursor,
-          first: first || last
-        }));
-        return yield nextPage;
-      });
-    }
-    previousPage() {
-      return __async(this, null, function* () {
-        var _a3;
-        if (!this.hasPreviousPage)
-          throw new GadgetClientError("Cannot request previous page because there isn't one, should check 'hasPreviousPage' to see if it exists");
-        const _a4 = (_a3 = this.pagination.options) !== null && _a3 !== void 0 ? _a3 : {}, { first, last, after: _after } = _a4, options = __objRest(_a4, ["first", "last", "after"]);
-        const prevPage = this.modelManager.findMany(__spreadProps(__spreadValues({}, options), {
-          before: this.pagination.pageInfo.startCursor,
-          last: last || first
-        }));
-        return yield prevPage;
-      });
-    }
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/operationBuilders.js
-  var fieldSelectionToQueryCompilerFields = (selection, includeTypename = false) => {
-    const output = __spreadValues({}, selection);
-    if (includeTypename)
-      output.__typename = true;
-    return output;
-  };
-  var directivesForOptions = (options) => {
-    if (options === null || options === void 0 ? void 0 : options.live)
-      return ["@live"];
-    return void 0;
-  };
-  var findOneOperation = (operation, id, defaultSelection, modelApiIdentifier16, options, namespace) => {
-    const variables = {};
-    if (typeof id !== "undefined")
-      variables.id = Var({ type: "GadgetID!", value: id });
-    let fields = {
-      [operation]: Call(variables, fieldSelectionToQueryCompilerFields((options === null || options === void 0 ? void 0 : options.select) || defaultSelection, true))
-    };
-    fields = namespacify(namespace, fields);
-    return compileWithVariableValues({
-      type: "query",
-      name: operation,
-      fields: __spreadValues(__spreadValues({}, fields), hydrationSelection(modelApiIdentifier16, namespace)),
-      directives: directivesForOptions(options)
-    });
-  };
-  var findOneByFieldOperation = (operation, fieldName, fieldValue, defaultSelection, modelApiIdentifier16, options, namespace) => {
-    return findManyOperation(operation, defaultSelection, modelApiIdentifier16, __spreadProps(__spreadValues({}, options), {
-      first: 2,
-      filter: {
-        [fieldName]: {
-          equals: fieldValue
-        }
-      }
-    }), namespace);
-  };
-  var findManyOperation = (operation, defaultSelection, modelApiIdentifier16, options, namespace) => {
-    let fields = {
-      [operation]: Call({
-        after: Var({ value: options === null || options === void 0 ? void 0 : options.after, type: "String" }),
-        first: Var({ value: options === null || options === void 0 ? void 0 : options.first, type: "Int" }),
-        before: Var({ value: options === null || options === void 0 ? void 0 : options.before, type: "String" }),
-        last: Var({ value: options === null || options === void 0 ? void 0 : options.last, type: "Int" }),
-        sort: (options === null || options === void 0 ? void 0 : options.sort) ? Var({ value: options.sort, type: `[${sortTypeName(modelApiIdentifier16, namespace)}!]` }) : void 0,
-        filter: (options === null || options === void 0 ? void 0 : options.filter) ? Var({ value: options.filter, type: `[${filterTypeName(modelApiIdentifier16, namespace)}!]` }) : void 0,
-        search: (options === null || options === void 0 ? void 0 : options.search) ? Var({ value: options.search, type: "String" }) : void 0
-      }, {
-        pageInfo: { hasNextPage: true, hasPreviousPage: true, startCursor: true, endCursor: true },
-        edges: {
-          cursor: true,
-          node: fieldSelectionToQueryCompilerFields((options === null || options === void 0 ? void 0 : options.select) || defaultSelection, true)
-        }
-      })
-    };
-    if (namespace) {
-      fields = namespacify(namespace, fields);
-    }
-    return compileWithVariableValues({
-      type: "query",
-      name: operation,
-      fields: __spreadValues(__spreadValues({}, fields), hydrationSelection(modelApiIdentifier16, namespace)),
-      directives: directivesForOptions(options)
-    });
-  };
-  var variableOptionsToVariables = (variables) => {
-    return Object.fromEntries(Object.entries(variables).map(([name, options]) => [name, Var(options)]));
-  };
-  var actionResultFieldSelection = (modelSelectionField, selection, isBulkAction, hasReturnType, depth = 0) => {
-    const fieldSelection = depth == 0 ? __spreadValues({
-      success: true
-    }, ErrorsSelection) : {};
-    if (hasReturnType && typeof hasReturnType != "boolean") {
-      for (const [selectionField, returnTypeSelection] of Object.entries(hasReturnType)) {
-        if ("select" in returnTypeSelection) {
-          fieldSelection[selectionField] = fieldSelectionToQueryCompilerFields(selection, true);
-        } else {
-          fieldSelection[selectionField] = __spreadValues({
-            __typename: selectionField.includes("... on")
-          }, actionResultFieldSelection(modelSelectionField, selection, isBulkAction, returnTypeSelection.hasReturnType, depth + 1));
-        }
-      }
-    } else if (hasReturnType) {
-      fieldSelection[isBulkAction && depth == 0 ? "results" : "result"] = true;
-    } else if (selection) {
-      fieldSelection[modelSelectionField] = fieldSelectionToQueryCompilerFields(selection, true);
-    }
-    return fieldSelection;
-  };
-  var actionOperation = (operation, defaultSelection, modelApiIdentifier16, modelSelectionField, variables, options, namespace, isBulkAction, hasReturnType) => {
-    const selection = (options === null || options === void 0 ? void 0 : options.select) || defaultSelection;
-    let fields = {
-      [operation]: Call(variableOptionsToVariables(variables), actionResultFieldSelection(modelSelectionField, selection, isBulkAction, hasReturnType))
-    };
-    fields = namespacify(namespace, fields);
-    const actionOperation2 = {
-      type: "mutation",
-      name: operation,
-      fields: __spreadValues(__spreadValues({}, fields), hydrationSelection(modelApiIdentifier16, namespace)),
-      directives: directivesForOptions(options)
-    };
-    return compileWithVariableValues(actionOperation2);
-  };
-  var backgroundActionResultOperation = (id, action, options) => {
-    let fields = {};
-    let operationName = action.operationName;
-    let resultType;
-    if (action.isBulk) {
-      operationName = action.operationName.replace(/^bulk/, "").replace(/s$/, "");
-    }
-    if (!action.operationReturnType) {
-      resultType = `${camelize(operationName)}Result`;
-    } else {
-      resultType = `${action.operationReturnType}Result`;
-    }
-    switch (action.type) {
-      case "action": {
-        const selection = (options === null || options === void 0 ? void 0 : options.select) || action.defaultSelection;
-        fields = {
-          [`... on ${resultType}`]: actionResultFieldSelection(action.modelApiIdentifier, selection, action.isBulk, action.hasReturnType)
-        };
-        break;
-      }
-      case "globalAction": {
-        fields = {
-          [`... on ${resultType}`]: globalActionFieldSelection()
-        };
-      }
-    }
-    const actionResultOperation = {
-      type: "subscription",
-      name: capitalizeIdentifier(operationName) + "BackgroundResult",
-      fields: {
-        backgroundAction: Call({ id: Var({ value: id, type: "String!" }) }, {
-          id: true,
-          outcome: true,
-          result: __spreadValues({}, fields)
-        })
-      }
-    };
-    return compileWithVariableValues(actionResultOperation);
-  };
-  var globalActionFieldSelection = () => {
-    return __spreadProps(__spreadValues({
-      success: true
-    }, ErrorsSelection), {
-      result: true
-    });
-  };
-  var globalActionOperation = (operation, variables, namespace, options) => {
-    let fields = {
-      [operation]: Call(variableOptionsToVariables(variables), globalActionFieldSelection())
-    };
-    fields = namespacify(namespace, fields);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: operation,
-      fields,
-      directives: directivesForOptions(options)
-    });
-  };
-  var graphqlizeBackgroundOptions = (options) => {
-    if (!options)
-      return null;
-    const obj = __spreadValues({}, options);
-    if (typeof obj.retries == "number") {
-      obj.retries = {
-        retryCount: obj.retries
-      };
-    }
-    if (typeof obj.queue == "string") {
-      obj.queue = {
-        name: obj.queue
-      };
-    }
-    if (obj.startAt instanceof Date) {
-      obj.startAt = obj.startAt.toISOString();
-    }
-    for (const key2 of Object.keys(obj)) {
-      if (["id", "retries", "queue", "priority", "startAt"].includes(key2))
-        continue;
-      delete obj[key2];
-    }
-    return obj;
-  };
-  var enqueueActionOperation = (operation, variables, namespace, options, isBulk) => {
-    let fields = {
-      [operation]: Call(__spreadProps(__spreadValues({}, variableOptionsToVariables(variables)), {
-        backgroundOptions: Var({
-          type: "EnqueueBackgroundActionOptions",
-          value: graphqlizeBackgroundOptions(options)
-        })
-      }), {
-        success: true,
-        errors: {
-          message: true,
-          code: true
-        },
-        [isBulk ? "backgroundActions" : "backgroundAction"]: {
-          id: true
-        }
-      })
-    };
-    fields = namespacify(namespace, fields);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: "enqueue" + camelize(operation),
-      fields: {
-        background: fields
-      }
-    });
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/operationRunners.js
-  var mapAsyncIterable = (source, mapper) => {
-    return {
-      [Symbol.asyncIterator]() {
-        const iter = source[Symbol.asyncIterator]();
-        return {
-          next() {
-            return __async(this, null, function* () {
-              const { done, value: value2 } = yield iter.next();
-              return {
-                done,
-                value: typeof value2 != "undefined" ? mapper(value2) : void 0
-              };
-            });
-          },
-          return(value2) {
-            return __async(this, null, function* () {
-              var _a4;
-              return yield (_a4 = iter.return) === null || _a4 === void 0 ? void 0 : _a4.call(iter, value2);
-            });
-          }
-        };
-      }
-    };
-  };
-  function maybeLiveStream($result, mapper, options) {
-    if (options === null || options === void 0 ? void 0 : options.live) {
-      return mapAsyncIterable(toAsyncIterable($result), mapper);
-    } else {
-      const promise = pipe($result, filter((result) => !result.stale && !result.hasNext), take(1), toPromise);
-      return promise.then((value2) => mapper(value2));
-    }
-  }
-  var findOneRunner = (modelManager, operation, id, defaultSelection, modelApiIdentifier16, options, throwOnEmptyData = true, namespace) => {
-    const plan = findOneOperation(operation, id, defaultSelection, modelApiIdentifier16, options, namespace);
-    const $results = modelManager.connection.currentClient.query(plan.query, plan.variables);
-    return maybeLiveStream($results, (response) => {
-      const assertSuccess = throwOnEmptyData ? assertOperationSuccess : assertNullableOperationSuccess;
-      const dataPath = namespaceDataPath([operation], namespace);
-      const record = assertSuccess(response, dataPath);
-      return hydrateRecord(response, record);
-    }, options);
-  };
-  var findOneByFieldRunner = (modelManager, operation, fieldName, fieldValue, defaultSelection, modelApiIdentifier16, options, throwOnEmptyData = true, namespace) => {
-    const plan = findOneByFieldOperation(operation, fieldName, fieldValue, defaultSelection, modelApiIdentifier16, options, namespace);
-    const dataPath = namespaceDataPath([operation], namespace);
-    const $results = modelManager.connection.currentClient.query(plan.query, plan.variables);
-    return maybeLiveStream($results, (response) => {
-      const connectionObject = assertOperationSuccess(response, dataPath);
-      const records2 = hydrateConnection(response, connectionObject);
-      if (records2.length > 1) {
-        throw getNonUniqueDataError(modelApiIdentifier16, fieldName, fieldValue);
-      }
-      const result = records2[0];
-      if (!result && throwOnEmptyData) {
-        throw new GadgetNotFoundError(`${modelApiIdentifier16} record with ${fieldName}=${fieldValue} not found`);
-      }
-      return result !== null && result !== void 0 ? result : null;
-    }, options);
-  };
-  var findManyRunner = (modelManager, operation, defaultSelection, modelApiIdentifier16, options, throwOnEmptyData, namespace) => {
-    const plan = findManyOperation(operation, defaultSelection, modelApiIdentifier16, options, namespace);
-    const $results = modelManager.connection.currentClient.query(plan.query, plan.variables);
-    const dataPath = namespaceDataPath([operation], namespace);
-    return maybeLiveStream($results, (response) => {
-      let connectionObject;
-      if (throwOnEmptyData === false) {
-        connectionObject = assertNullableOperationSuccess(response, dataPath);
-      } else {
-        connectionObject = assertOperationSuccess(response, dataPath, throwOnEmptyData);
-      }
-      const records2 = hydrateConnection(response, connectionObject);
-      return GadgetRecordList.boot(modelManager, records2, { options, pageInfo: connectionObject.pageInfo });
-    }, options);
-  };
-  var actionRunner = (modelManager, operation, defaultSelection, modelApiIdentifier16, modelSelectionField, isBulkAction, variables, options, namespace, hasReturnType) => __async(void 0, null, function* () {
-    const plan = actionOperation(operation, defaultSelection, modelApiIdentifier16, modelSelectionField, variables, options, namespace, isBulkAction, hasReturnType);
-    const response = yield modelManager.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-    const dataPath = namespaceDataPath([operation], namespace);
-    if (!isBulkAction) {
-      const mutationTriple = assertMutationSuccess(response, dataPath);
-      return processActionResponse(defaultSelection, response, mutationTriple, modelSelectionField, hasReturnType);
-    } else {
-      const mutationTriple = get(response.data, dataPath);
-      const results = processBulkActionResponse(defaultSelection, response, mutationTriple, modelSelectionField, hasReturnType);
-      if (mutationTriple.errors) {
-        const errors = mutationTriple.errors.map((error2) => gadgetErrorFor(error2));
-        throw new GadgetErrorGroup(errors, results);
-      }
-      return results;
-    }
-  });
-  var processBulkActionResponse = (defaultSelection, response, records2, modelSelectionField, hasReturnType) => {
-    if (defaultSelection == null)
-      return;
-    if (!hasReturnType) {
-      return hydrateRecordArray(response, records2[modelSelectionField]);
-    } else if (typeof hasReturnType == "boolean") {
-      return records2.results;
-    } else {
-      return Object.entries(hasReturnType).flatMap(([returnTypeField, innerHasReturnType]) => {
-        const results = records2[returnTypeField];
-        if (!Array.isArray(results)) {
-          return [];
-        }
-        return results.map((result) => {
-          const returnTypeForResult = "hasReturnType" in innerHasReturnType ? returnTypeForRecord(result, innerHasReturnType.hasReturnType) : false;
-          if (!returnTypeForResult) {
-            return hydrateRecord(response, result);
-          } else {
-            return processActionResponse(defaultSelection, response, result, modelSelectionField, returnTypeForResult);
-          }
-        });
-      });
-    }
-  };
-  var processActionResponse = (defaultSelection, response, record, modelSelectionField, hasReturnType) => {
-    if (defaultSelection == null)
-      return;
-    if (!hasReturnType) {
-      return hydrateRecord(response, record[modelSelectionField]);
-    } else if (typeof hasReturnType == "boolean") {
-      return record.result;
-    } else {
-      const innerReturnType = returnTypeForRecord(record, hasReturnType);
-      return processActionResponse(defaultSelection, response, record, modelSelectionField, innerReturnType);
-    }
-  };
-  var returnTypeForRecord = (record, hasReturnType) => {
-    if (typeof hasReturnType == "boolean") {
-      return hasReturnType;
-    }
-    const innerReturnTypeForTypename = hasReturnType[`... on ${record.__typename}`];
-    return innerReturnTypeForTypename && "hasReturnType" in innerReturnTypeForTypename ? innerReturnTypeForTypename.hasReturnType : false;
-  };
-  var globalActionRunner = (connection, operation, variables, namespace) => __async(void 0, null, function* () {
-    const plan = globalActionOperation(operation, variables, namespace);
-    const response = yield connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-    const dataPath = namespaceDataPath([operation], namespace);
-    return assertMutationSuccess(response, dataPath).result;
-  });
-  function enqueueActionRunner(_0, _1, _2) {
-    return __async(this, arguments, function* (connection, action, variables, options = {}) {
-      const normalizedVariableValues = action.isBulk ? disambiguateBulkActionVariables(action, variables) : disambiguateActionVariables(action, variables);
-      const variableOptions = setVariableOptionValues(action.variables, normalizedVariableValues);
-      const plan = enqueueActionOperation(action.operationName, variableOptions, action.namespace, options, action.isBulk);
-      const response = yield connection.currentClient.mutation(plan.query, plan.variables, options).toPromise();
-      const dataPath = ["background", ...namespaceDataPath([action.operationName], action.namespace)];
-      try {
-        const result = assertMutationSuccess(response, dataPath);
-        if (action.isBulk) {
-          return result.backgroundActions.map((result2) => new BackgroundActionHandle(connection, action, result2.id));
-        } else {
-          return new BackgroundActionHandle(connection, action, result.backgroundAction.id);
-        }
-      } catch (error2) {
-        if ("code" in error2 && error2.code == "GGT_DUPLICATE_BACKGROUND_ACTION_ID" && (options === null || options === void 0 ? void 0 : options.id) && options.onDuplicateID == "ignore") {
-          return new BackgroundActionHandle(connection, action, options.id);
-        }
-        throw error2;
-      }
-    });
-  }
-  var backgroundActionResultRunner = (connection, id, action, options) => __async(void 0, null, function* () {
-    const plan = backgroundActionResultOperation(id, action, options);
-    const subscription = connection.currentClient.subscription(plan.query, plan.variables);
-    const response = yield pipe(subscription, filter((operation) => {
-      var _a3, _b2;
-      return operation.error || ((_b2 = (_a3 = operation.data) === null || _a3 === void 0 ? void 0 : _a3.backgroundAction) === null || _b2 === void 0 ? void 0 : _b2.outcome);
-    }), take(1), toPromise);
-    const backgroundAction = assertOperationSuccess(response, ["backgroundAction"]);
-    assertResponseSuccess(backgroundAction.result);
-    switch (action.type) {
-      case "action": {
-        backgroundAction.result = processActionResponse(action.defaultSelection, response.data, backgroundAction.result, action.isBulk ? action.modelApiIdentifier : action.modelSelectionField, action.hasReturnType);
-        break;
-      }
-      case "globalAction": {
-        backgroundAction.result = backgroundAction.result.result;
-        break;
-      }
-    }
-    return backgroundAction;
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/BackgroundActionHandle.js
-  var BackgroundActionHandle = class {
-    constructor(connection, action, id) {
-      Object.defineProperty(this, "connection", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: connection
-      });
-      Object.defineProperty(this, "action", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: action
-      });
-      Object.defineProperty(this, "id", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: id
-      });
-    }
-    /** Wait for this background action to complete and return the result. */
-    result(options) {
-      return __async(this, null, function* () {
-        return (yield backgroundActionResultRunner(this.connection, this.id, this.action, options)).result;
-      });
-    }
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/ClientOptions.js
-  var BrowserSessionStorageType;
-  (function(BrowserSessionStorageType2) {
-    BrowserSessionStorageType2["Durable"] = "Durable";
-    BrowserSessionStorageType2["Session"] = "session";
-    BrowserSessionStorageType2["Temporary"] = "temporary";
-  })(BrowserSessionStorageType || (BrowserSessionStorageType = {}));
-
-  // node_modules/graphql-ws/lib/utils.mjs
-  function extendedTypeof(val) {
-    if (val === null) {
-      return "null";
-    }
-    if (Array.isArray(val)) {
-      return "array";
-    }
-    return typeof val;
-  }
-  function isObject(val) {
-    return extendedTypeof(val) === "object";
-  }
-  function areGraphQLErrors(obj) {
-    return Array.isArray(obj) && // must be at least one error
-    obj.length > 0 && // error has at least a message
-    obj.every((ob) => "message" in ob);
-  }
-  function limitCloseReason(reason, whenTooLong) {
-    return reason.length < 124 ? reason : whenTooLong;
-  }
-
-  // node_modules/graphql-ws/lib/common.mjs
-  var GRAPHQL_TRANSPORT_WS_PROTOCOL = "graphql-transport-ws";
-  var CloseCode;
-  (function(CloseCode2) {
-    CloseCode2[CloseCode2["InternalServerError"] = 4500] = "InternalServerError";
-    CloseCode2[CloseCode2["InternalClientError"] = 4005] = "InternalClientError";
-    CloseCode2[CloseCode2["BadRequest"] = 4400] = "BadRequest";
-    CloseCode2[CloseCode2["BadResponse"] = 4004] = "BadResponse";
-    CloseCode2[CloseCode2["Unauthorized"] = 4401] = "Unauthorized";
-    CloseCode2[CloseCode2["Forbidden"] = 4403] = "Forbidden";
-    CloseCode2[CloseCode2["SubprotocolNotAcceptable"] = 4406] = "SubprotocolNotAcceptable";
-    CloseCode2[CloseCode2["ConnectionInitialisationTimeout"] = 4408] = "ConnectionInitialisationTimeout";
-    CloseCode2[CloseCode2["ConnectionAcknowledgementTimeout"] = 4504] = "ConnectionAcknowledgementTimeout";
-    CloseCode2[CloseCode2["SubscriberAlreadyExists"] = 4409] = "SubscriberAlreadyExists";
-    CloseCode2[CloseCode2["TooManyInitialisationRequests"] = 4429] = "TooManyInitialisationRequests";
-  })(CloseCode || (CloseCode = {}));
-  var MessageType;
-  (function(MessageType2) {
-    MessageType2["ConnectionInit"] = "connection_init";
-    MessageType2["ConnectionAck"] = "connection_ack";
-    MessageType2["Ping"] = "ping";
-    MessageType2["Pong"] = "pong";
-    MessageType2["Subscribe"] = "subscribe";
-    MessageType2["Next"] = "next";
-    MessageType2["Error"] = "error";
-    MessageType2["Complete"] = "complete";
-  })(MessageType || (MessageType = {}));
-  function validateMessage(val) {
-    if (!isObject(val)) {
-      throw new Error(`Message is expected to be an object, but got ${extendedTypeof(val)}`);
-    }
-    if (!val.type) {
-      throw new Error(`Message is missing the 'type' property`);
-    }
-    if (typeof val.type !== "string") {
-      throw new Error(`Message is expects the 'type' property to be a string, but got ${extendedTypeof(val.type)}`);
-    }
-    switch (val.type) {
-      case MessageType.ConnectionInit:
-      case MessageType.ConnectionAck:
-      case MessageType.Ping:
-      case MessageType.Pong: {
-        if (val.payload != null && !isObject(val.payload)) {
-          throw new Error(`"${val.type}" message expects the 'payload' property to be an object or nullish or missing, but got "${val.payload}"`);
-        }
-        break;
-      }
-      case MessageType.Subscribe: {
-        if (typeof val.id !== "string") {
-          throw new Error(`"${val.type}" message expects the 'id' property to be a string, but got ${extendedTypeof(val.id)}`);
-        }
-        if (!val.id) {
-          throw new Error(`"${val.type}" message requires a non-empty 'id' property`);
-        }
-        if (!isObject(val.payload)) {
-          throw new Error(`"${val.type}" message expects the 'payload' property to be an object, but got ${extendedTypeof(val.payload)}`);
-        }
-        if (typeof val.payload.query !== "string") {
-          throw new Error(`"${val.type}" message payload expects the 'query' property to be a string, but got ${extendedTypeof(val.payload.query)}`);
-        }
-        if (val.payload.variables != null && !isObject(val.payload.variables)) {
-          throw new Error(`"${val.type}" message payload expects the 'variables' property to be a an object or nullish or missing, but got ${extendedTypeof(val.payload.variables)}`);
-        }
-        if (val.payload.operationName != null && extendedTypeof(val.payload.operationName) !== "string") {
-          throw new Error(`"${val.type}" message payload expects the 'operationName' property to be a string or nullish or missing, but got ${extendedTypeof(val.payload.operationName)}`);
-        }
-        if (val.payload.extensions != null && !isObject(val.payload.extensions)) {
-          throw new Error(`"${val.type}" message payload expects the 'extensions' property to be a an object or nullish or missing, but got ${extendedTypeof(val.payload.extensions)}`);
-        }
-        break;
-      }
-      case MessageType.Next: {
-        if (typeof val.id !== "string") {
-          throw new Error(`"${val.type}" message expects the 'id' property to be a string, but got ${extendedTypeof(val.id)}`);
-        }
-        if (!val.id) {
-          throw new Error(`"${val.type}" message requires a non-empty 'id' property`);
-        }
-        if (!isObject(val.payload)) {
-          throw new Error(`"${val.type}" message expects the 'payload' property to be an object, but got ${extendedTypeof(val.payload)}`);
-        }
-        break;
-      }
-      case MessageType.Error: {
-        if (typeof val.id !== "string") {
-          throw new Error(`"${val.type}" message expects the 'id' property to be a string, but got ${extendedTypeof(val.id)}`);
-        }
-        if (!val.id) {
-          throw new Error(`"${val.type}" message requires a non-empty 'id' property`);
-        }
-        if (!areGraphQLErrors(val.payload)) {
-          throw new Error(`"${val.type}" message expects the 'payload' property to be an array of GraphQL errors, but got ${JSON.stringify(val.payload)}`);
-        }
-        break;
-      }
-      case MessageType.Complete: {
-        if (typeof val.id !== "string") {
-          throw new Error(`"${val.type}" message expects the 'id' property to be a string, but got ${extendedTypeof(val.id)}`);
-        }
-        if (!val.id) {
-          throw new Error(`"${val.type}" message requires a non-empty 'id' property`);
-        }
-        break;
-      }
-      default:
-        throw new Error(`Invalid message 'type' property "${val.type}"`);
-    }
-    return val;
-  }
-  function parseMessage(data, reviver) {
-    return validateMessage(typeof data === "string" ? JSON.parse(data, reviver) : data);
-  }
-  function stringifyMessage(msg, replacer) {
-    validateMessage(msg);
-    return JSON.stringify(msg, replacer);
-  }
-
-  // node_modules/graphql-ws/lib/client.mjs
-  var __await2 = function(v3) {
-    return this instanceof __await2 ? (this.v = v3, this) : new __await2(v3);
-  };
-  var __asyncGenerator2 = function(thisArg, _arguments, generator) {
-    if (!Symbol.asyncIterator)
-      throw new TypeError("Symbol.asyncIterator is not defined.");
-    var g = generator.apply(thisArg, _arguments || []), i3, q = [];
-    return i3 = {}, verb("next"), verb("throw"), verb("return"), i3[Symbol.asyncIterator] = function() {
-      return this;
-    }, i3;
-    function verb(n2) {
-      if (g[n2])
-        i3[n2] = function(v3) {
-          return new Promise(function(a2, b) {
-            q.push([n2, v3, a2, b]) > 1 || resume(n2, v3);
-          });
-        };
-    }
-    function resume(n2, v3) {
-      try {
-        step(g[n2](v3));
-      } catch (e3) {
-        settle(q[0][3], e3);
-      }
-    }
-    function step(r2) {
-      r2.value instanceof __await2 ? Promise.resolve(r2.value.v).then(fulfill, reject2) : settle(q[0][2], r2);
-    }
-    function fulfill(value2) {
-      resume("next", value2);
-    }
-    function reject2(value2) {
-      resume("throw", value2);
-    }
-    function settle(f3, v3) {
-      if (f3(v3), q.shift(), q.length)
-        resume(q[0][0], q[0][1]);
-    }
-  };
-  function createClient(options) {
-    const {
-      url,
-      connectionParams,
-      lazy: lazy2 = true,
-      onNonLazyError = console.error,
-      lazyCloseTimeout: lazyCloseTimeoutMs = 0,
-      keepAlive = 0,
-      disablePong,
-      connectionAckWaitTimeout = 0,
-      retryAttempts = 5,
-      retryWait = function randomisedExponentialBackoff(retries2) {
-        return __async(this, null, function* () {
-          let retryDelay = 1e3;
-          for (let i3 = 0; i3 < retries2; i3++) {
-            retryDelay *= 2;
-          }
-          yield new Promise((resolve) => setTimeout(resolve, retryDelay + // add random timeout from 300ms to 3s
-          Math.floor(Math.random() * (3e3 - 300) + 300)));
-        });
-      },
-      shouldRetry = isLikeCloseEvent,
-      isFatalConnectionProblem,
-      on,
-      webSocketImpl,
-      /**
-       * Generates a v4 UUID to be used as the ID using `Math`
-       * as the random number generator. Supply your own generator
-       * in case you need more uniqueness.
-       *
-       * Reference: https://gist.github.com/jed/982883
-       */
-      generateID = function generateUUID() {
-        return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c2) => {
-          const r2 = Math.random() * 16 | 0, v3 = c2 == "x" ? r2 : r2 & 3 | 8;
-          return v3.toString(16);
-        });
-      },
-      jsonMessageReplacer: replacer,
-      jsonMessageReviver: reviver
-    } = options;
-    let ws2;
-    if (webSocketImpl) {
-      if (!isWebSocket(webSocketImpl)) {
-        throw new Error("Invalid WebSocket implementation provided");
-      }
-      ws2 = webSocketImpl;
-    } else if (typeof WebSocket !== "undefined") {
-      ws2 = WebSocket;
-    } else if (typeof global !== "undefined") {
-      ws2 = global.WebSocket || // @ts-expect-error: Support more browsers
-      global.MozWebSocket;
-    } else if (typeof window !== "undefined") {
-      ws2 = window.WebSocket || // @ts-expect-error: Support more browsers
-      window.MozWebSocket;
-    }
-    if (!ws2)
-      throw new Error("WebSocket implementation missing; on Node you can `import WebSocket from 'ws';` and pass `webSocketImpl: WebSocket` to `createClient`");
-    const WebSocketImpl = ws2;
-    const emitter = (() => {
-      const message = /* @__PURE__ */ (() => {
-        const listeners2 = {};
-        return {
-          on(id, listener) {
-            listeners2[id] = listener;
-            return () => {
-              delete listeners2[id];
-            };
-          },
-          emit(message2) {
-            var _a4;
-            if ("id" in message2)
-              (_a4 = listeners2[message2.id]) === null || _a4 === void 0 ? void 0 : _a4.call(listeners2, message2);
-          }
-        };
-      })();
-      const listeners = {
-        connecting: (on === null || on === void 0 ? void 0 : on.connecting) ? [on.connecting] : [],
-        opened: (on === null || on === void 0 ? void 0 : on.opened) ? [on.opened] : [],
-        connected: (on === null || on === void 0 ? void 0 : on.connected) ? [on.connected] : [],
-        ping: (on === null || on === void 0 ? void 0 : on.ping) ? [on.ping] : [],
-        pong: (on === null || on === void 0 ? void 0 : on.pong) ? [on.pong] : [],
-        message: (on === null || on === void 0 ? void 0 : on.message) ? [message.emit, on.message] : [message.emit],
-        closed: (on === null || on === void 0 ? void 0 : on.closed) ? [on.closed] : [],
-        error: (on === null || on === void 0 ? void 0 : on.error) ? [on.error] : []
-      };
-      return {
-        onMessage: message.on,
-        on(event, listener) {
-          const l3 = listeners[event];
-          l3.push(listener);
-          return () => {
-            l3.splice(l3.indexOf(listener), 1);
-          };
-        },
-        emit(event, ...args) {
-          for (const listener of [...listeners[event]]) {
-            listener(...args);
-          }
-        }
-      };
-    })();
-    function errorOrClosed(cb) {
-      const listening = [
-        // errors are fatal and more critical than close events, throw them first
-        emitter.on("error", (err) => {
-          listening.forEach((unlisten) => unlisten());
-          cb(err);
-        }),
-        // closes can be graceful and not fatal, throw them second (if error didnt throw)
-        emitter.on("closed", (event) => {
-          listening.forEach((unlisten) => unlisten());
-          cb(event);
-        })
-      ];
-    }
-    let connecting, locks = 0, lazyCloseTimeout, retrying = false, retries = 0, disposed = false;
-    function connect() {
-      return __async(this, null, function* () {
-        clearTimeout(lazyCloseTimeout);
-        const [socket, throwOnClose] = yield connecting !== null && connecting !== void 0 ? connecting : connecting = new Promise((connected2, denied) => (() => __async(this, null, function* () {
-          if (retrying) {
-            yield retryWait(retries);
-            if (!locks) {
-              connecting = void 0;
-              return denied({ code: 1e3, reason: "All Subscriptions Gone" });
-            }
-            retries++;
-          }
-          emitter.emit("connecting", retrying);
-          const socket2 = new WebSocketImpl(typeof url === "function" ? yield url() : url, GRAPHQL_TRANSPORT_WS_PROTOCOL);
-          let connectionAckTimeout, queuedPing;
-          function enqueuePing() {
-            if (isFinite(keepAlive) && keepAlive > 0) {
-              clearTimeout(queuedPing);
-              queuedPing = setTimeout(() => {
-                if (socket2.readyState === WebSocketImpl.OPEN) {
-                  socket2.send(stringifyMessage({ type: MessageType.Ping }));
-                  emitter.emit("ping", false, void 0);
-                }
-              }, keepAlive);
-            }
-          }
-          errorOrClosed((errOrEvent) => {
-            connecting = void 0;
-            clearTimeout(connectionAckTimeout);
-            clearTimeout(queuedPing);
-            denied(errOrEvent);
-            if (errOrEvent instanceof TerminatedCloseEvent) {
-              socket2.close(4499, "Terminated");
-              socket2.onerror = null;
-              socket2.onclose = null;
-            }
-          });
-          socket2.onerror = (err) => emitter.emit("error", err);
-          socket2.onclose = (event) => emitter.emit("closed", event);
-          socket2.onopen = () => __async(this, null, function* () {
-            try {
-              emitter.emit("opened", socket2);
-              const payload = typeof connectionParams === "function" ? yield connectionParams() : connectionParams;
-              if (socket2.readyState !== WebSocketImpl.OPEN)
-                return;
-              socket2.send(stringifyMessage(payload ? {
-                type: MessageType.ConnectionInit,
-                payload
-              } : {
-                type: MessageType.ConnectionInit
-                // payload is completely absent if not provided
-              }, replacer));
-              if (isFinite(connectionAckWaitTimeout) && connectionAckWaitTimeout > 0) {
-                connectionAckTimeout = setTimeout(() => {
-                  socket2.close(CloseCode.ConnectionAcknowledgementTimeout, "Connection acknowledgement timeout");
-                }, connectionAckWaitTimeout);
-              }
-              enqueuePing();
-            } catch (err) {
-              emitter.emit("error", err);
-              socket2.close(CloseCode.InternalClientError, limitCloseReason(err instanceof Error ? err.message : new Error(err).message, "Internal client error"));
-            }
-          });
-          let acknowledged = false;
-          socket2.onmessage = ({ data }) => {
-            try {
-              const message = parseMessage(data, reviver);
-              emitter.emit("message", message);
-              if (message.type === "ping" || message.type === "pong") {
-                emitter.emit(message.type, true, message.payload);
-                if (message.type === "pong") {
-                  enqueuePing();
-                } else if (!disablePong) {
-                  socket2.send(stringifyMessage(message.payload ? {
-                    type: MessageType.Pong,
-                    payload: message.payload
-                  } : {
-                    type: MessageType.Pong
-                    // payload is completely absent if not provided
-                  }));
-                  emitter.emit("pong", false, message.payload);
-                }
-                return;
-              }
-              if (acknowledged)
-                return;
-              if (message.type !== MessageType.ConnectionAck)
-                throw new Error(`First message cannot be of type ${message.type}`);
-              clearTimeout(connectionAckTimeout);
-              acknowledged = true;
-              emitter.emit("connected", socket2, message.payload, retrying);
-              retrying = false;
-              retries = 0;
-              connected2([
-                socket2,
-                new Promise((_, reject2) => errorOrClosed(reject2))
-              ]);
-            } catch (err) {
-              socket2.onmessage = null;
-              emitter.emit("error", err);
-              socket2.close(CloseCode.BadResponse, limitCloseReason(err instanceof Error ? err.message : new Error(err).message, "Bad response"));
-            }
-          };
-        }))());
-        if (socket.readyState === WebSocketImpl.CLOSING)
-          yield throwOnClose;
-        let release2 = () => {
-        };
-        const released = new Promise((resolve) => release2 = resolve);
-        return [
-          socket,
-          release2,
-          Promise.race([
-            // wait for
-            released.then(() => {
-              if (!locks) {
-                const complete = () => socket.close(1e3, "Normal Closure");
-                if (isFinite(lazyCloseTimeoutMs) && lazyCloseTimeoutMs > 0) {
-                  lazyCloseTimeout = setTimeout(() => {
-                    if (socket.readyState === WebSocketImpl.OPEN)
-                      complete();
-                  }, lazyCloseTimeoutMs);
-                } else {
-                  complete();
-                }
-              }
-            }),
-            // or
-            throwOnClose
-          ])
-        ];
-      });
-    }
-    function shouldRetryConnectOrThrow(errOrCloseEvent) {
-      if (isLikeCloseEvent(errOrCloseEvent) && (isFatalInternalCloseCode(errOrCloseEvent.code) || [
-        CloseCode.InternalServerError,
-        CloseCode.InternalClientError,
-        CloseCode.BadRequest,
-        CloseCode.BadResponse,
-        CloseCode.Unauthorized,
-        // CloseCode.Forbidden, might grant access out after retry
-        CloseCode.SubprotocolNotAcceptable,
-        // CloseCode.ConnectionInitialisationTimeout, might not time out after retry
-        // CloseCode.ConnectionAcknowledgementTimeout, might not time out after retry
-        CloseCode.SubscriberAlreadyExists,
-        CloseCode.TooManyInitialisationRequests
-        // 4499, // Terminated, probably because the socket froze, we want to retry
-      ].includes(errOrCloseEvent.code)))
-        throw errOrCloseEvent;
-      if (disposed)
-        return false;
-      if (isLikeCloseEvent(errOrCloseEvent) && errOrCloseEvent.code === 1e3)
-        return locks > 0;
-      if (!retryAttempts || retries >= retryAttempts)
-        throw errOrCloseEvent;
-      if (!shouldRetry(errOrCloseEvent))
-        throw errOrCloseEvent;
-      if (isFatalConnectionProblem === null || isFatalConnectionProblem === void 0 ? void 0 : isFatalConnectionProblem(errOrCloseEvent))
-        throw errOrCloseEvent;
-      return retrying = true;
-    }
-    if (!lazy2) {
-      (() => __async(this, null, function* () {
-        locks++;
-        for (; ; ) {
-          try {
-            const [, , throwOnClose] = yield connect();
-            yield throwOnClose;
-          } catch (errOrCloseEvent) {
-            try {
-              if (!shouldRetryConnectOrThrow(errOrCloseEvent))
-                return;
-            } catch (errOrCloseEvent2) {
-              return onNonLazyError === null || onNonLazyError === void 0 ? void 0 : onNonLazyError(errOrCloseEvent2);
-            }
-          }
-        }
-      }))();
-    }
-    function subscribe2(payload, sink) {
-      const id = generateID(payload);
-      let done = false, errored = false, releaser = () => {
-        locks--;
-        done = true;
-      };
-      (() => __async(this, null, function* () {
-        locks++;
-        for (; ; ) {
-          try {
-            const [socket, release2, waitForReleaseOrThrowOnClose] = yield connect();
-            if (done)
-              return release2();
-            const unlisten = emitter.onMessage(id, (message) => {
-              switch (message.type) {
-                case MessageType.Next: {
-                  sink.next(message.payload);
-                  return;
-                }
-                case MessageType.Error: {
-                  errored = true, done = true;
-                  sink.error(message.payload);
-                  releaser();
-                  return;
-                }
-                case MessageType.Complete: {
-                  done = true;
-                  releaser();
-                  return;
-                }
-              }
-            });
-            socket.send(stringifyMessage({
-              id,
-              type: MessageType.Subscribe,
-              payload
-            }, replacer));
-            releaser = () => {
-              if (!done && socket.readyState === WebSocketImpl.OPEN)
-                socket.send(stringifyMessage({
-                  id,
-                  type: MessageType.Complete
-                }, replacer));
-              locks--;
-              done = true;
-              release2();
-            };
-            yield waitForReleaseOrThrowOnClose.finally(unlisten);
-            return;
-          } catch (errOrCloseEvent) {
-            if (!shouldRetryConnectOrThrow(errOrCloseEvent))
-              return;
-          }
-        }
-      }))().then(() => {
-        if (!errored)
-          sink.complete();
-      }).catch((err) => {
-        sink.error(err);
-      });
-      return () => {
-        if (!done)
-          releaser();
-      };
-    }
-    return {
-      on: emitter.on,
-      subscribe: subscribe2,
-      iterate(request) {
-        const pending = [];
-        const deferred = {
-          done: false,
-          error: null,
-          resolve: () => {
-          }
-        };
-        const dispose = subscribe2(request, {
-          next(val) {
-            pending.push(val);
-            deferred.resolve();
-          },
-          error(err) {
-            deferred.done = true;
-            deferred.error = err;
-            deferred.resolve();
-          },
-          complete() {
-            deferred.done = true;
-            deferred.resolve();
-          }
-        });
-        const iterator = function iterator2() {
-          return __asyncGenerator2(this, arguments, function* iterator_1() {
-            for (; ; ) {
-              if (!pending.length) {
-                yield __await2(new Promise((resolve) => deferred.resolve = resolve));
-              }
-              while (pending.length) {
-                yield yield __await2(pending.shift());
-              }
-              if (deferred.error) {
-                throw deferred.error;
-              }
-              if (deferred.done) {
-                return yield __await2(void 0);
-              }
-            }
-          });
-        }();
-        iterator.throw = (err) => __async(this, null, function* () {
-          if (!deferred.done) {
-            deferred.done = true;
-            deferred.error = err;
-            deferred.resolve();
-          }
-          return { done: true, value: void 0 };
-        });
-        iterator.return = () => __async(this, null, function* () {
-          dispose();
-          return { done: true, value: void 0 };
-        });
-        return iterator;
-      },
-      dispose() {
-        return __async(this, null, function* () {
-          disposed = true;
-          if (connecting) {
-            const [socket] = yield connecting;
-            socket.close(1e3, "Normal Closure");
-          }
-        });
-      },
-      terminate() {
-        if (connecting) {
-          emitter.emit("closed", new TerminatedCloseEvent());
-        }
-      }
-    };
-  }
-  var TerminatedCloseEvent = class extends Error {
-    constructor() {
-      super(...arguments);
-      this.name = "TerminatedCloseEvent";
-      this.message = "4499: Terminated";
-      this.code = 4499;
-      this.reason = "Terminated";
-      this.wasClean = false;
-    }
-  };
-  function isLikeCloseEvent(val) {
-    return isObject(val) && "code" in val && "reason" in val;
-  }
-  function isFatalInternalCloseCode(code) {
-    if ([
-      1e3,
-      1001,
-      1006,
-      1005,
-      1012,
-      1013,
-      1014
-      // Bad Gateway
-    ].includes(code))
-      return false;
-    return code >= 1e3 && code <= 1999;
-  }
-  function isWebSocket(val) {
-    return typeof val === "function" && "constructor" in val && "CLOSED" in val && "CLOSING" in val && "CONNECTING" in val && "OPEN" in val;
-  }
-
-  // node_modules/isomorphic-ws/browser.js
-  var ws = null;
-  if (typeof WebSocket !== "undefined") {
-    ws = WebSocket;
-  } else if (typeof MozWebSocket !== "undefined") {
-    ws = MozWebSocket;
-  } else if (typeof global !== "undefined") {
-    ws = global.WebSocket || global.MozWebSocket;
-  } else if (typeof window !== "undefined") {
-    ws = window.WebSocket || window.MozWebSocket;
-  } else if (typeof self !== "undefined") {
-    ws = self.WebSocket || self.MozWebSocket;
-  }
-  var browser_default = ws;
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/GadgetTransaction.js
-  var TransactionRolledBack = class extends Error {
-  };
-  var GadgetTransaction = class {
-    constructor(client, subscriptionClient) {
-      Object.defineProperty(this, "client", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: client
-      });
-      Object.defineProperty(this, "subscriptionClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: subscriptionClient
-      });
-      Object.defineProperty(this, "open", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: false
-      });
-    }
-    /** Shut down this transaction by closing the connection to the backend. */
-    close() {
-      if (this.open) {
-        void this.rollback().catch(() => null);
-      }
-      void this.subscriptionClient.dispose();
-    }
-    /** Explicitly roll back this transaction, preventing any of the changes made during it from being committed. */
-    rollback() {
-      return __async(this, null, function* () {
-        assertOperationSuccess(yield this.client.mutation(`mutation RollbackTransaction { internal { rollbackTransaction }}`, {}).toPromise(), [
-          "internal",
-          "rollbackTransaction"
-        ]);
-        this.open = false;
-        throw new TransactionRolledBack("Transaction rolled back.");
-      });
-    }
-    /**
-     * @private
-     */
-    start() {
-      return __async(this, null, function* () {
-        assertOperationSuccess(yield this.client.mutation(`mutation StartTransaction { internal { startTransaction }}`, {}).toPromise(), [
-          "internal",
-          "startTransaction"
-        ]);
-        this.open = true;
-      });
-    }
-    /**
-     * @private
-     */
-    commit() {
-      return __async(this, null, function* () {
-        assertOperationSuccess(yield this.client.mutation(`mutation CommitTransaction { internal { commitTransaction }}`, {}).toPromise(), [
-          "internal",
-          "commitTransaction"
-        ]);
-        this.open = false;
-      });
-    }
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/InMemoryStorage.js
-  var InMemoryStorage = class {
-    constructor() {
-      Object.defineProperty(this, "values", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: {}
-      });
-    }
-    getItem(key2) {
-      return this.values[key2] || null;
-    }
-    setItem(key2, value2) {
-      this.values[key2] = value2;
-    }
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/exchanges/operationNameExchange.js
-  var graphqlDocumentName = (doc) => {
-    const lastDefinition = [...doc.definitions].reverse().find((definition) => definition.kind == "OperationDefinition");
-    if (lastDefinition) {
-      if (lastDefinition.name) {
-        return lastDefinition.name.value;
-      }
-      const firstSelection = lastDefinition.selectionSet.selections.find((node) => node.kind == "Field");
-      return firstSelection.name.value;
-    }
-  };
-  var operationNameExchange = mapExchange({
-    onOperation: (operation) => {
-      var _a3;
-      var _b2;
-      (_a3 = (_b2 = operation.context).operationName) !== null && _a3 !== void 0 ? _a3 : _b2.operationName = graphqlDocumentName(operation.query) || "unknown";
-    }
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/exchanges/urlParamExchange.js
-  var addUrlParams = (url, paramsToAdd) => {
-    const [start2, params] = url.split("?");
-    const paramsObj = new URLSearchParams(params);
-    for (const [key2, value2] of Object.entries(paramsToAdd)) {
-      paramsObj.set(key2, value2);
-    }
-    return `${start2}?${paramsObj.toString()}`;
-  };
-  var urlParamExchange = mapExchange({
-    onOperation: (operation) => {
-      if (operation.context.url && operation.context.operationName) {
-        try {
-          operation.context.url = addUrlParams(operation.context.url, { operation: operation.context.operationName });
-        } catch (error2) {
-        }
-      }
-    }
-  });
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/GadgetConnection.js
-  var GadgetGraphQLCloseCode;
-  (function(GadgetGraphQLCloseCode2) {
-    GadgetGraphQLCloseCode2[GadgetGraphQLCloseCode2["TooManyRequests"] = 4294] = "TooManyRequests";
-  })(GadgetGraphQLCloseCode || (GadgetGraphQLCloseCode = {}));
-  var DEFAULT_CONN_ATTEMPTS = 2;
-  var DEFAULT_CONN_ACK_TIMEOUT = 4800;
-  var DEFAULT_CONN_GLOBAL_TIMEOUT = 1e4;
-  var RETRYABLE_CLOSE_CODES = [CloseCode.ConnectionAcknowledgementTimeout, CloseCode.ConnectionInitialisationTimeout];
-  var $transaction = Symbol.for("gadget/transaction");
-  var $gadgetConnection = Symbol.for("gadget/connection");
-  var sessionStorageKey = "token";
-  var base64 = typeof btoa !== "undefined" ? btoa : (str) => Buffer.from(str).toString("base64");
-  var AuthenticationMode;
-  (function(AuthenticationMode2) {
-    AuthenticationMode2["BrowserSession"] = "browser-session";
-    AuthenticationMode2["APIKey"] = "api-key";
-    AuthenticationMode2["Internal"] = "internal";
-    AuthenticationMode2["InternalAuthToken"] = "internal-auth-token";
-    AuthenticationMode2["Anonymous"] = "anonymous";
-    AuthenticationMode2["Custom"] = "custom";
-  })(AuthenticationMode || (AuthenticationMode = {}));
-  var objectForGlobals = typeof globalThis != "undefined" ? globalThis : typeof window != "undefined" ? window : void 0;
-  var GadgetConnection = class {
-    constructor(options) {
-      var _a3, _b2, _c2, _d2, _e2, _f;
-      Object.defineProperty(this, "options", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: options
-      });
-      Object.defineProperty(this, "endpoint", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "subscriptionClientOptions", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "websocketsEndpoint", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "websocketImplementation", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "_fetchImplementation", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "environment", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "exchanges", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "baseClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "baseSubscriptionClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "currentTransaction", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: null
-      });
-      Object.defineProperty(this, "authenticationMode", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: AuthenticationMode.Anonymous
-      });
-      Object.defineProperty(this, "sessionTokenStore", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "requestPolicy", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "createSubscriptionClient", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "transaction", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: (optionsOrRun, maybeRun) => __async(this, null, function* () {
-          let run;
-          let options2;
-          if (maybeRun) {
-            run = maybeRun;
-            options2 = optionsOrRun;
-          } else {
-            run = optionsOrRun;
-            options2 = {};
-          }
-          if (this.currentTransaction) {
-            return yield run(this.currentTransaction);
-          }
-          let subscriptionClient = null;
-          let transaction;
-          try {
-            subscriptionClient = yield this.waitForOpenedConnection(__spreadProps(__spreadValues({
-              isFatalConnectionProblem(errorOrCloseEvent) {
-                console.warn("Transport error encountered during transaction processing", errorOrCloseEvent);
-                return true;
-              },
-              connectionAckWaitTimeout: DEFAULT_CONN_ACK_TIMEOUT
-            }, options2), {
-              lazy: false,
-              // super ultra critical option that ensures graphql-ws doesn't automatically close the websocket connection when there are no outstanding operations. this is key so we can start a transaction then make mutations within it
-              lazyCloseTimeout: 1e5,
-              retryAttempts: 0
-            }));
-            const client = new C({
-              url: "/-",
-              // not used because there's no fetch exchange, set for clarity
-              requestPolicy: "network-only",
-              // skip any cached data during transactions
-              exchanges: [
-                ...this.exchanges.beforeAll,
-                operationNameExchange,
-                ...this.exchanges.beforeAsync,
-                subscriptionExchange({
-                  forwardSubscription(request) {
-                    const input = __spreadProps(__spreadValues({}, request), { query: request.query || "" });
-                    return {
-                      subscribe: (sink) => {
-                        const dispose = subscriptionClient.subscribe(input, sink);
-                        return {
-                          unsubscribe: dispose
-                        };
-                      }
-                    };
-                  },
-                  enableAllOperations: true
-                }),
-                ...this.exchanges.afterAll
-              ]
-            });
-            client[$gadgetConnection] = this;
-            transaction = new GadgetTransaction(client, subscriptionClient);
-            this.currentTransaction = transaction;
-            yield transaction.start();
-            const result = yield run(transaction);
-            yield transaction.commit();
-            return result;
-          } catch (error2) {
-            try {
-              if (transaction === null || transaction === void 0 ? void 0 : transaction.open)
-                yield transaction.rollback();
-            } catch (rollbackError) {
-              if (!(rollbackError instanceof TransactionRolledBack)) {
-                console.warn("Encountered another error while rolling back a Gadget transaction that errored. The other error:", rollbackError);
-              }
-            }
-            if (isCloseEvent(error2)) {
-              throw new GadgetUnexpectedCloseError(error2);
-            } else {
-              throw error2;
-            }
-          } finally {
-            yield subscriptionClient === null || subscriptionClient === void 0 ? void 0 : subscriptionClient.dispose();
-            this.currentTransaction = null;
-          }
-        })
-      });
-      Object.defineProperty(this, "fetch", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: (_0, ..._1) => __async(this, [_0, ..._1], function* (input, init = {}) {
-          var _a4;
-          input = processMaybeRelativeInput(input, (_a4 = this.options.baseRouteURL) !== null && _a4 !== void 0 ? _a4 : this.options.endpoint);
-          if (this.isGadgetRequest(input)) {
-            const requestHeaders = yield this.requestHeaders();
-            init.headers = __spreadValues(__spreadValues({}, requestHeaders), init.headers);
-            if (this.authenticationMode == AuthenticationMode.Custom) {
-              yield this.options.authenticationMode.custom.processFetch(input, init);
-            }
-          }
-          const response = yield this._fetchImplementation(input, init);
-          if (this.authenticationMode == AuthenticationMode.BrowserSession) {
-            const headerValue = response.headers.get("x-set-authorization");
-            const sessionToken = (headerValue === null || headerValue === void 0 ? void 0 : headerValue.startsWith("Session ")) ? headerValue.replace("Session ", "") : null;
-            if (sessionToken) {
-              this.sessionTokenStore.setItem(this.sessionStorageKey, sessionToken);
-            }
-          }
-          return response;
-        })
-      });
-      if (!options.endpoint)
-        throw new Error("Must provide an `endpoint` option for a GadgetConnection to connect to");
-      this.endpoint = options.endpoint;
-      if (options.fetchImplementation) {
-        this._fetchImplementation = options.fetchImplementation;
-      } else if (typeof objectForGlobals != "undefined" && objectForGlobals.fetch) {
-        this._fetchImplementation = objectForGlobals.fetch.bind(objectForGlobals);
-      } else {
-        this._fetchImplementation = (...args) => __async(this, null, function* () {
-          let fetch2 = yield Promise.resolve().then(() => __toESM(require_browser_ponyfill(), 1));
-          if (fetch2.default) {
-            fetch2 = fetch2.default;
-          }
-          return yield fetch2(...args);
-        });
-      }
-      this.websocketImplementation = (_b2 = (_a3 = options.websocketImplementation) !== null && _a3 !== void 0 ? _a3 : globalThis === null || globalThis === void 0 ? void 0 : globalThis.WebSocket) !== null && _b2 !== void 0 ? _b2 : browser_default;
-      this.websocketsEndpoint = (_c2 = options.websocketsEndpoint) !== null && _c2 !== void 0 ? _c2 : options.endpoint + "/batch";
-      this.websocketsEndpoint = this.websocketsEndpoint.replace(/^http/, "ws");
-      this.environment = (_d2 = options.environment) !== null && _d2 !== void 0 ? _d2 : "Development";
-      this.requestPolicy = (_e2 = options.requestPolicy) !== null && _e2 !== void 0 ? _e2 : "cache-and-network";
-      this.exchanges = __spreadValues({
-        beforeAll: [],
-        beforeAsync: [],
-        afterAll: []
-      }, options.exchanges);
-      this.createSubscriptionClient = (_f = options.createSubscriptionClient) !== null && _f !== void 0 ? _f : createClient;
-      this.setAuthenticationMode(options.authenticationMode);
-      this.baseClient = this.newBaseClient();
-    }
-    get sessionStorageKey() {
-      return `${sessionStorageKey}-${this.endpoint}`;
-    }
-    get currentClient() {
-      var _a3;
-      return ((_a3 = this.currentTransaction) === null || _a3 === void 0 ? void 0 : _a3.client) || this.baseClient;
-    }
-    set fetchImplementation(implementation) {
-      this._fetchImplementation = implementation;
-      this.resetClients();
-    }
-    /**
-     * Change the authentication mode settings for this connection imperatively.
-     * @private This function is generally not required for use by external developers, but is useful for those building integrations against the Gadget API to configure passed in `api` objects.
-     */
-    setAuthenticationMode(options) {
-      var _a3;
-      if (options) {
-        if (options.browserSession) {
-          this.enableSessionMode(options.browserSession);
-        } else if (options.internal) {
-          this.authenticationMode = AuthenticationMode.Internal;
-        } else if (options.internalAuthToken) {
-          this.authenticationMode = AuthenticationMode.InternalAuthToken;
-        } else if (options.apiKey) {
-          this.authenticationMode = AuthenticationMode.APIKey;
-        } else if (options.custom) {
-          this.authenticationMode = AuthenticationMode.Custom;
-        }
-        this.options.authenticationMode = options;
-      }
-      (_a3 = this.authenticationMode) !== null && _a3 !== void 0 ? _a3 : this.authenticationMode = AuthenticationMode.Anonymous;
-    }
-    enableSessionMode(options) {
-      this.authenticationMode = AuthenticationMode.BrowserSession;
-      const desiredMode = !options || typeof options == "boolean" ? BrowserSessionStorageType.Durable : options.storageType;
-      let sessionTokenStore;
-      if (desiredMode == BrowserSessionStorageType.Durable && storageAvailable("localStorage")) {
-        sessionTokenStore = window.localStorage;
-      } else if (desiredMode == BrowserSessionStorageType.Session && storageAvailable("sessionStorage")) {
-        sessionTokenStore = window.sessionStorage;
-      } else {
-        sessionTokenStore = new InMemoryStorage();
-      }
-      if (options !== null && typeof options === "object" && "initialToken" in options && options.initialToken) {
-        sessionTokenStore.setItem(this.sessionStorageKey, options.initialToken);
-      }
-      this.sessionTokenStore = sessionTokenStore;
-      this.resetClients();
-    }
-    close() {
-      if (this.baseSubscriptionClient)
-        this.disposeClient(this.baseSubscriptionClient);
-      if (this.currentTransaction) {
-        this.currentTransaction.close();
-      }
-    }
-    isGadgetRequest(input) {
-      let requestUrl;
-      if (typeof input === "string") {
-        requestUrl = input;
-      } else if (typeof input === "object" && "url" in input) {
-        requestUrl = input.url;
-      } else {
-        requestUrl = String(input);
-      }
-      if (isRelativeUrl(this.options.endpoint)) {
-        if (isRelativeUrl(requestUrl)) {
-          return true;
-        } else {
-          return false;
-        }
-      }
-      const host = new URL(this.options.endpoint).host;
-      return requestUrl.includes(host);
-    }
-    resetClients() {
-      if (this.currentTransaction) {
-        throw new Error("Can't reset clients while a transaction is open");
-      }
-      if (this.baseSubscriptionClient)
-        this.disposeClient(this.baseSubscriptionClient);
-      if (this.baseClient)
-        this.baseClient = this.newBaseClient();
-    }
-    newBaseClient() {
-      const exchanges = [...this.exchanges.beforeAll, operationNameExchange, urlParamExchange];
-      if (typeof window != "undefined") {
-        exchanges.push(cacheExchange);
-      }
-      exchanges.push(
-        ...this.exchanges.beforeAsync,
-        // standard subscriptions for normal GraphQL subscriptions
-        subscriptionExchange({
-          forwardSubscription: (request) => {
-            return {
-              subscribe: (sink) => {
-                const input = __spreadProps(__spreadValues({}, request), { query: request.query || "" });
-                const dispose = this.getBaseSubscriptionClient().subscribe(input, sink);
-                return {
-                  unsubscribe: dispose
-                };
-              }
-            };
-          }
-        }),
-        // another subscription exchange for live queries
-        // live queries pass through the same WS client, but use jsondiffs for patching in results
-        subscriptionExchange({
-          isSubscriptionOperation: (request) => {
-            return request.query.definitions.some((definition) => isLiveQueryOperationDefinitionNode(definition));
-          },
-          forwardSubscription: (request) => {
-            return {
-              subscribe: (sink) => {
-                let unsubscribe = void 0;
-                const loadAndSubscribe = Promise.resolve().then(() => (init_graphql_live_query_utils(), graphql_live_query_utils_exports)).then(({ applyAsyncIterableIteratorToSink: applyAsyncIterableIteratorToSink2, applyLiveQueryJSONDiffPatch: applyLiveQueryJSONDiffPatch2, makeAsyncIterableIteratorFromSink: makeAsyncIterableIteratorFromSink2 }) => {
-                  const input = __spreadProps(__spreadValues({}, request), { query: request.query || "" });
-                  unsubscribe = applyAsyncIterableIteratorToSink2(applyLiveQueryJSONDiffPatch2(makeAsyncIterableIteratorFromSink2((sink2) => this.getBaseSubscriptionClient().subscribe(input, sink2))), sink);
-                  return unsubscribe;
-                }).catch((error2) => sink.error(error2));
-                return {
-                  unsubscribe: () => {
-                    if (unsubscribe) {
-                      unsubscribe();
-                    } else {
-                      void loadAndSubscribe.then((unsubscribe2) => {
-                        if (unsubscribe2) {
-                          unsubscribe2();
-                        }
-                      });
-                    }
-                  }
-                };
-              }
-            };
-          }
-        }),
-        fetchExchange,
-        ...this.exchanges.afterAll
-      );
-      const client = new C({
-        url: this.endpoint,
-        fetch: this.fetch,
-        exchanges,
-        requestPolicy: this.requestPolicy
-      });
-      client[$gadgetConnection] = this;
-      return client;
-    }
-    newSubscriptionClient(overrides) {
-      if (!this.websocketImplementation) {
-        throw new Error("Can't use this GadgetClient for this subscription-based operation as there's no global WebSocket implementation available. Please pass one as the `websocketImplementation` option to the GadgetClient constructor.");
-      }
-      let url = this.websocketsEndpoint;
-      if (overrides === null || overrides === void 0 ? void 0 : overrides.urlParams) {
-        url = addUrlParams(url, overrides.urlParams);
-      }
-      return this.createSubscriptionClient(__spreadValues(__spreadValues({
-        url,
-        webSocketImpl: this.websocketImplementation,
-        connectionParams: () => __async(this, null, function* () {
-          var _a3, _b2, _c2, _d2;
-          const connectionParams = { environment: this.environment, auth: { type: this.authenticationMode } };
-          if (this.authenticationMode == AuthenticationMode.APIKey) {
-            connectionParams.auth.key = this.options.authenticationMode.apiKey;
-          } else if (this.authenticationMode == AuthenticationMode.Internal || this.authenticationMode == AuthenticationMode.InternalAuthToken) {
-            const authToken = this.authenticationMode == AuthenticationMode.Internal ? this.options.authenticationMode.internal.authToken : this.options.authenticationMode.internalAuthToken;
-            connectionParams.auth.token = authToken;
-            if (this.authenticationMode == AuthenticationMode.Internal && this.options.authenticationMode.internal.actAsSession) {
-              connectionParams.auth.actAsInternalSession = true;
-              connectionParams.auth.internalSessionId = yield (_b2 = (_a3 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
-            }
-          } else if (this.authenticationMode == AuthenticationMode.BrowserSession) {
-            connectionParams.auth.sessionToken = this.sessionTokenStore.getItem(this.sessionStorageKey);
-          } else if (this.authenticationMode == AuthenticationMode.Custom) {
-            yield (_d2 = (_c2 = this.options.authenticationMode) === null || _c2 === void 0 ? void 0 : _c2.custom) === null || _d2 === void 0 ? void 0 : _d2.processTransactionConnectionParams(connectionParams);
-          }
-          return connectionParams;
-        }),
-        onNonLazyError: () => {
-        },
-        on: {
-          connected: (socket, payload) => {
-            var _a3, _b2, _c2, _d2, _e2, _f;
-            if (this.authenticationMode == AuthenticationMode.BrowserSession && (payload === null || payload === void 0 ? void 0 : payload.sessionToken)) {
-              const browserSession = (_a3 = this.options.authenticationMode) === null || _a3 === void 0 ? void 0 : _a3.browserSession;
-              const initialToken = browserSession !== null && typeof browserSession === "object" ? browserSession.initialToken : null;
-              if (!initialToken) {
-                this.sessionTokenStore.setItem(this.sessionStorageKey, payload.sessionToken);
-              }
-            }
-            (_d2 = (_c2 = (_b2 = this.subscriptionClientOptions) === null || _b2 === void 0 ? void 0 : _b2.on) === null || _c2 === void 0 ? void 0 : _c2.connected) === null || _d2 === void 0 ? void 0 : _d2.call(_c2, socket, payload);
-            (_f = (_e2 = overrides === null || overrides === void 0 ? void 0 : overrides.on) === null || _e2 === void 0 ? void 0 : _e2.connected) === null || _f === void 0 ? void 0 : _f.call(_e2, socket, payload);
-          }
-        }
-      }, this.subscriptionClientOptions), overrides));
-    }
-    requestHeaders() {
-      return __async(this, null, function* () {
-        var _a3, _b2, _c2;
-        const headers = {};
-        if (this.authenticationMode == AuthenticationMode.Internal || this.authenticationMode == AuthenticationMode.InternalAuthToken) {
-          const authToken = this.authenticationMode == AuthenticationMode.Internal ? this.options.authenticationMode.internal.authToken : this.options.authenticationMode.internalAuthToken;
-          headers.authorization = "Basic " + base64("gadget-internal:" + authToken);
-          if (this.authenticationMode == AuthenticationMode.Internal && this.options.authenticationMode.internal.actAsSession) {
-            headers["x-gadget-act-as-internal-session"] = "true";
-            const sessionId = yield (_b2 = (_a3 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
-            if (sessionId) {
-              headers["x-gadget-internal-session-id"] = sessionId;
-            }
-          }
-        } else if (this.authenticationMode == AuthenticationMode.APIKey) {
-          headers.authorization = `Bearer ${(_c2 = this.options.authenticationMode) === null || _c2 === void 0 ? void 0 : _c2.apiKey}`;
-        } else if (this.authenticationMode == AuthenticationMode.BrowserSession) {
-          const val = this.sessionTokenStore.getItem(this.sessionStorageKey);
-          if (val) {
-            headers.authorization = `Session ${val}`;
-          }
-        }
-        headers["x-gadget-environment"] = this.environment;
-        return headers;
-      });
-    }
-    waitForOpenedConnection(options) {
-      return __async(this, null, function* () {
-        let subscriptionClient = this.newSubscriptionClient(options);
-        let unsubscribes = [];
-        let attempts = options.connectionAttempts || DEFAULT_CONN_ATTEMPTS;
-        const globalTimeout = options.connectionGlobalTimeoutMs || DEFAULT_CONN_GLOBAL_TIMEOUT;
-        const clearListeners = () => {
-          unsubscribes.forEach((fn) => fn());
-          unsubscribes = [];
-        };
-        return yield new Promise((resolve, reject2) => {
-          const timeout = setTimeout(() => {
-            this.disposeClient(subscriptionClient);
-            wrappedReject(new GadgetWebsocketConnectionTimeoutError("Timeout opening websocket connection to Gadget API"));
-          }, globalTimeout);
-          const retryOnClose = (event) => {
-            if (isCloseEvent(event)) {
-              if (event.code == GadgetGraphQLCloseCode.TooManyRequests) {
-                clearListeners();
-                return wrappedReject(new GadgetTooManyRequestsError(event.reason));
-              }
-              if (RETRYABLE_CLOSE_CODES.includes(event.code) && attempts > 0) {
-                attempts -= 1;
-                this.disposeClient(subscriptionClient);
-                subscriptionClient = this.newSubscriptionClient(options);
-                resetListeners();
-                return;
-              }
-            }
-            clearTimeout(timeout);
-            reject2(new GadgetUnexpectedCloseError(event));
-          };
-          const wrappedReject = (err) => {
-            clearTimeout(timeout);
-            reject2(err);
-          };
-          const wrappedResolve = () => {
-            clearTimeout(timeout);
-            resolve(subscriptionClient);
-          };
-          const resetListeners = () => {
-            clearListeners();
-            unsubscribes.push(subscriptionClient.on("connected", wrappedResolve));
-            unsubscribes.push(subscriptionClient.on("closed", retryOnClose));
-            unsubscribes.push(subscriptionClient.on("error", wrappedReject));
-          };
-          resetListeners();
-        }).finally(clearListeners);
-      });
-    }
-    disposeClient(client) {
-      const maybePromise = client.dispose();
-      if (maybePromise) {
-        maybePromise.catch((err) => console.error(`Error closing SubscriptionClient: ${err.message}`));
-      }
-    }
-    getBaseSubscriptionClient() {
-      if (!this.baseSubscriptionClient) {
-        this.baseSubscriptionClient = this.newSubscriptionClient({ lazy: true });
-      }
-      return this.baseSubscriptionClient;
-    }
-  };
-  Object.defineProperty(GadgetConnection, "version", {
-    enumerable: true,
-    configurable: true,
-    writable: true,
-    value: "0.15.33"
-  });
-  function processMaybeRelativeInput(input, endpoint) {
-    if (typeof input != "string")
-      return input;
-    if (isRelativeUrl(input)) {
-      try {
-        return String(new URL(input, endpoint));
-      } catch (err) {
-        return input;
-      }
-    }
-    return input;
-  }
-  function isRelativeUrl(url) {
-    return url.startsWith("/") && !url.startsWith("//");
-  }
-  var getLiveDirectiveNode = (input) => {
-    var _a3;
-    if (input.kind !== "OperationDefinition" || input.operation !== "query") {
-      return null;
-    }
-    return (_a3 = input.directives) === null || _a3 === void 0 ? void 0 : _a3.find((d3) => d3.name.value === "live");
-  };
-  var isLiveQueryOperationDefinitionNode = (input) => {
-    return !!getLiveDirectiveNode(input);
-  };
-
-  // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/InternalModelManager.js
-  var internalFindOneQuery = (apiIdentifier, id, namespace, select) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "query",
-      name: `InternalFind${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [apiIdentifier]: Call({
-            id: Var({ value: id, type: "GadgetID!" }),
-            select: Var({ value: formatInternalSelectVariable(select), type: `[String!]` })
-          })
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalFindListVariables = (apiIdentifier, namespace, options) => {
-    return {
-      search: (options === null || options === void 0 ? void 0 : options.search) ? Var({ value: options === null || options === void 0 ? void 0 : options.search, type: "String" }) : void 0,
-      sort: (options === null || options === void 0 ? void 0 : options.sort) ? Var({ value: options === null || options === void 0 ? void 0 : options.sort, type: `[${sortTypeName(apiIdentifier, namespace)}!]` }) : void 0,
-      filter: (options === null || options === void 0 ? void 0 : options.filter) ? Var({ value: options === null || options === void 0 ? void 0 : options.filter, type: `[${filterTypeName(apiIdentifier, namespace)}!]` }) : void 0,
-      select: (options === null || options === void 0 ? void 0 : options.select) ? Var({ value: formatInternalSelectVariable(options === null || options === void 0 ? void 0 : options.select), type: `[String!]` }) : void 0
-    };
-  };
-  var internalFindFirstQuery = (apiIdentifier, namespace, options) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    const defaultVariables = internalFindListVariables(capitalizedApiIdentifier, namespace, options);
-    return compileWithVariableValues({
-      type: "query",
-      name: `InternalFindFirst${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`list${capitalizedApiIdentifier}`]: Call(__spreadProps(__spreadValues({}, defaultVariables), {
-            first: Var({ value: 1, type: "Int" })
-          }), {
-            edges: {
-              node: true
-            }
-          })
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalFindManyQuery = (apiIdentifier, namespace, options) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    const defaultVariables = internalFindListVariables(capitalizedApiIdentifier, namespace, options);
-    return compileWithVariableValues({
-      type: "query",
-      name: `InternalFindMany${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`list${capitalizedApiIdentifier}`]: Call(__spreadProps(__spreadValues({}, defaultVariables), {
-            after: (options === null || options === void 0 ? void 0 : options.after) ? Var({ value: options.after, type: "String" }) : void 0,
-            before: (options === null || options === void 0 ? void 0 : options.before) ? Var({ value: options === null || options === void 0 ? void 0 : options.before, type: "String" }) : void 0,
-            first: (options === null || options === void 0 ? void 0 : options.first) ? Var({ value: options === null || options === void 0 ? void 0 : options.first, type: "Int" }) : void 0,
-            last: (options === null || options === void 0 ? void 0 : options.last) ? Var({ value: options === null || options === void 0 ? void 0 : options.last, type: "Int" }) : void 0
-          }), {
-            pageInfo: { hasNextPage: true, hasPreviousPage: true, startCursor: true, endCursor: true },
-            edges: { cursor: true, node: true }
-          })
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalInputTypeName = (apiIdentifier, namespace) => `Internal${namespacedGraphQLTypeName(apiIdentifier, namespace)}Input`;
-  var internalCreateMutation = (apiIdentifier, namespace, record) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalCreate${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`create${capitalizedApiIdentifier}`]: Call({
-            [apiIdentifier]: Var({ value: record, type: internalInputTypeName(apiIdentifier, namespace) })
-          }, __spreadProps(__spreadValues({
-            success: true
-          }, ErrorsSelection), {
-            [apiIdentifier]: true
-          }))
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalBulkCreateMutation = (apiIdentifier, pluralApiIdentifier, namespace, records2) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    const capitalizedPluralApiIdentifier = capitalizeIdentifier(pluralApiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalBulkCreate${capitalizedPluralApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`bulkCreate${capitalizedPluralApiIdentifier}`]: Call({
-            [pluralApiIdentifier]: Var({ value: records2, type: `[${internalInputTypeName(apiIdentifier, namespace)}]!` })
-          }, __spreadProps(__spreadValues({
-            success: true
-          }, ErrorsSelection), {
-            [pluralApiIdentifier]: true
-          }))
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalUpdateMutation = (apiIdentifier, namespace, id, record) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalUpdate${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`update${capitalizedApiIdentifier}`]: Call({
-            id: Var({ value: id, type: "GadgetID!" }),
-            [apiIdentifier]: Var({ value: record, type: internalInputTypeName(apiIdentifier, namespace) })
-          }, __spreadProps(__spreadValues({
-            success: true
-          }, ErrorsSelection), {
-            [apiIdentifier]: true
-          }))
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalUpsertMutation = (apiIdentifier, namespace, on, record) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalUpsert${capitalizedApiIdentifier}`,
-      fields: __spreadValues({
-        internal: namespacify(namespace, {
-          [`upsert${capitalizedApiIdentifier}`]: Call({
-            on: Var({ value: on, type: "[String!]" }),
-            [apiIdentifier]: Var({ value: record, type: internalInputTypeName(apiIdentifier, namespace) })
-          }, __spreadProps(__spreadValues({
-            success: true
-          }, ErrorsSelection), {
-            [apiIdentifier]: true
-          }))
-        })
-      }, hydrationSelection(apiIdentifier, namespace))
-    });
-  };
-  var internalDeleteMutation = (apiIdentifier, namespace, id) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalDelete${capitalizedApiIdentifier}`,
-      fields: {
-        internal: namespacify(namespace, {
-          [`delete${capitalizedApiIdentifier}`]: Call({
-            id: Var({ value: id, type: "GadgetID!" })
-          }, __spreadValues({
-            success: true
-          }, ErrorsSelection))
-        })
-      }
-    });
-  };
-  var internalDeleteManyMutation = (apiIdentifier, namespace, options) => {
-    const capitalizedApiIdentifier = capitalizeIdentifier(apiIdentifier);
-    return compileWithVariableValues({
-      type: "mutation",
-      name: `InternalDeleteMany${capitalizedApiIdentifier}`,
-      fields: {
-        internal: namespacify(namespace, {
-          [`deleteMany${capitalizedApiIdentifier}`]: Call({
-            search: (options === null || options === void 0 ? void 0 : options.search) ? Var({ value: options === null || options === void 0 ? void 0 : options.search, type: "String" }) : void 0,
-            filter: (options === null || options === void 0 ? void 0 : options.filter) ? Var({ value: options === null || options === void 0 ? void 0 : options.filter, type: `[${filterTypeName(apiIdentifier, namespace)}!]` }) : void 0
-          }, __spreadValues({
-            success: true
-          }, ErrorsSelection))
-        })
-      }
-    });
-  };
-  var InternalModelManager = class {
-    constructor(apiIdentifier, connection, options) {
-      Object.defineProperty(this, "apiIdentifier", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: apiIdentifier
-      });
-      Object.defineProperty(this, "connection", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: connection
-      });
-      Object.defineProperty(this, "options", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: options
-      });
-      Object.defineProperty(this, "capitalizedApiIdentifier", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      Object.defineProperty(this, "namespace", {
-        enumerable: true,
-        configurable: true,
-        writable: true,
-        value: void 0
-      });
-      this.capitalizedApiIdentifier = camelize(apiIdentifier);
-      this.namespace = (options === null || options === void 0 ? void 0 : options.namespace) || [];
-    }
-    validateRecord(record) {
-      if (!this.options || !this.options.hasAmbiguousIdentifiers) {
-        return true;
-      }
-      const keys = Object.keys(record);
-      return keys.every((key2) => key2 === this.apiIdentifier);
-    }
-    getRecordFromData(record, functionName) {
-      let recordData = record;
-      if (!this.validateRecord(record)) {
-        throw new GadgetOperationError(`Invalid arguments found in variables. Did you mean to use ${functionName}({ ${this.apiIdentifier}: { ... } })?`, "GGT_INVALID_RECORD_DATA");
-      }
-      if (this.apiIdentifier in record) {
-        recordData = recordData[this.apiIdentifier];
-      }
-      return recordData;
-    }
-    /**
-     * Find a single record by ID. Throws an error by default if the record with the given ID is not found.
-     *
-     * @example
-     * // returns post with id 10
-     * const post = await api.internal.post.findOne(10);
-     *
-     * @param id The ID of the record to find
-     * @param options Options for the find operation
-     * @param throwOnEmptyData Whether or not to throw an error if the record is not found
-     * @returns The record, if found
-     */
-    findOne(id, options, throwOnEmptyData = true) {
-      return __async(this, null, function* () {
-        const plan = internalFindOneQuery(this.apiIdentifier, id, this.namespace, formatInternalSelectVariable(options === null || options === void 0 ? void 0 : options.select));
-        const response = yield this.connection.currentClient.query(plan.query, plan.variables).toPromise();
-        const assertSuccess = throwOnEmptyData ? assertOperationSuccess : assertNullableOperationSuccess;
-        const result = assertSuccess(response, this.dataPath(this.apiIdentifier));
-        return hydrateRecord(response, result);
-      });
-    }
-    /**
-     * Find a single record by ID. Returns null if the record doesn't exist.
-     *
-     * @example
-     * // returns post with id 10 if it exists, null otherwise
-     * const post = await api.internal.post.maybeFindOne(10);
-     *
-     * @param id The ID of the record to find
-     * @param options Options for the find operation
-     * @returns The record, if found, null otherwise
-     */
-    maybeFindOne(id, options) {
-      return __async(this, null, function* () {
-        const record = yield this.findOne(id, options, false);
-        return record.isEmpty() ? null : record;
-      });
-    }
-    /**
-     * Find a list of records matching the given options
-     *
-     * @example
-     * // returns the first page of published posts
-     * const posts = await api.internal.post.findMany({ filter: { published: { equals: true }}});
-     *
-     * @param options Options for the find operation, like sorts, filters, and pagination
-     * @returns The record, if found, null otherwise
-     */
-    findMany(options) {
-      return __async(this, null, function* () {
-        const plan = internalFindManyQuery(this.apiIdentifier, this.namespace, options);
-        const response = yield this.connection.currentClient.query(plan.query, plan.variables).toPromise();
-        const connection = assertNullableOperationSuccess(response, this.dataPath(`list${this.capitalizedApiIdentifier}`));
-        const records2 = hydrateConnection(response, connection);
-        return GadgetRecordList.boot(this, records2, { options, pageInfo: connection.pageInfo });
-      });
-    }
-    /**
-     * Find the first record matching the given options. Throws an error by default if no records matching the options are found.
-     *
-     * @example
-     * // returns the first published post or throws if none found
-     * const post = await api.internal.post.findFirst({ filter: { published: { equals: true }}});
-     *
-     * @param options Options for the find operation, like sorts, filters, and pagination
-     * @returns The first record matching the options
-     */
-    findFirst(options, throwOnEmptyData = true) {
-      return __async(this, null, function* () {
-        const plan = internalFindFirstQuery(this.apiIdentifier, this.namespace, options);
-        const response = yield this.connection.currentClient.query(plan.query, plan.variables).toPromise();
-        const dataPath = this.dataPath(`list${this.capitalizedApiIdentifier}`);
-        let connection;
-        if (throwOnEmptyData === false) {
-          connection = assertNullableOperationSuccess(response, dataPath);
-        } else {
-          connection = assertOperationSuccess(response, dataPath, throwOnEmptyData);
-        }
-        const records2 = hydrateConnection(response, connection);
-        const recordList = GadgetRecordList.boot(this, records2, { options, pageInfo: connection.pageInfo });
-        return recordList[0];
-      });
-    }
-    /**
-     * Find the first record matching the given options. Returns null if no records matching the options are found.
-     *
-     * @example
-     * // returns the first published post or null if none are published
-     * const post = await api.internal.post.maybeFindFirst({ filter: { published: { equals: true }}});
-     *
-     * @param options Options for the find operation, like sorts, filters, and pagination
-     * @returns The first record matching the options, null otherwise
-     */
-    maybeFindFirst(options) {
-      return __async(this, null, function* () {
-        return yield this.findFirst(options, false);
-      });
-    }
-    /**
-     * Creates a new record in the backend datastore for this model using the Internal API
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // creates a new post record in the database
-     * const post = await api.internal.post.create({ title: "A new post" });
-     *
-     * @param record The data for the record to create
-     * @returns The created record
-     */
-    create(record) {
-      return __async(this, null, function* () {
-        const plan = internalCreateMutation(this.apiIdentifier, this.namespace, this.getRecordFromData(record, "create"));
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        const result = assertMutationSuccess(response, this.dataPath(`create${this.capitalizedApiIdentifier}`));
-        return hydrateRecord(response, result[this.apiIdentifier]);
-      });
-    }
-    /**
-     * Creates a set of new records in the backend datastore for this model using the Internal API. Creates in bulk within the same database transaction for performance.
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // creates 2 new post records in the database
-     * const posts = await api.internal.post.bulkCreate([
-     *   { title: "A new post" },
-     *   { title: "Another new post" }
-     * ]);
-     *
-     * @param record An array of data for the records to create
-     * @returns The created records
-     */
-    bulkCreate(records2) {
-      return __async(this, null, function* () {
-        var _a3;
-        if (!((_a3 = this.options) === null || _a3 === void 0 ? void 0 : _a3.pluralApiIdentifier)) {
-          throw new GadgetClientError("Cannot perform bulkCreate without a pluralApiIdentifier");
-        }
-        const capitalizedPluralApiIdentifier = capitalizeIdentifier(this.options.pluralApiIdentifier);
-        const plan = internalBulkCreateMutation(this.apiIdentifier, this.options.pluralApiIdentifier, this.namespace, records2);
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        const result = assertMutationSuccess(response, this.dataPath(`bulkCreate${capitalizedPluralApiIdentifier}`));
-        return hydrateRecordArray(response, result[this.options.pluralApiIdentifier]);
-      });
-    }
-    /**
-     * Updates an existing record in the backend datastore for this model using the Internal API
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // updates post with id 10 in the database
-     * const post = await api.internal.post.update(10, { title: "A new post title" });
-     *
-     * @param record The data for the record to update
-     * @returns The updated record
-     */
-    update(id, record) {
-      return __async(this, null, function* () {
-        assert(id, `Can't update a record without an ID passed`);
-        const plan = internalUpdateMutation(this.apiIdentifier, this.namespace, id, this.getRecordFromData(record, "update"));
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        const result = assertMutationSuccess(response, this.dataPath(`update${this.capitalizedApiIdentifier}`));
-        return hydrateRecord(response, result[this.apiIdentifier]);
-      });
-    }
-    /**
-     * Upserts a record in the backend datastore for this model using the Internal API.
-     * If a matching record exists, it will be updated. If it doesn't exist, it will be created.
-     * By default records will be matched by the `id` field, but you can specify a different field to match on.
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // upserts post with id 10 in the database
-     * // if a post with id 10 exists, it will be updated
-     * // if a post with id 10 does not exist, it will be created
-     * const post = await api.internal.post.upsert({ id: "10", title: "A new post title" });
-     *
-     * @example
-     * // upserts post with slug "new-post" in the database
-     * // if a post with slug "new-post" exists, it will be updated
-     * // if a post with slug "new-post" does not exist, it will be created
-     * const post = await api.internal.post.upsert({ post: {slug: "new-post", title: "A new post title" }, on: ["slug"] });
-     *
-     * @param record The data for the record to update
-     * @returns The upserted record
-     */
-    upsert(record) {
-      return __async(this, null, function* () {
-        const _a3 = record, { on } = _a3, recordData = __objRest(_a3, ["on"]);
-        on && assert(on.length > 0, `Must specify at least one field to upsert on`);
-        const plan = internalUpsertMutation(this.apiIdentifier, this.namespace, on, this.getRecordFromData(recordData, "upsert"));
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        const result = assertMutationSuccess(response, this.dataPath(`upsert${this.capitalizedApiIdentifier}`));
-        return hydrateRecord(response, result[this.apiIdentifier]);
-      });
-    }
-    /**
-     * Deletes an existing record in the backend datastore for this model using the Internal API
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // removes the post with id 10 in the database
-     * await api.internal.post.delete(10);
-     *
-     * @param id The id of the record to delete
-     */
-    delete(id) {
-      return __async(this, null, function* () {
-        assert(id, `Can't delete a record without an ID`);
-        const plan = internalDeleteMutation(this.apiIdentifier, this.namespace, id);
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        assertMutationSuccess(response, this.dataPath(`delete${this.capitalizedApiIdentifier}`));
-      });
-    }
-    /**
-     * Deletes the records in the backend datastore that match the given filter criteria. Uses the Internal API.
-     *
-     * Does *not* run actions -- use the Public API for that.
-     *
-     * @example
-     * // removes all unpublished posts from the database
-     * await api.internal.post.deleteMany({filter: { published: { equals: false } } });
-     *
-     * @param options Search and filter options for the records to delete
-     */
-    deleteMany(options) {
-      return __async(this, null, function* () {
-        const plan = internalDeleteManyMutation(this.apiIdentifier, this.namespace, options);
-        const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
-        assertMutationSuccess(response, this.dataPath(`deleteMany${this.capitalizedApiIdentifier}`));
-      });
-    }
-    dataPath(dataPath) {
-      return ["internal", ...namespaceDataPath([dataPath], this.namespace)];
-    }
-  };
-  function formatInternalSelectVariable(select) {
-    if (!select)
-      return;
-    if (Array.isArray(select))
-      return select;
-    const result = [];
-    for (const [key2, value2] of Object.entries(select)) {
-      if (value2) {
-        result.push(key2);
-      }
-    }
-    return result;
-  }
-
-  // .gadget/client/dist-esm/builder.js
-  var buildModelManager = (apiIdentifier, pluralApiIdentifier, defaultSelection, operationGroup) => {
-    const modelManagerClass = class {
-      constructor(connection) {
-        this.connection = connection;
-      }
-    };
-    Object.defineProperty(modelManagerClass, "name", { value: `${apiIdentifier}Manager` });
-    for (const operation of operationGroup) {
-      switch (operation.type) {
-        case "maybeFindOne":
-        case "findOne": {
-          const throwOnRecordNotFound = !operation.type.startsWith("maybe");
-          if ("functionName" in operation) {
-            modelManagerClass.prototype[operation.functionName] = Object.assign(
-              function(value2, options) {
-                return findOneByFieldRunner(
-                  this,
-                  operation.operationName,
-                  operation.findByField,
-                  value2,
-                  defaultSelection,
-                  apiIdentifier,
-                  options,
-                  throwOnRecordNotFound,
-                  operation.namespace
-                );
-              },
-              operation
-            );
-          } else {
-            modelManagerClass.prototype[operation.type] = Object.assign(
-              function(id, options) {
-                const response = findOneRunner(
-                  this,
-                  apiIdentifier,
-                  id,
-                  defaultSelection,
-                  apiIdentifier,
-                  options,
-                  throwOnRecordNotFound,
-                  operation.namespace
-                );
-                return forEachMaybeLiveResponse(response, (record) => record.isEmpty() ? null : record);
-              },
-              operation
-            );
-          }
-          break;
-        }
-        case "findMany": {
-          modelManagerClass.prototype.findMany = Object.assign(function(options) {
-            return findManyRunner(this, pluralApiIdentifier, defaultSelection, apiIdentifier, options, void 0, operation.namespace);
-          }, operation);
-          break;
-        }
-        case "maybeFindFirst":
-        case "findFirst": {
-          modelManagerClass.prototype[operation.type] = Object.assign(function(options) {
-            const response = findManyRunner(
-              this,
-              pluralApiIdentifier,
-              defaultSelection,
-              apiIdentifier,
-              __spreadProps(__spreadValues({}, options), {
-                first: 1,
-                last: void 0,
-                before: void 0,
-                after: void 0
-              }),
-              operation.type != "maybeFindFirst",
-              operation.namespace
-            );
-            return forEachMaybeLiveResponse(response, (list) => {
-              var _a3;
-              return (_a3 = list == null ? void 0 : list[0]) != null ? _a3 : null;
-            });
-          }, operation);
-          break;
-        }
-        case "get": {
-          modelManagerClass.prototype.get = Object.assign(function(options) {
-            return findOneRunner(
-              this,
-              operation.operationName,
-              void 0,
-              defaultSelection,
-              apiIdentifier,
-              options,
-              void 0,
-              operation.namespace
-            );
-          }, operation);
-          break;
-        }
-        case "action": {
-          if (operation.isBulk) {
-            const bulkInvokedByIDOnly = !!operation.variables["ids"];
-            modelManagerClass.prototype[operation.functionName] = Object.assign(
-              function(inputs, options) {
-                return __async(this, null, function* () {
-                  let variables;
-                  if (bulkInvokedByIDOnly) {
-                    variables = {
-                      ids: __spreadProps(__spreadValues({}, operation.variables["ids"]), {
-                        value: inputs
-                      })
-                    };
-                  } else {
-                    variables = {
-                      inputs: __spreadProps(__spreadValues({}, operation.variables["inputs"]), {
-                        value: inputs.map(
-                          (input) => disambiguateActionParams(this[operation.singleActionFunctionName], void 0, input)
-                        )
-                      })
-                    };
-                  }
-                  return yield actionRunner(
-                    this,
-                    operation.operationName,
-                    operation.isDeleter ? null : defaultSelection,
-                    apiIdentifier,
-                    operation.modelSelectionField,
-                    true,
-                    variables,
-                    options,
-                    operation.namespace,
-                    operation.hasReturnType
-                  );
-                });
-              },
-              operation
-            );
-          } else {
-            const hasId = !!operation.variables["id"];
-            const hasOthers = Object.keys(operation.variables).filter((key2) => key2 != "id").length > 0;
-            modelManagerClass.prototype[operation.functionName] = Object.assign(
-              function(...args) {
-                return __async(this, null, function* () {
-                  const [variables, options] = actionArgs(operation, hasId, hasOthers, args);
-                  return yield actionRunner(
-                    this,
-                    operation.operationName,
-                    operation.isDeleter ? null : defaultSelection,
-                    apiIdentifier,
-                    operation.modelSelectionField,
-                    false,
-                    variables,
-                    options,
-                    operation.namespace,
-                    operation.hasReturnType
-                  );
-                });
-              },
-              operation
-            );
-          }
-          break;
-        }
-        case "stubbedAction": {
-          modelManagerClass.prototype[operation.functionName] = Object.assign(function(..._args) {
-            throw new Error(operation.errorMessage);
-          }, operation);
-          break;
-        }
-      }
-    }
-    return modelManagerClass;
-  };
-  var buildGlobalAction = (client, operation) => {
-    if (operation.type == "stubbedAction") {
-      return Object.assign((..._args) => {
-        throw new Error(operation.errorMessage);
-      }, operation);
-    } else {
-      return Object.assign((..._0) => __async(void 0, [..._0], function* (variables = {}) {
-        const resultVariables = {};
-        for (const [name, variable] of Object.entries(operation.variables)) {
-          resultVariables[name] = __spreadValues({
-            value: variables[name]
-          }, variable);
-        }
-        return yield globalActionRunner(client.connection, operation.operationName, resultVariables, operation.namespace);
-      }), operation);
-    }
-  };
-  function disambiguateActionParams(action, idValue, variables = {}) {
-    var _a3, _b2;
-    if (action.hasAmbiguousIdentifier) {
-      if (Object.keys(variables).some((key2) => {
-        var _a4;
-        return !((_a4 = action.paramOnlyVariables) == null ? void 0 : _a4.includes(key2)) && key2 !== action.modelApiIdentifier;
-      })) {
-        throw Error(`Invalid arguments found in variables. Did you mean to use ({ ${action.modelApiIdentifier}: { ... } })?`);
-      }
-    }
-    let newVariables;
-    const idVariable = Object.entries(action.variables).find(([key2, value2]) => key2 === "id" && value2.type === "GadgetID");
-    if (action.acceptsModelInput || action.hasCreateOrUpdateEffect) {
-      if (action.modelApiIdentifier in variables && typeof variables[action.modelApiIdentifier] === "object" && variables[action.modelApiIdentifier] !== null || !action.variables[action.modelApiIdentifier]) {
-        newVariables = variables;
-      } else {
-        newVariables = {
-          [action.modelApiIdentifier]: {}
-        };
-        for (const [key2, value2] of Object.entries(variables)) {
-          if ((_a3 = action.paramOnlyVariables) == null ? void 0 : _a3.includes(key2)) {
-            newVariables[key2] = value2;
-          } else {
-            if (idVariable && key2 === idVariable[0]) {
-              newVariables["id"] = value2;
-            } else {
-              newVariables[action.modelApiIdentifier][key2] = value2;
-            }
-          }
-        }
-      }
-    } else {
-      newVariables = variables;
-    }
-    (_b2 = newVariables["id"]) != null ? _b2 : newVariables["id"] = idValue;
-    return newVariables;
-  }
-  function actionArgs(operation, hasId, hasOthers, args) {
-    let id = void 0;
-    let params = void 0;
-    if (hasId) {
-      id = args.shift();
-    }
-    if (hasOthers) {
-      params = args.shift();
-    }
-    const options = args.shift();
-    let unambiguousParams = params;
-    if (id || params) {
-      unambiguousParams = disambiguateActionParams(operation, id, params);
-    }
-    const resultVariables = {};
-    for (const [name, variable] of Object.entries(operation.variables)) {
-      resultVariables[name] = __spreadValues({
-        value: name == "id" ? id : unambiguousParams == null ? void 0 : unambiguousParams[name]
-      }, variable);
-    }
-    return [resultVariables, options];
-  }
-  function forEachMaybeLiveResponse(response, transform) {
-    if (Symbol.asyncIterator in response) {
-      return {
-        [Symbol.asyncIterator]: function() {
-          return __asyncGenerator(this, null, function* () {
-            try {
-              for (var iter = __forAwait(response), more, temp, error2; more = !(temp = yield new __await(iter.next())).done; more = false) {
-                const item = temp.value;
-                yield transform(item);
-              }
-            } catch (temp) {
-              error2 = [temp];
-            } finally {
-              try {
-                more && (temp = iter.return) && (yield new __await(temp.call(iter)));
-              } finally {
-                if (error2)
-                  throw error2[0];
-              }
-            }
-          });
-        }
-      };
-    } else {
-      return response.then(transform);
-    }
-  }
-
-  // .gadget/client/dist-esm/models/Session.js
-  var DefaultSessionSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    roles: { key: true, name: true },
-    shopifySID: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier = "session";
-  var pluralModelApiIdentifier = "sessions";
-  var SessionManager = buildModelManager(
-    modelApiIdentifier,
-    pluralModelApiIdentifier,
-    DefaultSessionSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier,
-        modelApiIdentifier,
-        findByVariableName: "id",
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier,
-        modelApiIdentifier,
-        findByVariableName: "id",
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier,
-        modelApiIdentifier,
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier,
-        modelApiIdentifier,
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier,
-        modelApiIdentifier,
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "findOne",
-        operationName: pluralModelApiIdentifier,
-        functionName: "findById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier,
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: pluralModelApiIdentifier,
-        functionName: "maybeFindById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier,
-        defaultSelection: DefaultSessionSelection,
-        namespace: null
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/CurrentSession.js
-  var DefaultSessionSelection2 = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    roles: { key: true, name: true },
-    shopifySID: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier2 = "session";
-  var pluralModelApiIdentifier2 = "sessions";
-  var CurrentSessionManager = buildModelManager(
-    modelApiIdentifier2,
-    pluralModelApiIdentifier2,
-    DefaultSessionSelection2,
-    [
-      {
-        type: "get",
-        operationName: "currentSession",
-        defaultSelection: DefaultSessionSelection2,
-        modelApiIdentifier: modelApiIdentifier2,
-        namespace: null
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyGdprRequest.js
-  var DefaultShopifyGdprRequestSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    payload: true,
-    topic: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier3 = "shopifyGdprRequest";
-  var pluralModelApiIdentifier3 = "shopifyGdprRequests";
-  var ShopifyGdprRequestManager = buildModelManager(
-    modelApiIdentifier3,
-    pluralModelApiIdentifier3,
-    DefaultShopifyGdprRequestSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier3,
-        modelApiIdentifier: modelApiIdentifier3,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier3,
-        modelApiIdentifier: modelApiIdentifier3,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier3,
-        modelApiIdentifier: modelApiIdentifier3,
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier3,
-        modelApiIdentifier: modelApiIdentifier3,
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier3,
-        modelApiIdentifier: modelApiIdentifier3,
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "findOne",
-        operationName: pluralModelApiIdentifier3,
-        functionName: "findById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier3,
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: pluralModelApiIdentifier3,
-        functionName: "maybeFindById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier3,
-        defaultSelection: DefaultShopifyGdprRequestSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyGdprRequest",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyGdprRequest does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier3
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyGdprRequests",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyGdprRequest does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier3
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyGdprRequest",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyGdprRequest does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier3
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyGdprRequests",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyGdprRequest does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier3
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyShop.js
-  var DefaultShopifyShopSelection = {
-    __typename: true,
-    id: true,
-    state: true,
-    address1: true,
-    address2: true,
-    checkoutApiSupported: true,
-    city: true,
-    cookieConsentLevel: true,
-    country: true,
-    countryCode: true,
-    countryName: true,
-    countyTaxes: true,
-    createdAt: true,
-    currency: true,
-    customerAccountsV2: true,
-    customerEmail: true,
-    disabledWebhooks: true,
-    domain: true,
-    eligibleForCardReaderGiveaway: true,
-    eligibleForPayments: true,
-    email: true,
-    enabledPresentmentCurrencies: true,
-    finances: true,
-    forceSsl: true,
-    googleAppsDomain: true,
-    googleAppsLoginEnabled: true,
-    grantedScopes: true,
-    hasDiscounts: true,
-    hasGiftCards: true,
-    hasStorefront: true,
-    ianaTimezone: true,
-    installedViaApiKey: true,
-    latitude: true,
-    longitude: true,
-    marketingSmsContentEnabledAtCheckout: true,
-    moneyFormat: true,
-    moneyInEmailsFormat: true,
-    moneyWithCurrencyFormat: true,
-    moneyWithCurrencyInEmailsFormat: true,
-    multiLocationEnabled: true,
-    myshopifyDomain: true,
-    name: true,
-    passwordEnabled: true,
-    phone: true,
-    planDisplayName: true,
-    planName: true,
-    preLaunchEnabled: true,
-    primaryLocale: true,
-    province: true,
-    provinceCode: true,
-    registeredWebhooks: true,
-    requiresExtraPaymentsAgreement: true,
-    setupRequired: true,
-    shopOwner: true,
-    shopifyCreatedAt: true,
-    shopifyUpdatedAt: true,
-    source: true,
-    taxShipping: true,
-    taxesIncluded: true,
-    timezone: true,
-    transactionalSmsDisabled: true,
-    updatedAt: true,
-    weightUnit: true,
-    zipCode: true
-  };
-  var modelApiIdentifier4 = "shopifyShop";
-  var pluralModelApiIdentifier4 = "shopifyShops";
-  var ShopifyShopManager = buildModelManager(
-    modelApiIdentifier4,
-    pluralModelApiIdentifier4,
-    DefaultShopifyShopSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier4,
-        modelApiIdentifier: modelApiIdentifier4,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyShopSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier4,
-        modelApiIdentifier: modelApiIdentifier4,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyShopSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier4,
-        modelApiIdentifier: modelApiIdentifier4,
-        defaultSelection: DefaultShopifyShopSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier4,
-        modelApiIdentifier: modelApiIdentifier4,
-        defaultSelection: DefaultShopifyShopSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier4,
-        modelApiIdentifier: modelApiIdentifier4,
-        defaultSelection: DefaultShopifyShopSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyShop",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyShops",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "installShopifyShop",
-        functionName: "install",
-        errorMessage: "The action install on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkInstallShopifyShops",
-        functionName: "bulkInstall",
-        errorMessage: "The action install on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "reinstallShopifyShop",
-        functionName: "reinstall",
-        errorMessage: "The action reinstall on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkReinstallShopifyShops",
-        functionName: "bulkReinstall",
-        errorMessage: "The action reinstall on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "uninstallShopifyShop",
-        functionName: "uninstall",
-        errorMessage: "The action uninstall on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUninstallShopifyShops",
-        functionName: "bulkUninstall",
-        errorMessage: "The action uninstall on model shopifyShop does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier4
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifySync.js
-  var DefaultShopifySyncSelection = {
-    __typename: true,
-    id: true,
-    state: true,
-    createdAt: true,
-    domain: true,
-    errorDetails: true,
-    errorMessage: true,
-    force: true,
-    models: true,
-    syncSince: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier5 = "shopifySync";
-  var pluralModelApiIdentifier5 = "shopifySyncs";
-  var ShopifySyncManager = buildModelManager(
-    modelApiIdentifier5,
-    pluralModelApiIdentifier5,
-    DefaultShopifySyncSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier5,
-        modelApiIdentifier: modelApiIdentifier5,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier5,
-        modelApiIdentifier: modelApiIdentifier5,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier5,
-        modelApiIdentifier: modelApiIdentifier5,
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier5,
-        modelApiIdentifier: modelApiIdentifier5,
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier5,
-        modelApiIdentifier: modelApiIdentifier5,
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "findOne",
-        operationName: pluralModelApiIdentifier5,
-        functionName: "findById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier5,
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: pluralModelApiIdentifier5,
-        functionName: "maybeFindById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier5,
-        defaultSelection: DefaultShopifySyncSelection,
-        namespace: null
-      },
-      {
-        type: "action",
-        operationName: "abortShopifySync",
-        operationReturnType: "AbortShopifySync",
-        functionName: "abort",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier5,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier5,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          id: { required: true, type: "GadgetID" },
-          shopifySync: { required: false, type: "AbortShopifySyncInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkAbortShopifySyncs",
-        functionName: "bulkAbort",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "abort",
-        modelApiIdentifier: modelApiIdentifier5,
-        modelSelectionField: pluralModelApiIdentifier5,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkAbortShopifySyncsInput!]" }
-        },
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "completeShopifySync",
-        operationReturnType: "CompleteShopifySync",
-        functionName: "complete",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier5,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier5,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          id: { required: true, type: "GadgetID" },
-          shopifySync: { required: false, type: "CompleteShopifySyncInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkCompleteShopifySyncs",
-        functionName: "bulkComplete",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "complete",
-        modelApiIdentifier: modelApiIdentifier5,
-        modelSelectionField: pluralModelApiIdentifier5,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkCompleteShopifySyncsInput!]" }
-        },
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "errorShopifySync",
-        operationReturnType: "ErrorShopifySync",
-        functionName: "error",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier5,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier5,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          id: { required: true, type: "GadgetID" },
-          shopifySync: { required: false, type: "ErrorShopifySyncInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkErrorShopifySyncs",
-        functionName: "bulkError",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "error",
-        modelApiIdentifier: modelApiIdentifier5,
-        modelSelectionField: pluralModelApiIdentifier5,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkErrorShopifySyncsInput!]" }
-        },
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "runShopifySync",
-        operationReturnType: "RunShopifySync",
-        functionName: "run",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier5,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier5,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          shopifySync: { required: false, type: "RunShopifySyncInput" },
-          startReason: { required: false, type: "String" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkRunShopifySyncs",
-        functionName: "bulkRun",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "run",
-        modelApiIdentifier: modelApiIdentifier5,
-        modelSelectionField: pluralModelApiIdentifier5,
-        namespace: null,
-        variables: { inputs: { required: true, type: "[BulkRunShopifySyncsInput!]" } },
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "upsertShopifySync",
-        operationReturnType: "UpsertShopifySync",
-        functionName: "upsert",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier5,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier5,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          on: { required: false, type: "[String!]" },
-          shopifySync: { required: false, type: "UpsertShopifySyncInput" },
-          startReason: { required: false, type: "String" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: ["on"],
-        hasReturnType: {
-          "... on RunShopifySyncResult": { hasReturnType: false },
-          "... on AbortShopifySyncResult": { hasReturnType: false }
-        },
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultShopifySyncSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkUpsertShopifySyncs",
-        functionName: "bulkUpsert",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "upsert",
-        modelApiIdentifier: modelApiIdentifier5,
-        modelSelectionField: pluralModelApiIdentifier5,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkUpsertShopifySyncsInput!]" }
-        },
-        defaultSelection: DefaultShopifySyncSelection
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/SmsTemplates.js
-  var DefaultSmsTemplatesSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    smsText: true,
-    title: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier6 = "smsTemplates";
-  var pluralModelApiIdentifier6 = "smsTemplatess";
-  var SmsTemplatesManager = buildModelManager(
-    modelApiIdentifier6,
-    pluralModelApiIdentifier6,
-    DefaultSmsTemplatesSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier6,
-        modelApiIdentifier: modelApiIdentifier6,
-        findByVariableName: "id",
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier6,
-        modelApiIdentifier: modelApiIdentifier6,
-        findByVariableName: "id",
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier6,
-        modelApiIdentifier: modelApiIdentifier6,
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier6,
-        modelApiIdentifier: modelApiIdentifier6,
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier6,
-        modelApiIdentifier: modelApiIdentifier6,
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "findOne",
-        operationName: pluralModelApiIdentifier6,
-        functionName: "findById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier6,
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: pluralModelApiIdentifier6,
-        functionName: "maybeFindById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier6,
-        defaultSelection: DefaultSmsTemplatesSelection,
-        namespace: null
-      },
-      {
-        type: "action",
-        operationName: "createSmsTemplates",
-        operationReturnType: "CreateSmsTemplates",
-        functionName: "create",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier6,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier6,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          smsTemplates: { required: false, type: "CreateSmsTemplatesInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultSmsTemplatesSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkCreateSmsTemplates",
-        functionName: "bulkCreate",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "create",
-        modelApiIdentifier: modelApiIdentifier6,
-        modelSelectionField: pluralModelApiIdentifier6,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkCreateSmsTemplatesInput!]" }
-        },
-        defaultSelection: DefaultSmsTemplatesSelection
-      },
-      {
-        type: "action",
-        operationName: "updateSmsTemplates",
-        operationReturnType: "UpdateSmsTemplates",
-        functionName: "update",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier6,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier6,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          id: { required: true, type: "GadgetID" },
-          smsTemplates: { required: false, type: "UpdateSmsTemplatesInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultSmsTemplatesSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkUpdateSmsTemplates",
-        functionName: "bulkUpdate",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "update",
-        modelApiIdentifier: modelApiIdentifier6,
-        modelSelectionField: pluralModelApiIdentifier6,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkUpdateSmsTemplatesInput!]" }
-        },
-        defaultSelection: DefaultSmsTemplatesSelection
-      },
-      {
-        type: "action",
-        operationName: "deleteSmsTemplates",
-        operationReturnType: "DeleteSmsTemplates",
-        functionName: "delete",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier6,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier6,
-        isBulk: false,
-        isDeleter: true,
-        variables: { id: { required: true, type: "GadgetID" } },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: false,
-        hasCreateOrUpdateEffect: false,
-        defaultSelection: null
-      },
-      {
-        type: "action",
-        operationName: "bulkDeleteSmsTemplates",
-        functionName: "bulkDelete",
-        isBulk: true,
-        isDeleter: true,
-        hasReturnType: false,
-        acceptsModelInput: false,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "delete",
-        modelApiIdentifier: modelApiIdentifier6,
-        modelSelectionField: pluralModelApiIdentifier6,
-        namespace: null,
-        variables: { ids: { required: true, type: "[GadgetID!]" } },
-        defaultSelection: null
-      },
-      {
-        type: "action",
-        operationName: "upsertSmsTemplates",
-        operationReturnType: "UpsertSmsTemplates",
-        functionName: "upsert",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier6,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier6,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          on: { required: false, type: "[String!]" },
-          smsTemplates: { required: false, type: "UpsertSmsTemplatesInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: ["on"],
-        hasReturnType: {
-          "... on CreateSmsTemplatesResult": { hasReturnType: false },
-          "... on UpdateSmsTemplatesResult": { hasReturnType: false }
-        },
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultSmsTemplatesSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkUpsertSmsTemplates",
-        functionName: "bulkUpsert",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "upsert",
-        modelApiIdentifier: modelApiIdentifier6,
-        modelSelectionField: pluralModelApiIdentifier6,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkUpsertSmsTemplatesInput!]" }
-        },
-        defaultSelection: DefaultSmsTemplatesSelection
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/AllowedTag.js
-  var DefaultAllowedTagSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    keyword: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier7 = "allowedTag";
-  var pluralModelApiIdentifier7 = "allowedTags";
-  var AllowedTagManager = buildModelManager(
-    modelApiIdentifier7,
-    pluralModelApiIdentifier7,
-    DefaultAllowedTagSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier7,
-        modelApiIdentifier: modelApiIdentifier7,
-        findByVariableName: "id",
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier7,
-        modelApiIdentifier: modelApiIdentifier7,
-        findByVariableName: "id",
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier7,
-        modelApiIdentifier: modelApiIdentifier7,
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier7,
-        modelApiIdentifier: modelApiIdentifier7,
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier7,
-        modelApiIdentifier: modelApiIdentifier7,
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "findOne",
-        operationName: pluralModelApiIdentifier7,
-        functionName: "findById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier7,
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: pluralModelApiIdentifier7,
-        functionName: "maybeFindById",
-        findByField: "id",
-        findByVariableName: "id",
-        modelApiIdentifier: modelApiIdentifier7,
-        defaultSelection: DefaultAllowedTagSelection,
-        namespace: null
-      },
-      {
-        type: "action",
-        operationName: "createAllowedTag",
-        operationReturnType: "CreateAllowedTag",
-        functionName: "create",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier7,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier7,
-        isBulk: false,
-        isDeleter: false,
-        variables: { allowedTag: { required: false, type: "CreateAllowedTagInput" } },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultAllowedTagSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkCreateAllowedTags",
-        functionName: "bulkCreate",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "create",
-        modelApiIdentifier: modelApiIdentifier7,
-        modelSelectionField: pluralModelApiIdentifier7,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkCreateAllowedTagsInput!]" }
-        },
-        defaultSelection: DefaultAllowedTagSelection
-      },
-      {
-        type: "action",
-        operationName: "updateAllowedTag",
-        operationReturnType: "UpdateAllowedTag",
-        functionName: "update",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier7,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier7,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          id: { required: true, type: "GadgetID" },
-          allowedTag: { required: false, type: "UpdateAllowedTagInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultAllowedTagSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkUpdateAllowedTags",
-        functionName: "bulkUpdate",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "update",
-        modelApiIdentifier: modelApiIdentifier7,
-        modelSelectionField: pluralModelApiIdentifier7,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkUpdateAllowedTagsInput!]" }
-        },
-        defaultSelection: DefaultAllowedTagSelection
-      },
-      {
-        type: "action",
-        operationName: "deleteAllowedTag",
-        operationReturnType: "DeleteAllowedTag",
-        functionName: "delete",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier7,
-        operatesWithRecordIdentity: true,
-        modelSelectionField: modelApiIdentifier7,
-        isBulk: false,
-        isDeleter: true,
-        variables: { id: { required: true, type: "GadgetID" } },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: [],
-        hasReturnType: false,
-        acceptsModelInput: false,
-        hasCreateOrUpdateEffect: false,
-        defaultSelection: null
-      },
-      {
-        type: "action",
-        operationName: "bulkDeleteAllowedTags",
-        functionName: "bulkDelete",
-        isBulk: true,
-        isDeleter: true,
-        hasReturnType: false,
-        acceptsModelInput: false,
-        operatesWithRecordIdentity: true,
-        singleActionFunctionName: "delete",
-        modelApiIdentifier: modelApiIdentifier7,
-        modelSelectionField: pluralModelApiIdentifier7,
-        namespace: null,
-        variables: { ids: { required: true, type: "[GadgetID!]" } },
-        defaultSelection: null
-      },
-      {
-        type: "action",
-        operationName: "upsertAllowedTag",
-        operationReturnType: "UpsertAllowedTag",
-        functionName: "upsert",
-        namespace: null,
-        modelApiIdentifier: modelApiIdentifier7,
-        operatesWithRecordIdentity: false,
-        modelSelectionField: modelApiIdentifier7,
-        isBulk: false,
-        isDeleter: false,
-        variables: {
-          on: { required: false, type: "[String!]" },
-          allowedTag: { required: false, type: "UpsertAllowedTagInput" }
-        },
-        hasAmbiguousIdentifier: false,
-        paramOnlyVariables: ["on"],
-        hasReturnType: {
-          "... on CreateAllowedTagResult": { hasReturnType: false },
-          "... on UpdateAllowedTagResult": { hasReturnType: false }
-        },
-        acceptsModelInput: true,
-        hasCreateOrUpdateEffect: true,
-        defaultSelection: DefaultAllowedTagSelection
-      },
-      {
-        type: "action",
-        operationName: "bulkUpsertAllowedTags",
-        functionName: "bulkUpsert",
-        isBulk: true,
-        isDeleter: false,
-        hasReturnType: false,
-        acceptsModelInput: true,
-        operatesWithRecordIdentity: false,
-        singleActionFunctionName: "upsert",
-        modelApiIdentifier: modelApiIdentifier7,
-        modelSelectionField: pluralModelApiIdentifier7,
-        namespace: null,
-        variables: {
-          inputs: { required: true, type: "[BulkUpsertAllowedTagsInput!]" }
-        },
-        defaultSelection: DefaultAllowedTagSelection
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompany.js
-  var DefaultShopifyCompanySelection = {
-    __typename: true,
-    id: true,
-    contactCount: true,
-    contactsCount: true,
-    createdAt: true,
-    customerSince: true,
-    externalId: true,
-    lifetimeDuration: true,
-    locationsCount: true,
-    name: true,
-    note: true,
-    ordersCount: true,
-    shopifyCreatedAt: true,
-    shopifyUpdatedAt: true,
-    totalSpent: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier8 = "shopifyCompany";
-  var pluralModelApiIdentifier8 = "shopifyCompanies";
-  var ShopifyCompanyManager = buildModelManager(
-    modelApiIdentifier8,
-    pluralModelApiIdentifier8,
-    DefaultShopifyCompanySelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier8,
-        modelApiIdentifier: modelApiIdentifier8,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanySelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier8,
-        modelApiIdentifier: modelApiIdentifier8,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanySelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier8,
-        modelApiIdentifier: modelApiIdentifier8,
-        defaultSelection: DefaultShopifyCompanySelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier8,
-        modelApiIdentifier: modelApiIdentifier8,
-        defaultSelection: DefaultShopifyCompanySelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier8,
-        modelApiIdentifier: modelApiIdentifier8,
-        defaultSelection: DefaultShopifyCompanySelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompany",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanies",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompany",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanies",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompany",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanies",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompany does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier8
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompanyAddress.js
-  var DefaultShopifyCompanyAddressSelection = {
-    __typename: true,
-    id: true,
-    address1: true,
-    address2: true,
-    city: true,
-    companyName: true,
-    country: true,
-    countryCode: true,
-    createdAt: true,
-    formattedAddress: true,
-    formattedArea: true,
-    phone: true,
-    province: true,
-    recipient: true,
-    updatedAt: true,
-    zipCode: true,
-    zoneCode: true
-  };
-  var modelApiIdentifier9 = "shopifyCompanyAddress";
-  var pluralModelApiIdentifier9 = "shopifyCompanyAddresses";
-  var ShopifyCompanyAddressManager = buildModelManager(
-    modelApiIdentifier9,
-    pluralModelApiIdentifier9,
-    DefaultShopifyCompanyAddressSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier9,
-        modelApiIdentifier: modelApiIdentifier9,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyAddressSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier9,
-        modelApiIdentifier: modelApiIdentifier9,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyAddressSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier9,
-        modelApiIdentifier: modelApiIdentifier9,
-        defaultSelection: DefaultShopifyCompanyAddressSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier9,
-        modelApiIdentifier: modelApiIdentifier9,
-        defaultSelection: DefaultShopifyCompanyAddressSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier9,
-        modelApiIdentifier: modelApiIdentifier9,
-        defaultSelection: DefaultShopifyCompanyAddressSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompanyAddress",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanyAddresses",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompanyAddress",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanyAddresses",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompanyAddress",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanyAddresses",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompanyAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier9
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompanyContact.js
-  var DefaultShopifyCompanyContactSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    isMainContact: true,
-    lifetimeDuration: true,
-    locale: true,
-    shopifyCreatedAt: true,
-    shopifyUpdatedAt: true,
-    title: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier10 = "shopifyCompanyContact";
-  var pluralModelApiIdentifier10 = "shopifyCompanyContacts";
-  var ShopifyCompanyContactManager = buildModelManager(
-    modelApiIdentifier10,
-    pluralModelApiIdentifier10,
-    DefaultShopifyCompanyContactSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier10,
-        modelApiIdentifier: modelApiIdentifier10,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier10,
-        modelApiIdentifier: modelApiIdentifier10,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier10,
-        modelApiIdentifier: modelApiIdentifier10,
-        defaultSelection: DefaultShopifyCompanyContactSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier10,
-        modelApiIdentifier: modelApiIdentifier10,
-        defaultSelection: DefaultShopifyCompanyContactSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier10,
-        modelApiIdentifier: modelApiIdentifier10,
-        defaultSelection: DefaultShopifyCompanyContactSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompanyContact",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanyContacts",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompanyContact",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanyContacts",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompanyContact",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanyContacts",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompanyContact does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier10
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompanyContactRole.js
-  var DefaultShopifyCompanyContactRoleSelection = {
-    __typename: true,
-    id: true,
-    createdAt: true,
-    name: true,
-    note: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier11 = "shopifyCompanyContactRole";
-  var pluralModelApiIdentifier11 = "shopifyCompanyContactRoles";
-  var ShopifyCompanyContactRoleManager = buildModelManager(
-    modelApiIdentifier11,
-    pluralModelApiIdentifier11,
-    DefaultShopifyCompanyContactRoleSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier11,
-        modelApiIdentifier: modelApiIdentifier11,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactRoleSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier11,
-        modelApiIdentifier: modelApiIdentifier11,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactRoleSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier11,
-        modelApiIdentifier: modelApiIdentifier11,
-        defaultSelection: DefaultShopifyCompanyContactRoleSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier11,
-        modelApiIdentifier: modelApiIdentifier11,
-        defaultSelection: DefaultShopifyCompanyContactRoleSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier11,
-        modelApiIdentifier: modelApiIdentifier11,
-        defaultSelection: DefaultShopifyCompanyContactRoleSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompanyContactRole",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanyContactRoles",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompanyContactRole",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanyContactRoles",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompanyContactRole",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanyContactRoles",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompanyContactRole does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier11
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompanyContactRoleAssignment.js
-  var DefaultShopifyCompanyContactRoleAssignmentSelection = { __typename: true, id: true, createdAt: true, updatedAt: true };
-  var modelApiIdentifier12 = "shopifyCompanyContactRoleAssignment";
-  var pluralModelApiIdentifier12 = "shopifyCompanyContactRoleAssignments";
-  var ShopifyCompanyContactRoleAssignmentManager = buildModelManager(
-    modelApiIdentifier12,
-    pluralModelApiIdentifier12,
-    DefaultShopifyCompanyContactRoleAssignmentSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier12,
-        modelApiIdentifier: modelApiIdentifier12,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactRoleAssignmentSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier12,
-        modelApiIdentifier: modelApiIdentifier12,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyContactRoleAssignmentSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier12,
-        modelApiIdentifier: modelApiIdentifier12,
-        defaultSelection: DefaultShopifyCompanyContactRoleAssignmentSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier12,
-        modelApiIdentifier: modelApiIdentifier12,
-        defaultSelection: DefaultShopifyCompanyContactRoleAssignmentSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier12,
-        modelApiIdentifier: modelApiIdentifier12,
-        defaultSelection: DefaultShopifyCompanyContactRoleAssignmentSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompanyContactRoleAssignment",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanyContactRoleAssignments",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompanyContactRoleAssignment",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanyContactRoleAssignments",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompanyContactRoleAssignment",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanyContactRoleAssignments",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompanyContactRoleAssignment does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier12
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCompanyLocation.js
-  var DefaultShopifyCompanyLocationSelection = {
-    __typename: true,
-    id: true,
-    buyerExperienceConfiguration: true,
-    createdAt: true,
-    currency: true,
-    externalId: true,
-    locale: true,
-    name: true,
-    note: true,
-    ordersCount: true,
-    phone: true,
-    shopifyCreatedAt: true,
-    shopifyUpdatedAt: true,
-    taxExemptions: true,
-    taxRegistrationId: true,
-    timelineComment: true,
-    totalSpent: true,
-    updatedAt: true
-  };
-  var modelApiIdentifier13 = "shopifyCompanyLocation";
-  var pluralModelApiIdentifier13 = "shopifyCompanyLocations";
-  var ShopifyCompanyLocationManager = buildModelManager(
-    modelApiIdentifier13,
-    pluralModelApiIdentifier13,
-    DefaultShopifyCompanyLocationSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier13,
-        modelApiIdentifier: modelApiIdentifier13,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyLocationSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier13,
-        modelApiIdentifier: modelApiIdentifier13,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCompanyLocationSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier13,
-        modelApiIdentifier: modelApiIdentifier13,
-        defaultSelection: DefaultShopifyCompanyLocationSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier13,
-        modelApiIdentifier: modelApiIdentifier13,
-        defaultSelection: DefaultShopifyCompanyLocationSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier13,
-        modelApiIdentifier: modelApiIdentifier13,
-        defaultSelection: DefaultShopifyCompanyLocationSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCompanyLocation",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCompanyLocations",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCompanyLocation",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCompanyLocations",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCompanyLocation",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCompanyLocations",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCompanyLocation does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier13
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCustomer.js
-  var DefaultShopifyCustomerSelection = {
-    __typename: true,
-    id: true,
-    acceptsMarketing: true,
-    acceptsMarketingUpdatedAt: true,
-    createdAt: true,
-    currency: true,
-    dataSaleOptOut: true,
-    email: true,
-    emailMarketingConsent: true,
-    firstName: true,
-    lastName: true,
-    lastOrderName: true,
-    marketingOptInLevel: true,
-    metafield: true,
-    multipassIdentifier: true,
-    note: true,
-    ordersCount: true,
-    phone: true,
-    shopifyCreatedAt: true,
-    shopifyState: true,
-    shopifyUpdatedAt: true,
-    smsMarketingConsent: true,
-    statistics: true,
-    tags: true,
-    taxExempt: true,
-    taxExemptions: true,
-    totalSpent: true,
-    updatedAt: true,
-    verifiedEmail: true
-  };
-  var modelApiIdentifier14 = "shopifyCustomer";
-  var pluralModelApiIdentifier14 = "shopifyCustomers";
-  var ShopifyCustomerManager = buildModelManager(
-    modelApiIdentifier14,
-    pluralModelApiIdentifier14,
-    DefaultShopifyCustomerSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier14,
-        modelApiIdentifier: modelApiIdentifier14,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCustomerSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier14,
-        modelApiIdentifier: modelApiIdentifier14,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCustomerSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier14,
-        modelApiIdentifier: modelApiIdentifier14,
-        defaultSelection: DefaultShopifyCustomerSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier14,
-        modelApiIdentifier: modelApiIdentifier14,
-        defaultSelection: DefaultShopifyCustomerSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier14,
-        modelApiIdentifier: modelApiIdentifier14,
-        defaultSelection: DefaultShopifyCustomerSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCustomer",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCustomers",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCustomer",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCustomers",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCustomer",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCustomers",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCustomer does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier14
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/models/ShopifyCustomerAddress.js
-  var DefaultShopifyCustomerAddressSelection = {
-    __typename: true,
-    id: true,
-    address1: true,
-    address2: true,
-    city: true,
-    company: true,
-    country: true,
-    countryCode: true,
-    countryName: true,
-    createdAt: true,
-    firstName: true,
-    lastName: true,
-    name: true,
-    phone: true,
-    province: true,
-    provinceCode: true,
-    updatedAt: true,
-    zipCode: true
-  };
-  var modelApiIdentifier15 = "shopifyCustomerAddress";
-  var pluralModelApiIdentifier15 = "shopifyCustomerAddresses";
-  var ShopifyCustomerAddressManager = buildModelManager(
-    modelApiIdentifier15,
-    pluralModelApiIdentifier15,
-    DefaultShopifyCustomerAddressSelection,
-    [
-      {
-        type: "findOne",
-        operationName: modelApiIdentifier15,
-        modelApiIdentifier: modelApiIdentifier15,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCustomerAddressSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindOne",
-        operationName: modelApiIdentifier15,
-        modelApiIdentifier: modelApiIdentifier15,
-        findByVariableName: "id",
-        defaultSelection: DefaultShopifyCustomerAddressSelection,
-        namespace: null
-      },
-      {
-        type: "findMany",
-        operationName: pluralModelApiIdentifier15,
-        modelApiIdentifier: modelApiIdentifier15,
-        defaultSelection: DefaultShopifyCustomerAddressSelection,
-        namespace: null
-      },
-      {
-        type: "findFirst",
-        operationName: pluralModelApiIdentifier15,
-        modelApiIdentifier: modelApiIdentifier15,
-        defaultSelection: DefaultShopifyCustomerAddressSelection,
-        namespace: null
-      },
-      {
-        type: "maybeFindFirst",
-        operationName: pluralModelApiIdentifier15,
-        modelApiIdentifier: modelApiIdentifier15,
-        defaultSelection: DefaultShopifyCustomerAddressSelection,
-        namespace: null
-      },
-      {
-        type: "stubbedAction",
-        operationName: "createShopifyCustomerAddress",
-        functionName: "create",
-        errorMessage: "The action create on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkCreateShopifyCustomerAddresses",
-        functionName: "bulkCreate",
-        errorMessage: "The action create on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      },
-      {
-        type: "stubbedAction",
-        operationName: "updateShopifyCustomerAddress",
-        functionName: "update",
-        errorMessage: "The action update on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkUpdateShopifyCustomerAddresses",
-        functionName: "bulkUpdate",
-        errorMessage: "The action update on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      },
-      {
-        type: "stubbedAction",
-        operationName: "deleteShopifyCustomerAddress",
-        functionName: "delete",
-        errorMessage: "The action delete on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      },
-      {
-        type: "stubbedAction",
-        operationName: "bulkDeleteShopifyCustomerAddresses",
-        functionName: "bulkDelete",
-        errorMessage: "The action delete on model shopifyCustomerAddress does not have an api trigger and cannot be called from this api client. If you are the developer of this application and want api clients to call this action add an api trigger to the action. For more information see: https://docs.gadget.dev/guides/actions/triggers",
-        modelApiIdentifier: modelApiIdentifier15
-      }
-    ]
-  );
-
-  // .gadget/client/dist-esm/Client.js
-  var import_meta = {};
-  var _a2;
-  var productionEnv = "production";
-  var fallbackEnv = "development";
-  var $modelRelationships2 = Symbol.for("gadget/modelRelationships");
-  var getImplicitEnv = () => {
-    try {
-      return process.env.GADGET_ENV;
-    } catch (error2) {
-      return void 0;
-    }
-  };
-  var _Client = class {
-    constructor(options) {
-      var _a3, _b2, _c2, _d2, _e2, _f;
-      this.options = options;
-      this.scheduledShopifySync = buildGlobalAction(this, {
-        type: "globalAction",
-        functionName: "scheduledShopifySync",
-        operationName: "scheduledShopifySync",
-        namespace: null,
-        variables: {
-          apiKeys: { required: false, type: "[String!]" },
-          syncSince: { required: false, type: "DateTime" },
-          models: { required: false, type: "[String!]" },
-          force: { required: false, type: "Boolean" },
-          startReason: { required: false, type: "String" }
-        }
-      });
-      this.test = buildGlobalAction(this, {
-        type: "globalAction",
-        functionName: "test",
-        operationName: "test",
-        namespace: null,
-        variables: {}
-      });
-      this.apiRoots = { "development": "https://admin-action-block--development.gadget.app/", "production": "https://admin-action-block.gadget.app/" };
-      this.applicationId = "159040";
-      this[_a2] = { "session": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyGdprRequest": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyShop": { "companyContact": { "type": "HasMany", "model": "shopifyCompanyContact" }, "companyContactRole": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "customerAddresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "companyLocation": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "customers": { "type": "HasMany", "model": "shopifyCustomer" }, "gdprRequests": { "type": "HasMany", "model": "shopifyGdprRequest" }, "company": { "type": "HasMany", "model": "shopifyCompany" }, "companyAddress": { "type": "HasMany", "model": "shopifyCompanyAddress" }, "syncs": { "type": "HasMany", "model": "shopifySync" }, "companyContactRoleAssignment": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" } }, "shopifySync": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "smsTemplates": {}, "allowedTag": {}, "shopifyCompany": { "contactRoles": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "locations": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "contacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "contactRoleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "mainContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "defaultRole": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyAddress": { "shop": { "type": "BelongsTo", "model": "shopifyShop" }, "companyBillingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "companyShippingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" } }, "shopifyCompanyContact": { "mainContactForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "customer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRole": { "roleAssignment": { "type": "HasOne", "model": "shopifyCompanyContactRoleAssignment" }, "defaultRoleForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRoleAssignment": { "role": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "companyContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "companyLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyLocation": { "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "billingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "shippingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomer": { "addresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "defaultAddress": { "type": "BelongsTo", "model": "shopifyCustomerAddress" }, "companyContacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomerAddress": { "shopifyCustomer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } } };
-      this.transaction = (callback) => __async(this, null, function* () {
-        return yield this.connection.transaction(callback);
-      });
-      this.getDirectUploadToken = () => __async(this, null, function* () {
-        const result = yield this.query("query GetDirectUploadToken($nonce: String) { gadgetMeta { directUploadToken(nonce: $nonce) { url, token } } }", { nonce: Math.random().toString(36).slice(2, 7) }, {
-          requestPolicy: "network-only"
-        });
-        return result.gadgetMeta.directUploadToken;
-      });
-      if (import_meta.env && import_meta.env.SSR) {
-        const api = (_a3 = globalThis.GadgetGlobals) == null ? void 0 : _a3.api;
-        if (api) {
-          return api.actAsSession;
-        }
-      }
-      this.environment = ((_c2 = (_b2 = options == null ? void 0 : options.environment) != null ? _b2 : getImplicitEnv()) != null ? _c2 : fallbackEnv).toLocaleLowerCase();
-      let apiRoot;
-      if (this.apiRoots[this.environment]) {
-        apiRoot = this.apiRoots[this.environment];
-      } else {
-        const envPart = this.environment == productionEnv ? "" : `--${this.environment}`;
-        apiRoot = `https://admin-action-block${envPart}.gadget.app`;
-      }
-      const exchanges = __spreadValues({}, options == null ? void 0 : options.exchanges);
-      if (this.environment !== productionEnv) {
-        const devHarnessExchange = ({ forward }) => {
-          return (operations$) => {
-            const operationResult$ = forward(operations$);
-            return pipe(
-              operationResult$,
-              map((result) => {
-                try {
-                  if (typeof window !== "undefined" && typeof CustomEvent === "function") {
-                    const event = new CustomEvent("gadget:devharness:graphqlresult", { detail: result });
-                    window.dispatchEvent(event);
-                  }
-                } catch (error2) {
-                  console.warn("[gadget] error dispatching gadget dev harness event", error2);
-                }
-                return result;
-              })
-            );
-          };
-        };
-        exchanges.beforeAll = [
-          devHarnessExchange,
-          ...(_d2 = exchanges.beforeAll) != null ? _d2 : []
-        ];
-      }
-      this.connection = new GadgetConnection(__spreadProps(__spreadValues({
-        endpoint: new URL("api/graphql", apiRoot).toString(),
-        applicationId: this.applicationId,
-        authenticationMode: (_e2 = options == null ? void 0 : options.authenticationMode) != null ? _e2 : typeof window == "undefined" ? { anonymous: true } : { browserSession: true }
-      }, options), {
-        exchanges,
-        environment: this.environment
-      }));
-      if (typeof window != "undefined" && this.connection.authenticationMode == AuthenticationMode.APIKey && !((_f = options == null ? void 0 : options.authenticationMode) == null ? void 0 : _f.dangerouslyAllowBrowserApiKey)) {
-        throw new Error("GGT_BROWSER_API_KEY_USAGE: Using a Gadget API key to authenticate this client object is insecure and will leak your API keys to attackers. Please use a different authentication mode.");
-      }
-      this.session = new SessionManager(this.connection);
-      this.currentSession = new CurrentSessionManager(this.connection);
-      this.shopifyGdprRequest = new ShopifyGdprRequestManager(this.connection);
-      this.shopifyShop = new ShopifyShopManager(this.connection);
-      this.shopifySync = new ShopifySyncManager(this.connection);
-      this.smsTemplates = new SmsTemplatesManager(this.connection);
-      this.allowedTag = new AllowedTagManager(this.connection);
-      this.shopifyCompany = new ShopifyCompanyManager(this.connection);
-      this.shopifyCompanyAddress = new ShopifyCompanyAddressManager(this.connection);
-      this.shopifyCompanyContact = new ShopifyCompanyContactManager(this.connection);
-      this.shopifyCompanyContactRole = new ShopifyCompanyContactRoleManager(this.connection);
-      this.shopifyCompanyContactRoleAssignment = new ShopifyCompanyContactRoleAssignmentManager(this.connection);
-      this.shopifyCompanyLocation = new ShopifyCompanyLocationManager(this.connection);
-      this.shopifyCustomer = new ShopifyCustomerManager(this.connection);
-      this.shopifyCustomerAddress = new ShopifyCustomerAddressManager(this.connection);
-      this.internal = {
-        session: new InternalModelManager("session", this.connection, { "pluralApiIdentifier": "sessions", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyGdprRequest: new InternalModelManager("shopifyGdprRequest", this.connection, { "pluralApiIdentifier": "shopifyGdprRequests", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyShop: new InternalModelManager("shopifyShop", this.connection, { "pluralApiIdentifier": "shopifyShops", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifySync: new InternalModelManager("shopifySync", this.connection, { "pluralApiIdentifier": "shopifySyncs", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        smsTemplates: new InternalModelManager("smsTemplates", this.connection, { "pluralApiIdentifier": "smsTemplatess", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        allowedTag: new InternalModelManager("allowedTag", this.connection, { "pluralApiIdentifier": "allowedTags", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompany: new InternalModelManager("shopifyCompany", this.connection, { "pluralApiIdentifier": "shopifyCompanies", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompanyAddress: new InternalModelManager("shopifyCompanyAddress", this.connection, { "pluralApiIdentifier": "shopifyCompanyAddresses", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompanyContact: new InternalModelManager("shopifyCompanyContact", this.connection, { "pluralApiIdentifier": "shopifyCompanyContacts", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompanyContactRole: new InternalModelManager("shopifyCompanyContactRole", this.connection, { "pluralApiIdentifier": "shopifyCompanyContactRoles", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompanyContactRoleAssignment: new InternalModelManager("shopifyCompanyContactRoleAssignment", this.connection, { "pluralApiIdentifier": "shopifyCompanyContactRoleAssignments", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCompanyLocation: new InternalModelManager("shopifyCompanyLocation", this.connection, { "pluralApiIdentifier": "shopifyCompanyLocations", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCustomer: new InternalModelManager("shopifyCustomer", this.connection, { "pluralApiIdentifier": "shopifyCustomers", "hasAmbiguousIdentifiers": false, "namespace": [] }),
-        shopifyCustomerAddress: new InternalModelManager("shopifyCustomerAddress", this.connection, { "pluralApiIdentifier": "shopifyCustomerAddresses", "hasAmbiguousIdentifiers": false, "namespace": [] })
-      };
-    }
-    /**
-     * Returns a new Client instance that will call the Gadget API as the application's admin user.
-     * This can only be used for API clients using internal authentication.
-     * @returns {Client} A new Client instance with admin authentication
-     */
-    get actAsAdmin() {
-      var _a3, _b2;
-      assert((_b2 = (_a3 = this.options) == null ? void 0 : _a3.authenticationMode) == null ? void 0 : _b2.internal, "actAsAdmin can only be used for API clients using internal authentication");
-      return new _Client(__spreadProps(__spreadValues({}, this.options), {
-        authenticationMode: {
-          internal: __spreadProps(__spreadValues({}, this.options.authenticationMode.internal), {
-            actAsSession: false
-          })
-        }
-      }));
-    }
-    /**
-     * Returns a new Client instance that will call the Gadget API as with the permission of the current session.
-     * This can only be used for API clients using internal authentication.
-     * @returns {Client} A new Client instance with session authentication
-     */
-    get actAsSession() {
-      var _a3, _b2;
-      assert((_b2 = (_a3 = this.options) == null ? void 0 : _a3.authenticationMode) == null ? void 0 : _b2.internal, "actAsSession can only be used for API clients using internal authentication");
-      return new _Client(__spreadProps(__spreadValues({}, this.options), {
-        authenticationMode: {
-          internal: __spreadProps(__spreadValues({}, this.options.authenticationMode.internal), {
-            actAsSession: true
-          })
-        }
-      }));
-    }
-    /** Run an arbitrary GraphQL query. */
-    query(graphQL, variables, options) {
-      return __async(this, null, function* () {
-        const { data, error: error2 } = yield this.connection.currentClient.query(graphQL, variables, options).toPromise();
-        if (error2)
-          throw error2;
-        return data;
-      });
-    }
-    /** Run an arbitrary GraphQL mutation. */
-    mutate(graphQL, variables, options) {
-      return __async(this, null, function* () {
-        const { data, error: error2 } = yield this.connection.currentClient.mutation(graphQL, variables, options).toPromise();
-        if (error2)
-          throw error2;
-        return data;
-      });
-    }
-    /**
-     * `fetch` function that works the same as the built-in `fetch` function, but automatically passes authentication information for this API client.
-     *
-     * @example
-     * await api.fetch("https://myapp--development.gadget.app/foo/bar");
-     *
-     * @example
-     * // fetch a relative URL from the endpoint this API client is configured to fetch from
-     * await api.fetch("/foo/bar");
-     **/
-    fetch(_0) {
-      return __async(this, arguments, function* (input, init = {}) {
-        return yield this.connection.fetch(input, init);
-      });
-    }
-    enqueue(action, inputOrOptions, maybeOptions) {
-      return __async(this, null, function* () {
-        assert(action, ".enqueue must be passed an action as the first argument but was passed undefined");
-        let input;
-        let options;
-        if (typeof maybeOptions !== "undefined") {
-          input = inputOrOptions;
-          options = maybeOptions;
-        } else if (!action.variables || Object.keys(action.variables).length == 0) {
-          input = {};
-          options = inputOrOptions;
-        } else {
-          if (typeof inputOrOptions == "string") {
-            input = { id: inputOrOptions };
-          } else {
-            input = inputOrOptions;
-          }
-          options = {};
-        }
-        return yield enqueueActionRunner(this.connection, action, input, options);
-      });
-    }
-    /**
-     * Returns a handle for a given background action id
-     *
-     * @param action The action that was enqueued
-     * @param id The id of the background action
-     *
-     * @example
-     * const handle = api.handle(api.widget.update, "app-job-12346");
-     *
-     * @example
-     * const handle = api.handle(api.someGlobalAction, "app-job-56789");
-     **/
-    handle(action, id) {
-      return new BackgroundActionHandle(this.connection, action, id);
-    }
-    toString() {
-      return `GadgetAPIClient<${this.environment}>`;
-    }
-    toJSON() {
-      return this.toString();
-    }
-  };
-  var Client2 = _Client;
-  _a2 = $modelRelationships2;
-
-  // extensions/sms-control/src/gadgetApi.js
-  var gadgetApi = new Client2({
-    authenticationMode: { browserSession: true }
-  });
-
-  // extensions/sms-control/src/fetchSmsTemplates.js
-  var fetchSmsTemplates = () => __async(void 0, null, function* () {
-    try {
-      const result = yield gadgetApi.smsTemplates.findMany();
-      return result;
-    } catch (err) {
-      console.error("Failed to fetch smsTemplates:", err);
-      throw new Error("Failed to fetch smsTemplates");
-    }
-  });
-
-  // extensions/sms-control/src/sendSmsMessage.js
-  var sendSmsMessage = (receiverNumber, messageText) => __async(void 0, null, function* () {
-    try {
-      const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          to: receiverNumber,
-          message: messageText
-        })
-      });
-      if (!res.ok) {
-        const errorDetails = yield res.json();
-        console.error("Server error:", errorDetails);
-        throw new Error(
-          `Server error: ${errorDetails.details || "Unknown error"}`
-        );
-      }
-      const json = yield res.json();
-      return json;
-    } catch (err) {
-      console.error("Error sending SMS:", err.message);
-      throw new Error(`Failed to send SMS: ${err.message}`);
-    }
-  });
-
-  // extensions/sms-control/src/replacePlaceholders.js
-  var replacePlaceholders = (template, data) => {
-    let result = template;
-    for (const key2 in data) {
-      const placeholder = `{{${key2}}}`;
-      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
-    }
-    return result;
-  };
-
   // extensions/shared/makeGraphQLQuery.ts
   function makeGraphQLQuery(query, variables) {
     return __async(this, null, function* () {
@@ -29334,171 +19506,127 @@ ${compileFieldSelection(operation.fields).join("\n")}
   }
 
   // extensions/shared/shopifyOperations.ts
-  function getOrderInfo(orderId) {
+  function getOrderTags(orderId) {
     return __async(this, null, function* () {
+      var _a;
       const query = `#graphql
     query Order($id: ID!) {
       order(id: $id) {
-        name
-        totalPriceSet {
-            shopMoney {
-                amount
-            }
-        }
         tags
-        customer {
-            id
+      }
+    }`;
+      const { data, errors } = yield makeGraphQLQuery(query, { id: orderId });
+      if (errors) {
+        const errorMessages = errors.map((e) => e.message).join(", ");
+        throw new Error(`Failed to fetch order details: ${errorMessages}`);
+      }
+      return ((_a = data == null ? void 0 : data.order) == null ? void 0 : _a.tags) || [];
+    });
+  }
+  function updateOrderTags(_0) {
+    return __async(this, arguments, function* ({
+      value,
+      orderId
+    }) {
+      const currentTags = yield getOrderTags(orderId);
+      if (currentTags.length > 0) {
+        const removeTagsMutation = `#graphql
+      mutation RemoveTags($id: ID!, $tags: [String!]!) {
+        tagsRemove(id: $id, tags: $tags) {
+          userErrors {
+            field
+            message
+          }
+        }
+      }`;
+        yield makeGraphQLQuery(removeTagsMutation, {
+          id: orderId,
+          tags: currentTags
+        });
+      }
+      const addTagsMutation = `#graphql
+    mutation AddTags($id: ID!, $tags: [String!]!) {
+      tagsAdd(id: $id, tags: $tags) {
+        userErrors {
+          field
+          message
+        }
+        node {
+          id
         }
       }
     }`;
-      const { data } = yield makeGraphQLQuery(query, { id: orderId });
-      if (data == null ? void 0 : data.order) {
-        const { tags, name, totalPriceSet, customer } = data == null ? void 0 : data.order;
-        return {
-          tags,
-          orderNumber: name,
-          total: totalPriceSet.shopMoney.amount,
-          customerId: customer == null ? void 0 : customer.id
-        };
-      }
-      throw new Error(`Order ${orderId} not found`);
-    });
-  }
-  function getCustomerPhone(customerId) {
-    return __async(this, null, function* () {
-      var _a3;
-      const query = `#graphql
-  query GetCustomerPhone($customerId: ID!) {
-    customer(id: $customerId) {
-        phone
-  }
-  }`;
-      const { data, errors } = yield makeGraphQLQuery(query, { customerId });
-      if (errors) {
-        const errorMessages = errors.map((e3) => e3.message).join(", ");
-        throw new Error(`Failed to fetch order details: ${errorMessages}`);
-      }
-      const phone = (_a3 = data == null ? void 0 : data.customer) == null ? void 0 : _a3.phone;
-      if (!phone)
-        return null;
-      return phone.slice(-12);
-    });
-  }
-  function addOrderNote(_0) {
-    return __async(this, arguments, function* ({
-      orderId,
-      note
-    }) {
-      var _a3, _b2, _c2, _d2;
-      if (!orderId) {
-        throw new Error(`Order ID is required but was not provided`);
-      }
-      const mutation = `#graphql
-        mutation updateOrderNote($input: OrderInput!) {
-            orderUpdate(input: $input) {
-                order {
-                    id
-                    note
-                }
-                userErrors {
-                    field
-                    message
-                }
-            }
-        }
-      `;
-      const { data, errors } = yield makeGraphQLQuery(mutation, {
-        input: {
-          id: orderId,
-          note
-        }
+      yield makeGraphQLQuery(addTagsMutation, {
+        id: orderId,
+        tags: [value]
       });
-      if (errors) {
-        const errorMessages = errors.map((e3) => e3.message).join(", ");
-        throw new Error(`Failed to update order note: ${errorMessages}`);
-      }
-      if ((_b2 = (_a3 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _a3.userErrors) == null ? void 0 : _b2.length) {
-        const userErrorMessages = data.orderUpdate.userErrors.map((e3) => `${e3.field}: ${e3.message}`).join(", ");
-        throw new Error(`Failed to update order note: ${userErrorMessages}`);
-      }
-      return ((_d2 = (_c2 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _c2.order) == null ? void 0 : _d2.note) || "";
     });
   }
 
-  // extensions/sms-control/src/SmsControl.jsx
+  // extensions/stage-control-order-details/src/stages.ts
+  var stages = [
+    {
+      value: "pending",
+      label: "Pending"
+    },
+    {
+      value: "processing",
+      label: "Processing"
+    },
+    {
+      value: "shipped",
+      label: "Shipped"
+    },
+    {
+      value: "delivered",
+      label: "Delivered"
+    },
+    {
+      value: "cancelled",
+      label: "Cancelled"
+    },
+    {
+      value: "returned",
+      label: "Returned"
+    }
+  ];
+
+  // extensions/stage-control-order-details/src/App.tsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var TARGET = "admin.order-details.block.render";
-  var SmsControl_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
+  var App_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    var _a3;
+    const [loading, setLoading] = (0, import_react13.useState)(true);
+    const [value, setValue] = (0, import_react13.useState)("");
     const { data } = useApi(TARGET);
-    const [status, setStatus] = (0, import_react13.useState)("Loading...");
-    const [smsTemplates, setSmsTemplates] = (0, import_react13.useState)([]);
-    const [loading, setLoading] = (0, import_react13.useState)(false);
-    const [customerPhone, setCustomerPhone] = (0, import_react13.useState)("");
-    const orderId = (_a3 = data == null ? void 0 : data.selected[0]) == null ? void 0 : _a3.id;
+    const orderId = data.selected[0].id;
     (0, import_react13.useEffect)(() => {
-      const loadSmsTemplates = () => __async(this, null, function* () {
-        try {
-          const { tags, orderNumber, total, customerId } = yield getOrderInfo(
-            orderId
-          );
-          const results = yield fetchSmsTemplates();
-          const resultsProcessed = results.map((res) => __spreadProps(__spreadValues({}, res), {
-            smsTextReplaced: replacePlaceholders(res.smsText, {
-              orderTotal: total,
-              orderNumber
-            })
-          }));
-          setSmsTemplates(resultsProcessed);
-          const customerPhone2 = yield getCustomerPhone(customerId);
-          setCustomerPhone(customerPhone2);
-          setStatus("Ready to send SMS");
-        } catch (err) {
-          setStatus("Failed to fetch SMS templates" + JSON.stringify(err));
-        }
-      });
-      loadSmsTemplates();
-    }, []);
-    const handleSendSms = (smsText) => __async(this, null, function* () {
-      setLoading(true);
-      setStatus("Sending SMS...");
-      try {
-        const response = yield sendSmsMessage(customerPhone, smsText);
-        const note = `SMS sent ${smsText}`;
-        yield addOrderNote({ orderId, note });
-        setStatus(note);
-      } catch (err) {
-        const note = `Error sending sms: ${err.message}`;
-        yield addOrderNote({ orderId, note });
-        setStatus(note);
-      } finally {
-        setLoading(false);
-      }
+      (function getProductInfo() {
+        return __async(this, null, function* () {
+          const tags = yield getOrderTags(orderId);
+          const currentStage = tags && tags[0] || stages[0].value;
+          setLoading(false);
+          setValue(currentStage);
+          yield updateOrderTags({ value: currentStage, orderId });
+        });
+      })();
+    }, [orderId]);
+    const onSubmit = () => __async(this, null, function* () {
+      yield updateOrderTags({ value, orderId });
     });
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(BlockStack2, { gap: "large", children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(InlineStack2, { inlineAlignment: "center", blockAlignment: "center", gap: "large", children: smsTemplates.map((template) => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-        Button2,
-        {
-          onPress: () => handleSendSms(template.smsTextReplaced),
-          disabled: loading,
-          variant: "primary",
-          tone: "default",
-          children: template.title
-        },
-        template.id
-      )) }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(BlockStack2, { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(InlineStack2, { children: [
-        loading && /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ProgressIndicator2, { size: "small-200" }),
-        /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
-          Badge2,
-          {
-            tone: status.startsWith("Success") ? "success" : status.startsWith("Error") ? "critical" : "default",
-            children: status
-          }
-        )
-      ] }) })
-    ] });
+    const onSelect = (value2) => __async(this, null, function* () {
+      setValue(value2);
+    });
+    return loading ? /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(InlineStack2, { blockAlignment: "center", inlineAlignment: "center", children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(ProgressIndicator2, { size: "large-100" }) }) : /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(AdminBlock2, { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Form2, { onSubmit, onReset: () => {
+    }, children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      Select2,
+      {
+        label: "Change order stage",
+        value,
+        onChange: onSelect,
+        options: stages
+      }
+    ) }) });
   }
 })();
-//# sourceMappingURL=sms-control.js.map
+//# sourceMappingURL=stage-control-order-details.js.map

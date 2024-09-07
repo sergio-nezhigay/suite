@@ -3,13 +3,9 @@ import {
   Badge,
   BlockStack,
   InlineStack,
-  Divider,
   Button,
-  Heading,
-  Text,
   reactExtension,
   ProgressIndicator,
-  ButtonGroup,
   useApi,
 } from '@shopify/ui-extensions-react/admin';
 
