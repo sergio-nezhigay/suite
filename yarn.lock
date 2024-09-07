@@ -323,7 +323,7 @@
   version "0.0.0"
   uid ""
 
-"@gadget-client/admin-action-block@link:extensions/admin-block1223/.gadget/client":
+"@gadget-client/admin-action-block@link:extensions/sms-control/.gadget/client":
   version "0.0.0"
   uid ""
 

@@ -3,13 +3,16 @@ import {
   Badge,
   BlockStack,
   InlineStack,
-  Text,
+  Divider,
   Button,
   Heading,
+  Text,
   reactExtension,
   ProgressIndicator,
+  ButtonGroup,
   useApi,
 } from '@shopify/ui-extensions-react/admin';
+
 import { fetchSmsTemplates } from './fetchSmsTemplates';
 import { sendSmsMessage } from './sendSmsMessage';
 import { replacePlaceholders } from './replacePlaceholders';
@@ -62,8 +65,8 @@ function App() {
     try {
       const response = await sendSmsMessage(customerPhone, smsText);
       const note = `SMS sent ${smsText}`;
-      setStatus(note);
       await addOrderNote({ orderId, note });
+      setStatus(note);
     } catch (err) {
       const note = `Error sending sms: ${err.message}`;
       await addOrderNote({ orderId, note });
@@ -74,14 +77,8 @@ function App() {
   };
 
   return (
-    <BlockStack blockAlignment='space-between'>
-      <Heading size='2'>SMS Control Center</Heading>
-      <InlineStack
-        inlineAlignment='center'
-        blockAlignment='center'
-        gap='large'
-        padding='true'
-      >
+    <BlockStack gap='large'>
+      <InlineStack inlineAlignment='center' blockAlignment='center' gap='large'>
         {smsTemplates.map((template) => (
           <Button
             key={template.id}
@@ -95,9 +92,8 @@ function App() {
         ))}
       </InlineStack>
 
-      <BlockStack spacing='tight'>
-        <Text fontWeight='bold'>Status11:</Text>
-        <InlineStack inlineAlignment='start' spacing='tight'>
+      <BlockStack>
+        <InlineStack>
           {loading && <ProgressIndicator size='small-200' />}
           <Badge
             tone={

@@ -259,7 +259,7 @@ export async function addOrderNote({
   }>(mutation, {
     input: {
       id: orderId,
-      note: `Status updated to: ${note}`,
+      note,
     },
   });
   if (errors) {
