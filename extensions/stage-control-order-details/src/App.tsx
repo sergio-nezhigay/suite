@@ -17,7 +17,7 @@ export default reactExtension(TARGET, () => <App />);
 
 function App() {
   const [value, setValue] = useState<string | null>(null);
-  const [loading, setLoading] = useState<Boolean>(false);
+  const [loading, setLoading] = useState<boolean>(false);
   const { data } = useApi(TARGET);
   const orderId = data.selected[0].id;
 
@@ -29,7 +29,7 @@ function App() {
       setValue(currentStage);
     }
     fetchOrderTags();
-  }, []);
+  }, [orderId]);
 
   const onSelect = useCallback(async (newValue: string) => {
     setLoading(true);
@@ -41,11 +41,11 @@ function App() {
   return (
     <AdminBlock>
       <Select
-        label='Order stage'
+        label={`Order stage ${loading ? '(wait...)' : ''}`}
         value={value}
         onChange={onSelect}
         options={stages}
-        disabled={Boolean(loading)}
+        disabled={loading}
       />
     </AdminBlock>
   );
