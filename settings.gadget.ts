@@ -16,6 +16,8 @@ export const settings: GadgetSettings = {
           "write_orders",
           "write_pixels",
           "read_customer_events",
+          "read_payment_customizations",
+          "write_payment_customizations",
         ],
       },
     },

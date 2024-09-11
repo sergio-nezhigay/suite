@@ -4,7 +4,10 @@
  * @param {object} data - An object containing key-value pairs for replacements (e.g., { orderNumber: "12345" }).
  * @returns {string} - The processed string with placeholders replaced.
  */
-export const replacePlaceholders = (template, data) => {
+export const replacePlaceholders = (
+  template: string,
+  data: Record<string, string>
+): string => {
   let result = template;
 
   for (const key in data) {

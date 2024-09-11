@@ -1,4 +1,19 @@
-export const sendSmsMessage = async (receiverNumber, messageText) => {
+type SmsResponse = {
+  status: string;
+  messageId: string;
+  error?: string;
+};
+
+/**
+ * Sends an SMS message to the specified receiver.
+ * @param {string} receiverNumber - The phone number of the receiver.
+ * @param {string} messageText - The SMS text to send.
+ * @returns {Promise<SmsResponse>} - The response from the server with details about the sent message.
+ */
+export const sendSmsMessage = async (
+  receiverNumber: string,
+  messageText: string
+): Promise<SmsResponse> => {
   try {
     const res = await fetch('https://admin-action-block.gadget.app/send-sms', {
       method: 'POST',
@@ -19,9 +34,9 @@ export const sendSmsMessage = async (receiverNumber, messageText) => {
       );
     }
 
-    const json = await res.json();
+    const json: SmsResponse = await res.json();
     return json;
-  } catch (err) {
+  } catch (err: any) {
     console.error('Error sending SMS:', err.message);
     throw new Error(`Failed to send SMS: ${err.message}`);
   }

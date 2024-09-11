@@ -1,6 +1,12 @@
 import { gadgetApi } from './gadgetApi';
 
-export const fetchSmsTemplates = async () => {
+type SMSTemplate = {
+  id: string;
+  title: string;
+  smsText: string;
+};
+
+export const fetchSmsTemplates = async (): Promise<SMSTemplate[]> => {
   try {
     const result = await gadgetApi.smsTemplates.findMany();
     return result;

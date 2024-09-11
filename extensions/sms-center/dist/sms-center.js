@@ -18500,9 +18500,9 @@
     }
   });
 
-  // node_modules/cross-fetch/dist/browser-ponyfill.js
+  // .gadget/client/node_modules/cross-fetch/dist/browser-ponyfill.js
   var require_browser_ponyfill = __commonJS({
-    "node_modules/cross-fetch/dist/browser-ponyfill.js"(exports, module) {
+    ".gadget/client/node_modules/cross-fetch/dist/browser-ponyfill.js"(exports, module) {
       var __global__ = typeof globalThis !== "undefined" && globalThis || typeof self !== "undefined" && self || typeof global !== "undefined" && global;
       var __globalThis__ = function() {
         function F() {

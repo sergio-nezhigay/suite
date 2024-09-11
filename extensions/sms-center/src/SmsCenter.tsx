@@ -14,9 +14,10 @@ import {
   getCustomerPhone,
   addOrderNote,
 } from '../../shared/shopifyOperations';
-import { fetchSmsTemplates } from './fetchSmsTemplates';
-import { replacePlaceholders } from './replacePlaceholders';
-import { sendSmsMessage } from './sendSmsMessage';
+
+import { replacePlaceholders } from './utils/replacePlaceholders';
+import { sendSmsMessage } from './utils/sendSmsMessage';
+import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
 
 const TARGET = 'admin.order-details.block.render';
 
@@ -33,9 +34,7 @@ function App() {
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const { tags, orderNumber, total, customerId } = await getOrderInfo(
-          orderId
-        );
+        const { orderNumber, total, customerId } = await getOrderInfo(orderId);
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
@@ -59,7 +58,7 @@ function App() {
     setLoading(true);
     setStatus('Sending SMS...');
     try {
-      const response = await sendSmsMessage(customerPhone, smsText);
+      await sendSmsMessage(customerPhone, smsText);
       const note = `SMS sent ${smsText}`;
       await addOrderNote({ orderId, note });
       setStatus(note);
