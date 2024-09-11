@@ -517,6 +517,11 @@
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
 
+"@shopify/web-pixels-extension@^0.4.14":
+  version "0.4.22"
+  resolved "https://registry.yarnpkg.com/@shopify/web-pixels-extension/-/web-pixels-extension-0.4.22.tgz#61f6635d2fc4c22fd267f34fc91bf3d560c65d83"
+  integrity sha512-F4Yg/GWdr40Ub81Gh7C+ce/JijFLe0NJMtRQxAGOKlIQf/zwnIaJg90uPY5FpI/YP8OTYxaYQ6xX/c7r5eLL9Q==
+
 "@sindresorhus/is@^4.0.0":
   version "4.6.0"
   resolved "https://registry.yarnpkg.com/@sindresorhus/is/-/is-4.6.0.tgz#3c7c9c46e678feefe7a2e5bb609d3dbd665ffb3f"

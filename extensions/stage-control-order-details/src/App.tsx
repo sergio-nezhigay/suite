@@ -4,12 +4,15 @@ import {
   useApi,
   AdminBlock,
   Select,
+  Button,
 } from '@shopify/ui-extensions-react/admin';
 import {
   getOrdersTags,
   updateOrdersTags,
 } from '../../shared/shopifyOperations';
 import { stages } from './stages';
+import { createWebPixel } from './createWebPixel';
+import { YourComponent } from './YourComponent';
 
 const TARGET = 'admin.order-details.block.render';
 
@@ -38,6 +41,18 @@ function App() {
     setLoading(false);
   }, []);
 
+  const handleCreateWebPixel = async () => {
+    console.log('onPress event');
+
+    try {
+      const accountID = '123';
+      const webPixel = await createWebPixel(accountID);
+      console.log('Web pixel created successfully:', webPixel);
+    } catch (error) {
+      console.error('Error creating web pixel:', error);
+    }
+  };
+
   return (
     <AdminBlock>
       <Select
@@ -47,6 +62,8 @@ function App() {
         options={stages}
         disabled={loading}
       />
+      <Button onPress={handleCreateWebPixel}>Click here2</Button>
+      <YourComponent />
     </AdminBlock>
   );
 }
