@@ -9,14 +9,14 @@ import {
   useApi,
 } from '@shopify/ui-extensions-react/admin';
 
-import { fetchSmsTemplates } from './fetchSmsTemplates';
-import { sendSmsMessage } from './sendSmsMessage';
-import { replacePlaceholders } from './replacePlaceholders';
 import {
   getOrderInfo,
   getCustomerPhone,
   addOrderNote,
 } from '../../shared/shopifyOperations';
+import { fetchSmsTemplates } from './fetchSmsTemplates';
+import { replacePlaceholders } from './replacePlaceholders';
+import { sendSmsMessage } from './sendSmsMessage';
 
 const TARGET = 'admin.order-details.block.render';
 

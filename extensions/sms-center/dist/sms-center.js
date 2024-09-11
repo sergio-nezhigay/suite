@@ -19722,7 +19722,7 @@
     }
   });
 
-  // extensions/sms-control/src/SmsControl.jsx
+  // extensions/sms-center/src/SmsCenter.tsx
   var import_react13 = __toESM(require_react());
 
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
@@ -20768,6 +20768,116 @@
       throw new AdminUIExtensionError("No extension api found.");
     }
     return api;
+  }
+
+  // extensions/shared/makeGraphQLQuery.ts
+  function makeGraphQLQuery(query, variables) {
+    return __async(this, null, function* () {
+      const graphQLQuery = { query, variables };
+      const res = yield fetch("shopify:admin/api/graphql.json", {
+        method: "POST",
+        body: JSON.stringify(graphQLQuery),
+        headers: {
+          "Content-Type": "application/json"
+        }
+      });
+      if (!res.ok) {
+        throw new Error("Network error");
+      }
+      return yield res.json();
+    });
+  }
+
+  // extensions/shared/shopifyOperations.ts
+  function getOrderInfo(orderId) {
+    return __async(this, null, function* () {
+      const query = `#graphql
+    query Order($id: ID!) {
+      order(id: $id) {
+        name
+        totalPriceSet {
+            shopMoney {
+                amount
+            }
+        }
+        tags
+        customer {
+            id
+        }
+      }
+    }`;
+      const { data } = yield makeGraphQLQuery(query, { id: orderId });
+      if (data == null ? void 0 : data.order) {
+        const { tags, name, totalPriceSet, customer } = data == null ? void 0 : data.order;
+        return {
+          tags,
+          orderNumber: name,
+          total: totalPriceSet.shopMoney.amount,
+          customerId: customer == null ? void 0 : customer.id
+        };
+      }
+      throw new Error(`Order ${orderId} not found`);
+    });
+  }
+  function getCustomerPhone(customerId) {
+    return __async(this, null, function* () {
+      var _a3;
+      const query = `#graphql
+  query GetCustomerPhone($customerId: ID!) {
+    customer(id: $customerId) {
+        phone
+  }
+  }`;
+      const { data, errors } = yield makeGraphQLQuery(query, { customerId });
+      if (errors) {
+        const errorMessages = errors.map((e3) => e3.message).join(", ");
+        throw new Error(`Failed to fetch order details: ${errorMessages}`);
+      }
+      const phone = (_a3 = data == null ? void 0 : data.customer) == null ? void 0 : _a3.phone;
+      if (!phone)
+        return null;
+      return phone.slice(-12);
+    });
+  }
+  function addOrderNote(_0) {
+    return __async(this, arguments, function* ({
+      orderId,
+      note
+    }) {
+      var _a3, _b2, _c2, _d2;
+      if (!orderId) {
+        throw new Error(`Order ID is required but was not provided`);
+      }
+      const mutation = `#graphql
+        mutation updateOrderNote($input: OrderInput!) {
+            orderUpdate(input: $input) {
+                order {
+                    id
+                    note
+                }
+                userErrors {
+                    field
+                    message
+                }
+            }
+        }
+      `;
+      const { data, errors } = yield makeGraphQLQuery(mutation, {
+        input: {
+          id: orderId,
+          note
+        }
+      });
+      if (errors) {
+        const errorMessages = errors.map((e3) => e3.message).join(", ");
+        throw new Error(`Failed to update order note: ${errorMessages}`);
+      }
+      if ((_b2 = (_a3 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _a3.userErrors) == null ? void 0 : _b2.length) {
+        const userErrorMessages = data.orderUpdate.userErrors.map((e3) => `${e3.field}: ${e3.message}`).join(", ");
+        throw new Error(`Failed to update order note: ${userErrorMessages}`);
+      }
+      return ((_d2 = (_c2 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _c2.order) == null ? void 0 : _d2.note) || "";
+    });
   }
 
   // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/AnyClient.js
@@ -29261,12 +29371,12 @@ ${compileFieldSelection(operation.fields).join("\n")}
   var Client2 = _Client;
   _a2 = $modelRelationships2;
 
-  // extensions/sms-control/src/gadgetApi.js
+  // extensions/sms-center/src/gadgetApi.ts
   var gadgetApi = new Client2({
     authenticationMode: { browserSession: true }
   });
 
-  // extensions/sms-control/src/fetchSmsTemplates.js
+  // extensions/sms-center/src/fetchSmsTemplates.ts
   var fetchSmsTemplates = () => __async(void 0, null, function* () {
     try {
       const result = yield gadgetApi.smsTemplates.findMany();
@@ -29277,7 +29387,17 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
   });
 
-  // extensions/sms-control/src/sendSmsMessage.js
+  // extensions/sms-center/src/replacePlaceholders.ts
+  var replacePlaceholders = (template, data) => {
+    let result = template;
+    for (const key2 in data) {
+      const placeholder = `{{${key2}}}`;
+      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
+    }
+    return result;
+  };
+
+  // extensions/sms-center/src/sendSmsMessage.ts
   var sendSmsMessage = (receiverNumber, messageText) => __async(void 0, null, function* () {
     try {
       const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
@@ -29305,130 +29425,10 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
   });
 
-  // extensions/sms-control/src/replacePlaceholders.js
-  var replacePlaceholders = (template, data) => {
-    let result = template;
-    for (const key2 in data) {
-      const placeholder = `{{${key2}}}`;
-      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
-    }
-    return result;
-  };
-
-  // extensions/shared/makeGraphQLQuery.ts
-  function makeGraphQLQuery(query, variables) {
-    return __async(this, null, function* () {
-      const graphQLQuery = { query, variables };
-      const res = yield fetch("shopify:admin/api/graphql.json", {
-        method: "POST",
-        body: JSON.stringify(graphQLQuery),
-        headers: {
-          "Content-Type": "application/json"
-        }
-      });
-      if (!res.ok) {
-        throw new Error("Network error");
-      }
-      return yield res.json();
-    });
-  }
-
-  // extensions/shared/shopifyOperations.ts
-  function getOrderInfo(orderId) {
-    return __async(this, null, function* () {
-      const query = `#graphql
-    query Order($id: ID!) {
-      order(id: $id) {
-        name
-        totalPriceSet {
-            shopMoney {
-                amount
-            }
-        }
-        tags
-        customer {
-            id
-        }
-      }
-    }`;
-      const { data } = yield makeGraphQLQuery(query, { id: orderId });
-      if (data == null ? void 0 : data.order) {
-        const { tags, name, totalPriceSet, customer } = data == null ? void 0 : data.order;
-        return {
-          tags,
-          orderNumber: name,
-          total: totalPriceSet.shopMoney.amount,
-          customerId: customer == null ? void 0 : customer.id
-        };
-      }
-      throw new Error(`Order ${orderId} not found`);
-    });
-  }
-  function getCustomerPhone(customerId) {
-    return __async(this, null, function* () {
-      var _a3;
-      const query = `#graphql
-  query GetCustomerPhone($customerId: ID!) {
-    customer(id: $customerId) {
-        phone
-  }
-  }`;
-      const { data, errors } = yield makeGraphQLQuery(query, { customerId });
-      if (errors) {
-        const errorMessages = errors.map((e3) => e3.message).join(", ");
-        throw new Error(`Failed to fetch order details: ${errorMessages}`);
-      }
-      const phone = (_a3 = data == null ? void 0 : data.customer) == null ? void 0 : _a3.phone;
-      if (!phone)
-        return null;
-      return phone.slice(-12);
-    });
-  }
-  function addOrderNote(_0) {
-    return __async(this, arguments, function* ({
-      orderId,
-      note
-    }) {
-      var _a3, _b2, _c2, _d2;
-      if (!orderId) {
-        throw new Error(`Order ID is required but was not provided`);
-      }
-      const mutation = `#graphql
-        mutation updateOrderNote($input: OrderInput!) {
-            orderUpdate(input: $input) {
-                order {
-                    id
-                    note
-                }
-                userErrors {
-                    field
-                    message
-                }
-            }
-        }
-      `;
-      const { data, errors } = yield makeGraphQLQuery(mutation, {
-        input: {
-          id: orderId,
-          note
-        }
-      });
-      if (errors) {
-        const errorMessages = errors.map((e3) => e3.message).join(", ");
-        throw new Error(`Failed to update order note: ${errorMessages}`);
-      }
-      if ((_b2 = (_a3 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _a3.userErrors) == null ? void 0 : _b2.length) {
-        const userErrorMessages = data.orderUpdate.userErrors.map((e3) => `${e3.field}: ${e3.message}`).join(", ");
-        throw new Error(`Failed to update order note: ${userErrorMessages}`);
-      }
-      return ((_d2 = (_c2 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _c2.order) == null ? void 0 : _d2.note) || "";
-    });
-  }
-
-  // extensions/sms-control/src/SmsControl.jsx
+  // extensions/sms-center/src/SmsCenter.tsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var TARGET = "admin.order-details.block.render";
-  var SmsControl_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
+  var SmsCenter_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
     var _a3;
     const { data } = useApi(TARGET);
@@ -29501,4 +29501,4 @@ ${compileFieldSelection(operation.fields).join("\n")}
     ] });
   }
 })();
-//# sourceMappingURL=sms-control.js.map
+//# sourceMappingURL=sms-center.js.map

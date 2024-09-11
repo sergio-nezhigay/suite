@@ -1,14 +1,12 @@
 {
-  "name": "sms-control",
+  "name": "sms-center",
   "private": true,
   "version": "1.0.0",
   "license": "UNLICENSED",
   "dependencies": {
     "react": "^18.0.0",
     "@shopify/ui-extensions": "2024.7.x",
-    "@shopify/ui-extensions-react": "2024.7.x",
-    "@gadget-client/admin-action-block": "link:.gadget/client",
-    "@gadgetinc/react": "^0.16.6"
+    "@shopify/ui-extensions-react": "2024.7.x"
   },
   "devDependencies": {
     "@types/react": "^18.0.0",

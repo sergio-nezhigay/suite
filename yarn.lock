@@ -323,10 +323,6 @@
   version "0.0.0"
   uid ""
 
-"@gadget-client/admin-action-block@link:extensions/sms-control/.gadget/client":
-  version "0.0.0"
-  uid ""
-
 "@gadgetinc/api-client-core@0.15.33":
   version "0.15.33"
   resolved "https://registry.yarnpkg.com/@gadgetinc/api-client-core/-/api-client-core-0.15.33.tgz#8c64768dfc3069d14a6537b80c34d9a758be1f11"
@@ -516,11 +512,6 @@
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
-
-"@shopify/web-pixels-extension@^0.4.14":
-  version "0.4.22"
-  resolved "https://registry.yarnpkg.com/@shopify/web-pixels-extension/-/web-pixels-extension-0.4.22.tgz#61f6635d2fc4c22fd267f34fc91bf3d560c65d83"
-  integrity sha512-F4Yg/GWdr40Ub81Gh7C+ce/JijFLe0NJMtRQxAGOKlIQf/zwnIaJg90uPY5FpI/YP8OTYxaYQ6xX/c7r5eLL9Q==
 
 "@sindresorhus/is@^4.0.0":
   version "4.6.0"
