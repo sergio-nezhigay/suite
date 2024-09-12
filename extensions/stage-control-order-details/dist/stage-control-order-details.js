@@ -1133,7 +1133,7 @@
             }
             return dispatcher.useContext(Context);
           }
-          function useState3(initialState) {
+          function useState2(initialState) {
             var dispatcher = resolveDispatcher();
             return dispatcher.useState(initialState);
           }
@@ -1936,7 +1936,7 @@
           exports.useMemo = useMemo2;
           exports.useReducer = useReducer;
           exports.useRef = useRef2;
-          exports.useState = useState3;
+          exports.useState = useState2;
           exports.useSyncExternalStore = useSyncExternalStore;
           exports.useTransition = useTransition;
           exports.version = ReactVersion;
@@ -18417,11 +18417,11 @@
               return jsxWithValidation(type, props, key, false);
             }
           }
-          var jsx6 = jsxWithValidationDynamic;
-          var jsxs3 = jsxWithValidationStatic;
+          var jsx5 = jsxWithValidationDynamic;
+          var jsxs = jsxWithValidationStatic;
           exports.Fragment = REACT_FRAGMENT_TYPE;
-          exports.jsx = jsx6;
-          exports.jsxs = jsxs3;
+          exports.jsx = jsx5;
+          exports.jsxs = jsxs;
         })();
       }
     }
@@ -18440,7 +18440,7 @@
   });
 
   // extensions/stage-control-order-details/src/App.tsx
-  var import_react13 = __toESM(require_react());
+  var import_react10 = __toESM(require_react());
 
   // node_modules/@remote-ui/rpc/build/esm/memory.mjs
   function isBasicObject(value) {
@@ -19143,14 +19143,8 @@
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
   var AdminBlock = createRemoteComponent("AdminBlock");
 
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Button/Button.mjs
-  var Button = createRemoteComponent("Button");
-
   // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Select/Select.mjs
   var Select = createRemoteComponent("Select");
-
-  // node_modules/@shopify/ui-extensions/build/esm/surfaces/admin/components/Text/Text.mjs
-  var Text = createRemoteComponent("Text");
 
   // node_modules/@remote-ui/react/build/esm/render.mjs
   var import_react2 = __toESM(require_react(), 1);
@@ -19452,17 +19446,11 @@
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/AdminBlock/AdminBlock.mjs
   var AdminBlock2 = createRemoteReactComponent(AdminBlock);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Button/Button.mjs
-  var Button2 = createRemoteReactComponent(Button);
-
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Select/Select.mjs
   var Select2 = createRemoteReactComponent(Select);
 
-  // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/components/Text/Text.mjs
-  var Text2 = createRemoteReactComponent(Text);
-
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
-  var import_react11 = __toESM(require_react(), 1);
+  var import_react9 = __toESM(require_react(), 1);
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/errors.mjs
   var AdminUIExtensionError = class extends Error {
@@ -19474,7 +19462,7 @@
 
   // node_modules/@shopify/ui-extensions-react/build/esm/surfaces/admin/hooks/api.mjs
   function useApi(_target) {
-    const api = (0, import_react11.useContext)(ExtensionApiContext);
+    const api = (0, import_react9.useContext)(ExtensionApiContext);
     if (api == null) {
       throw new AdminUIExtensionError("No extension api found.");
     }
@@ -19619,88 +19607,16 @@
     }
   ];
 
-  // extensions/stage-control-order-details/src/createWebPixel.ts
-  function createWebPixel(accountID) {
-    return __async(this, null, function* () {
-      var _a;
-      const mutation = `#graphql
-      mutation CreateWebPixel($settings: JSON!) {
-        webPixelCreate(webPixel: { settings: $settings }) {
-          userErrors {
-            code
-            field
-            message
-          }
-          webPixel {
-            settings
-            id
-          }
-        }
-      }`;
-      const variables = {
-        settings: { accountID }
-        // This will be passed as a raw JSON object
-      };
-      const { data, errors } = yield makeGraphQLQuery(mutation, variables);
-      if (errors || ((_a = data == null ? void 0 : data.webPixelCreate) == null ? void 0 : _a.userErrors.length)) {
-        const errorMessages = errors ? errors.map((e) => e.message).join(", ") : data.webPixelCreate.userErrors.map((e) => `${e.code}: ${e.message} (Field: ${e.field})`).join(", ");
-        throw new Error(`Failed to create web pixel: ${errorMessages}`);
-      }
-      return {
-        id: data.webPixelCreate.webPixel.id,
-        settings: data.webPixelCreate.webPixel.settings
-      };
-    });
-  }
-  function getWebPixels() {
-    return __async(this, null, function* () {
-      const query = `#graphql
-    query GetWebPixels {
-      webPixel {
-        id
-        settings
-      }
-    }`;
-      const { data, errors } = yield makeGraphQLQuery(query, {});
-      if (errors) {
-        const errorMessages = errors.map((e) => e.message).join(", ");
-        throw new Error(`Failed to fetch web pixels: ${errorMessages}`);
-      }
-      return (data == null ? void 0 : data.webPixel) || [];
-    });
-  }
-
-  // extensions/stage-control-order-details/src/YourComponent.tsx
-  var import_react12 = __toESM(require_react());
-  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
-  function YourComponent() {
-    const [webPixels, setWebPixels] = (0, import_react12.useState)([]);
-    const handleGetWebPixels = () => __async(this, null, function* () {
-      console.log("Fetching1 current web pixels...");
-      try {
-        const webPixelsList = yield getWebPixels();
-        console.log("Web pixels fetched successfully:", webPixelsList);
-        setWebPixels(webPixelsList);
-      } catch (error) {
-        console.error("Error fetching web pixels:", error);
-      }
-    });
-    return /* @__PURE__ */ (0, import_jsx_runtime4.jsxs)(AdminBlock2, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Button2, { onPress: handleGetWebPixels, children: "View Current Web Pixels" }),
-      /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(Text2, { children: "xedrtyu1eyh" })
-    ] });
-  }
-
   // extensions/stage-control-order-details/src/App.tsx
-  var import_jsx_runtime5 = __toESM(require_jsx_runtime());
+  var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var TARGET = "admin.order-details.block.render";
-  var App_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(App, {}));
+  var App_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    const [value, setValue] = (0, import_react13.useState)(null);
-    const [loading, setLoading] = (0, import_react13.useState)(false);
+    const [value, setValue] = (0, import_react10.useState)(null);
+    const [loading, setLoading] = (0, import_react10.useState)(false);
     const { data } = useApi(TARGET);
     const orderId = data.selected[0].id;
-    (0, import_react13.useEffect)(() => {
+    (0, import_react10.useEffect)(() => {
       function fetchOrderTags() {
         return __async(this, null, function* () {
           const tags = yield getOrdersTags([orderId]);
@@ -19711,36 +19627,22 @@
       }
       fetchOrderTags();
     }, [orderId]);
-    const onSelect = (0, import_react13.useCallback)((newValue) => __async(this, null, function* () {
+    const onSelect = (0, import_react10.useCallback)((newValue) => __async(this, null, function* () {
       setLoading(true);
       setValue(newValue);
       yield updateOrdersTags({ value: newValue, orderIds: [orderId] });
       setLoading(false);
     }), []);
-    const handleCreateWebPixel = () => __async(this, null, function* () {
-      console.log("onPress event");
-      try {
-        const accountID = "123";
-        const webPixel = yield createWebPixel(accountID);
-        console.log("Web pixel created successfully:", webPixel);
-      } catch (error) {
-        console.error("Error creating web pixel:", error);
+    return /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(AdminBlock2, { children: /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(
+      Select2,
+      {
+        label: `Order stage ${loading ? "(wait...)" : ""}`,
+        value,
+        onChange: onSelect,
+        options: stages,
+        disabled: loading
       }
-    });
-    return /* @__PURE__ */ (0, import_jsx_runtime5.jsxs)(AdminBlock2, { children: [
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(
-        Select2,
-        {
-          label: `Order stage ${loading ? "(wait...)" : ""}`,
-          value,
-          onChange: onSelect,
-          options: stages,
-          disabled: loading
-        }
-      ),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(Button2, { onPress: handleCreateWebPixel, children: "Click here2" }),
-      /* @__PURE__ */ (0, import_jsx_runtime5.jsx)(YourComponent, {})
-    ] });
+    ) });
   }
 })();
 //# sourceMappingURL=stage-control-order-details.js.map

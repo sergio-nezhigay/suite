@@ -30,6 +30,28 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyOrder: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyOrder.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProduct: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProduct.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyShop: {
           read: {
             filter: "accessControl/filters/shopify/shopifyShop.gelly",

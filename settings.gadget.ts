@@ -7,7 +7,7 @@ export const settings: GadgetSettings = {
     connections: {
       shopify: {
         apiVersion: "2024-07",
-        enabledModels: [],
+        enabledModels: ["shopifyOrder", "shopifyProduct"],
         type: "partner",
         scopes: [
           "read_orders",
@@ -18,6 +18,7 @@ export const settings: GadgetSettings = {
           "read_customer_events",
           "read_payment_customizations",
           "write_payment_customizations",
+          "write_products",
         ],
       },
     },

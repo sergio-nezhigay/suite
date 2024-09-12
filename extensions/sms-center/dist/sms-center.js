@@ -19045,7 +19045,7 @@
       stopped: false
     };
     function process2(context2) {
-      var _a3;
+      var _a2;
       const steps = [
         nested_collectChildrenPatchFilter,
         array_collectChildrenPatchFilter,
@@ -19063,7 +19063,7 @@
       if (context2.children) {
         for (const childrenContext of context2.children) {
           process2(childrenContext);
-          context2.result = (_a3 = context2.result) !== null && _a3 !== void 0 ? _a3 : context2.left;
+          context2.result = (_a2 = context2.result) !== null && _a2 !== void 0 ? _a2 : context2.left;
           if ("result" in childrenContext === false) {
             delete context2.result[childrenContext.name];
           } else {
@@ -19508,8 +19508,8 @@
       createApplyLiveQueryPatch = (applyPatch) => (source) => new Repeater((push3, stop2) => __async(void 0, null, function* () {
         const iterator = source[Symbol.asyncIterator]();
         stop2.then(() => {
-          var _a3;
-          return (_a3 = iterator.return) === null || _a3 === void 0 ? void 0 : _a3.call(iterator);
+          var _a2;
+          return (_a2 = iterator.return) === null || _a2 === void 0 ? void 0 : _a2.call(iterator);
         }).catch(console.log);
         let mutableData = null;
         let lastRevision = 0;
@@ -19666,8 +19666,8 @@
     });
     run();
     return () => {
-      var _a3;
-      (_a3 = asyncIterableIterator.return) === null || _a3 === void 0 ? void 0 : _a3.call(asyncIterableIterator);
+      var _a2;
+      (_a2 = asyncIterableIterator.return) === null || _a2 === void 0 ? void 0 : _a2.call(asyncIterableIterator);
     };
   }
   var makeAsyncIterableIteratorFromSink;
@@ -20479,9 +20479,9 @@
         return root.createText(text);
       },
       createInstance(type2, allProps, root) {
-        const _a3 = allProps, {
+        const _a2 = allProps, {
           children: _children
-        } = _a3, props = __objRest(_a3, [
+        } = _a2, props = __objRest(_a2, [
           "children"
         ]);
         return root.createComponent(type2, props);
@@ -20660,8 +20660,8 @@
   }
   function createComponentWrapper(componentType, fragmentProps) {
     const Component = componentType;
-    return /* @__PURE__ */ (0, import_react4.memo)(function ComponentWrapper(_a3) {
-      var _b2 = _a3, {
+    return /* @__PURE__ */ (0, import_react4.memo)(function ComponentWrapper(_a2) {
+      var _b2 = _a2, {
         children: externalChildren = []
       } = _b2, externalProps = __objRest(_b2, [
         "children"
@@ -20821,7 +20821,7 @@
   }
   function getCustomerPhone(customerId) {
     return __async(this, null, function* () {
-      var _a3;
+      var _a2;
       const query = `#graphql
   query GetCustomerPhone($customerId: ID!) {
     customer(id: $customerId) {
@@ -20833,7 +20833,7 @@
         const errorMessages = errors.map((e3) => e3.message).join(", ");
         throw new Error(`Failed to fetch order details: ${errorMessages}`);
       }
-      const phone = (_a3 = data == null ? void 0 : data.customer) == null ? void 0 : _a3.phone;
+      const phone = (_a2 = data == null ? void 0 : data.customer) == null ? void 0 : _a2.phone;
       if (!phone)
         return null;
       return phone.slice(-12);
@@ -20844,7 +20844,7 @@
       orderId,
       note
     }) {
-      var _a3, _b2, _c2, _d2;
+      var _a2, _b2, _c2, _d2;
       if (!orderId) {
         throw new Error(`Order ID is required but was not provided`);
       }
@@ -20872,13 +20872,51 @@
         const errorMessages = errors.map((e3) => e3.message).join(", ");
         throw new Error(`Failed to update order note: ${errorMessages}`);
       }
-      if ((_b2 = (_a3 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _a3.userErrors) == null ? void 0 : _b2.length) {
+      if ((_b2 = (_a2 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _a2.userErrors) == null ? void 0 : _b2.length) {
         const userErrorMessages = data.orderUpdate.userErrors.map((e3) => `${e3.field}: ${e3.message}`).join(", ");
         throw new Error(`Failed to update order note: ${userErrorMessages}`);
       }
       return ((_d2 = (_c2 = data == null ? void 0 : data.orderUpdate) == null ? void 0 : _c2.order) == null ? void 0 : _d2.note) || "";
     });
   }
+
+  // extensions/sms-center/src/utils/replacePlaceholders.ts
+  var replacePlaceholders = (template, data) => {
+    let result = template;
+    for (const key2 in data) {
+      const placeholder = `{{${key2}}}`;
+      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
+    }
+    return result;
+  };
+
+  // extensions/sms-center/src/utils/sendSmsMessage.ts
+  var sendSmsMessage = (receiverNumber, messageText) => __async(void 0, null, function* () {
+    try {
+      const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          to: receiverNumber,
+          message: messageText
+        })
+      });
+      if (!res.ok) {
+        const errorDetails = yield res.json();
+        console.error("Server error:", errorDetails);
+        throw new Error(
+          `Server error: ${errorDetails.details || "Unknown error"}`
+        );
+      }
+      const json = yield res.json();
+      return json;
+    } catch (err) {
+      console.error("Error sending SMS:", err.message);
+      throw new Error(`Failed to send SMS: ${err.message}`);
+    }
+  });
 
   // .gadget/client/node_modules/@gadgetinc/api-client-core/dist/esm/AnyClient.js
   var $modelRelationships = Symbol.for("gadget/modelRelationships");
@@ -23446,8 +23484,8 @@
       } else if (value2 instanceof FieldCall) {
         let args = "";
         const signatures = Object.entries(value2.args).filter(([_, value3]) => value3 !== null && value3 !== void 0).map(([name, value3]) => {
-          var _a3;
-          return `${name}: ${value3 instanceof Variable ? `$${(_a3 = value3.name) !== null && _a3 !== void 0 ? _a3 : name}` : JSON.stringify(value3)}`;
+          var _a2;
+          return `${name}: ${value3 instanceof Variable ? `$${(_a2 = value3.name) !== null && _a2 !== void 0 ? _a2 : name}` : JSON.stringify(value3)}`;
         });
         if (signatures.length > 0) {
           args = `(${signatures.join(", ")})`;
@@ -23477,9 +23515,9 @@
     Object.entries(fields).forEach(([_field, value2]) => {
       if (value2 instanceof FieldCall) {
         Object.entries(value2.args).forEach(([name, value3]) => {
-          var _a3;
+          var _a2;
           if (value3 instanceof Variable) {
-            variables[(_a3 = value3.name) !== null && _a3 !== void 0 ? _a3 : nextName(name)] = value3;
+            variables[(_a2 = value3.name) !== null && _a2 !== void 0 ? _a2 : nextName(name)] = value3;
           }
         });
         if (value2.subselection) {
@@ -23544,10 +23582,10 @@
   var Call = (args, subselection) => new FieldCall(args, subselection);
   var Var = (options) => new Variable(options.type + (options.required ? "!" : ""), options.name, options.value);
   var compile = (operation) => {
-    var _a3;
+    var _a2;
     const signature = compileVariables(operation);
     const directives2 = operation.directives && operation.directives.length > 0 ? ` ${operation.directives.join(" ")}` : "";
-    return `${operation.type} ${(_a3 = operation.name) !== null && _a3 !== void 0 ? _a3 : ""}${signature}${directives2} {
+    return `${operation.type} ${(_a2 = operation.name) !== null && _a2 !== void 0 ? _a2 : ""}${signature}${directives2} {
 ${compileFieldSelection(operation.fields).join("\n")}
 }`;
   };
@@ -24159,15 +24197,15 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
     get code() {
       return `GGT_ERROR_GROUP(${this.errors.slice(0, 10).map((error2) => {
-        var _a3;
-        return (_a3 = error2.code) !== null && _a3 !== void 0 ? _a3 : "GGT_UNKNOWN";
+        var _a2;
+        return (_a2 = error2.code) !== null && _a2 !== void 0 ? _a2 : "GGT_UNKNOWN";
       }).join(",")})`;
     }
     /** @private */
     get statusCode() {
       return Math.max(...this.errors.map((error2) => {
-        var _a3;
-        return (_a3 = error2.statusCode) !== null && _a3 !== void 0 ? _a3 : 500;
+        var _a2;
+        return (_a2 = error2.statusCode) !== null && _a2 !== void 0 ? _a2 : 500;
       }));
     }
   };
@@ -24221,9 +24259,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
   var filterTypeName = (modelApiIdentifier16, namespace) => `${namespacedGraphQLTypeName(modelApiIdentifier16, namespace)}Filter`;
   var getNonUniqueDataError = (modelApiIdentifier16, fieldName, fieldValue) => new GadgetNonUniqueDataError(`More than one record found for ${modelApiIdentifier16}.${fieldName} = ${fieldValue}. Please confirm your unique validation is not reporting an error.`);
   var assertOperationSuccess = (response, dataPath, throwOnEmptyData = false) => {
-    var _a3;
+    var _a2;
     if (response.error) {
-      if (response.error instanceof CombinedError && ((_a3 = response.error.networkError) === null || _a3 === void 0 ? void 0 : _a3.length)) {
+      if (response.error instanceof CombinedError && ((_a2 = response.error.networkError) === null || _a2 === void 0 ? void 0 : _a2.length)) {
         response.error.message = response.error.networkError.map((error2) => "[Network] " + error2.message).join("\n");
       }
       throw response.error;
@@ -24239,9 +24277,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return result;
   };
   var assertNullableOperationSuccess = (response, dataPath) => {
-    var _a3;
+    var _a2;
     if (response.error) {
-      if (response.error instanceof CombinedError && ((_a3 = response.error.networkError) === null || _a3 === void 0 ? void 0 : _a3.length)) {
+      if (response.error instanceof CombinedError && ((_a2 = response.error.networkError) === null || _a2 === void 0 ? void 0 : _a2.length)) {
         response.error.message = response.error.networkError.map((error2) => "[Network] " + error2.message).join("\n");
       }
       throw response.error;
@@ -24250,9 +24288,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return result !== null && result !== void 0 ? result : null;
   };
   var gadgetErrorFor = (error2) => {
-    var _a3;
+    var _a2;
     if (error2.code == "GGT_INVALID_RECORD") {
-      return new InvalidRecordError(error2.message, error2.validationErrors, (_a3 = error2.model) === null || _a3 === void 0 ? void 0 : _a3.apiIdentifier, error2.record);
+      return new InvalidRecordError(error2.message, error2.validationErrors, (_a2 = error2.model) === null || _a2 === void 0 ? void 0 : _a2.apiIdentifier, error2.record);
     } else if (error2.code == "GGT_UNKNOWN" && error2.message.includes("duplicate key value violates unique constraint")) {
       return new GadgetNonUniqueDataError(error2.message);
     } else {
@@ -24275,8 +24313,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return operationResponse;
   };
   var getHydrator = (response) => {
-    var _a3, _b2, _c2, _d2;
-    if ((_b2 = (_a3 = response.data) === null || _a3 === void 0 ? void 0 : _a3.gadgetMeta) === null || _b2 === void 0 ? void 0 : _b2.hydrations) {
+    var _a2, _b2, _c2, _d2;
+    if ((_b2 = (_a2 = response.data) === null || _a2 === void 0 ? void 0 : _a2.gadgetMeta) === null || _b2 === void 0 ? void 0 : _b2.hydrations) {
       return new DataHydrator((_d2 = (_c2 = response.data) === null || _c2 === void 0 ? void 0 : _c2.gadgetMeta) === null || _d2 === void 0 ? void 0 : _d2.hydrations);
     }
   };
@@ -24429,20 +24467,20 @@ ${compileFieldSelection(operation.fields).join("\n")}
   };
   var isEqual = (a2, b) => checkEquality(a2, b, []);
   var disambiguateActionVariables = (action, variables) => {
-    var _a3, _b2, _c2;
+    var _a2, _b2, _c2;
     variables !== null && variables !== void 0 ? variables : variables = {};
     if (!("hasAmbiguousIdentifier" in action) && !("acceptsModelInput" in action))
       return variables;
     if (action.hasAmbiguousIdentifier) {
       if (Object.keys(variables).some((key2) => {
-        var _a4;
-        return key2 !== "id" && !((_a4 = action.paramOnlyVariables) === null || _a4 === void 0 ? void 0 : _a4.includes(key2)) && key2 !== action.modelApiIdentifier;
+        var _a3;
+        return key2 !== "id" && !((_a3 = action.paramOnlyVariables) === null || _a3 === void 0 ? void 0 : _a3.includes(key2)) && key2 !== action.modelApiIdentifier;
       })) {
         throw Error(`Invalid arguments found in variables. Did you mean to use ({ ${action.modelApiIdentifier}: { ... } })?`);
       }
     }
     let newVariables;
-    const shouldExtractId = (_a3 = action.operatesWithRecordIdentity) !== null && _a3 !== void 0 ? _a3 : true;
+    const shouldExtractId = (_a2 = action.operatesWithRecordIdentity) !== null && _a2 !== void 0 ? _a2 : true;
     if ((_b2 = action.acceptsModelInput) !== null && _b2 !== void 0 ? _b2 : action.hasCreateOrUpdateEffect) {
       if (action.modelApiIdentifier in variables && typeof variables[action.modelApiIdentifier] === "object" && variables[action.modelApiIdentifier] != null) {
         newVariables = variables;
@@ -24468,11 +24506,11 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return newVariables;
   };
   var disambiguateBulkActionVariables = (action, inputs = {}) => {
-    var _a3;
+    var _a2;
     if (action.variables["ids"]) {
       return Array.isArray(inputs) ? { ids: inputs } : inputs;
     } else {
-      const inputsArray = (_a3 = Array.isArray(inputs) ? inputs : inputs.inputs) !== null && _a3 !== void 0 ? _a3 : [];
+      const inputsArray = (_a2 = Array.isArray(inputs) ? inputs : inputs.inputs) !== null && _a2 !== void 0 ? _a2 : [];
       return {
         inputs: inputsArray.map((input) => disambiguateActionVariables(action, input))
       };
@@ -24582,10 +24620,10 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
     nextPage() {
       return __async(this, null, function* () {
-        var _a3;
+        var _a2;
         if (!this.hasNextPage)
           throw new GadgetClientError("Cannot request next page because there isn't one, should check 'hasNextPage' to see if it exists");
-        const _a4 = (_a3 = this.pagination.options) !== null && _a3 !== void 0 ? _a3 : {}, { first, last, before: _before } = _a4, options = __objRest(_a4, ["first", "last", "before"]);
+        const _a3 = (_a2 = this.pagination.options) !== null && _a2 !== void 0 ? _a2 : {}, { first, last, before: _before } = _a3, options = __objRest(_a3, ["first", "last", "before"]);
         const nextPage = this.modelManager.findMany(__spreadProps(__spreadValues({}, options), {
           after: this.pagination.pageInfo.endCursor,
           first: first || last
@@ -24595,10 +24633,10 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
     previousPage() {
       return __async(this, null, function* () {
-        var _a3;
+        var _a2;
         if (!this.hasPreviousPage)
           throw new GadgetClientError("Cannot request previous page because there isn't one, should check 'hasPreviousPage' to see if it exists");
-        const _a4 = (_a3 = this.pagination.options) !== null && _a3 !== void 0 ? _a3 : {}, { first, last, after: _after } = _a4, options = __objRest(_a4, ["first", "last", "after"]);
+        const _a3 = (_a2 = this.pagination.options) !== null && _a2 !== void 0 ? _a2 : {}, { first, last, after: _after } = _a3, options = __objRest(_a3, ["first", "last", "after"]);
         const prevPage = this.modelManager.findMany(__spreadProps(__spreadValues({}, options), {
           before: this.pagination.pageInfo.startCursor,
           last: last || first
@@ -24838,8 +24876,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
           },
           return(value2) {
             return __async(this, null, function* () {
-              var _a4;
-              return yield (_a4 = iter.return) === null || _a4 === void 0 ? void 0 : _a4.call(iter, value2);
+              var _a3;
+              return yield (_a3 = iter.return) === null || _a3 === void 0 ? void 0 : _a3.call(iter, value2);
             });
           }
         };
@@ -24988,8 +25026,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
     const plan = backgroundActionResultOperation(id, action, options);
     const subscription = connection.currentClient.subscription(plan.query, plan.variables);
     const response = yield pipe(subscription, filter((operation) => {
-      var _a3, _b2;
-      return operation.error || ((_b2 = (_a3 = operation.data) === null || _a3 === void 0 ? void 0 : _a3.backgroundAction) === null || _b2 === void 0 ? void 0 : _b2.outcome);
+      var _a2, _b2;
+      return operation.error || ((_b2 = (_a2 = operation.data) === null || _a2 === void 0 ? void 0 : _a2.backgroundAction) === null || _b2 === void 0 ? void 0 : _b2.outcome);
     }), take(1), toPromise);
     const backgroundAction = assertOperationSuccess(response, ["backgroundAction"]);
     assertResponseSuccess(backgroundAction.result);
@@ -25293,9 +25331,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
             };
           },
           emit(message2) {
-            var _a4;
+            var _a3;
             if ("id" in message2)
-              (_a4 = listeners2[message2.id]) === null || _a4 === void 0 ? void 0 : _a4.call(listeners2, message2);
+              (_a3 = listeners2[message2.id]) === null || _a3 === void 0 ? void 0 : _a3.call(listeners2, message2);
           }
         };
       })();
@@ -25803,9 +25841,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
   };
   var operationNameExchange = mapExchange({
     onOperation: (operation) => {
-      var _a3;
+      var _a2;
       var _b2;
-      (_a3 = (_b2 = operation.context).operationName) !== null && _a3 !== void 0 ? _a3 : _b2.operationName = graphqlDocumentName(operation.query) || "unknown";
+      (_a2 = (_b2 = operation.context).operationName) !== null && _a2 !== void 0 ? _a2 : _b2.operationName = graphqlDocumentName(operation.query) || "unknown";
     }
   });
 
@@ -25854,7 +25892,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
   var objectForGlobals = typeof globalThis != "undefined" ? globalThis : typeof window != "undefined" ? window : void 0;
   var GadgetConnection = class {
     constructor(options) {
-      var _a3, _b2, _c2, _d2, _e2, _f;
+      var _a2, _b2, _c2, _d2, _e2, _f;
       Object.defineProperty(this, "options", {
         enumerable: true,
         configurable: true,
@@ -26035,8 +26073,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
         configurable: true,
         writable: true,
         value: (_0, ..._1) => __async(this, [_0, ..._1], function* (input, init = {}) {
-          var _a4;
-          input = processMaybeRelativeInput(input, (_a4 = this.options.baseRouteURL) !== null && _a4 !== void 0 ? _a4 : this.options.endpoint);
+          var _a3;
+          input = processMaybeRelativeInput(input, (_a3 = this.options.baseRouteURL) !== null && _a3 !== void 0 ? _a3 : this.options.endpoint);
           if (this.isGadgetRequest(input)) {
             const requestHeaders = yield this.requestHeaders();
             init.headers = __spreadValues(__spreadValues({}, requestHeaders), init.headers);
@@ -26071,7 +26109,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
           return yield fetch2(...args);
         });
       }
-      this.websocketImplementation = (_b2 = (_a3 = options.websocketImplementation) !== null && _a3 !== void 0 ? _a3 : globalThis === null || globalThis === void 0 ? void 0 : globalThis.WebSocket) !== null && _b2 !== void 0 ? _b2 : browser_default;
+      this.websocketImplementation = (_b2 = (_a2 = options.websocketImplementation) !== null && _a2 !== void 0 ? _a2 : globalThis === null || globalThis === void 0 ? void 0 : globalThis.WebSocket) !== null && _b2 !== void 0 ? _b2 : browser_default;
       this.websocketsEndpoint = (_c2 = options.websocketsEndpoint) !== null && _c2 !== void 0 ? _c2 : options.endpoint + "/batch";
       this.websocketsEndpoint = this.websocketsEndpoint.replace(/^http/, "ws");
       this.environment = (_d2 = options.environment) !== null && _d2 !== void 0 ? _d2 : "Development";
@@ -26089,8 +26127,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
       return `${sessionStorageKey}-${this.endpoint}`;
     }
     get currentClient() {
-      var _a3;
-      return ((_a3 = this.currentTransaction) === null || _a3 === void 0 ? void 0 : _a3.client) || this.baseClient;
+      var _a2;
+      return ((_a2 = this.currentTransaction) === null || _a2 === void 0 ? void 0 : _a2.client) || this.baseClient;
     }
     set fetchImplementation(implementation) {
       this._fetchImplementation = implementation;
@@ -26101,7 +26139,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
      * @private This function is generally not required for use by external developers, but is useful for those building integrations against the Gadget API to configure passed in `api` objects.
      */
     setAuthenticationMode(options) {
-      var _a3;
+      var _a2;
       if (options) {
         if (options.browserSession) {
           this.enableSessionMode(options.browserSession);
@@ -26116,7 +26154,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
         }
         this.options.authenticationMode = options;
       }
-      (_a3 = this.authenticationMode) !== null && _a3 !== void 0 ? _a3 : this.authenticationMode = AuthenticationMode.Anonymous;
+      (_a2 = this.authenticationMode) !== null && _a2 !== void 0 ? _a2 : this.authenticationMode = AuthenticationMode.Anonymous;
     }
     enableSessionMode(options) {
       this.authenticationMode = AuthenticationMode.BrowserSession;
@@ -26247,7 +26285,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
         url,
         webSocketImpl: this.websocketImplementation,
         connectionParams: () => __async(this, null, function* () {
-          var _a3, _b2, _c2, _d2;
+          var _a2, _b2, _c2, _d2;
           const connectionParams = { environment: this.environment, auth: { type: this.authenticationMode } };
           if (this.authenticationMode == AuthenticationMode.APIKey) {
             connectionParams.auth.key = this.options.authenticationMode.apiKey;
@@ -26256,7 +26294,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
             connectionParams.auth.token = authToken;
             if (this.authenticationMode == AuthenticationMode.Internal && this.options.authenticationMode.internal.actAsSession) {
               connectionParams.auth.actAsInternalSession = true;
-              connectionParams.auth.internalSessionId = yield (_b2 = (_a3 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
+              connectionParams.auth.internalSessionId = yield (_b2 = (_a2 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a2);
             }
           } else if (this.authenticationMode == AuthenticationMode.BrowserSession) {
             connectionParams.auth.sessionToken = this.sessionTokenStore.getItem(this.sessionStorageKey);
@@ -26269,9 +26307,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
         },
         on: {
           connected: (socket, payload) => {
-            var _a3, _b2, _c2, _d2, _e2, _f;
+            var _a2, _b2, _c2, _d2, _e2, _f;
             if (this.authenticationMode == AuthenticationMode.BrowserSession && (payload === null || payload === void 0 ? void 0 : payload.sessionToken)) {
-              const browserSession = (_a3 = this.options.authenticationMode) === null || _a3 === void 0 ? void 0 : _a3.browserSession;
+              const browserSession = (_a2 = this.options.authenticationMode) === null || _a2 === void 0 ? void 0 : _a2.browserSession;
               const initialToken = browserSession !== null && typeof browserSession === "object" ? browserSession.initialToken : null;
               if (!initialToken) {
                 this.sessionTokenStore.setItem(this.sessionStorageKey, payload.sessionToken);
@@ -26285,14 +26323,14 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
     requestHeaders() {
       return __async(this, null, function* () {
-        var _a3, _b2, _c2;
+        var _a2, _b2, _c2;
         const headers = {};
         if (this.authenticationMode == AuthenticationMode.Internal || this.authenticationMode == AuthenticationMode.InternalAuthToken) {
           const authToken = this.authenticationMode == AuthenticationMode.Internal ? this.options.authenticationMode.internal.authToken : this.options.authenticationMode.internalAuthToken;
           headers.authorization = "Basic " + base64("gadget-internal:" + authToken);
           if (this.authenticationMode == AuthenticationMode.Internal && this.options.authenticationMode.internal.actAsSession) {
             headers["x-gadget-act-as-internal-session"] = "true";
-            const sessionId = yield (_b2 = (_a3 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a3);
+            const sessionId = yield (_b2 = (_a2 = this.options.authenticationMode.internal).getSessionId) === null || _b2 === void 0 ? void 0 : _b2.call(_a2);
             if (sessionId) {
               headers["x-gadget-internal-session-id"] = sessionId;
             }
@@ -26394,11 +26432,11 @@ ${compileFieldSelection(operation.fields).join("\n")}
     return url.startsWith("/") && !url.startsWith("//");
   }
   var getLiveDirectiveNode = (input) => {
-    var _a3;
+    var _a2;
     if (input.kind !== "OperationDefinition" || input.operation !== "query") {
       return null;
     }
-    return (_a3 = input.directives) === null || _a3 === void 0 ? void 0 : _a3.find((d3) => d3.name.value === "live");
+    return (_a2 = input.directives) === null || _a2 === void 0 ? void 0 : _a2.find((d3) => d3.name.value === "live");
   };
   var isLiveQueryOperationDefinitionNode = (input) => {
     return !!getLiveDirectiveNode(input);
@@ -26764,8 +26802,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
      */
     bulkCreate(records2) {
       return __async(this, null, function* () {
-        var _a3;
-        if (!((_a3 = this.options) === null || _a3 === void 0 ? void 0 : _a3.pluralApiIdentifier)) {
+        var _a2;
+        if (!((_a2 = this.options) === null || _a2 === void 0 ? void 0 : _a2.pluralApiIdentifier)) {
           throw new GadgetClientError("Cannot perform bulkCreate without a pluralApiIdentifier");
         }
         const capitalizedPluralApiIdentifier = capitalizeIdentifier(this.options.pluralApiIdentifier);
@@ -26820,7 +26858,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
      */
     upsert(record) {
       return __async(this, null, function* () {
-        const _a3 = record, { on } = _a3, recordData = __objRest(_a3, ["on"]);
+        const _a2 = record, { on } = _a2, recordData = __objRest(_a2, ["on"]);
         on && assert(on.length > 0, `Must specify at least one field to upsert on`);
         const plan = internalUpsertMutation(this.apiIdentifier, this.namespace, on, this.getRecordFromData(recordData, "upsert"));
         const response = yield this.connection.currentClient.mutation(plan.query, plan.variables).toPromise();
@@ -26957,8 +26995,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
               operation.namespace
             );
             return forEachMaybeLiveResponse(response, (list) => {
-              var _a3;
-              return (_a3 = list == null ? void 0 : list[0]) != null ? _a3 : null;
+              var _a2;
+              return (_a2 = list == null ? void 0 : list[0]) != null ? _a2 : null;
             });
           }, operation);
           break;
@@ -27070,11 +27108,11 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
   };
   function disambiguateActionParams(action, idValue, variables = {}) {
-    var _a3, _b2;
+    var _a2, _b2;
     if (action.hasAmbiguousIdentifier) {
       if (Object.keys(variables).some((key2) => {
-        var _a4;
-        return !((_a4 = action.paramOnlyVariables) == null ? void 0 : _a4.includes(key2)) && key2 !== action.modelApiIdentifier;
+        var _a3;
+        return !((_a3 = action.paramOnlyVariables) == null ? void 0 : _a3.includes(key2)) && key2 !== action.modelApiIdentifier;
       })) {
         throw Error(`Invalid arguments found in variables. Did you mean to use ({ ${action.modelApiIdentifier}: { ... } })?`);
       }
@@ -27089,7 +27127,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
           [action.modelApiIdentifier]: {}
         };
         for (const [key2, value2] of Object.entries(variables)) {
-          if ((_a3 = action.paramOnlyVariables) == null ? void 0 : _a3.includes(key2)) {
+          if ((_a2 = action.paramOnlyVariables) == null ? void 0 : _a2.includes(key2)) {
             newVariables[key2] = value2;
           } else {
             if (idVariable && key2 === idVariable[0]) {
@@ -29129,10 +29167,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
 
   // .gadget/client/dist-esm/Client.js
   var import_meta = {};
-  var _a2;
   var productionEnv = "production";
   var fallbackEnv = "development";
-  var $modelRelationships2 = Symbol.for("gadget/modelRelationships");
   var getImplicitEnv = () => {
     try {
       return process.env.GADGET_ENV;
@@ -29140,9 +29176,9 @@ ${compileFieldSelection(operation.fields).join("\n")}
       return void 0;
     }
   };
-  var _Client = class {
+  var Client2 = class _Client {
     constructor(options) {
-      var _a3, _b2, _c2, _d2, _e2, _f;
+      var _a2, _b2, _c2, _d2, _e2, _f;
       this.options = options;
       this.scheduledShopifySync = buildGlobalAction(this, {
         type: "globalAction",
@@ -29166,7 +29202,6 @@ ${compileFieldSelection(operation.fields).join("\n")}
       });
       this.apiRoots = { "development": "https://admin-action-block--development.gadget.app/", "production": "https://admin-action-block.gadget.app/" };
       this.applicationId = "159040";
-      this[_a2] = { "session": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyGdprRequest": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyShop": { "companyContact": { "type": "HasMany", "model": "shopifyCompanyContact" }, "companyContactRole": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "customerAddresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "companyLocation": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "customers": { "type": "HasMany", "model": "shopifyCustomer" }, "gdprRequests": { "type": "HasMany", "model": "shopifyGdprRequest" }, "company": { "type": "HasMany", "model": "shopifyCompany" }, "companyAddress": { "type": "HasMany", "model": "shopifyCompanyAddress" }, "syncs": { "type": "HasMany", "model": "shopifySync" }, "companyContactRoleAssignment": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" } }, "shopifySync": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "smsTemplates": {}, "allowedTag": {}, "shopifyCompany": { "contactRoles": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "locations": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "contacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "contactRoleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "mainContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "defaultRole": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyAddress": { "shop": { "type": "BelongsTo", "model": "shopifyShop" }, "companyBillingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "companyShippingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" } }, "shopifyCompanyContact": { "mainContactForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "customer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRole": { "roleAssignment": { "type": "HasOne", "model": "shopifyCompanyContactRoleAssignment" }, "defaultRoleForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRoleAssignment": { "role": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "companyContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "companyLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyLocation": { "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "billingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "shippingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomer": { "addresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "defaultAddress": { "type": "BelongsTo", "model": "shopifyCustomerAddress" }, "companyContacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomerAddress": { "shopifyCustomer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } } };
       this.transaction = (callback) => __async(this, null, function* () {
         return yield this.connection.transaction(callback);
       });
@@ -29177,7 +29212,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
         return result.gadgetMeta.directUploadToken;
       });
       if (import_meta.env && import_meta.env.SSR) {
-        const api = (_a3 = globalThis.GadgetGlobals) == null ? void 0 : _a3.api;
+        const api = (_a2 = globalThis.GadgetGlobals) == null ? void 0 : _a2.api;
         if (api) {
           return api.actAsSession;
         }
@@ -29265,8 +29300,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
      * @returns {Client} A new Client instance with admin authentication
      */
     get actAsAdmin() {
-      var _a3, _b2;
-      assert((_b2 = (_a3 = this.options) == null ? void 0 : _a3.authenticationMode) == null ? void 0 : _b2.internal, "actAsAdmin can only be used for API clients using internal authentication");
+      var _a2, _b2;
+      assert((_b2 = (_a2 = this.options) == null ? void 0 : _a2.authenticationMode) == null ? void 0 : _b2.internal, "actAsAdmin can only be used for API clients using internal authentication");
       return new _Client(__spreadProps(__spreadValues({}, this.options), {
         authenticationMode: {
           internal: __spreadProps(__spreadValues({}, this.options.authenticationMode.internal), {
@@ -29281,8 +29316,8 @@ ${compileFieldSelection(operation.fields).join("\n")}
      * @returns {Client} A new Client instance with session authentication
      */
     get actAsSession() {
-      var _a3, _b2;
-      assert((_b2 = (_a3 = this.options) == null ? void 0 : _a3.authenticationMode) == null ? void 0 : _b2.internal, "actAsSession can only be used for API clients using internal authentication");
+      var _a2, _b2;
+      assert((_b2 = (_a2 = this.options) == null ? void 0 : _a2.authenticationMode) == null ? void 0 : _b2.internal, "actAsSession can only be used for API clients using internal authentication");
       return new _Client(__spreadProps(__spreadValues({}, this.options), {
         authenticationMode: {
           internal: __spreadProps(__spreadValues({}, this.options.authenticationMode.internal), {
@@ -29368,15 +29403,14 @@ ${compileFieldSelection(operation.fields).join("\n")}
       return this.toString();
     }
   };
-  var Client2 = _Client;
-  _a2 = $modelRelationships2;
+  Client2.prototype[Symbol.for("gadget/modelRelationships")] = { "session": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyGdprRequest": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyShop": { "companyContact": { "type": "HasMany", "model": "shopifyCompanyContact" }, "companyContactRole": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "customerAddresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "companyLocation": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "customers": { "type": "HasMany", "model": "shopifyCustomer" }, "gdprRequests": { "type": "HasMany", "model": "shopifyGdprRequest" }, "company": { "type": "HasMany", "model": "shopifyCompany" }, "companyAddress": { "type": "HasMany", "model": "shopifyCompanyAddress" }, "syncs": { "type": "HasMany", "model": "shopifySync" }, "companyContactRoleAssignment": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" } }, "shopifySync": { "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "smsTemplates": {}, "allowedTag": {}, "shopifyCompany": { "contactRoles": { "type": "HasMany", "model": "shopifyCompanyContactRole" }, "locations": { "type": "HasMany", "model": "shopifyCompanyLocation" }, "contacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "contactRoleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "mainContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "defaultRole": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyAddress": { "shop": { "type": "BelongsTo", "model": "shopifyShop" }, "companyBillingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "companyShippingLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" } }, "shopifyCompanyContact": { "mainContactForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "customer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRole": { "roleAssignment": { "type": "HasOne", "model": "shopifyCompanyContactRoleAssignment" }, "defaultRoleForCompany": { "type": "HasOne", "model": "shopifyCompany" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyContactRoleAssignment": { "role": { "type": "BelongsTo", "model": "shopifyCompanyContactRole" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "companyContact": { "type": "BelongsTo", "model": "shopifyCompanyContact" }, "companyLocation": { "type": "BelongsTo", "model": "shopifyCompanyLocation" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCompanyLocation": { "roleAssignments": { "type": "HasMany", "model": "shopifyCompanyContactRoleAssignment" }, "billingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "shippingAddress": { "type": "HasOne", "model": "shopifyCompanyAddress" }, "company": { "type": "BelongsTo", "model": "shopifyCompany" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomer": { "addresses": { "type": "HasMany", "model": "shopifyCustomerAddress" }, "defaultAddress": { "type": "BelongsTo", "model": "shopifyCustomerAddress" }, "companyContacts": { "type": "HasMany", "model": "shopifyCompanyContact" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } }, "shopifyCustomerAddress": { "shopifyCustomer": { "type": "BelongsTo", "model": "shopifyCustomer" }, "shop": { "type": "BelongsTo", "model": "shopifyShop" } } };
 
-  // extensions/sms-center/src/gadgetApi.ts
+  // extensions/sms-center/src/utils/gadgetApi.ts
   var gadgetApi = new Client2({
     authenticationMode: { browserSession: true }
   });
 
-  // extensions/sms-center/src/fetchSmsTemplates.ts
+  // extensions/sms-center/src/utils/fetchSmsTemplates.ts
   var fetchSmsTemplates = () => __async(void 0, null, function* () {
     try {
       const result = yield gadgetApi.smsTemplates.findMany();
@@ -29387,62 +29421,22 @@ ${compileFieldSelection(operation.fields).join("\n")}
     }
   });
 
-  // extensions/sms-center/src/replacePlaceholders.ts
-  var replacePlaceholders = (template, data) => {
-    let result = template;
-    for (const key2 in data) {
-      const placeholder = `{{${key2}}}`;
-      result = result.replace(new RegExp(placeholder, "g"), data[key2]);
-    }
-    return result;
-  };
-
-  // extensions/sms-center/src/sendSmsMessage.ts
-  var sendSmsMessage = (receiverNumber, messageText) => __async(void 0, null, function* () {
-    try {
-      const res = yield fetch("https://admin-action-block.gadget.app/send-sms", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          to: receiverNumber,
-          message: messageText
-        })
-      });
-      if (!res.ok) {
-        const errorDetails = yield res.json();
-        console.error("Server error:", errorDetails);
-        throw new Error(
-          `Server error: ${errorDetails.details || "Unknown error"}`
-        );
-      }
-      const json = yield res.json();
-      return json;
-    } catch (err) {
-      console.error("Error sending SMS:", err.message);
-      throw new Error(`Failed to send SMS: ${err.message}`);
-    }
-  });
-
   // extensions/sms-center/src/SmsCenter.tsx
   var import_jsx_runtime4 = __toESM(require_jsx_runtime());
   var TARGET = "admin.order-details.block.render";
   var SmsCenter_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    var _a3;
+    var _a2;
     const { data } = useApi(TARGET);
     const [status, setStatus] = (0, import_react13.useState)("Loading...");
     const [smsTemplates, setSmsTemplates] = (0, import_react13.useState)([]);
     const [loading, setLoading] = (0, import_react13.useState)(false);
     const [customerPhone, setCustomerPhone] = (0, import_react13.useState)("");
-    const orderId = (_a3 = data == null ? void 0 : data.selected[0]) == null ? void 0 : _a3.id;
+    const orderId = (_a2 = data == null ? void 0 : data.selected[0]) == null ? void 0 : _a2.id;
     (0, import_react13.useEffect)(() => {
       const loadSmsTemplates = () => __async(this, null, function* () {
         try {
-          const { tags, orderNumber, total, customerId } = yield getOrderInfo(
-            orderId
-          );
+          const { orderNumber, total, customerId } = yield getOrderInfo(orderId);
           const results = yield fetchSmsTemplates();
           const resultsProcessed = results.map((res) => __spreadProps(__spreadValues({}, res), {
             smsTextReplaced: replacePlaceholders(res.smsText, {
@@ -29464,7 +29458,7 @@ ${compileFieldSelection(operation.fields).join("\n")}
       setLoading(true);
       setStatus("Sending SMS...");
       try {
-        const response = yield sendSmsMessage(customerPhone, smsText);
+        yield sendSmsMessage(customerPhone, smsText);
         const note = `SMS sent ${smsText}`;
         yield addOrderNote({ orderId, note });
         setStatus(note);

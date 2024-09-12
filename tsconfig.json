@@ -1,24 +1,24 @@
 {
-  "include": ["env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"], // Include JS and JSX files
+  "include": ["env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"], // Environment libraries
-    "strict": true, // Enable strict type-checking
-    "skipLibCheck": true, // Skip type-checking for all declaration files (*.d.ts)
-    "isolatedModules": true, // Ensure each file can be safely transpiled without depending on other files
-    "allowSyntheticDefaultImports": true, // Allow default imports from modules with no default export
-    "removeComments": false, // Retain comments in the output
-    "forceConsistentCasingInFileNames": true, // Ensure consistent file name casing
-    "noEmit": true, // Disable emitting output files (useful for type-checking only)
-    "allowJs": true, // Allow JavaScript files to be compiled
-    "resolveJsonModule": true, // Allow importing JSON modules
-    "jsx": "react-jsx", // Use React's JSX handling
-    "module": "ESNext", // Use modern ES module syntax
-    "moduleResolution": "Bundler", // Use bundler-compatible module resolution
-    "target": "ESNext", // Compile to ES2022 target
-    "baseUrl": ".", // Base directory for module resolution
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "strict": true,
+    "skipLibCheck": true,
+    "isolatedModules": true,
+    "allowSyntheticDefaultImports": true,
+    "removeComments": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmit": true,
+    "allowJs": true,
+    "resolveJsonModule": true,
+    "jsx": "react-jsx",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "target": "ESNext",
+    "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"] // Path aliasing, useful for imports
+      "~/*": ["./app/*"]
     },
-    "types": ["node"] // Include Node.js types
+    "types": ["node"]
   }
 }
