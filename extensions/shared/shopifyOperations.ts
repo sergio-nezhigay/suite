@@ -1,4 +1,3 @@
-import { log } from 'console';
 import { makeGraphQLQuery } from './makeGraphQLQuery';
 
 export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
