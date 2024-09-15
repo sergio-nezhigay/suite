@@ -20,7 +20,6 @@ import {
 import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
-import { GadgetRecord } from '.gadget/client/types';
 
 const TARGET = 'admin.order-details.block.render';
 
