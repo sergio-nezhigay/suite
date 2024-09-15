@@ -19626,7 +19626,7 @@
   var TARGET = "admin.order-index.selection-action.render";
   var ActionExtension_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    const [value, setValue] = (0, import_react12.useState)(null);
+    const [value, setValue] = (0, import_react12.useState)(void 0);
     const [loading, setLoading] = (0, import_react12.useState)(true);
     const { close, data } = useApi(TARGET);
     const selectedOrders = (data == null ? void 0 : data.selected) || [];

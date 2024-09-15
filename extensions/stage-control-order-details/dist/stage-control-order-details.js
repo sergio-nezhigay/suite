@@ -19612,7 +19612,7 @@
   var TARGET = "admin.order-details.block.render";
   var App_default = reactExtension(TARGET, () => /* @__PURE__ */ (0, import_jsx_runtime4.jsx)(App, {}));
   function App() {
-    const [value, setValue] = (0, import_react10.useState)(null);
+    const [value, setValue] = (0, import_react10.useState)(void 0);
     const [loading, setLoading] = (0, import_react10.useState)(false);
     const { data } = useApi(TARGET);
     const orderId = data.selected[0].id;

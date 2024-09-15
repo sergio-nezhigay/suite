@@ -1,3 +1,5 @@
+import React from 'react';
+
 import { useEffect, useState } from 'react';
 import {
   Badge,
@@ -18,17 +20,24 @@ import {
 import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
+import { GadgetRecord } from '.gadget/client/types';
 
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
+import { SmsTemplates } from '.gadget/client/types';
+
+type SmsTemplate = SmsTemplates & {
+  smsTextReplaced: string;
+};
+
 function App() {
   const { data } = useApi(TARGET);
   const [status, setStatus] = useState('Loading...');
-  const [smsTemplates, setSmsTemplates] = useState([]);
+  const [smsTemplates, setSmsTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
-  const [customerPhone, setCustomerPhone] = useState('');
+  const [customerPhone, setCustomerPhone] = useState<string>('');
   const orderId = data?.selected[0]?.id;
 
   useEffect(() => {
@@ -54,7 +63,7 @@ function App() {
     loadSmsTemplates();
   }, []);
 
-  const handleSendSms = async (smsText) => {
+  const handleSendSms = async (smsText: string) => {
     setLoading(true);
     setStatus('Sending SMS...');
     try {
@@ -62,8 +71,8 @@ function App() {
       const note = `SMS sent ${smsText}`;
       await addOrderNote({ orderId, note });
       setStatus(note);
-    } catch (err) {
-      const note = `Error sending sms: ${err.message}`;
+    } catch (error) {
+      const note = `Error sending sms: ${(error as Error).message}`;
       await addOrderNote({ orderId, note });
       setStatus(note);
     } finally {
@@ -99,7 +108,7 @@ function App() {
                 : 'default'
             }
           >
-            {status}
+            {status}hi
           </Badge>
         </InlineStack>
       </BlockStack>

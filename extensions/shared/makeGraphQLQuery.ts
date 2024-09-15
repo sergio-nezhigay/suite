@@ -9,16 +9,16 @@ export async function makeGraphQLQuery<T>(
 ): Promise<GraphQLResponse<T>> {
   const graphQLQuery = { query, variables };
 
-  const res = await fetch("shopify:admin/api/graphql.json", {
-    method: "POST",
+  const res = await fetch('shopify:admin/api/graphql.json', {
+    method: 'POST',
     body: JSON.stringify(graphQLQuery),
     headers: {
-      "Content-Type": "application/json",
+      'Content-Type': 'application/json',
     },
   });
 
   if (!res.ok) {
-    throw new Error("Network error");
+    throw new Error('Network error');
   }
 
   return (await res.json()) as GraphQLResponse<T>;

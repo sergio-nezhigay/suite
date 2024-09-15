@@ -23,25 +23,6 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
-//export async function getOrderTags(orderId: string): Promise<string[]> {
-//  const query = `#graphql
-//    query Order($id: ID!) {
-//      order(id: $id) {
-//        tags
-//      }
-//    }`;
-//  const { data, errors } = await makeGraphQLQuery<{
-//    order: { tags: string[] };
-//  }>(query, { id: orderId });
-
-//  if (errors) {
-//    const errorMessages = errors.map((e) => e.message).join(', ');
-//    throw new Error(`Failed to fetch order details: ${errorMessages}`);
-//  }
-
-//  return data?.order?.tags || [];
-//}
-
 interface OrderInfo {
   tags: string[];
   orderNumber: string;
@@ -87,49 +68,6 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   }
   throw new Error(`Order ${orderId} not found`);
 }
-
-//export async function updateOrderTags({
-//  value,
-//  orderId,
-//}: {
-//  value: string;
-//  orderId: string;
-//}): Promise<void> {
-//  const currentTags = await getOrderTags(orderId);
-
-//  if (currentTags.length > 0) {
-//    const removeTagsMutation = `#graphql
-//      mutation RemoveTags($id: ID!, $tags: [String!]!) {
-//        tagsRemove(id: $id, tags: $tags) {
-//          userErrors {
-//            field
-//            message
-//          }
-//        }
-//      }`;
-//    await makeGraphQLQuery(removeTagsMutation, {
-//      id: orderId,
-//      tags: currentTags,
-//    });
-//  }
-
-//  const addTagsMutation = `#graphql
-//    mutation AddTags($id: ID!, $tags: [String!]!) {
-//      tagsAdd(id: $id, tags: $tags) {
-//        userErrors {
-//          field
-//          message
-//        }
-//        node {
-//          id
-//        }
-//      }
-//    }`;
-//  await makeGraphQLQuery(addTagsMutation, {
-//    id: orderId,
-//    tags: [value],
-//  });
-//}
 
 export async function updateOrdersTags({
   value,
@@ -223,8 +161,7 @@ export async function getCustomerPhone(customerId: string) {
     throw new Error(`Failed to fetch order details: ${errorMessages}`);
   }
   const phone = data?.customer?.phone;
-  if (!phone) return null;
-  return phone.slice(-12);
+  return phone ? phone.slice(-12) : '';
 }
 
 export async function addOrderNote({

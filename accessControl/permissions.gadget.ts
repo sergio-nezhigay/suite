@@ -20,6 +20,30 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyCompany: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContact: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContactRole: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyGdprRequest: {
           read: {
             filter:

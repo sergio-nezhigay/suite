@@ -1,23 +1,21 @@
 {
   "include": ["env.d.ts", "**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
+    "module": "ESNext",
+    "target": "ES2015",
     "strict": true,
     "skipLibCheck": true,
-    "isolatedModules": true,
+    "moduleResolution": "Bundler",
     "allowSyntheticDefaultImports": true,
-    "removeComments": false,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
-    "noEmit": true,
-    "allowJs": true,
+    "isolatedModules": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "target": "ESNext",
     "baseUrl": ".",
     "paths": {
-      "~/*": ["./app/*"]
+      "@/*": ["./app/*"]
     },
     "types": ["node"]
   }

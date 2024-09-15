@@ -1,3 +1,4 @@
+import React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   reactExtension,
@@ -16,7 +17,7 @@ const TARGET = 'admin.order-details.block.render';
 export default reactExtension(TARGET, () => <App />);
 
 function App() {
-  const [value, setValue] = useState<string | null>(null);
+  const [value, setValue] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useApi(TARGET);
   const orderId = data.selected[0].id;

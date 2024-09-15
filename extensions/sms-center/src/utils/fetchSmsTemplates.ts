@@ -1,14 +1,14 @@
 import { gadgetApi } from './gadgetApi';
 
-type SMSTemplate = {
+type Templates = {
   id: string;
-  title: string;
   smsText: string;
-};
+  title: string;
+}[];
 
-export const fetchSmsTemplates = async (): Promise<SMSTemplate[]> => {
+export const fetchSmsTemplates = async (): Promise<Templates> => {
   try {
-    const result = await gadgetApi.smsTemplates.findMany();
+    const result: Templates = await gadgetApi.smsTemplates.findMany();
     return result;
   } catch (err) {
     console.error('Failed to fetch smsTemplates:', err);
