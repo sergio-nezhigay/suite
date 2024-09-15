@@ -1,40 +1,72 @@
-export default async function route({ request, reply, connections, logger }) {
-  const shopify = await connections.shopify.forShopDomain(
-    'c2da09-15.myshopify.com'
-  );
+import { RouteContext } from 'gadget-server';
 
-  if (shopify) {
-    try {
-      // GraphQL query to fetch orders
+export default async function route({
+  request,
+  reply,
+  api,
+  connections,
+  logger,
+}) {
+  try {
+    // Get Shopify connection using your shop domain
+    const shop = await api.shopifyShop.findFirst({ select: { domain: true } });
+
+    if (shop) {
+      // Create Shopify connection
+      const shopify = await connections.shopify.forShopDomain(shop.domain);
+
+      // Specify the order ID you want to fetch
+      const orderId = 'gid://shopify/Order/5638076989613';
+
+      // Query to fetch details of the specified order
       const response = await shopify.graphql(`
-          query {
-            orders(first: 10) {
-              edges {
-                node {
-                  id
-                }
+        query {
+          node(id: "${orderId}") {
+            ... on Order {
+              id
+              name
+              totalPrice
+              createdAt
+              customer {
+                firstName
+                lastName
+                email
               }
             }
           }
-        `);
-      logger.info(JSON.stringify(response, null, 2));
-      const orders = response.orders.edges.map((edge) => edge.node);
-      // Respond with the list of orders
+        }
+      `);
+
+      if (response.node) {
+        logger.info(
+          'Order details fetched successfully:',
+          JSON.stringify(response.node, null, 2)
+        );
+
+        // Send back the order information
+        await reply.send({
+          status: 'success',
+          order: response.node,
+        });
+      } else {
+        // Handle case where the order is not found
+        await reply.send({
+          status: 'error',
+          message: 'Order not found.',
+        });
+      }
+    } else {
+      // Handle case where no shop is found
       await reply.send({
-        status: 'success',
-        orders,
-      });
-    } catch (error) {
-      // Handle any errors during the GraphQL request
-      await reply.send({
-        error: 'Failed to fetch orders',
-        details: error.message,
+        status: 'error',
+        message: 'No Shopify shop found.',
       });
     }
-  } else {
-    // Handle the case where Shopify connection is not available
+  } catch (error) {
+    // Handle any errors during the query
     await reply.send({
-      error: 'Shopify connection is not available',
+      error: 'Failed to fetch order details',
+      details: error.message,
     });
   }
 }
