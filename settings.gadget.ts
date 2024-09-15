@@ -7,7 +7,16 @@ export const settings: GadgetSettings = {
     connections: {
       shopify: {
         apiVersion: "2024-07",
-        enabledModels: ["shopifyOrder", "shopifyProduct"],
+        enabledModels: [
+          "shopifyCompany",
+          "shopifyCompanyAddress",
+          "shopifyCompanyContact",
+          "shopifyCompanyContactRole",
+          "shopifyCompanyContactRoleAssignment",
+          "shopifyCompanyLocation",
+          "shopifyOrder",
+          "shopifyProduct",
+        ],
         type: "partner",
         scopes: [
           "read_orders",

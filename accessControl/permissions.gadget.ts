@@ -28,6 +28,14 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyCompanyAddress: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyCompanyContact: {
           read: true,
           actions: {
@@ -37,6 +45,35 @@ export const permissions: GadgetPermissions = {
           },
         },
         shopifyCompanyContactRole: {
+          read: true,
+          actions: {
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContactRoleAssignment: {
+          read: true,
+          actions: {
+            create: true,
+          },
+        },
+        shopifyCompanyLocation: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCustomer: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCustomerAddress: {
           read: true,
           actions: {
             create: true,
@@ -110,6 +147,16 @@ export const permissions: GadgetPermissions = {
     },
     unauthenticated: {
       storageKey: "unauthenticated",
+      models: {
+        smsTemplates: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+      },
     },
   },
 };

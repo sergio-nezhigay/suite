@@ -24,6 +24,7 @@ export const schema: GadgetModel = {
       "isMainContact",
       "lifetimeDuration",
       "locale",
+      "orders",
       "roleAssignments",
       "shop",
       "shopifyCreatedAt",

@@ -44,6 +44,7 @@ function App() {
     const loadSmsTemplates = async () => {
       try {
         const { orderNumber, total, customerId } = await getOrderInfo(orderId);
+
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
@@ -56,8 +57,8 @@ function App() {
         const customerPhone = await getCustomerPhone(customerId);
         setCustomerPhone(customerPhone);
         setStatus('Ready to send SMS');
-      } catch (err) {
-        setStatus('Failed to fetch SMS templates' + JSON.stringify(err));
+      } catch (err: any) {
+        setStatus(`Error in fetch: ${err.message || err.toString()}`);
       }
     };
     loadSmsTemplates();
@@ -68,7 +69,7 @@ function App() {
     setStatus('Sending SMS...');
     try {
       await sendSmsMessage(customerPhone, smsText);
-      const note = `SMS sent ${smsText}`;
+      const note = `Success, SMS sent ${smsText}`;
       await addOrderNote({ orderId, note });
       setStatus(note);
     } catch (error) {
@@ -107,8 +108,9 @@ function App() {
                 ? 'critical'
                 : 'default'
             }
+            size='small-100'
           >
-            {status}hi
+            {status.slice(0, 90)}
           </Badge>
         </InlineStack>
       </BlockStack>

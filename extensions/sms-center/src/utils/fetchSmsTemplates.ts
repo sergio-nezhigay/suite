@@ -11,7 +11,7 @@ export const fetchSmsTemplates = async (): Promise<Templates> => {
     const result: Templates = await gadgetApi.smsTemplates.findMany();
     return result;
   } catch (err) {
-    console.error('Failed to fetch smsTemplates:', err);
-    throw new Error('Failed to fetch smsTemplates');
+    console.error('Failed to fetch smsTemplates:', JSON.stringify(err));
+    throw new Error(`Failed to fetch smsTemplates: ${JSON.stringify(err)}`);
   }
 };
