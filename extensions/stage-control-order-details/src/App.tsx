@@ -6,11 +6,12 @@ import {
   AdminBlock,
   Select,
 } from '@shopify/ui-extensions-react/admin';
-import {
-  getOrdersTags,
-  updateOrdersTags,
-} from '../../shared/shopifyOperations';
-import { stages } from './stages';
+//import {
+//  getOrdersTags,
+//  updateOrdersTags,
+//} from '../../shared/shopifyOperations';
+import { stages } from 'extensions/shared/stages';
+import { getOrdersTags, updateOrdersTags } from 'shared/shopifyOperations';
 
 const TARGET = 'admin.order-details.block.render';
 
