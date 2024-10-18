@@ -7,15 +7,16 @@ export default function MyComponent() {
   const navigate = useNavigate();
   const [apiResponse, setApiResponse] = useState(null);
 
-  const handleAlert = () => {
-    alert('Button clicked!');
-  };
+  const gadgetEnv = process.env.GADGET_ENV;
+  const gadgetApp = process.env.GADGET_APP;
+
+  const apiUrl = `https://${gadgetApp}${
+    gadgetEnv === 'development' ? '--development' : ''
+  }.gadget.app/products`;
 
   const handleApiTest = async () => {
     try {
-      const response = await fetch(
-        'https://admin-action-block.gadget.app/products'
-      );
+      const response = await fetch(apiUrl);
       const data = await response.json();
       console.log(data.products);
       setApiResponse(data.products);
@@ -36,8 +37,8 @@ export default function MyComponent() {
       <Text variant='bodyMd' as='p'>
         This is a simple test at Shopify Embedded App.
       </Text>
-      <Button onClick={handleAlert}>Show Alert</Button>
-      <Button onClick={handleApiTest}>Test API Call</Button>
+
+      <Button onClick={handleApiTest}>Bulk products API Call</Button>
       {apiResponse && (
         <Text variant='bodyMd' as='p'>
           API Response: {JSON.stringify(apiResponse)}
