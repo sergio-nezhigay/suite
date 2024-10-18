@@ -11,6 +11,7 @@ export const schema: GadgetModel = {
     fields: [
       "address1",
       "address2",
+      "bulkOperations",
       "checkoutApiSupported",
       "city",
       "company",
@@ -34,6 +35,7 @@ export const schema: GadgetModel = {
       "eligibleForPayments",
       "email",
       "enabledPresentmentCurrencies",
+      "files",
       "finances",
       "forceSsl",
       "gdprRequests",

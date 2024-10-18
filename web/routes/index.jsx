@@ -29,7 +29,7 @@ export default function () {
             {/** AutoForm automatically calls allowedTag.create on form submission */}
             <AutoForm
               action={api.smsTemplates.create}
-              title='Add sms templates'
+              title='Add sms templates21'
             />
           </Card>
         </Layout.Section>

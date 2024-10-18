@@ -2,10 +2,10 @@ import {
   AppType,
   Provider as GadgetProvider,
   useGadget,
-} from "@gadgetinc/react-shopify-app-bridge";
-import { NavMenu } from "@shopify/app-bridge-react";
-import { Box, Card, Page, Spinner, Text } from "@shopify/polaris";
-import { useEffect } from "react";
+} from '@gadgetinc/react-shopify-app-bridge';
+import { NavMenu } from '@shopify/app-bridge-react';
+import { Box, Card, Page, Spinner, Text } from '@shopify/polaris';
+import { useEffect } from 'react';
 import {
   Link,
   Outlet,
@@ -15,11 +15,13 @@ import {
   createRoutesFromElements,
   useLocation,
   useNavigate,
-} from "react-router-dom";
-import { api } from "../api";
-import AboutPage from "../routes/about";
-import Index from "../routes/index";
-import "./App.css";
+} from 'react-router-dom';
+import { api } from '../api';
+import AboutPage from '../routes/about';
+import TestPage from '../routes/test';
+import FileUploadPage from '../routes/upload';
+import Index from '../routes/index';
+import './App.css';
 
 function Error404() {
   const navigate = useNavigate();
@@ -29,7 +31,7 @@ function Error404() {
     const appURL = process.env.GADGET_PUBLIC_SHOPIFY_APP_URL;
 
     if (appURL && location.pathname === new URL(appURL).pathname) {
-      navigate("/", { replace: true });
+      navigate('/', { replace: true });
     }
   }, [location.pathname]);
 
@@ -39,10 +41,12 @@ function Error404() {
 function App() {
   const router = createBrowserRouter(
     createRoutesFromElements(
-      <Route path="/" element={<Layout />}>
+      <Route path='/' element={<Layout />}>
         <Route index element={<Index />} />
-        <Route path="/about" element={<AboutPage />} />
-        <Route path="*" element={<Error404 />} />
+        <Route path='/about' element={<AboutPage />} />
+        <Route path='/test' element={<TestPage />} />
+        <Route path='/upload' element={<FileUploadPage />} />
+        <Route path='*' element={<Error404 />} />
       </Route>
     )
   );
@@ -73,14 +77,14 @@ function AuthenticatedApp() {
     return (
       <div
         style={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100%",
-          width: "100%",
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          height: '100%',
+          width: '100%',
         }}
       >
-        <Spinner accessibilityLabel="Spinner example" size="large" />
+        <Spinner accessibilityLabel='Spinner example' size='large' />
       </div>
     );
   }
@@ -92,10 +96,12 @@ function EmbeddedApp() {
     <>
       <Outlet />
       <NavMenu>
-        <Link to="/" rel="home">
+        <Link to='/' rel='home'>
           Shop Information
         </Link>
-        <Link to="/about">About</Link>
+        <Link to='/about'>About</Link>
+        <Link to='/upload'>Upload</Link>
+        <Link to='/test'>Test</Link>
       </NavMenu>
     </>
   );
@@ -104,14 +110,14 @@ function EmbeddedApp() {
 function UnauthenticatedApp() {
   return (
     <Page>
-      <div style={{ height: "80px" }}>
-        <Card padding="500">
-          <Text variant="headingLg" as="h1">
+      <div style={{ height: '80px' }}>
+        <Card padding='500'>
+          <Text variant='headingLg' as='h1'>
             App must be viewed in the Shopify Admin
           </Text>
-          <Box paddingBlockStart="200">
-            <Text variant="bodyLg" as="p">
-              Edit this page:{" "}
+          <Box paddingBlockStart='200'>
+            <Text variant='bodyLg' as='p'>
+              Edit this page:{' '}
               <a
                 href={`/edit/${process.env.GADGET_PUBLIC_APP_ENV}/files/web/components/App.jsx`}
               >

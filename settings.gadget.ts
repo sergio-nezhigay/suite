@@ -8,12 +8,14 @@ export const settings: GadgetSettings = {
       shopify: {
         apiVersion: "2024-07",
         enabledModels: [
+          "shopifyBulkOperation",
           "shopifyCompany",
           "shopifyCompanyAddress",
           "shopifyCompanyContact",
           "shopifyCompanyContactRole",
           "shopifyCompanyContactRoleAssignment",
           "shopifyCompanyLocation",
+          "shopifyFile",
           "shopifyOrder",
           "shopifyProduct",
         ],
@@ -28,6 +30,8 @@ export const settings: GadgetSettings = {
           "read_payment_customizations",
           "write_payment_customizations",
           "write_products",
+          "read_files",
+          "write_files",
         ],
       },
     },
