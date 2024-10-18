@@ -38,7 +38,7 @@ export default function () {
             <Text as='h2' variant='headingLg'>
               Manage sms
             </Text>
-            {/** AutoTable allows you to delete allowedTag records (in bulk!) */}
+
             <AutoTable
               model={api.smsTemplates}
               columns={['title', 'smsText']}

@@ -17,11 +17,10 @@ import {
   useNavigate,
 } from 'react-router-dom';
 import { api } from '../api';
-import AboutPage from '../routes/about';
-import TestPage from '../routes/test';
+import Feeds from '../routes/feeds';
 import FileUploadPage from '../routes/upload';
 import Index from '../routes/index';
-import './App.css';
+//import './App.css';
 
 function Error404() {
   const navigate = useNavigate();
@@ -43,8 +42,7 @@ function App() {
     createRoutesFromElements(
       <Route path='/' element={<Layout />}>
         <Route index element={<Index />} />
-        <Route path='/about' element={<AboutPage />} />
-        <Route path='/test' element={<TestPage />} />
+        <Route path='/feeds' element={<Feeds />} />
         <Route path='/upload' element={<FileUploadPage />} />
         <Route path='*' element={<Error404 />} />
       </Route>
@@ -99,9 +97,9 @@ function EmbeddedApp() {
         <Link to='/' rel='home'>
           Shop Information
         </Link>
-        <Link to='/about'>About</Link>
+
         <Link to='/upload'>Upload</Link>
-        <Link to='/test'>Test</Link>
+        <Link to='/feeds'>Feeds</Link>
       </NavMenu>
     </>
   );
