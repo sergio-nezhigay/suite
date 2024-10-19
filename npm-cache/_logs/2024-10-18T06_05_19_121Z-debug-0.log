@@ -11,3 +11,10 @@
 10 verbose logfile C:\projects\admin-action-block\npm-cache\_logs\2024-10-18T06_05_19_121Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files
+13 verbose cwd C:\projects\admin-action-block
+14 verbose os Windows_NT 10.0.19045
+15 verbose node v20.14.0
+16 verbose npm  v10.8.3
+17 verbose exit 1
+18 verbose code 1
+19 error A complete log of this run can be found in: C:\projects\admin-action-block\npm-cache\_logs\2024-10-18T06_05_19_121Z-debug-0.log

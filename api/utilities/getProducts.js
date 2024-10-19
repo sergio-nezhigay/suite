@@ -1,45 +1,43 @@
+import { prepareProductDescription } from './prepareProductDescription';
+
 export async function getProducts(shopifyConnection) {
   const bulkMutation = `
-      mutation {
-        bulkOperationRunQuery(
-          query: """
-          {
-            products {
+     mutation {
+  bulkOperationRunQuery(
+    query: """
+    {
+      products {
+        edges {
+          node {
+            id
+            title
+            vendor
+    	descriptionHtml
+            variants(first: 1) {
               edges {
                 node {
-        id
-              title
-              vendor
-              productType
-              variants(first: 10) {
-                edges {
-                  node {
-                    id
-                    title
-                    price
-                    sku
-                  }
-                }
-              }
-              tags
-              status
-              publishedAt
+                  price
+                  sku
                 }
               }
             }
           }
-          """
-        ) {
-          bulkOperation {
-            id
-            status
-          }
-          userErrors {
-            field
-            message
-          }
         }
       }
+    }
+    """
+  ) {
+    bulkOperation {
+      id
+      status
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+
     `;
 
   const { bulkOperationRunQuery } = await shopifyConnection.graphql(
@@ -58,6 +56,7 @@ export async function getProducts(shopifyConnection) {
 
   if (bulkOperationStatus.url) {
     const products = await fetchBulkOperationResults(bulkOperationStatus.url);
+
     return products;
   }
 
@@ -102,8 +101,33 @@ async function fetchBulkOperationResults(bulkResultUrl) {
   const resultResponse = await fetch(bulkResultUrl);
   const resultText = await resultResponse.text();
 
-  return resultText
+  const resultItems = resultText
     .split('\n')
     .filter(Boolean)
     .map((line) => JSON.parse(line));
+
+  const productsMap = {};
+
+  resultItems.forEach((item) => {
+    if (item.id && !item.__parentId) {
+      const cleanDescription = prepareProductDescription(
+        item.descriptionHtml || ''
+      );
+      productsMap[item.id] = {
+        ...item,
+        description: cleanDescription,
+        variants: [],
+      };
+    }
+
+    if (item.__parentId) {
+      if (productsMap[item.__parentId]) {
+        productsMap[item.__parentId].variants.push(item);
+      }
+    }
+  });
+
+  const productsWithVariants = Object.values(productsMap);
+
+  return productsWithVariants;
 }

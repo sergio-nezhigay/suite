@@ -23,16 +23,22 @@ export default async function route({ request, reply, connections }) {
 
 function generateSimpleFeed(products) {
   return products.map((product) => ({
-    id: product.id,
-    title: product.title,
+    id: product?.id,
+    title: product?.title,
+    vendor: product?.vendor,
+    description: product?.description,
+    price: product.variants[0].price,
+    sku: product?.variants[0].sku,
   }));
 }
 
 function products2CSV(productFeed) {
-  const headers = ['id', 'title'];
-  let csvContent = headers.join(',') + '\n';
+  const headers = Object.keys(productFeed[0]);
+
+  let csvContent = headers.join('\t') + '\n';
+
   productFeed.forEach((product) => {
-    const row = `${product.id},${product.title}`;
+    const row = headers.map((header) => product[header] || '').join('\t');
     csvContent += row + '\n';
   });
 
