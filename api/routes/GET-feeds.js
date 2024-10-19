@@ -1,5 +1,7 @@
 import { getProducts } from '../utilities/getProducts';
 import { uploadFile } from '../utilities/uploadFile';
+import { isWeekend } from '../utilities/isWeekEnd';
+import { prepareProductDescription } from '../utilities/prepareProductDescription';
 
 export default async function route({ request, reply, connections }) {
   try {
@@ -22,14 +24,39 @@ export default async function route({ request, reply, connections }) {
 }
 
 function generateSimpleFeed(products) {
-  return products.map((product) => ({
-    id: product?.id,
-    title: product?.title,
-    vendor: product?.vendor,
-    description: product?.description,
-    price: product.variants[0].price,
-    sku: product?.variants[0].sku,
-  }));
+  const basicProductUrl = 'https://byte.com.ua/products/';
+  return products.map((product) => {
+    const firstVariantWithPrice = product.variants.find(
+      (variant) => variant.price
+    );
+    const firstImageVariant = product.variants.find(
+      (variant) => variant.mediaContentType === 'IMAGE'
+    );
+    const collectionVariant = product.variants.find(
+      (variant) =>
+        variant?.id && variant.id.startsWith('gid://shopify/Collection/')
+    );
+    const collectionName = collectionVariant?.title || '';
+    const inventoryQuantity = firstVariantWithPrice?.inventoryQuantity;
+    const availability = inventoryQuantity > 0 ? 'В наличии' : 'нет в наличии';
+
+    return {
+      id: product?.id,
+      title: product?.title || '',
+      brand: product?.vendor || '',
+      warranty: product?.warranty?.value || '',
+      rozetka_filter:
+        prepareProductDescription(product?.rozetka_filter?.value) || '',
+      description: prepareProductDescription(product?.htmlDescription) || '',
+      price: firstVariantWithPrice?.price || '',
+      sku: firstVariantWithPrice?.sku || '',
+      availability,
+      'image link': firstImageVariant?.image?.url || '',
+      link: basicProductUrl + product.handle,
+      'product type': collectionName,
+      'Отгрузка со склада': isWeekend() ? '1' : '0',
+    };
+  });
 }
 
 function products2CSV(productFeed) {

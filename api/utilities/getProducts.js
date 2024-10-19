@@ -2,43 +2,72 @@ import { prepareProductDescription } from './prepareProductDescription';
 
 export async function getProducts(shopifyConnection) {
   const bulkMutation = `
-     mutation {
-  bulkOperationRunQuery(
-    query: """
-    {
-      products {
-        edges {
-          node {
-            id
-            title
-            vendor
-    	descriptionHtml
-            variants(first: 1) {
-              edges {
-                node {
-                  price
-                  sku
+    mutation {
+      bulkOperationRunQuery(
+        query: """
+        {
+          products {
+            edges {
+              node {
+                id
+                handle
+                title
+                vendor
+                descriptionHtml
+           warranty:metafield(namespace: "custom", key: "warranty") {
+
+          value
+        }
+         rozetka_filter:metafield(namespace: "custom", key: "rozetka_filter") {
+                value
+            }
+                collections(first: 1) {
+                  edges {
+                    node {
+                      id
+                      title
+                    }
+                  }
+                }
+                media(first: 1) {
+                  edges {
+                    node {
+                      ... on MediaImage {
+                        id
+                        image {
+                          url
+                        }
+                      }
+                      mediaContentType
+                    }
+                  }
+                }
+                variants(first: 1) {
+                  edges {
+                    node {
+                      price
+                      sku
+                      inventoryQuantity
+                    }
+                  }
                 }
               }
             }
           }
         }
+        """
+      ) {
+        bulkOperation {
+          id
+          status
+        }
+        userErrors {
+          field
+          message
+        }
       }
     }
-    """
-  ) {
-    bulkOperation {
-      id
-      status
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}
-
-    `;
+  `;
 
   const { bulkOperationRunQuery } = await shopifyConnection.graphql(
     bulkMutation
@@ -110,12 +139,12 @@ async function fetchBulkOperationResults(bulkResultUrl) {
 
   resultItems.forEach((item) => {
     if (item.id && !item.__parentId) {
-      const cleanDescription = prepareProductDescription(
-        item.descriptionHtml || ''
-      );
+      //  const cleanDescription = prepareProductDescription(
+      //    item.descriptionHtml || ''
+      //  );
       productsMap[item.id] = {
         ...item,
-        description: cleanDescription,
+        //description: cleanDescription,
         variants: [],
       };
     }

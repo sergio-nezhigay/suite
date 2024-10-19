@@ -1,4 +1,5 @@
 export function prepareProductDescription(htmlDescription) {
+  if (!htmlDescription) return '';
   const allowedTags = ['p', 'br', 'ul', 'li', 'strong', 'em'];
 
   const cleanHTML = (input) => {
@@ -16,11 +17,11 @@ export function prepareProductDescription(htmlDescription) {
       .replace(/'/g, '&#039;');
   };
 
-  const removeTabsAndSpaces = (str) => {
-    return str.replace(/\t/g, '').replace(/\s\s+/g, ' ');
+  const removeTabsAndNewlines = (str) => {
+    return str.replace(/\t/g, ' ').replace(/\n/g, ' ').replace(/\r/g, '');
   };
 
   const cleanedDescription = cleanHTML(htmlDescription);
   const escapedDescription = escapeHTML(cleanedDescription);
-  return removeTabsAndSpaces(escapedDescription);
+  return removeTabsAndNewlines(escapedDescription);
 }
