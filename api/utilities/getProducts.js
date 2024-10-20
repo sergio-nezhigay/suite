@@ -48,6 +48,7 @@ export async function getProducts(shopifyConnection) {
                       price
                       sku
                       inventoryQuantity
+                      barcode
                     }
                   }
                 }

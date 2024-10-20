@@ -7,7 +7,7 @@
 6 silly config load:file:C:\Users\user\AppData\Roaming\npm\etc\npmrc
 7 verbose title npm exec ggt dev ./ --app=admin-action-block --env=development
 8 verbose argv "exec" "--" "ggt" "dev" "./" "--app=admin-action-block" "--env=development"
-9 verbose logfile logs-max:10 dir:C:\projects\admin-action-block\npm-cache\_logs\2024-10-17T18_52_51_227Z-
-10 verbose logfile C:\projects\admin-action-block\npm-cache\_logs\2024-10-17T18_52_51_227Z-debug-0.log
+9 verbose logfile logs-max:10 dir:C:\projects\admin-action-block\npm-cache\_logs\2024-10-19T12_09_17_860Z-
+10 verbose logfile C:\projects\admin-action-block\npm-cache\_logs\2024-10-19T12_09_17_860Z-debug-0.log
 11 silly logfile start cleaning logs, removing 1 files
 12 silly logfile done cleaning log files

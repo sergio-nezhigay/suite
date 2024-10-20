@@ -1,8 +1,19 @@
 export async function uploadFile(shopify, fileContent, fileName) {
   const existingFile = await queryExistingFile(shopify, fileName);
-  if (existingFile) await deleteFile(shopify, existingFile.id);
+  if (existingFile) {
+    console.log(`Deleting existing file: ${fileName} (ID: ${existingFile.id})`);
+    await deleteFile(shopify, existingFile.id);
+    console.log(`File deleted: ${fileName}`);
+  } else {
+    console.log(`No existing file found for: ${fileName}`);
+  }
+  console.log(`Creating staged upload for: ${fileName}`);
   const stagedTarget = await createStagedUpload(shopify, fileName);
+
+  console.log(`Uploading file: ${fileName}`);
   await uploadFileToShopify(stagedTarget, fileContent, fileName);
+
+  console.log(`Creating file record in Shopify for: ${fileName}`);
   return await createFileInShopify(shopify, stagedTarget.resourceUrl);
 }
 
@@ -34,8 +45,12 @@ async function deleteFile(shopify, fileId) {
     }`;
   const response = await shopify.graphql(deleteMutation);
   if (response?.fileDelete?.userErrors.length > 0) {
+    console.error('Error deleting file:', response.fileDelete.userErrors);
     throw new Error('Error deleting existing file');
   }
+  console.log(
+    `File deleted successfully: ${response?.fileDelete?.deletedFileIds}`
+  );
 }
 
 // Create a staged upload for Shopify

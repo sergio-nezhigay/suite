@@ -9,9 +9,9 @@ export default async function route({ request, reply, connections }) {
 
     const products = await getProducts(shopify);
 
-    const productFeed1 = generateSimpleFeed(products);
-    const fileContent = products2CSV(productFeed1);
-    await uploadFile(shopify, fileContent, 'simple-data.csv');
+    const hotlineFeed = generateHotlineFeed(products);
+    const hotlineFileContent = products2CSV(hotlineFeed);
+    await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
 
     return reply.send({ success: true, products });
   } catch (error) {
@@ -23,7 +23,7 @@ export default async function route({ request, reply, connections }) {
   }
 }
 
-function generateSimpleFeed(products) {
+function generateHotlineFeed(products) {
   const basicProductUrl = 'https://byte.com.ua/products/';
   return products.map((product) => {
     const firstVariantWithPrice = product.variants.find(
@@ -47,9 +47,10 @@ function generateSimpleFeed(products) {
       warranty: product?.warranty?.value || '',
       rozetka_filter:
         prepareProductDescription(product?.rozetka_filter?.value) || '',
-      description: prepareProductDescription(product?.htmlDescription) || '',
+      description: prepareProductDescription(product?.descriptionHtml) || '',
       price: firstVariantWithPrice?.price || '',
       sku: firstVariantWithPrice?.sku || '',
+      mpn: firstVariantWithPrice?.barcode || '',
       availability,
       'image link': firstImageVariant?.image?.url || '',
       link: basicProductUrl + product.handle,
