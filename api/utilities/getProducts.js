@@ -1,5 +1,3 @@
-import { prepareProductDescription } from './prepareProductDescription';
-
 export async function getProducts(shopifyConnection) {
   const bulkMutation = `
     mutation {
@@ -19,6 +17,9 @@ export async function getProducts(shopifyConnection) {
           value
         }
          rozetka_filter:metafield(namespace: "custom", key: "rozetka_filter") {
+                value
+            }
+         rozetka_tag:metafield(namespace: "custom", key: "rozetka_tag") {
                 value
             }
                 collections(first: 1) {
