@@ -2,6 +2,8 @@ import { getProducts } from '../utilities/getProducts';
 import { uploadFile } from '../utilities/uploadFile';
 import { isWeekend } from '../utilities/isWeekEnd';
 import { prepareProductDescription } from '../utilities/prepareProductDescription';
+import { makeRozetkaFeed } from '../utilities/makeRozetkaFeed';
+const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме'];
 
 export default async function route({ request, reply, connections }) {
   try {
@@ -9,10 +11,19 @@ export default async function route({ request, reply, connections }) {
 
     const products = await getProducts(shopify);
 
-    const genericFeed = generateGenericFeed(products);
-    const hotlineFeed = generateHotlineFeed(genericFeed);
+    const genericFeed = makeGenericFeed(products);
+    const hotlineFeed = makeHotlineFeed(genericFeed);
     const hotlineFileContent = products2CSV(hotlineFeed);
     await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
+    const merchantFeed = makeMerchantFeed(genericFeed);
+    const merchantFileContent = products2CSV(merchantFeed);
+    await uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv');
+    const remarketingFeed = makeRemarketingFeed(genericFeed);
+    const remarketingFileContent = products2CSV(remarketingFeed);
+    await uploadFile(shopify, remarketingFileContent, 'remarketing.csv');
+
+    const rozetkaFeedContent = makeRozetkaFeed(genericFeed);
+    await uploadFile(shopify, rozetkaFeedContent, 'rozetkaFeed.xml');
 
     return reply.send({ success: true, products });
   } catch (error) {
@@ -20,11 +31,11 @@ export default async function route({ request, reply, connections }) {
 
     return reply
       .code(500)
-      .send({ success: false, message: 'Failed to generate feed' });
+      .send({ success: false, message: 'Failed to make feed' });
   }
 }
 
-function generateGenericFeed(products) {
+function makeGenericFeed(products) {
   const basicProductUrl = 'https://byte.com.ua/products/';
   return products
     .map((product) => {
@@ -34,6 +45,9 @@ function generateGenericFeed(products) {
       const firstImageVariant = product.variants.find(
         (variant) => variant.mediaContentType === 'IMAGE'
       );
+      const imageURLs = product.variants
+        .filter((variant) => variant.mediaContentType === 'IMAGE')
+        .map((variant) => variant.image.url);
       const collectionVariant = product.variants.find(
         (variant) =>
           variant?.id && variant.id.startsWith('gid://shopify/Collection/')
@@ -44,6 +58,7 @@ function generateGenericFeed(products) {
 
       return {
         id: product?.id,
+        id_woocommerce: product?.id_woocommerce?.value || '',
         title: product?.title || '',
         brand: product?.vendor || '',
         warranty: product?.warranty?.value || '',
@@ -54,60 +69,79 @@ function generateGenericFeed(products) {
         price: Math.floor(firstVariantWithPrice?.price ?? 0),
         sku: firstVariantWithPrice?.sku || '',
         mpn: firstVariantWithPrice?.barcode || '',
+        inventoryQuantity,
         availability,
-        image: firstImageVariant?.image?.url || '',
+        imageURLs,
         link: basicProductUrl + product.handle,
         collection: collectionName,
         delivery_days: isWeekend() ? '1' : '0',
       };
     })
-    .filter(({ availability }) => availability === 'in stock');
+    .filter(({ availability, sku }) => {
+      const supplier = sku.split('^')[1] || '';
+      return (
+        availability === 'in stock' &&
+        genericSuppliers.includes(supplier.toLowerCase())
+      );
+    });
 }
-const generateHotlineFeed = (products) => {
+const makeHotlineFeed = (products) => {
   return products.map((product) => ({
     id: product.id,
     title: product.title,
-    brand: product.brand,
-    warranty: product.warranty,
     description: product.description,
-    price: product.price,
-    mpn: product.mpn,
-    availability:
-      product.availability === 'in stock' ? 'В наличии' : 'нет в наличии',
-    'image link': product.image,
     link:
       product.link + '/?utm_source=hotline&utm_medium=cpc&utm_campaign=hotline',
+    price: product.price,
+    'image link': product.imageURLs.length > 0 && product.imageURLs[0],
     'product type': product.collection,
     'Отгрузка со склада': product.delivery_days,
+    brand: product.brand,
+    availability:
+      product.availability === 'in stock' ? 'В наличии' : 'нет в наличии',
+    warranty: product.warranty,
+    mpn: product.mpn,
   }));
 };
-const generateMerchantFeed = (products) => {
+
+const makeMerchantFeed = (products) => {
   return products.map((product) => {
     const supplier = product.sku?.split('^')[1] ?? '';
+    const additionalImageLinks = product.imageURLs.slice(1, 11).length
+      ? `"${product.imageURLs.slice(1, 11).join(',')}"`
+      : '';
+
     return {
       id: product.id,
       title: product.title,
       description: product.description,
-      link:
-        product.link +
-        '/?utm_source=google&utm_medium=cpc&utm_campaign=merchant',
-      'image link': product.image,
+      link: `${product.link}/?utm_source=google&utm_medium=cpc&utm_campaign=merchant`,
+      'image link': product.imageURLs[0] || '',
+      additional_image_link: additionalImageLinks,
       availability: product.availability,
-      price: product.price + ' UAH',
+      price: `${product.price} UAH`,
       brand: product.brand,
       'item group id': product.rozetka_tag || product.collection,
       'product type': product.collection,
       condition: 'new',
       'custom label 1': product.collection,
       'custom label 2': supplier,
-      'custom label 3': `${supplier}:product.collection`,
+      'custom label 3': `${supplier}:${product.collection}`,
       'store code': '101',
       mpn: product.mpn,
-      warranty: product.warranty,
-      sku: product.sku,
       'identifier exists': 'no',
     };
   });
+};
+
+const makeRemarketingFeed = (products) => {
+  return products.map((product) => ({
+    ID: product.id,
+    'Item title': product.title,
+    'Final URL': `${product.link}/?utm_source=google&utm_medium=cpc&utm_campaign=googleremarketing`,
+    'Image URL': product.imageURLs[0] || '',
+    'Item category': product.collection,
+  }));
 };
 
 function products2CSV(productFeed) {

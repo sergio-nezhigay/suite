@@ -9,6 +9,7 @@ import {
   reactExtension,
   ProgressIndicator,
   useApi,
+  Text,
 } from '@shopify/ui-extensions-react/admin';
 
 import {
@@ -42,7 +43,8 @@ function App() {
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const { orderNumber, total, customerId } = await getOrderInfo(orderId);
+        const { orderNumber, total, customerId, shippingPhone } =
+          await getOrderInfo(orderId);
 
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
@@ -53,9 +55,14 @@ function App() {
           }),
         }));
         setSmsTemplates(resultsProcessed);
-        const customerPhone = await getCustomerPhone(customerId);
-        setCustomerPhone(customerPhone);
-        setStatus('Ready to send SMS');
+        //const phone = await getCustomerPhone(customerId);
+
+        if (!shippingPhone) {
+          setStatus('Phone not found');
+        } else {
+          setCustomerPhone(shippingPhone);
+          setStatus('Ready to send SMS');
+        }
       } catch (err: any) {
         setStatus(`Error in fetch: ${err.message || err.toString()}`);
       }
@@ -82,12 +89,17 @@ function App() {
 
   return (
     <BlockStack gap='large'>
+      <Text>
+        {customerPhone
+          ? `Телефон клієнта: ${customerPhone}`
+          : 'Телефон клієнта не знайдено'}
+      </Text>
       <InlineStack inlineAlignment='center' blockAlignment='center' gap='large'>
         {smsTemplates.map((template) => (
           <Button
             key={template.id}
             onPress={() => handleSendSms(template.smsTextReplaced)}
-            disabled={loading}
+            disabled={loading || status !== 'Ready to send SMS'}
             variant='primary'
             tone='default'
           >

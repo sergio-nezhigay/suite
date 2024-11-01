@@ -1,3 +1,5 @@
+import validateAndFormatPhoneNumber from './validateAndFormatPhoneNumber';
+
 type SmsResponse = {
   status: string;
   messageId: string;
@@ -15,13 +17,14 @@ export const sendSmsMessage = async (
   messageText: string
 ): Promise<SmsResponse> => {
   try {
+    const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
     const res = await fetch('https://admin-action-block.gadget.app/send-sms', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: receiverNumber,
+        to: formattedNumber,
         message: messageText,
       }),
     });

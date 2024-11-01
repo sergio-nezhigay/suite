@@ -22,6 +22,9 @@ export async function getProducts(shopifyConnection) {
          rozetka_tag:metafield(namespace: "custom", key: "rozetka_tag") {
                 value
             }
+         id_woocommerce:metafield(namespace: "custom", key: "id-woocommerce") {
+                value
+            }
                 collections(first: 1) {
                   edges {
                     node {
@@ -30,7 +33,7 @@ export async function getProducts(shopifyConnection) {
                     }
                   }
                 }
-                media(first: 1) {
+                media(first: 10) {
                   edges {
                     node {
                       ... on MediaImage {

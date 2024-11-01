@@ -27,6 +27,7 @@ interface OrderInfo {
   orderNumber: string;
   total: string;
   customerId: string;
+  shippingPhone: string | null;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -43,6 +44,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         customer {
             id
         }
+        shippingAddress {
+          phone
+        }
       }
     }`;
   const { data } = await makeGraphQLQuery<{
@@ -53,16 +57,19 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         shopMoney: { amount: string };
       };
       customer: { id: string };
+      shippingAddress: { phone: string | null };
     };
   }>(query, { id: orderId });
 
   if (data?.order) {
-    const { tags, name, totalPriceSet, customer } = data?.order;
+    const { tags, name, totalPriceSet, customer, shippingAddress } =
+      data?.order;
     return {
       tags,
       orderNumber: name,
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
+      shippingPhone: shippingAddress?.phone || null,
     };
   }
   throw new Error(`Order ${orderId} not found`);
