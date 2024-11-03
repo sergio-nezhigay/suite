@@ -3,7 +3,10 @@ import { uploadFile } from '../utilities/uploadFile';
 import { isWeekend } from '../utilities/isWeekEnd';
 import { prepareProductDescription } from '../utilities/prepareProductDescription';
 import { makeRozetkaFeed } from '../utilities/makeRozetkaFeed';
-const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме'];
+const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
+
+const IN_STOCK = 'in stock';
+const OUT_OF_STOCK = 'out-of-stock';
 
 export default async function route({ request, reply, connections }) {
   try {
@@ -12,8 +15,11 @@ export default async function route({ request, reply, connections }) {
     const products = await getProducts(shopify);
 
     const genericFeed = makeGenericFeed(products);
+
     const hotlineFeed = makeHotlineFeed(genericFeed);
+
     const hotlineFileContent = products2CSV(hotlineFeed);
+
     await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
     const merchantFeed = makeMerchantFeed(genericFeed);
     const merchantFileContent = products2CSV(merchantFeed);
@@ -36,7 +42,7 @@ export default async function route({ request, reply, connections }) {
 }
 
 function makeGenericFeed(products) {
-  const basicProductUrl = 'https://byte.com.ua/products/';
+  const basicProductUrl = 'https://informatica.com.ua/products/';
   return products
     .map((product) => {
       const firstVariantWithPrice = product.variants.find(
@@ -54,7 +60,7 @@ function makeGenericFeed(products) {
       );
       const collectionName = collectionVariant?.title || '';
       const inventoryQuantity = firstVariantWithPrice?.inventoryQuantity;
-      const availability = inventoryQuantity > 0 ? 'in stock' : 'out-of-stock';
+      const availability = inventoryQuantity > 0 ? IN_STOCK : OUT_OF_STOCK;
 
       return {
         id: product?.id,
@@ -80,27 +86,27 @@ function makeGenericFeed(products) {
     .filter(({ availability, sku }) => {
       const supplier = sku.split('^')[1] || '';
       return (
-        availability === 'in stock' &&
+        availability === IN_STOCK &&
         genericSuppliers.includes(supplier.toLowerCase())
       );
     });
 }
 const makeHotlineFeed = (products) => {
   return products.map((product) => ({
-    id: product.id,
-    title: product.title,
+    'id товару': product.id,
+    'Назва товару': product.title,
     description: product.description,
-    link:
+    URL:
       product.link + '/?utm_source=hotline&utm_medium=cpc&utm_campaign=hotline',
-    price: product.price,
+    Грн: product.price,
     'image link': product.imageURLs.length > 0 && product.imageURLs[0],
-    'product type': product.collection,
-    'Отгрузка со склада': product.delivery_days,
-    brand: product.brand,
-    availability:
-      product.availability === 'in stock' ? 'В наличии' : 'нет в наличии',
-    warranty: product.warranty,
-    mpn: product.mpn,
+    'Категорія товару': product.collection,
+    Shipping: product.delivery_days,
+    Виробник: product.brand,
+    'Доступність товару':
+      product.availability === IN_STOCK ? 'В наличии' : 'нет в наличии',
+    Гарантія: product.warranty,
+    'Код товару': product.mpn,
   }));
 };
 
