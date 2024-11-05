@@ -93,7 +93,7 @@ function makeGenericFeed(products) {
 }
 const makeHotlineFeed = (products) => {
   return products.map((product) => ({
-    'id товару': product.id,
+    'id товару': product.id.replace(/\D/g, ''),
     'Назва товару': product.title,
     description: product.description,
     URL:
