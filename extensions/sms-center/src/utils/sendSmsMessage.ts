@@ -17,30 +17,56 @@ export const sendSmsMessage = async (
   messageText: string
 ): Promise<SmsResponse> => {
   try {
-    const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
-    const res = await fetch('https://admin-action-block.gadget.app/send-sms', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: formattedNumber,
-        message: messageText,
-      }),
-    });
+    console.log('Starting to process SMS send request...');
+    console.log('Receiver number before formatting:', receiverNumber);
 
-    if (!res.ok) {
-      const errorDetails = await res.json();
-      console.error('Server error:', errorDetails);
-      throw new Error(
-        `Server error: ${errorDetails.details || 'Unknown error'}`
-      );
+    const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
+    console.log('Formatted number:', formattedNumber);
+
+    const response = await fetch(
+      'https://admin-action-block.gadget.app/send-sms',
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          to: formattedNumber,
+          message: messageText,
+        }),
+      }
+    );
+
+    console.log('Response status:', response.status);
+    console.log('Response headers:', response.headers);
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Error response from server:', errorData);
+
+      return {
+        status: 'error',
+        messageId: '',
+        error: errorData.message || 'Failed to send SMS',
+      };
     }
 
-    const json: SmsResponse = await res.json();
-    return json;
-  } catch (err: any) {
-    console.error('Error sending SMS:', err.message);
-    throw new Error(`Failed to send SMS: ${err.message}`);
+    const data = await response.json();
+    console.log('Success response data:', data);
+
+    return {
+      status: data.status || 'success',
+      messageId: data.messageId || '',
+      error: data.error,
+    };
+  } catch (error: any) {
+    console.error('Exception caught while sending SMS:', error);
+
+    return {
+      status: 'error',
+      messageId: '',
+      error:
+        'An unexpected error occurred: ' + (error.message || 'Unknown error'),
+    };
   }
 };
