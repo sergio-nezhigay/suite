@@ -9,7 +9,11 @@ import {
   Select,
 } from '@shopify/ui-extensions-react/admin';
 import { stages } from 'extensions/shared/stages';
-import { getOrdersTags, updateOrdersTags } from './shopifyOperations';
+import {
+  addOrderNote,
+  getOrdersTags,
+  updateOrdersTags,
+} from './shopifyOperations';
 //import {
 //  getOrdersTags,
 //  updateOrdersTags,
@@ -43,6 +47,10 @@ function App() {
       setLoading(true);
       await updateOrdersTags({ value: newValue, orderIds: selectedIds });
       setValue(newValue);
+      const note = `Stage updated to "${newValue}"`;
+      for (const id of selectedIds) {
+        await addOrderNote({ orderId: id, note });
+      }
       setLoading(false);
     },
     [value]

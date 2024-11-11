@@ -1,4 +1,3 @@
-import React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   reactExtension,
@@ -6,12 +5,13 @@ import {
   AdminBlock,
   Select,
 } from '@shopify/ui-extensions-react/admin';
-//import {
-//  getOrdersTags,
-//  updateOrdersTags,
-//} from '../../shared/shopifyOperations';
+
 import { stages } from 'extensions/shared/stages';
-import { getOrdersTags, updateOrdersTags } from 'shared/shopifyOperations';
+import {
+  addOrderNote,
+  getOrdersTags,
+  updateOrdersTags,
+} from 'shared/shopifyOperations';
 
 const TARGET = 'admin.order-details.block.render';
 
@@ -21,6 +21,7 @@ function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useApi(TARGET);
+  console.log('🚀 ~ data:', data);
   const orderId = data.selected[0].id;
 
   useEffect(() => {
@@ -37,6 +38,8 @@ function App() {
     setLoading(true);
     setValue(newValue);
     await updateOrdersTags({ value: newValue, orderIds: [orderId] });
+    const note = `Stage updated to "${newValue}"`;
+    addOrderNote({ orderId, note });
     setLoading(false);
   }, []);
 
