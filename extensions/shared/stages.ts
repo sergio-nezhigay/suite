@@ -1,26 +1,21 @@
 export const stages = [
-  {
-    value: 'pending',
-    label: 'Pending',
-  },
-  {
-    value: 'processing',
-    label: 'Processing',
-  },
-  {
-    value: 'shipped',
-    label: 'Shipped',
-  },
-  {
-    value: 'delivered',
-    label: 'Delivered',
-  },
-  {
-    value: 'cancelled',
-    label: 'Cancelled',
-  },
-  {
-    value: 'returned',
-    label: 'Returned',
-  },
-];
+  'Очікують оплати',
+  'На утриманні',
+  'Завершені',
+  'Нетермінове дозамовлення',
+  'Не додзв-2',
+  'Не додзв-1',
+  'Перевірити оплату',
+  'Оплачено - на доставку',
+  'Оформити РІ',
+  'Оформити Че',
+  'Оформити Ме',
+  'Оформити Ии',
+  'Необхідне дозамовлення',
+  'Накладений платіж',
+  'Відправлено',
+  'Скасовано',
+].map((label) => ({
+  value: label,
+  label,
+}));

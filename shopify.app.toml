@@ -1,23 +1,22 @@
 # Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "a98e00674e00da851db776a56ac3150d"
-name = "admin-action-block"
-handle = "admin-action-block-1"
-application_url = "https://admin-action-block--development.gadget.app/api/shopify/install-or-render"
+name = "admin"
+handle = "admin-64"
+application_url = "https://admin-action-block.gadget.app/api/shopify/install-or-render"
 embedded = true
 
 [build]
-dev_store_url = "codeinspire2.myshopify.com"
+dev_store_url = "c2da09-15.myshopify.com"
 include_config_on_deploy = true
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_all_orders,read_customer_events,read_customers,read_orders,write_orders,write_pixels,write_products"
-use_legacy_install_flow = true
+scopes = "read_all_orders,read_customer_events,read_customers,read_orders,read_payment_customizations,read_products,write_orders,write_payment_customizations,write_pixels,write_products,write_files"
 
 [auth]
 redirect_urls = [
-  "https://admin-action-block--development.gadget.app/api/connections/auth/shopify/callback"
+  "https://admin-action-block.gadget.app/api/connections/auth/shopify/callback"
 ]
 
 [webhooks]

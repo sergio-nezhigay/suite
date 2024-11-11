@@ -17,6 +17,7 @@ export const schema: GadgetModel = {
       "locale",
       "name",
       "note",
+      "orders",
       "ordersCount",
       "phone",
       "roleAssignments",

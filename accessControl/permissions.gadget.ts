@@ -20,6 +20,91 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyBulkOperation: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyBulkOperation.gelly",
+          },
+          actions: {
+            cancel: true,
+            complete: true,
+            create: true,
+            expire: true,
+            fail: true,
+            update: true,
+          },
+        },
+        shopifyCompany: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyAddress: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContact: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContactRole: {
+          read: true,
+          actions: {
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCompanyContactRoleAssignment: {
+          read: true,
+          actions: {
+            create: true,
+          },
+        },
+        shopifyCompanyLocation: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCustomer: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyCustomerAddress: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyFile: {
+          read: {
+            filter: "accessControl/filters/shopify/shopifyFile.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyGdprRequest: {
           read: {
             filter:
@@ -27,6 +112,28 @@ export const permissions: GadgetPermissions = {
           },
           actions: {
             create: true,
+            update: true,
+          },
+        },
+        shopifyOrder: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyOrder.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProduct: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProduct.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
             update: true,
           },
         },
@@ -64,6 +171,24 @@ export const permissions: GadgetPermissions = {
     },
     unauthenticated: {
       storageKey: "unauthenticated",
+      models: {
+        shopifyFile: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        smsTemplates: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+      },
     },
   },
 };

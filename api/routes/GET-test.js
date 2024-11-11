@@ -1,15 +1,15 @@
-import { RouteContext } from "gadget-server";
+export default async function route({ request, reply }) {
+  const url = new URL(request.url, `http://${request.headers.host}`);
+  const searchParams = new URLSearchParams(url.search);
 
-/**
- * Route handler for GET test
- *
- * @param { RouteContext } route context - see: https://docs.gadget.dev/guides/http-routes/route-configuration#route-context
- *
- */
-export default async function route({ request, reply, api, logger, connections }) {
-  // Log a simple message to indicate the route was hit
-  logger.info("Test route hit successfully");
+  const itemId = searchParams.get('itemId');
+  const category = searchParams.get('category');
 
-  // Send a fixed "ok" response
-  await reply.send({ status: "ok1" });
+  if (itemId && category) {
+    await reply.send(`Item ID: ${itemId}, Category: ${category}`);
+  } else {
+    await reply
+      .code(400)
+      .send("Missing 'itemId' or 'category' search parameter");
+  }
 }

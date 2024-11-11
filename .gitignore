@@ -1,4 +1,6 @@
 .gadget/
-.env
+.env*
+.env.production
 node_modules/
+npm-cache/
 **/.DS_Store

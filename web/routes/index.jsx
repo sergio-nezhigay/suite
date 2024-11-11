@@ -29,7 +29,7 @@ export default function () {
             {/** AutoForm automatically calls allowedTag.create on form submission */}
             <AutoForm
               action={api.smsTemplates.create}
-              title='Add sms templates'
+              title='Add sms templates21'
             />
           </Card>
         </Layout.Section>
@@ -38,7 +38,7 @@ export default function () {
             <Text as='h2' variant='headingLg'>
               Manage sms
             </Text>
-            {/** AutoTable allows you to delete allowedTag records (in bulk!) */}
+
             <AutoTable
               model={api.smsTemplates}
               columns={['title', 'smsText']}
