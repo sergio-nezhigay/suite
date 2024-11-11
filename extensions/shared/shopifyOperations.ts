@@ -35,6 +35,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
     query Order($id: ID!) {
       order(id: $id) {
         name
+        phone
         totalPriceSet {
             shopMoney {
                 amount
@@ -53,6 +54,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
     order: {
       tags: string[];
       name: string;
+      phone: string | null;
       totalPriceSet: {
         shopMoney: { amount: string };
       };
@@ -62,14 +64,14 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   }>(query, { id: orderId });
 
   if (data?.order) {
-    const { tags, name, totalPriceSet, customer, shippingAddress } =
+    const { tags, name, phone, totalPriceSet, customer, shippingAddress } =
       data?.order;
     return {
       tags,
       orderNumber: name,
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
-      shippingPhone: shippingAddress?.phone || null,
+      shippingPhone: phone || shippingAddress?.phone || null,
     };
   }
   throw new Error(`Order ${orderId} not found`);
