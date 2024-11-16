@@ -18,6 +18,7 @@ import {
 } from 'react-router-dom';
 import { api } from '../api';
 import Feeds from '../routes/feeds';
+import Test from '../routes/test';
 import FileUploadPage from '../routes/upload';
 import Index from '../routes/index';
 //import './App.css';
@@ -43,6 +44,7 @@ function App() {
       <Route path='/' element={<Layout />}>
         <Route index element={<Index />} />
         <Route path='/feeds' element={<Feeds />} />
+        <Route path='/test' element={<Test />} />
         <Route path='/upload' element={<FileUploadPage />} />
         <Route path='*' element={<Error404 />} />
       </Route>
@@ -100,6 +102,7 @@ function EmbeddedApp() {
 
         <Link to='/upload'>Upload</Link>
         <Link to='/feeds'>Feeds</Link>
+        <Link to='/test'>Test</Link>
       </NavMenu>
     </>
   );

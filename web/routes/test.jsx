@@ -1,48 +1,43 @@
-import { Page, Text, Button } from '@shopify/polaris';
-import { useNavigate } from 'react-router-dom';
+import { Page, Text, Button, Banner } from '@shopify/polaris';
 import { useState } from 'react';
-import { api } from '../api'; // Import the Gadget API client
 
-export default function MyComponent() {
-  const navigate = useNavigate();
-  const [apiResponse, setApiResponse] = useState(null);
+export default function Test() {
+  const [loading, setLoading] = useState(false);
+  const [authResult, setAuthResult] = useState(null);
+  const [error, setError] = useState(null);
 
-  const gadgetEnv = process.env.GADGET_ENV;
-  const gadgetApp = process.env.GADGET_APP;
-
-  const apiUrl = `https://${gadgetApp}${
-    gadgetEnv === 'development' ? '--development' : ''
-  }.gadget.app/products`;
-
-  const handleApiTest = async () => {
+  const onClick = async () => {
     try {
-      const response = await fetch(apiUrl);
-      const data = await response.json();
-      console.log(data.products);
-      setApiResponse(data.products);
-    } catch (error) {
-      console.error('API call failed:', error);
-      setApiResponse({ error: 'Failed to fetch data' });
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('/auth-brain', {
+        method: 'POST',
+      });
+
+      const result = await response.json();
+      if (!response.ok) {
+        setError(`Error: ${result.error} (Details: ${result.details})`);
+        setAuthResult(null);
+      } else {
+        setAuthResult(JSON.stringify(result));
+      }
+    } catch (err) {
+      setError(`Error: ${result.error} (Details: ${result.details})`);
+      setAuthResult(null);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <Page
-      title='Test'
-      backAction={{
-        content: 'Shop Information',
-        onAction: () => navigate('/'),
-      }}
-    >
-      <Text variant='bodyMd' as='p'>
-        This is a simple test at Shopify Embedded App.
-      </Text>
-
-      <Button onClick={handleApiTest}>Bulk products API Call</Button>
-      {apiResponse && (
-        <Text variant='bodyMd' as='p'>
-          API Response: {JSON.stringify(apiResponse)}
-        </Text>
+    <Page title='Authentication Test'>
+      <Button onClick={onClick} loading={loading} primary>
+        Authenticate
+      </Button>
+      {error && <Banner status='critical'>{error}</Banner>}
+      {authResult && (
+        <Text>Authentication Result ok: {JSON.stringify(authResult)}</Text>
       )}
     </Page>
   );
