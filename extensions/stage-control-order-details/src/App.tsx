@@ -21,7 +21,7 @@ function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const { data } = useApi(TARGET);
-  console.log('🚀 ~ data:', data);
+
   const orderId = data.selected[0].id;
 
   useEffect(() => {

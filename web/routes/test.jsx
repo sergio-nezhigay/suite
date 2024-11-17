@@ -13,7 +13,7 @@ export default function Test() {
     }
   }, [sid]);
 
-  const onClick = async () => {
+  const authenticate = async () => {
     try {
       setLoading(true);
       setError(null);
@@ -42,7 +42,7 @@ export default function Test() {
   return (
     <Page title='Authentication Test'>
       <Text variant='bodyMd'>Your SID: {sid}</Text>
-      <Button onClick={onClick} loading={loading} primary>
+      <Button onClick={authenticate} loading={loading} primary>
         Authenticate
       </Button>
       {error && <Banner status='critical'>{error}</Banner>}
