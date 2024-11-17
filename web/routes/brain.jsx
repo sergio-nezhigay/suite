@@ -1,83 +1,57 @@
-import { Page, Text, Button, Banner } from '@shopify/polaris';
+import { Card, Text, Page, Banner, Pagination } from '@shopify/polaris';
 import { useState, useEffect } from 'react';
 import ProductList from '../components/ProductList';
+import { useAuthenticate } from '../components/useAuthenticate';
 
 export default function Brain() {
-  const [loading, setLoading] = useState(false);
-  const [authResult, setAuthResult] = useState(null);
-  const [error, setError] = useState(null);
-  const [sid, setSid] = useState(localStorage.getItem('sid') || null);
-  const [category, setCategory] = useState('1181');
+  const { loading, authResult, error, sid } = useAuthenticate();
   const [products, setProducts] = useState([]);
   const [productError, setProductError] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
+  const category = '1181';
 
   useEffect(() => {
-    if (sid) {
-      localStorage.setItem('sid', sid);
-    } else {
-      authenticate();
-    }
-  }, [sid]);
-
-  const authenticate = async () => {
-    try {
-      setLoading(true);
-      setError(null);
-
-      const response = await fetch('/auth-brain', {
-        method: 'POST',
-      });
-
-      const result = await response.json();
-      if (!response.ok) {
-        setError(`Error: ${result.error}`);
-        setAuthResult(null);
-      } else {
-        setAuthResult(JSON.stringify(result));
-        setSid(result.sid);
+    const fetchProducts = async () => {
+      if (!sid || !category) {
+        setProductError('Missing required parameters.');
+        return;
       }
-    } catch (err) {
-      setError(`Error: ${result.error} (Details: ${result.details})`);
-      setAuthResult(null);
-    } finally {
-      setLoading(false);
-    }
-  };
 
-  const fetchProducts = async () => {
-    if (!sid || !category) {
-      setProductError('Missing required parameters.');
-      return;
-    }
+      try {
+        setProductError(null);
 
-    try {
-      setLoading(true);
-      setProductError(null);
+        const response = await fetch(
+          `/brain-products?sid=${sid}&category=${category}&page=${page}&limit=${itemsPerPage}`
+        );
+        const result = await response.json();
+        console.log('🚀 ~fetchProducts result:', result);
 
-      const response = await fetch(
-        `/brain-products?sid=${sid}&category=${category}`
-      );
-      const result = await response.json();
-      console.log('🚀 ~fetchProducts result:', result);
-
-      if (response.ok) {
-        setProducts(result.list);
-      } else {
-        setProductError('Failed to fetch products.');
+        if (response.ok) {
+          setProducts(result?.list?.list);
+          setTotalItems(result?.list?.count);
+        } else {
+          setProductError('Failed to fetch products. ' + result.error);
+        }
+      } catch (error) {
+        console.log('🚀 ~ error:', error);
+        setProductError('Error fetching products.');
       }
-    } catch (error) {
-      setProductError('Error fetching products.');
-    } finally {
-      setLoading(false);
-    }
+    };
+    fetchProducts();
+  }, [page, sid]);
+
+  const handlePageChange = (newPage) => {
+    setPage(newPage);
   };
 
   return (
     <Page title='Authentication Test'>
       <Text variant='bodyMd'>Your SID: {sid}</Text>
-      <Button onClick={authenticate} loading={loading} primary>
+      {/*<Button onClick={authenticate} loading={loading} primary>
         Authenticate
-      </Button>
+      </Button>*/}
 
       {error && <Banner status='critical'>{error}</Banner>}
       {authResult && (
@@ -86,14 +60,23 @@ export default function Brain() {
       <Text variant='heading2xl' as='h2'>
         Products
       </Text>
-      <Button onClick={fetchProducts} loading={loading}>
-        Fetch Products
-      </Button>
 
-      {/* Product Display */}
       {loading && !productError && <Text>Loading ...</Text>}
       {productError && <Banner status='critical'>{productError}</Banner>}
-      {products.length > 0 && <ProductList products={products} />}
+
+      {products.length > 0 && (
+        <Card>
+          {<ProductList products={products} />}
+          {totalItems > itemsPerPage && (
+            <Pagination
+              hasPrevious={page > 1}
+              hasNext={page * itemsPerPage < totalItems}
+              onPrevious={() => handlePageChange(page - 1)}
+              onNext={() => handlePageChange(page + 1)}
+            />
+          )}
+        </Card>
+      )}
     </Page>
   );
 }
