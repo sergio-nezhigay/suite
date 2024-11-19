@@ -1,6 +1,6 @@
-export async function fetchEasy({ limit = 10, page = 1 }) {
+export async function fetchEasy({ category, limit = 10, page = 1 }) {
   try {
-    console.log('Fetching... Limit, page=', limit, page);
+    console.log('Fetching...categoryid, Limit, page=', category, limit, page);
 
     const response = await fetch(process.env.EASY_BUY_URL);
     const xmlText = await response.text(); // Get XML as text
@@ -40,11 +40,23 @@ export async function fetchEasy({ limit = 10, page = 1 }) {
       products.push(product);
     }
     const categoryProducts = products.filter(
-      ({ categoryId }) => categoryId === '17079773'
+      ({ categoryId }) => categoryId === category
+    );
+
+    const startIndex = (page - 1) * limit;
+    console.log('🚀 ~ page:', page);
+    console.log('🚀 ~ startIndex:', startIndex);
+    const endIndex = startIndex + limit;
+    console.log('🚀 ~ limit:', limit);
+    console.log('🚀 ~ endIndex:', endIndex);
+    const paginatedProducts = categoryProducts.slice(startIndex, endIndex);
+
+    console.log(
+      `Fetched ${paginatedProducts.length} products (Page ${page}, Limit ${limit})`
     );
     const result = {
-      list: categoryProducts,
-      count: products.length,
+      list: paginatedProducts,
+      count: categoryProducts.length,
     };
 
     console.log('Products fetched and parsed:', result.count);

@@ -1,20 +1,21 @@
-import { Card, Text, Page, Banner, Pagination } from '@shopify/polaris';
+import { Text, Page, Banner, Pagination, Select } from '@shopify/polaris';
 import { useState, useEffect } from 'react';
 import ProductList from '../components/ProductList';
+import { CATEGORIES } from '../data/easybuyCategories';
 
 export default function Easy() {
   const [products, setProducts] = useState([]);
   const [productError, setProductError] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
-  const category = 89100038;
-  const itemsPerPage = 5;
+  const [category, setCategory] = useState('18044349');
+  const itemsPerPage = 7;
 
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductError(null);
-
+        shopify.loading(true);
         const response = await fetch(
           `/easy-products?category=${category}&page=${page}&limit=${itemsPerPage}`
         );
@@ -30,10 +31,12 @@ export default function Easy() {
       } catch (error) {
         console.log('🚀 ~ error:', error);
         setProductError('Error fetching products.');
+      } finally {
+        shopify.loading(false);
       }
     };
     fetchProducts();
-  }, [page]);
+  }, [page, category]);
 
   const handlePageChange = (newPage) => {
     setPage(newPage);
@@ -41,14 +44,23 @@ export default function Easy() {
 
   return (
     <Page title='Easybuy Test'>
+      <Select
+        label='Select Category'
+        options={CATEGORIES}
+        value={category}
+        onChange={(value) => {
+          setCategory(value);
+          setPage(1);
+        }}
+      />
       <Text variant='heading2xl' as='h2'>
-        Products
+        Products. Page {page}
       </Text>
 
       {productError && <Banner status='critical'>{productError}</Banner>}
 
       {products.length > 0 && (
-        <Card>
+        <>
           {<ProductList products={products} />}
           {totalItems > itemsPerPage && (
             <Pagination
@@ -58,7 +70,7 @@ export default function Easy() {
               onNext={() => handlePageChange(page + 1)}
             />
           )}
-        </Card>
+        </>
       )}
     </Page>
   );

@@ -3,9 +3,12 @@ import { getUrlParams } from '../utilities/getUrlParams';
 
 export default async function route({ request, reply, connections }) {
   try {
-    const { category, sid, limit, page } = getUrlParams(request);
-    const data = await fetchEasy({ limit, page });
-    console.log('🚀 ~ data:', data);
+    const { category, limit, page } = getUrlParams(request);
+    const data = await fetchEasy({
+      category,
+      limit: +limit,
+      page: +page,
+    });
 
     return reply.send(data);
   } catch (error) {
