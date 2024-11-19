@@ -8,9 +8,12 @@ export default function Easy() {
   const [productError, setProductError] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
-  const [category, setCategory] = useState('18044349');
+  const [category, setCategory] = useState('90752735');
   const itemsPerPage = 7;
-
+  const categoriesAndValues = CATEGORIES.map(({ value, label }) => ({
+    value,
+    label: `${label}: ${value}`,
+  }));
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -46,7 +49,7 @@ export default function Easy() {
     <Page title='Easybuy Test'>
       <Select
         label='Select Category'
-        options={CATEGORIES}
+        options={categoriesAndValues}
         value={category}
         onChange={(value) => {
           setCategory(value);
