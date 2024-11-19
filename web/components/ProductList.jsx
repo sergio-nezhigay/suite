@@ -15,7 +15,7 @@ function ProductList({ products }) {
               customer
               size='md'
               name={product.name}
-              source={product.small_image}
+              source={product?.pictures[0]}
             />
           }
         >
