@@ -1,111 +1,85 @@
 import {
-  LegacyCard,
-  ResourceList,
-  Avatar,
-  ResourceItem,
-  Text,
+  Divider,
+  Page,
+  Banner,
+  Pagination,
+  BlockStack,
+  Select,
+  Spinner,
 } from '@shopify/polaris';
+import { useState, useEffect } from 'react';
+import ProductList from '../components/ProductList';
+import { easybuyCategories } from '../data/easybuyCategories';
 
-import { useState } from 'react';
+export default function Easy() {
+  const [products, setProducts] = useState([]);
+  const [productError, setProductError] = useState(null);
+  const [totalItems, setTotalItems] = useState(0);
+  const [page, setPage] = useState(1);
+  const [category, setCategory] = useState('90752735');
+  const [loading, setLoading] = useState(false);
+  const itemsPerPage = 7;
+  const categoriesAndValues = easybuyCategories.map(({ value, label }) => ({
+    value,
+    label: `${label}: ${value}`,
+  }));
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        setProductError(null);
+        setLoading(true);
+        const response = await fetch(
+          `/easy-products?category=${category}&page=${page}&limit=${itemsPerPage}`
+        );
+        const result = await response.json();
 
-function Easy() {
-  const [selectedItems, setSelectedItems] = useState([]);
-
-  const resourceName = {
-    singular: 'customer',
-    plural: 'customers',
-  };
-
-  const items = [
-    {
-      id: '111',
-      url: '#',
-      name: 'Mae Jemison',
-      location: 'Decatur, USA',
-    },
-    {
-      id: '211',
-      url: '#',
-      name: 'Ellen Ochoa',
-      location: 'Los Angeles, USA',
-    },
-    {
-      id: '311',
-      url: '#',
-      name: 'Joe Smith',
-      location: 'Arizona, USA',
-    },
-    {
-      id: '411',
-      url: '#',
-      name: 'Haden Jerado',
-      location: 'Decatur, USA',
-    },
-    {
-      id: '511',
-      url: '#',
-      name: 'Tom Thommas',
-      location: 'Florida, USA',
-    },
-    {
-      id: '611',
-      url: '#',
-      name: 'Emily Amrak',
-      location: 'Texas, USA',
-    },
-  ];
-
-  const promotedBulkActions = [
-    {
-      content: 'Edit customers',
-      onAction: () => console.log('Todo: implement bulk edit'),
-    },
-  ];
-
-  const bulkActions = [
-    {
-      content: 'Add tags',
-      onAction: () => console.log('Todo: implement bulk add tags'),
-    },
-    {
-      content: 'Remove tags',
-      onAction: () => console.log('Todo: implement bulk remove tags'),
-    },
-    {
-      content: 'Delete customers',
-      onAction: () => console.log('Todo: implement bulk delete'),
-    },
-  ];
+        if (response.ok) {
+          setProducts(result?.list);
+          setTotalItems(result?.count);
+        } else {
+          setProductError('Failed to fetch products. ' + result.error);
+        }
+      } catch (error) {
+        console.log('🚀 ~ error:', error);
+        setProductError('Error fetching products.');
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProducts();
+  }, [page, category]);
 
   return (
-    <Text variant='bodyMd' fontWeight='bold' as='h3'>
-      drftyudrtu
-    </Text>
+    <Page title='Easybuy Test'>
+      <BlockStack gap='500'>
+        <Select
+          label='Select Category'
+          options={categoriesAndValues}
+          value={category}
+          onChange={(value) => {
+            setCategory(value);
+            setPage(1);
+          }}
+        />
+        <Divider borderColor='border' />
+        {productError && (
+          <Banner title='Error' status='critical'>
+            {productError.message}
+          </Banner>
+        )}
+        <Pagination
+          hasPrevious={page > 1}
+          hasNext={page * itemsPerPage < totalItems}
+          onPrevious={() => setPage(page - 1)}
+          onNext={() => setPage(page + 1)}
+        />
+        <ProductList products={products} />
+        {loading && (
+          <div style={{ textAlign: 'center', marginTop: '20px' }}>
+            <Spinner size='large' />
+          </div>
+        )}
+      </BlockStack>
+    </Page>
   );
-
-  function renderItem(item, _, index) {
-    const { id, url, name, location } = item;
-    const media = <Avatar customer size='md' name={name} />;
-
-    return (
-      <ResourceItem
-        id={id}
-        url={url}
-        media={media}
-        sortOrder={index}
-        accessibilityLabel={`View details for ${name}`}
-      >
-        <Text variant='bodyMd' fontWeight='bold' as='h3'>
-          {name}
-        </Text>
-        <div>{location}</div>
-      </ResourceItem>
-    );
-  }
-
-  function resolveItemIds({ id }) {
-    return id;
-  }
 }
-
-export default Easy;
