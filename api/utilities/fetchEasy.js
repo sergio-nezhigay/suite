@@ -11,7 +11,7 @@ export async function fetchEasy({ category, limit = 10, page = 1 }) {
     let products = [];
 
     const offerPattern =
-      /<offer id="(\d+)" available="(true|false)">.*?<url>(.*?)<\/url>.*?<price>(\d+)<\/price>.*?<currencyId>(.*?)<\/currencyId>.*?<name>(.*?)<\/name>.*?<description>(.*?)<\/description>.*?<\/offer>/gs;
+      /<offer id="(\d+)" available="(true|false)">.*?<url>(.*?)<\/url>.*?<price>(\d+)<\/price>.*?<currencyId>(.*?)<\/currencyId>.*?<categoryId>(.*?)<\/categoryId>.*?<name>(.*?)<\/name>.*?<description>(.*?)<\/description>.*?<\/offer>/gs;
 
     // Extract offers using regex
 
@@ -30,7 +30,8 @@ export async function fetchEasy({ category, limit = 10, page = 1 }) {
         url: match[3],
         price: parseFloat(match[4]),
         currency: match[5],
-        name: match[6],
+        categoryId: match[6],
+        name: match[7],
         description: match[7],
         pictures: pictures,
       };
@@ -38,11 +39,12 @@ export async function fetchEasy({ category, limit = 10, page = 1 }) {
     }
 
     // Display the extracted offers
-    console.log(products);
-    const categoryProducts = products;
-    //const categoryProducts = products.filter(
-    //  ({ categoryId }) => categoryId === category
-    //);
+    console.log('category=', category);
+    console.log('products=', products);
+    //const categoryProducts = products;
+    const categoryProducts = products.filter(
+      ({ categoryId }) => categoryId === category
+    );
 
     const startIndex = (page - 1) * limit;
     console.log('🚀 ~ page:', page);

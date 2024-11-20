@@ -78,9 +78,18 @@ function Easy() {
   ];
 
   return (
-    <Text variant='bodyMd' fontWeight='bold' as='h3'>
-      drftyudrtu
-    </Text>
+    <LegacyCard>
+      <ResourceList
+        resourceName={resourceName}
+        items={items}
+        renderItem={renderItem}
+        selectedItems={selectedItems}
+        onSelectionChange={setSelectedItems}
+        promotedBulkActions={promotedBulkActions}
+        bulkActions={bulkActions}
+        resolveItemId={resolveItemIds}
+      />
+    </LegacyCard>
   );
 
   function renderItem(item, _, index) {

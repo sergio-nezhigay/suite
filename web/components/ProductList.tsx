@@ -5,11 +5,13 @@ import {
   ResourceItem,
   Text,
 } from '@shopify/polaris';
-
+import type { ResourceListProps } from '@shopify/polaris';
 import { useState } from 'react';
 
-function Easy() {
-  const [selectedItems, setSelectedItems] = useState([]);
+function ProductList() {
+  const [selectedItems, setSelectedItems] = useState<
+    ResourceListProps['selectedItems']
+  >([]);
 
   const resourceName = {
     singular: 'customer',
@@ -78,12 +80,21 @@ function Easy() {
   ];
 
   return (
-    <Text variant='bodyMd' fontWeight='bold' as='h3'>
-      drftyudrtu
-    </Text>
+    <LegacyCard>
+      <ResourceList
+        resourceName={resourceName}
+        items={items}
+        renderItem={renderItem}
+        selectedItems={selectedItems}
+        onSelectionChange={setSelectedItems}
+        promotedBulkActions={promotedBulkActions}
+        bulkActions={bulkActions}
+        resolveItemId={resolveItemIds}
+      />
+    </LegacyCard>
   );
 
-  function renderItem(item, _, index) {
+  function renderItem(item: (typeof items)[number], _: string, index: number) {
     const { id, url, name, location } = item;
     const media = <Avatar customer size='md' name={name} />;
 
@@ -103,9 +114,9 @@ function Easy() {
     );
   }
 
-  function resolveItemIds({ id }) {
+  function resolveItemIds({ id }: { id: string }) {
     return id;
   }
 }
 
-export default Easy;
+export default ProductList;
