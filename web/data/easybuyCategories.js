@@ -1,4 +1,4 @@
-export const CATEGORIES = [
+export const easybuyCategories = [
   { value: '27354749', label: 'Powerbank, батареи' },
   { value: '89100078', label: 'Type-C' },
   { value: '89100057', label: 'VGA' },
