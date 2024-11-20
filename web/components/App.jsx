@@ -23,6 +23,7 @@ import FileUploadPage from '../routes/upload';
 import Index from '../routes/index';
 import Brain from '../routes/brain';
 import Easy from '../routes/easy';
+import CreateProductTest from '../routes/test';
 
 function Error404() {
   const navigate = useNavigate();
@@ -47,6 +48,7 @@ function App() {
         <Route path='/feeds' element={<Feeds />} />
         <Route path='/brain' element={<Brain />} />
         <Route path='/easy' element={<Easy />} />
+        <Route path='/test' element={<CreateProductTest />} />
         <Route path='/upload' element={<FileUploadPage />} />
         <Route path='*' element={<Error404 />} />
       </Route>
@@ -106,6 +108,7 @@ function EmbeddedApp() {
         <Link to='/feeds'>Feeds</Link>
         <Link to='/brain'>Brain</Link>
         <Link to='/easy'>Easy</Link>
+        <Link to='/test'>CreateProductTest</Link>
       </NavMenu>
     </>
   );

@@ -1,54 +1,60 @@
 import { Page, Text, Button, Banner } from '@shopify/polaris';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 
-export default function Test() {
+export default function CreateProductTest() {
   const [loading, setLoading] = useState(false);
-  const [authResult, setAuthResult] = useState(null);
+  const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
-  const [sid, setSid] = useState(localStorage.getItem('sid') || null);
 
-  useEffect(() => {
-    if (sid) {
-      localStorage.setItem('sid', sid);
-    }
-  }, [sid]);
-
-  const authenticate = async () => {
+  const createProduct = async () => {
     try {
       setLoading(true);
       setError(null);
+      setResult(null);
 
-      const response = await fetch('/auth-brain', {
+      const response = await fetch('/products-create', {
         method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: 'test2 product name',
+          vendor: 'Vendor2',
+        }),
       });
 
-      const result = await response.json();
       if (!response.ok) {
-        setError(`Error: ${result.error} (Details: ${result.details})`);
-        setAuthResult(null);
-      } else {
-        setAuthResult(JSON.stringify(result));
-
-        setSid(result.result);
+        throw new Error('An unknown error occurred');
       }
+      const data = await response.json();
+      if (data.error) {
+        console.err(data.details);
+        throw new Error(data.error || 'An unknown error occurred');
+      }
+      setResult(data.status);
     } catch (err) {
-      setError(`Error: ${result.error} (Details: ${result.details})`);
-      setAuthResult(null);
+      setError(err.message);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Page title='Authentication Test'>
-      <Text variant='bodyMd'>Your SID: {sid}</Text>
-      <Button onClick={authenticate} loading={loading} primary>
-        Authenticate
-      </Button>
-      {error && <Banner status='critical'>{error}</Banner>}
-      {authResult && (
-        <Text>Authentication Result ok: {JSON.stringify(authResult)}</Text>
+    <Page title='Create Product Test'>
+      <Text variant='headingLg'>Create a Test Product</Text>
+      {error && (
+        <Banner status='critical' title='Error'>
+          <p>{error}</p>
+        </Banner>
       )}
+      {result && (
+        <Banner status='success' title='Success'>
+          <p>{result}</p>
+        </Banner>
+      )}
+      <Button primary loading={loading} onClick={createProduct}>
+        Create Product
+      </Button>
     </Page>
   );
 }
