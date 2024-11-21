@@ -7,14 +7,10 @@ import {
 } from '@shopify/polaris';
 
 import { useState } from 'react';
+import CreateProductTest2 from './CreateProductTest2';
 
 function ProductList({ products }) {
   const [selectedItems, setSelectedItems] = useState([]);
-
-  const resourceName = {
-    singular: 'customer',
-    plural: 'customers',
-  };
 
   const promotedBulkActions = [
     {
@@ -25,17 +21,21 @@ function ProductList({ products }) {
 
   return (
     <>
-      <LegacyCard>
-        <ResourceList
-          resourceName={resourceName}
-          items={products}
-          renderItem={renderItem}
-          selectedItems={selectedItems}
-          onSelectionChange={setSelectedItems}
-          promotedBulkActions={promotedBulkActions}
-          resolveItemId={resolveItemIds}
-        />
-      </LegacyCard>
+      <ResourceList
+        resourceName={{
+          singular: 'product',
+          plural: 'products',
+        }}
+        items={products}
+        renderItem={renderItem}
+        selectedItems={selectedItems}
+        onSelectionChange={setSelectedItems}
+        promotedBulkActions={promotedBulkActions}
+        resolveItemId={resolveItemIds}
+      />
+      <CreateProductTest2
+        products={products.filter(({ id }) => selectedItems.includes(id))}
+      />
     </>
   );
 

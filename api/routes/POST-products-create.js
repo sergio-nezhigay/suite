@@ -1,37 +1,35 @@
-import createProduct from '../utilities/createProduct';
+import createProducts from '../utilities/createProducts';
 
 export default async function route({ request, reply, connections }) {
   const shopify = connections.shopify.current;
 
-  const { title, vendor } = request.body;
+  const { products } = request.body;
 
-  if (!title || !vendor) {
-    return await reply
-      .status(400)
-      .send({ error: '`title` and `vendor` parameters are required' });
+  if (!products || !Array.isArray(products)) {
+    return await reply.status(400).send({
+      error: 'Invalid or missing products array',
+    });
   }
 
   try {
-    const result = await createProduct({
+    const result = await createProducts({
       shopify,
-      title,
-      vendor,
+      products,
     });
-    console.log('🚀 ~ result:', result);
 
     if (result.error) {
-      await reply.status(500).send({
-        error: 'Failed to create product',
+      return await reply.status(500).send({
+        error: 'Failed to create products',
         details: result.error,
       });
-    }
-    await reply.send({
-      status: 'Product created successfully',
-      result,
-    });
+    } else
+      return await reply.send({
+        status: 'Products created successfully',
+        result,
+      });
   } catch (error) {
-    await reply.status(500).send({
-      error: 'Failed to create product',
+    return await reply.status(500).send({
+      error: 'Failed to create products',
       details: error.message,
     });
   }

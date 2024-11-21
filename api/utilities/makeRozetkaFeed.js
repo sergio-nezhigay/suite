@@ -56,7 +56,9 @@ export const makeRozetkaFeed = (products) => {
       const price = isMemory ? product.price * 1.04 : product.price * 1.05;
       const oldPrice = (price * 1.1).toFixed(2);
       const state = isMemory ? 'used' : 'new';
-      const name = isMemory ? product.title + ' б/в' : product.title;
+      const name = isMemory
+        ? "Оперативна пам'ять " + product.title + ' б/в'
+        : product.title;
 
       const additionalImages = product.imageURLs
         .slice(1, 11)
