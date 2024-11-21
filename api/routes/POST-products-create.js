@@ -1,6 +1,7 @@
 import createProducts from '../utilities/createProducts';
 
 export default async function route({ request, reply, connections }) {
+  connections.shopify.maxRetries = 10;
   const shopify = connections.shopify.current;
 
   const { products } = request.body;
