@@ -2,14 +2,15 @@ import { Page, Text, Button, Banner } from '@shopify/polaris';
 import { useState } from 'react';
 
 export default function CreateProductTest2({ products }) {
-  console.log('🚀 ~ CreateProductTest2 products:', products);
+  console.log('🚀 ~CreateProductTest2 products:', products);
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const updatedProducts = products.map(({ name }) => ({
+  const updatedProducts = products.map(({ name, vendor, description }) => ({
     title: name,
-    vendor: 'Vendor3',
+    vendor,
+    description,
   }));
 
   const createProduct = async () => {
@@ -27,35 +28,41 @@ export default function CreateProductTest2({ products }) {
       });
 
       if (!response.ok) {
-        throw new Error('An unknown error occurred');
+        throw new Error('Failed to create products.');
       }
+
       const data = await response.json();
-      if (data.error) {
-        console.err(data.details);
-        throw new Error(data.error || 'An unknown error occurred');
-      }
-      setResult(data.status);
+      console.log('🚀 ~ data:', data);
+      setResult(data);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
-  if (products.length === 0) return null;
 
   return (
-    <Page title='Create Product Test'>
-      <Button primary loading={loading} onClick={createProduct}>
-        Create Product
+    <Page title='Create Products'>
+      <Text variant='headingMd'>Test Product Creation</Text>
+      <Button onClick={createProduct} loading={loading} primary>
+        Create Products
       </Button>
+
       {error && (
         <Banner status='critical' title='Error'>
           <p>{error}</p>
         </Banner>
       )}
+
       {result && (
-        <Banner status='success' title='Success'>
-          <p>{result}</p>
+        <Banner status='success' title={result.message}>
+          <ul>
+            {result?.createdProducts.map((product) => (
+              <li key={product.id}>
+                {product.title} (Vendor: {product.vendor})
+              </li>
+            ))}
+          </ul>
         </Banner>
       )}
     </Page>

@@ -7,31 +7,15 @@ export default async function route({ request, reply, connections }) {
   const { products } = request.body;
 
   if (!products || !Array.isArray(products)) {
-    return await reply.status(400).send({
-      error: 'Invalid or missing products array',
-    });
+    return reply
+      .status(400)
+      .send({ error: 'Invalid or missing products array' });
   }
 
   try {
-    const result = await createProducts({
-      shopify,
-      products,
-    });
-
-    if (result.error) {
-      return await reply.status(500).send({
-        error: 'Failed to create products',
-        details: result.error,
-      });
-    } else
-      return await reply.send({
-        status: 'Products created successfully',
-        result,
-      });
+    const createdProducts = await createProducts({ shopify, products });
+    return reply.send(createdProducts);
   } catch (error) {
-    return await reply.status(500).send({
-      error: 'Failed to create products',
-      details: error.message,
-    });
+    return reply.status(500).send({ error: error.message });
   }
 }
