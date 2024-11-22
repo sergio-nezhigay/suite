@@ -25,6 +25,7 @@ import Brain from '../routes/brain';
 import Easy from '../routes/easy';
 
 import Test from '../routes/test';
+import Tagger from '../routes/tagger';
 
 function Error404() {
   const navigate = useNavigate();
@@ -50,6 +51,7 @@ function App() {
         <Route path='/brain' element={<Brain />} />
         <Route path='/easy' element={<Easy />} />
         <Route path='/test' element={<Test />} />
+        <Route path='/tagger' element={<Tagger />} />
         <Route path='/upload' element={<FileUploadPage />} />
         <Route path='*' element={<Error404 />} />
       </Route>
@@ -109,6 +111,7 @@ function EmbeddedApp() {
         <Link to='/feeds'>Feeds</Link>
         <Link to='/brain'>Brain</Link>
         <Link to='/easy'>Easy</Link>
+        <Link to='/tagger'>Tagger</Link>
         <Link to='/test'>Test</Link>
       </NavMenu>
     </>

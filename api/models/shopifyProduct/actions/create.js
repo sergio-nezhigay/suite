@@ -1,21 +1,30 @@
-import { applyParams, save, ActionOptions, CreateShopifyProductActionContext } from "gadget-server";
-import { preventCrossShopDataAccess } from "gadget-server/shopify";
+import {
+  applyParams,
+  preventCrossShopDataAccess,
+  save,
+  ActionOptions,
+} from 'gadget-server';
+import { applyTags } from '../utils';
 
-/**
- * @param { CreateShopifyProductActionContext } context
- */
-export async function run({ params, record, logger, api, connections }) {
+/** @type { ActionRun } */
+export const run = async ({ params, record }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
   await save(record);
 };
 
-/**
- * @param { CreateShopifyProductActionContext } context
- */
-export async function onSuccess({ params, record, logger, api, connections }) {
-  // Your logic goes here
+/** @type { ActionOnSuccess } */
+export const onSuccess = async ({ record, logger, api, connections }) => {
+  if (record.body) {
+    await applyTags({
+      body: record.body,
+      tags: record.tags,
+      id: record.id,
+    });
+  }
 };
 
 /** @type { ActionOptions } */
-export const options = { actionType: "create" };
+export const options = {
+  actionType: 'create',
+};

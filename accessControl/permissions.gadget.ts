@@ -95,6 +95,12 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyCustomerMergeable: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyCustomerMergeable.gelly",
+          },
+        },
         shopifyFile: {
           read: {
             filter: "accessControl/filters/shopify/shopifyFile.gelly",
@@ -130,6 +136,61 @@ export const permissions: GadgetPermissions = {
           read: {
             filter:
               "accessControl/filters/shopify/shopifyProduct.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductImage: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductImage.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductMedia: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductMedia.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductOption: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductOption.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductVariant: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductVariant.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyProductVariantMedia: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyProductVariantMedia.gelly",
           },
           actions: {
             create: true,

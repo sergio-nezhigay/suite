@@ -26,6 +26,8 @@ export const schema: GadgetModel = {
       "originalFileSize",
       "originalSource",
       "preview",
+      "product",
+      "productVariant",
       "shop",
       "shopifyCreatedAt",
       "shopifyUpdatedAt",
