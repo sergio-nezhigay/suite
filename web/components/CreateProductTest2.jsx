@@ -7,11 +7,14 @@ export default function CreateProductTest2({ products }) {
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
 
-  const updatedProducts = products.map(({ name, vendor, description }) => ({
-    title: name,
-    vendor,
-    description,
-  }));
+  const updatedProducts = products.map(
+    ({ name, vendor, description, pictures }) => ({
+      title: name,
+      vendor,
+      description,
+      pictures,
+    })
+  );
 
   const createProduct = async () => {
     try {

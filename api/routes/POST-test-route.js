@@ -1,27 +1,46 @@
-import { RouteContext } from 'gadget-server';
+const mutation = `
+mutation CreateProductWithMedia(
+      $input: ProductInput!,
+      $media: [CreateMediaInput!]!
+    )  {
+  productCreate(
+     input: $input,
+    media: $media
+  ) {
+    product {
+      id
+      title
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;
+
+const variables = {
+  input: {
+    title: 'title33',
+  },
+  media: [
+    {
+      mediaContentType: 'IMAGE',
+      originalSource:
+        'https://opt.brain.com.ua/static/images/prod_img/8/9/U0572189_big.jpg',
+    },
+    {
+      mediaContentType: 'IMAGE',
+      originalSource:
+        'https://cdn.shopify.com/s/files/1/0868/0462/7772/files/logitech_b100_910-003357_3.jpg?v=1727796322',
+    },
+  ],
+};
 
 export default async function route({ reply, connections }) {
-  const title = 'Test'; // Constant title for the product
-
   try {
     const shopify = await connections.shopify.current;
 
-    const mutation = `#graphql
-      mutation CreateProduct($title: String!) {
-        productCreate(input: { title: $title }) {
-          product {
-            id
-            title
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }
-    `;
-
-    const variables = { title };
     const response = await shopify.graphql(mutation, variables);
 
     if (response.productCreate.userErrors.length > 0) {
