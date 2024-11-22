@@ -1,7 +1,7 @@
 import { Page, Text, Button, Banner } from '@shopify/polaris';
 import { useState } from 'react';
 
-export default function CreateProductTest() {
+export default function Test() {
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState(null);
@@ -12,26 +12,21 @@ export default function CreateProductTest() {
       setError(null);
       setResult(null);
 
-      const response = await fetch('/products-create', {
+      const response = await fetch('/test-route', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: 'test2 product name',
-          vendor: 'Vendor2',
+          title: 'Test Product',
+          vendor: 'Test Vendor',
         }),
       });
 
       if (!response.ok) {
-        throw new Error('An unknown error occurred');
+        throw new Error('An error occurred while creating the product');
       }
+
       const data = await response.json();
-      if (data.error) {
-        console.err(data.details);
-        throw new Error(data.error || 'An unknown error occurred');
-      }
-      setResult(data.status);
+      setResult(data.product);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -41,18 +36,13 @@ export default function CreateProductTest() {
 
   return (
     <Page title='Create Product Test'>
-      <Text variant='headingLg'>Create a Test Product</Text>
-      {error && (
-        <Banner status='critical' title='Error'>
-          <p>{error}</p>
-        </Banner>
-      )}
+      {error && <Banner status='critical'>{error}</Banner>}
       {result && (
-        <Banner status='success' title='Success'>
-          <p>{result}</p>
+        <Banner status='success'>
+          Product Created: <Text>{result.title}</Text> (ID: {result.id})
         </Banner>
       )}
-      <Button primary loading={loading} onClick={createProduct}>
+      <Button onClick={createProduct} loading={loading}>
         Create Product
       </Button>
     </Page>
