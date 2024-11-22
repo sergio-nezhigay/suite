@@ -16,20 +16,20 @@ export const run = async ({ params, record }) => {
 
 /** @type { ActionOnSuccess } */
 export const onSuccess = async ({ record, api, connections }) => {
-  const shopify = connections.shopify.current;
-  const lastSKURecord = await api.lastSKU.findMany();
-  const lastSKU = lastSKURecord[0]?.value;
-  const id = lastSKURecord[0]?.id;
-  await api.lastSKU.update(id, { value: lastSKU + 1 });
-  const productId = `gid://shopify/Product/${record.id}`;
-  const result = await mutationMetafield(
-    shopify,
-    productId,
-    'custom',
-    'product_number_1',
-    lastSKU + 1
-  );
+  const shopify = connections.shopify?.current;
+  if (!shopify) {
+    throw new Error('Shopify connection is required');
+  }
 
+  const { currentSKUValue, skuRecordId } = await getLastSKU(api);
+
+  await api.lastSKU.update(skuRecordId, { value: currentSKUValue + 1 });
+  await updateMetafield({
+    shopify,
+    ownerId: `gid://shopify/Product/${record.id}`,
+    value: currentSKUValue + 1,
+  });
+  //  tags processing
   if (record.body) {
     await applyTags({
       body: record.body,
@@ -44,14 +44,7 @@ export const options = {
   actionType: 'create',
 };
 
-async function mutationMetafield(
-  shopify,
-  ownerId,
-  namespace,
-  key,
-  value,
-  type = 'single_line_text_field'
-) {
+async function updateMetafield({ shopify, ownerId, value }) {
   const metafieldMutation = `
       mutation UpdateMetafield($metafields: [MetafieldsSetInput!]!) {
         metafieldsSet(metafields: $metafields) {
@@ -68,22 +61,31 @@ async function mutationMetafield(
     `;
 
   const variables = {
-    metafields: [{ ownerId, namespace, key, value: String(value), type }],
+    metafields: [
+      {
+        ownerId,
+        namespace: 'custom',
+        key: 'product_number_1',
+        value: String(value),
+        type: 'single_line_text_field',
+      },
+    ],
   };
 
-  try {
-    const response = await shopify.graphql(metafieldMutation, variables);
-    if (response.metafieldsSet.userErrors.length > 0) {
-      throw new Error(
-        `Metafield update failed: ${response.metafieldsSet.userErrors
-          .map((error) => `${error.field}: ${error.message}`)
-          .join(', ')}`
-      );
-    }
-
-    return response.metafieldsSet.metafields;
-  } catch (error) {
-    console.error('Error updating metafield:', error.message);
-    throw error;
+  const response = await shopify.graphql(metafieldMutation, variables);
+  if (response.metafieldsSet.userErrors.length > 0) {
+    throw new Error(
+      `Metafield update failed: ${response.metafieldsSet.userErrors
+        .map((error) => `${error.field}: ${error.message}`)
+        .join(', ')}`
+    );
   }
+  return response.metafieldsSet.metafields;
+}
+
+async function getLastSKU(api) {
+  const lastSKURecord = await api.lastSKU.findMany();
+  const currentSKUValue = lastSKURecord[0]?.value;
+  const skuRecordId = lastSKURecord[0]?.id;
+  return { currentSKUValue, skuRecordId };
 }
