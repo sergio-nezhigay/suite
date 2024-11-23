@@ -12,7 +12,7 @@ export const easybuyCategories = [
   { value: '17079767', label: 'Електроника' },
   { value: '90752735', label: 'Автомобили и мотоциклы' },
   { value: '89100275', label: 'Сетевые карты' },
-  { value: '89100231', label: 'USB кабели' },
+  { value: '27354601', label: 'USB кабели' },
   { value: '89100865', label: 'HDMI кабели' },
   { value: '89100074', label: 'Micro-USB' },
   { value: '89100095', label: 'Lightning' },

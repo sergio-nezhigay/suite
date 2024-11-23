@@ -11,7 +11,7 @@ export async function fetchEasy({ category, limit = 10, page = 1 }) {
     let products = [];
 
     const offerPattern =
-      /<offer id="(\d+)" available="(true|false)">.*?<url>(.*?)<\/url>.*?<price>(\d+)<\/price>.*?<currencyId>(.*?)<\/currencyId>.*?<categoryId>(.*?)<\/categoryId>.*?<name>(.*?)<\/name>.*?<vendor>(.*?)<\/vendor>.*?<description>(.*?)<\/description>.*?<\/offer>/gs;
+      /<offer id="(\d+)" available="(true|false)">.*?<url>(.*?)<\/url>.*?<price>(\d+)<\/price>.*?<currencyId>(.*?)<\/currencyId>.*?<categoryId>(.*?)<\/categoryId>.*?<name>(.*?)<\/name>.*?<vendor>(.*?)<\/vendor>.*?<vendorCode>(.*?)<\/vendorCode>.*?<description>(.*?)<\/description>.*?<\/offer>/gs;
 
     // Extract offers using regex
 
@@ -33,10 +33,22 @@ export async function fetchEasy({ category, limit = 10, page = 1 }) {
         categoryId: match[6],
         name: match[7],
         vendor: match[8],
-        description: match[9],
+        vendorCode: match[9],
+        description: match[10],
         pictures: pictures,
       };
       products.push(offer);
+      if (offer.id === 1420690747) {
+        console.log(
+          '===== LOG START =====',
+          new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          })
+        );
+        console.log('offer:', JSON.stringify(offer, null, 4));
+        console.log('match:', JSON.stringify(match, null, 4));
+      }
     }
 
     // Display the extracted offers

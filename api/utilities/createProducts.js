@@ -4,32 +4,29 @@ export default async function createProducts({ shopify, products }) {
       $input: ProductInput!,
       $media: [CreateMediaInput!]!
     )  {
-  productCreate(
-     input: $input,
-    media: $media
-  ) {
-        product {
-          id
-          title
-          vendor
-          descriptionHtml
-          },
-        userErrors {
-            field
-            message
+        productCreate(
+            input: $input,
+            media: $media
+        ) {
+            product {
+            id
+            title
+            },
+            userErrors {
+                field
+                message
+                }
             }
-        }
       }
     `;
 
-  if (!shopify?.graphql) {
+  if (!shopify) {
     throw new Error('Shopify client is not available.');
   }
 
   const createdProducts = [];
 
   for (const product of products) {
-    console.log('🚀 ~ product:', product);
     const media = product.pictures.map((picture) => ({
       mediaContentType: 'IMAGE',
       originalSource: picture,

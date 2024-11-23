@@ -45,8 +45,7 @@ export default function CreateProductTest2({ products }) {
   };
 
   return (
-    <Page title='Create Products'>
-      <Text variant='headingMd'>Test Product Creation</Text>
+    <Page>
       <Button onClick={createProduct} loading={loading} primary>
         Create Products
       </Button>

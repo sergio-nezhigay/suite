@@ -16,7 +16,7 @@ export default function Easy() {
   const [productError, setProductError] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
   const [page, setPage] = useState(1);
-  const [category, setCategory] = useState('90752735');
+  const [category, setCategory] = useState('27354601');
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 7;
   const categoriesAndValues = easybuyCategories.map(({ value, label }) => ({
@@ -50,7 +50,7 @@ export default function Easy() {
   }, [page, category]);
 
   return (
-    <Page title='Easybuy Test'>
+    <Page>
       <BlockStack gap='500'>
         <Select
           label='Select Category'
