@@ -1,15 +1,6 @@
-import {
-  Divider,
-  Page,
-  Banner,
-  Pagination,
-  BlockStack,
-  Select,
-  Spinner,
-} from '@shopify/polaris';
+import { Page, Banner, BlockStack } from '@shopify/polaris';
 import { useState, useEffect } from 'react';
 import ProductList from '../components/ProductList';
-import { easybuyCategories } from '../data/easybuyCategories';
 
 export default function Easy() {
   const [products, setProducts] = useState([]);
@@ -20,10 +11,7 @@ export default function Easy() {
 
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 7;
-  //  const categoriesAndValues = easybuyCategories.map(({ value, label }) => ({
-  //    value,
-  //    label: `${label}: ${value}`,
-  //  }));
+
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -53,36 +41,21 @@ export default function Easy() {
   return (
     <Page>
       <BlockStack gap='500'>
-        {/*<Select
-          label='Select Category'
-          options={categoriesAndValues}
-          value={category}
-          onChange={(value) => {
-            setCategory(value);
-            setPage(1);
-          }}
-        />
-        <Divider borderColor='border' />*/}
-        {productError && (
-          <Banner title='Error' status='critical'>
-            {productError.message}
-          </Banner>
-        )}
-        <Pagination
+        <ProductList
+          products={products}
+          debouncedQuery={debouncedQuery}
+          setDebouncedQuery={setDebouncedQuery}
+          isLoading={loading}
+          totalItems={totalItems}
           hasPrevious={page > 1}
           hasNext={page * itemsPerPage < totalItems}
           onPrevious={() => setPage(page - 1)}
           onNext={() => setPage(page + 1)}
         />
-        <ProductList
-          products={products}
-          debouncedQuery={debouncedQuery}
-          setDebouncedQuery={setDebouncedQuery}
-        />
-        {loading && (
-          <div style={{ textAlign: 'center', marginTop: '20px' }}>
-            <Spinner size='large' />
-          </div>
+        {productError && (
+          <Banner title='Error' status='critical'>
+            {productError.message}
+          </Banner>
         )}
       </BlockStack>
     </Page>

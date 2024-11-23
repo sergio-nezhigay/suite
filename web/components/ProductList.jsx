@@ -3,23 +3,42 @@ import {
   Avatar,
   ResourceItem,
   Text,
-  Button,
   Filters,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
-import CreateProductTest2 from './CreateProductTest2';
+//import CreateProductTest2 from './CreateProductTest2';
 
-function ProductList({ products, debouncedQuery, setDebouncedQuery }) {
+function ProductList({
+  products,
+  debouncedQuery,
+  setDebouncedQuery,
+  isLoading,
+  totalItems,
+  hasPrevious,
+  hasNext,
+  onPrevious,
+  onNext,
+}) {
   const [query, setQuery] = useState(debouncedQuery);
-  console.log('🚀 ~ products:', products);
   const [selectedItems, setSelectedItems] = useState([]);
-  console.log('🚀 ~ selectedItems:', selectedItems);
+
+  const updatedProducts = products
+    .filter(({ id }) => selectedItems.includes(id))
+    .map(({ name, vendor, description, pictures }) => ({
+      title: name,
+      vendor,
+      description,
+      pictures,
+    }));
 
   const promotedBulkActions = [
     {
-      content: 'Edit customers',
-      onAction: () => console.log('Todo: implement bulk edit', selectedItems),
+      content: 'Create selected products',
+      onAction: async () => {
+        console.log('Todo: implement bulk edit', selectedItems);
+        await createProducts();
+      },
     },
   ];
 
@@ -40,6 +59,24 @@ function ProductList({ products, debouncedQuery, setDebouncedQuery }) {
     [setQuery]
   );
 
+  const createProducts = async () => {
+    console.log('createProducts updatedProducts=', updatedProducts);
+    const response = await fetch('/products-create', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ products: updatedProducts }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to create products.');
+    }
+
+    const data = await response.json();
+    console.log('🚀 ~ data:', data);
+  };
+
   return (
     <>
       {products?.length > 0 && (
@@ -59,15 +96,18 @@ function ProductList({ products, debouncedQuery, setDebouncedQuery }) {
               <Filters
                 queryValue={query}
                 filters={[]}
-                //appliedFilters={appliedFilters}
                 onQueryChange={handleFiltersQueryChange}
-                //onQueryClear={handleQueryValueRemove}
-                //onClearAll={handleFiltersClearAll}
               />
             }
-          />
-          <CreateProductTest2
-            products={products.filter(({ id }) => selectedItems.includes(id))}
+            loading={isLoading}
+            showHeader
+            totalItemsCount={totalItems}
+            pagination={{
+              hasNext: hasNext,
+              hasPrevious: hasPrevious,
+              onPrevious: onPrevious,
+              onNext: onNext,
+            }}
           />
         </>
       )}
