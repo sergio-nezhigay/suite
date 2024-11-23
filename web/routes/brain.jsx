@@ -1,6 +1,6 @@
 import { Card, Text, Page, Banner, Pagination } from '@shopify/polaris';
 import { useState, useEffect } from 'react';
-import ProductList from '../components/ProductList';
+//import ProductList from '../components/ProductList';
 import { useAuthenticate } from '../components/useAuthenticate';
 
 export default function Brain() {
@@ -66,7 +66,7 @@ export default function Brain() {
 
       {products.length > 0 && (
         <Card>
-          {<ProductList products={products} />}
+          {/*{<ProductList products={products} />}*/}
           {totalItems > itemsPerPage && (
             <Pagination
               hasPrevious={page > 1}
