@@ -15,21 +15,22 @@ export default function Easy() {
   const [products, setProducts] = useState([]);
   const [productError, setProductError] = useState(null);
   const [totalItems, setTotalItems] = useState(0);
+  const [debouncedQuery, setDebouncedQuery] = useState('кабель');
   const [page, setPage] = useState(1);
-  const [category, setCategory] = useState('27354601');
+
   const [loading, setLoading] = useState(false);
   const itemsPerPage = 7;
-  const categoriesAndValues = easybuyCategories.map(({ value, label }) => ({
-    value,
-    label: `${label}: ${value}`,
-  }));
+  //  const categoriesAndValues = easybuyCategories.map(({ value, label }) => ({
+  //    value,
+  //    label: `${label}: ${value}`,
+  //  }));
   useEffect(() => {
     const fetchProducts = async () => {
       try {
         setProductError(null);
         setLoading(true);
         const response = await fetch(
-          `/easy-products?category=${category}&page=${page}&limit=${itemsPerPage}`
+          `/easy-products?query=${debouncedQuery}&page=${page}&limit=${itemsPerPage}`
         );
         const result = await response.json();
 
@@ -47,12 +48,12 @@ export default function Easy() {
       }
     };
     fetchProducts();
-  }, [page, category]);
+  }, [page, debouncedQuery]);
 
   return (
     <Page>
       <BlockStack gap='500'>
-        <Select
+        {/*<Select
           label='Select Category'
           options={categoriesAndValues}
           value={category}
@@ -61,7 +62,7 @@ export default function Easy() {
             setPage(1);
           }}
         />
-        <Divider borderColor='border' />
+        <Divider borderColor='border' />*/}
         {productError && (
           <Banner title='Error' status='critical'>
             {productError.message}
@@ -73,7 +74,11 @@ export default function Easy() {
           onPrevious={() => setPage(page - 1)}
           onNext={() => setPage(page + 1)}
         />
-        <ProductList products={products} />
+        <ProductList
+          products={products}
+          debouncedQuery={debouncedQuery}
+          setDebouncedQuery={setDebouncedQuery}
+        />
         {loading && (
           <div style={{ textAlign: 'center', marginTop: '20px' }}>
             <Spinner size='large' />
