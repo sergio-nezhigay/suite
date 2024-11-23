@@ -16,6 +16,7 @@
   "dependencies": {
     "@gadget-client/admin-action-block": "link:.gadget/client",
     "@gadgetinc/react": "^0.16.6",
+    "xml2js": "^0.6.2",
     "@gadgetinc/react-shopify-app-bridge": "^0.16.3",
     "@shopify/app-bridge-react": "4.0.0",
     "@shopify/polaris": "^13.8.0",

@@ -1,16 +1,18 @@
 import {
-  LegacyCard,
   ResourceList,
   Avatar,
   ResourceItem,
   Text,
+  Button,
 } from '@shopify/polaris';
 
 import { useState } from 'react';
 import CreateProductTest2 from './CreateProductTest2';
 
 function ProductList({ products }) {
+  console.log('🚀 ~ products:', products);
   const [selectedItems, setSelectedItems] = useState([]);
+  console.log('🚀 ~ selectedItems:', selectedItems);
 
   const promotedBulkActions = [
     {
@@ -21,21 +23,25 @@ function ProductList({ products }) {
 
   return (
     <>
-      <ResourceList
-        resourceName={{
-          singular: 'product',
-          plural: 'products',
-        }}
-        items={products}
-        renderItem={renderItem}
-        selectedItems={selectedItems}
-        onSelectionChange={setSelectedItems}
-        promotedBulkActions={promotedBulkActions}
-        resolveItemId={resolveItemIds}
-      />
-      <CreateProductTest2
-        products={products.filter(({ id }) => selectedItems.includes(id))}
-      />
+      {products?.length > 0 && (
+        <>
+          <ResourceList
+            resourceName={{
+              singular: 'product',
+              plural: 'products',
+            }}
+            items={products}
+            renderItem={renderItem}
+            selectedItems={selectedItems}
+            onSelectionChange={setSelectedItems}
+            promotedBulkActions={promotedBulkActions}
+            resolveItemId={resolveItemIds}
+          />
+          <CreateProductTest2
+            products={products.filter(({ id }) => selectedItems.includes(id))}
+          />
+        </>
+      )}
     </>
   );
 

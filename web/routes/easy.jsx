@@ -34,8 +34,8 @@ export default function Easy() {
         const result = await response.json();
 
         if (response.ok) {
-          setProducts(result?.list);
-          setTotalItems(result?.count);
+          setProducts(result.products);
+          setTotalItems(result.count);
         } else {
           setProductError('Failed to fetch products. ' + result.error);
         }

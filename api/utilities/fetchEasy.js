@@ -1,90 +1,62 @@
-export async function fetchEasy({ category, limit = 10, page = 1 }) {
-  try {
-    console.log('Fetching...categoryid, Limit, page=', category, limit, page);
+import { parseStringPromise } from 'xml2js';
 
+export async function fetchEasy({
+  searchWord = 'кабель',
+  limit = 10,
+  page = 1,
+}) {
+  try {
+    console.log(
+      'Fetching...searchWord:',
+      searchWord,
+      'Limit:',
+      limit,
+      'Page:',
+      page
+    );
+
+    // Fetch the raw XML data
     const response = await fetch(process.env.EASY_BUY_URL);
     const xmlText = await response.text(); // Get XML as text
-    console.log('XML fetched successfully.');
-    const c = countOffers(xmlText);
-    console.log('🚀 ~ c:', c);
-    // Initialize array to hold products
-    let products = [];
+    console.log('XML fetched successfully. Length of XML:', xmlText.length);
 
-    const offerPattern =
-      /<offer id="(\d+)" available="(true|false)">.*?<url>(.*?)<\/url>.*?<price>(\d+)<\/price>.*?<currencyId>(.*?)<\/currencyId>.*?<categoryId>(.*?)<\/categoryId>.*?<name>(.*?)<\/name>.*?<vendor>(.*?)<\/vendor>.*?<vendorCode>(.*?)<\/vendorCode>.*?<description>(.*?)<\/description>.*?<\/offer>/gs;
+    // Parse the XML text into a JS object using xml2js
+    const parsedObj = await parseStringPromise(xmlText, {
+      explicitArray: false,
+    });
 
-    // Extract offers using regex
-
-    let match;
-    while ((match = offerPattern.exec(xmlText)) !== null) {
-      const pictures = [];
-      let pictureMatch;
-      const picturePattern = /<picture>(.*?)<\/picture>/g;
-
-      while ((pictureMatch = picturePattern.exec(match[0])) !== null) {
-        pictures.push(pictureMatch[1]);
-      }
-      const offer = {
-        id: match[1],
-        available: match[2] === 'true',
-        url: match[3],
-        price: parseFloat(match[4]),
-        currency: match[5],
-        categoryId: match[6],
-        name: match[7],
-        vendor: match[8],
-        vendorCode: match[9],
-        description: match[10],
-        pictures: pictures,
-      };
-      products.push(offer);
-      if (offer.id === 1420690747) {
-        console.log(
-          '===== LOG START =====',
-          new Date().toLocaleTimeString([], {
-            hour: '2-digit',
-            minute: '2-digit',
-          })
-        );
-        console.log('offer:', JSON.stringify(offer, null, 4));
-        console.log('match:', JSON.stringify(match, null, 4));
-      }
-    }
-
-    // Display the extracted offers
-    console.log('category=', category);
-    console.log('products=', products);
-    //const categoryProducts = products;
-    const categoryProducts = products.filter(
-      ({ categoryId }) => categoryId === category
-    );
-
-    const startIndex = (page - 1) * limit;
-    console.log('🚀 ~ page:', page);
-    console.log('🚀 ~ startIndex:', startIndex);
-    const endIndex = startIndex + limit;
-    console.log('🚀 ~ limit:', limit);
-    console.log('🚀 ~ endIndex:', endIndex);
-    const paginatedProducts = categoryProducts.slice(startIndex, endIndex);
-
+    // Log the entire parsed object to understand its structure
     console.log(
-      `Fetched ${paginatedProducts.length} products (Page ${page}, Limit ${limit})`
+      'XML parsed into JS object:',
+      JSON.stringify(parsedObj, null, 2)
     );
-    const result = {
-      list: paginatedProducts,
-      count: categoryProducts.length,
-    };
 
-    console.log('Products fetched and parsed:', result.count);
-    return result;
+    // Process the offers
+    const offers = parsedObj.yml_catalog.shop.offers.offer
+      .filter((offer) => {
+        return (
+          offer.name &&
+          offer.name.toLowerCase().includes(searchWord.toLowerCase())
+        );
+      })
+      .map((offer) => {
+        return {
+          name: offer.name,
+          price: offer.price,
+          description: offer.description,
+          pictures: offer.picture,
+          part_number: offer.vendorCode,
+          vendor: offer.vendor,
+          instock: offer.$.available === 'true' ? 5 : 0,
+          warranty: 12,
+          id: offer?.$?.id || `offer-${index}`,
+        };
+      });
+    console.log('🚀 ~ offers:', offers.slice(0, 5));
+    const paginatedOffers = offers.slice((page - 1) * limit, page * limit);
+    return { products: paginatedOffers, count: offers.length };
   } catch (error) {
-    console.error('Error fetching or parsing XML feed:', error);
-    return { list: [], count: 0 }; // Return an empty result in case of error
+    console.error('Error fetching or processing the XML:', error);
+    throw error; // Rethrow or handle as necessary
   }
-}
-
-function countOffers(xmlData) {
-  const offerRegex = /<offer[^>]*>/g; // Regex to match <offer> tags
-  const matches = xmlData.match(offerRegex); // Find all matches
-  return matches ? matches.length : 0; // Return the count of <offer> tags, or 0 if none found
 }
