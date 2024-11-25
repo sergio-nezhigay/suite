@@ -5,6 +5,8 @@ import {
   Text,
   Filters,
   Banner,
+  InlineStack,
+  InlineGrid,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -50,20 +52,21 @@ function Easy({}) {
     fetchProducts();
   }, [page, debouncedQuery]);
 
-  const updatedProducts = products
+  const productsToCreate = products
     .filter(({ id }) => selectedItems.includes(id))
-    .map(({ name, vendor, description, pictures }) => ({
+    .map(({ name, vendor, description, pictures, part_number }) => ({
       title: name,
       vendor,
       description,
       pictures,
+      part_number,
     }));
 
   const promotedBulkActions = [
     {
       content: 'Create selected products',
       onAction: async () => {
-        console.log('Todo: implement bulk edit', selectedItems);
+        console.log('Create:', selectedItems);
         await createProducts();
       },
     },
@@ -89,12 +92,12 @@ function Easy({}) {
       setError(null);
       setLoading(true);
       setSuccess(false);
-      const response = await fetch('/products-create', {
+      const response = await fetch('/products/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ products: updatedProducts }),
+        body: JSON.stringify({ products: productsToCreate }),
       });
 
       if (!response.ok) {
@@ -109,7 +112,7 @@ function Easy({}) {
       setLoading(false);
     }
   };
-
+  console.log(products);
   return (
     <>
       <ResourceList
@@ -123,6 +126,7 @@ function Easy({}) {
         onSelectionChange={setSelectedItems}
         promotedBulkActions={promotedBulkActions}
         resolveItemId={(id) => id}
+        flushFilters={true}
         filterControl={
           <Filters
             queryValue={query}
@@ -131,7 +135,6 @@ function Easy({}) {
           />
         }
         loading={loading}
-        //showHeader
         totalItemsCount={totalItems}
         pagination={{
           hasNext: page * itemsPerPage < totalItems,
@@ -139,6 +142,7 @@ function Easy({}) {
           onPrevious: () => setPage(page - 1),
           onNext: () => setPage(page + 1),
         }}
+        hasMoreItems={totalItems > products.length}
       />
       {success && (
         <Banner
@@ -146,7 +150,7 @@ function Easy({}) {
           status='success'
           onDismiss={() => setSuccess(false)}
         >
-          <p>Data fetched successfully!</p>
+          <p>Operation is successfull</p>
         </Banner>
       )}
       {error && (
@@ -162,25 +166,36 @@ function Easy({}) {
   );
 
   function renderItem(item, _, index) {
-    const { id, name, pictures } = item;
-
+    const { id, name, pictures, price, part_number, existsInShopify } = item;
+    const formattedPrice =
+      typeof price === 'string'
+        ? price.match(/\d+/)?.[0] || '0'
+        : Math.floor(price || 0);
+    const fontWeight = existsInShopify ? 'bold' : '';
     return (
       <ResourceItem
         id={id}
         media={<Avatar size='md' name={name} source={pictures[0]} />}
         sortOrder={index}
+        disabled={existsInShopify}
         accessibilityLabel={`View details for ${name}`}
       >
-        <Text variant='bodyMd' fontWeight='bold' as='h3'>
-          {name}
-        </Text>
+        <InlineGrid columns={['twoThirds', 'oneThird']} gap='200'>
+          <Text variant='bodyMd' fontWeight={fontWeight} as='h3'>
+            {name}
+          </Text>
+          <InlineStack wrap={false} align='space-between' gap='100'>
+            <Text variant='bodyMd' fontWeight={fontWeight} as='h3'>
+              {part_number}
+            </Text>
+            <Text variant='bodyMd' fontWeight={fontWeight} as='h3'>
+              {formattedPrice}
+            </Text>
+          </InlineStack>
+        </InlineGrid>
       </ResourceItem>
     );
   }
-
-  //  function resolveItemIds({ id }) {
-  //    return id;
-  //  }
 }
 
 export default Easy;

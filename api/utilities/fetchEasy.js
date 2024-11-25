@@ -17,18 +17,28 @@ export async function fetchEasy({ query = '', limit = 10, page = 1 }) {
     const filteredOffers = parsedObj.yml_catalog.shop.offers.offer.filter(
       (offer) => {
         const title = offer.name?.toLowerCase() || '';
-        return words.every((word) => title.includes(word));
+        const vendorCode = offer.vendorCode?.toLowerCase() || '';
+        return (
+          words.every((word) => title.includes(word)) ||
+          words.every((word) => vendorCode.includes(word))
+        );
       }
     );
 
     const mappedOffers = filteredOffers.map((offer) => {
+      let pictures = Array.isArray(offer?.picture)
+        ? offer.picture
+        : offer?.picture
+        ? [offer.picture]
+        : [];
+
       return {
         name: offer.name,
         price: offer.price,
         description: offer.description,
-        pictures: offer.picture,
+        pictures: pictures,
         part_number: offer.vendorCode,
-        vendor: offer.vendor,
+        vendor: offer.vendor || 'Informatica',
         instock: offer.$.available === 'true' ? 5 : 0,
         warranty: 12,
         id: offer?.$?.id || `offer-${index}`,
