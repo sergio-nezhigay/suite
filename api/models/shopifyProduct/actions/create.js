@@ -4,9 +4,9 @@ import {
   save,
   ActionOptions,
 } from 'gadget-server';
-import updateMetafield from '../../../utilities/updateMetafield';
-import getShopifyClient from '../../utilities/getShopifyClient';
 
+import getShopifyClient from '../../../utilities/getShopifyClient';
+import updateMetafield from '../../../utilities/updateMetafield';
 import { applyTags } from '../../../utilities/utils';
 
 /** @type { ActionRun } */

@@ -1,3 +1,26 @@
-# This toml file is used for production. Only edit this file if you have a need for it
-# When you add a production config, values will be auto-populated here
-# Read more at https://docs.gadget.dev/guides/plugins/shopify/shopify-app-toml
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "2a63484c3b50c064c9d0e0a0d10b00d6"
+name = "admin"
+handle = "admin-64"
+application_url = "https://admin-action-block.gadget.app/api/shopify/install-or-render"
+embedded = true
+
+[build]
+dev_store_url = "c2da09-15.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "unauthenticated_read_customers,write_orders,write_files,read_files,write_products,write_payment_customizations,read_payment_customizations,read_customer_events,write_pixels,read_customers,read_products,read_orders,read_customer_merge,unauthenticated_write_customers"
+
+[auth]
+redirect_urls = [
+  "https://admin-action-block.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[webhooks]
+api_version = "2024-07"
+
+[pos]
+embedded = false

@@ -11,7 +11,7 @@ import getShopifyClient from '../../../utilities/getShopifyClient';
 /**
  * @param { CreateShopifyOrderActionContext } context
  */
-export async function run({ params, record, logger, api, connections }) {
+export async function run({ params, record }) {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
   await save(record);
@@ -20,23 +20,25 @@ export async function run({ params, record, logger, api, connections }) {
 /**
  * @param { CreateShopifyOrderActionContext } context
  */
-export async function onSuccess({ params, record, logger, api, connections }) {
+export async function onSuccess({ record, connections }) {
   // Your logic goes here
   const shopify = getShopifyClient(connections);
   const orderId = `gid://shopify/Order/${record.id}`;
   const gateWays = await getOrderGateway({ shopify, orderId });
-  console.log('🚀 ~ gatwayValues:', gateWays);
 
-  const gateway = gateWays?.[0]?.gateway || null;
-  console.log('🚀 ~ gateway:', gateway);
+  const gateway = gateWays?.[0]?.gateway;
 
+  const paymentMethod =
+    gateway === 'Накладений платіж'
+      ? 'Накладений платіж'
+      : 'Передплата безготівка';
   const variables = {
     metafields: [
       {
         ownerId: orderId,
         namespace: 'custom',
         key: 'payment_method',
-        value: gateway,
+        value: paymentMethod,
       },
     ],
   };
