@@ -29,8 +29,8 @@ export const onSuccess = async ({ record, api, connections }) => {
         ownerId: `gid://shopify/Product/${record.id}`,
         namespace: 'custom',
         key: 'product_number_1',
-        value: String(currentSKUValue + 1),
-        type: 'single_line_text_field',
+        value: String(+currentSKUValue + 1),
+        type: 'number_integer',
       },
     ],
   };

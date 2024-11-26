@@ -1,14 +1,11 @@
 import {
   ResourceList,
-  Avatar,
   ResourceItem,
   Text,
   Filters,
-  Banner,
   InlineStack,
   Page,
   InlineGrid,
-  Card,
   Thumbnail,
 } from '@shopify/polaris';
 
@@ -19,8 +16,7 @@ function Easy({}) {
   const [query, setQuery] = useState(initialQuery);
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
-  const [error, setError] = useState(null);
-  const [success, setSuccess] = useState(false);
+
   const [totalItems, setTotalItems] = useState(0);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [page, setPage] = useState(1);
@@ -31,9 +27,7 @@ function Easy({}) {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        setError(null);
         setLoading(true);
-        setSuccess(false);
         const response = await fetch(
           `/easy-products?query=${debouncedQuery}&page=${page}&limit=${itemsPerPage}`
         );
@@ -43,11 +37,16 @@ function Easy({}) {
           setProducts(result.products);
           setTotalItems(result.count);
         } else {
-          setError('Failed to fetch products. ' + result.error);
+          shopify.toast.show('Failed to fetch products. ' + result.error, {
+            duration: 5000,
+            isError: true,
+          });
         }
       } catch (error) {
-        console.log('🚀 ~ error:', error);
-        setError('Error fetching products.');
+        shopify.toast.show('Failed to fetch products. ' + error, {
+          duration: 5000,
+          isError: true,
+        });
       } finally {
         setLoading(false);
       }
@@ -69,7 +68,6 @@ function Easy({}) {
     {
       content: 'Create selected products',
       onAction: async () => {
-        console.log('Create:', selectedItems);
         await createProducts();
       },
     },
@@ -92,9 +90,7 @@ function Easy({}) {
 
   const createProducts = async () => {
     try {
-      setError(null);
       setLoading(true);
-      setSuccess(false);
       const response = await fetch('/products/create', {
         method: 'POST',
         headers: {
@@ -104,13 +100,23 @@ function Easy({}) {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to create products.');
+        shopify.toast.show(error + 'Failed to create products.', {
+          duration: 5000,
+          isError: true,
+        });
       }
       const data = await response.json();
-      setSuccess(true);
+      shopify.toast.show(
+        data.createdProducts.length + ' products successfully created',
+        {
+          duration: 5000,
+        }
+      );
     } catch (error) {
-      console.log('🚀 ~ error:', error);
-      setError('Error creating products.');
+      shopify.toast.show(error + ' Error creating products', {
+        duration: 5000,
+        isError: true,
+      });
     } finally {
       setLoading(false);
     }
@@ -147,24 +153,6 @@ function Easy({}) {
         }}
         hasMoreItems={totalItems > products.length}
       />
-      {success && (
-        <Banner
-          title='Success'
-          status='success'
-          onDismiss={() => setSuccess(false)}
-        >
-          <p>Operation is successfull</p>
-        </Banner>
-      )}
-      {error && (
-        <Banner
-          title='Error'
-          status='critical'
-          onDismiss={() => setError(null)}
-        >
-          <p>{error}</p>
-        </Banner>
-      )}
     </Page>
   );
 

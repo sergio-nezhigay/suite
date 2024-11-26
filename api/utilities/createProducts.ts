@@ -1,5 +1,6 @@
 import { Products } from 'api/types';
 import Shopify from 'shopify-api-node';
+import transliterate from './transliterate';
 
 export default async function createProducts({
   shopify,
@@ -57,6 +58,7 @@ export default async function createProducts({
   const createdProducts = [];
 
   for (const product of products) {
+    const handle = transliterate(product.title);
     const media = product.pictures.map((picture) => ({
       mediaContentType: 'IMAGE',
       originalSource: picture,
@@ -66,6 +68,7 @@ export default async function createProducts({
         title: product.title,
         vendor: product.vendor,
         descriptionHtml: product.description || null,
+        handle,
       },
       media,
     };
