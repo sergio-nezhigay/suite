@@ -6,7 +6,10 @@ import {
   Filters,
   Banner,
   InlineStack,
+  Page,
   InlineGrid,
+  Card,
+  Thumbnail,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -23,7 +26,7 @@ function Easy({}) {
   const [page, setPage] = useState(1);
 
   const [loading, setLoading] = useState(false);
-  const itemsPerPage = 7;
+  const itemsPerPage = 20;
 
   useEffect(() => {
     const fetchProducts = async () => {
@@ -114,7 +117,7 @@ function Easy({}) {
   };
   console.log(products);
   return (
-    <>
+    <Page title='Easy buy products'>
       <ResourceList
         resourceName={{
           singular: 'product',
@@ -162,7 +165,7 @@ function Easy({}) {
           <p>{error}</p>
         </Banner>
       )}
-    </>
+    </Page>
   );
 
   function renderItem(item, _, index) {
@@ -171,16 +174,22 @@ function Easy({}) {
       typeof price === 'string'
         ? price.match(/\d+/)?.[0] || '0'
         : Math.floor(price || 0);
-    const fontWeight = existsInShopify ? 'bold' : '';
+    const fontWeight = existsInShopify ? '' : 'bold';
+    const mediaSize = existsInShopify ? 'large' : 'large';
     return (
       <ResourceItem
         id={id}
-        media={<Avatar size='md' name={name} source={pictures[0]} />}
+        media={<Thumbnail size={mediaSize} name={name} source={pictures[0]} />}
         sortOrder={index}
         disabled={existsInShopify}
         accessibilityLabel={`View details for ${name}`}
       >
-        <InlineGrid columns={['twoThirds', 'oneThird']} gap='200'>
+        <InlineGrid
+          columns={['twoThirds', 'oneThird']}
+          gap='200'
+          alignItems='center'
+          align=''
+        >
           <Text variant='bodyMd' fontWeight={fontWeight} as='h3'>
             {name}
           </Text>
