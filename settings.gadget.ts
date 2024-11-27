@@ -38,6 +38,7 @@ export const settings: GadgetSettings = {
           "unauthenticated_write_customers",
         ],
       },
+      openai: true,
     },
   },
 };

@@ -1,6 +1,9 @@
 import { Products } from 'api/types';
 import Shopify from 'shopify-api-node';
 import transliterate from './transliterate';
+import fetchChatGPT from './fetchChatGPT';
+import parseGeneratedDescription from './parseGeneratedDescription';
+import preparePrompt from './preparePrompt';
 
 export default async function createProducts({
   shopify,
@@ -59,15 +62,19 @@ export default async function createProducts({
 
   for (const product of products) {
     const handle = transliterate(product.title);
+    const prompt = preparePrompt(product.title, product.description);
+    const response = (await fetchChatGPT(prompt)) || '';
+    const { title, html } = parseGeneratedDescription(response);
+
     const media = product.pictures.map((picture) => ({
       mediaContentType: 'IMAGE',
       originalSource: picture,
     }));
     const variables = {
       input: {
-        title: product.title,
+        title: title,
         vendor: product.vendor,
-        descriptionHtml: product.description || null,
+        descriptionHtml: html || null,
         handle,
       },
       media,

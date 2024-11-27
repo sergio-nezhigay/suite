@@ -16,17 +16,13 @@ export default function Test() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          title: 'Test Product',
-          vendor: 'Test Vendor',
+          title: 'Test',
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('An error occurred while creating the product');
-      }
-
-      const data = await response.json();
-      setResult(data.product);
+      const result = await response.json();
+      console.log('🚀 ~ result:', result);
+      setResult(result);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -35,16 +31,21 @@ export default function Test() {
   };
 
   return (
-    <Page title='Create Product Test'>
-      {error && <Banner status='critical'>{error}</Banner>}
+    <Page title='Open ai'>
       {result && (
-        <Banner status='success'>
-          Product Created: <Text>{result.title}</Text> (ID: {result.id})
-        </Banner>
+        <>
+          <Banner status='success'>
+            Open ai answered: <Text>Заголовок: {result?.message?.title}</Text>
+          </Banner>
+          <Banner status='success'>
+            Open ai answered: <Text>{result?.message?.html}</Text>
+          </Banner>
+        </>
       )}
       <Button onClick={createProduct} loading={loading}>
         Create Product
       </Button>
+      {error && <Banner status='critical'>{error}</Banner>}
     </Page>
   );
 }
