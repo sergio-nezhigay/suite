@@ -11,7 +11,7 @@ export const schema: GadgetModel = {
       type: "hasOne",
       child: {
         model: "shopifyCompany",
-        belongsToField: "mainContact",
+        belongsToField: "shopifyCompany",
       },
       storageKey:
         "ModelField-DataModel-Shopify-CompanyContact-22s0DBiO7Csn::FieldStorageEpoch-DataModel-Shopify-CompanyContact-XkOEJwvDzfa6-initial",

@@ -14,13 +14,20 @@ export async function fetchEasy({ query = '', limit = 10, page = 1 }) {
       .split(' ')
       .filter((word) => word);
 
+    const filterOnlyAvailable = true;
+
     const filteredOffers = parsedObj.yml_catalog.shop.offers.offer.filter(
       (offer) => {
         const title = offer.name?.toLowerCase() || '';
         const vendorCode = offer.vendorCode?.toLowerCase() || '';
+        const available = filterOnlyAvailable
+          ? offer.$.available === 'true'
+          : true;
+
         return (
-          words.every((word) => title.includes(word)) ||
-          words.every((word) => vendorCode.includes(word))
+          (words.every((word) => title.includes(word)) ||
+            words.every((word) => vendorCode.includes(word))) &&
+          available
         );
       }
     );
