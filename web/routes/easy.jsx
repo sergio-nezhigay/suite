@@ -66,9 +66,17 @@ function Easy({}) {
 
   const promotedBulkActions = [
     {
-      content: 'Create selected products',
+      content: 'Create selected',
       onAction: async () => {
         await createProducts();
+        setProducts((prevProducts) => {
+          const newProducts = prevProducts.map((product) => {
+            const isCreadedProductId = selectedItems.includes(product.id);
+            return { ...product, existsInShopify: isCreadedProductId };
+          });
+          return newProducts;
+        });
+        setSelectedItems([]);
       },
     },
   ];
