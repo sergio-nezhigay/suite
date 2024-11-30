@@ -27,7 +27,9 @@
     "react-router-dom": "6.15.0",
     "shopify-api-node": "^3.12.6",
     "@fastify/cors": "^8.5.0",
-    "openai": "^4.61.0"
+    "openai": "^4.61.0",
+    "google-spreadsheet": "^4.1.4",
+    "google-auth-library": "^9.15.0"
   },
   "devDependencies": {
     "@shopify/cli": "^3.66.1",
