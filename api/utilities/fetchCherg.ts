@@ -17,6 +17,7 @@ type ProductsRowData = {
   Модель: string;
   Цена: number;
   Остаток: number;
+  'EBJ81UG8BBU0-GN-F': string;
 };
 
 export default async function fetchCherg() {
@@ -26,7 +27,9 @@ export default async function fetchCherg() {
 
   const mappedRows = rows.map((row) => {
     return {
-      name: row.get('Параметры') + row.get('Модель'),
+      name: `${row.get('EBJ81UG8BBU0-GN-F')} ${row.get('Параметры')} ${row.get(
+        'Модель'
+      )}`,
       part_number: row.get('Модель'),
       price: row.get('Цена'),
       instock: row.get('Остаток'),

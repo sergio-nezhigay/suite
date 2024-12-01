@@ -10,14 +10,11 @@ import {
   Thumbnail,
 } from '@shopify/polaris';
 
-const defaultImage =
-  'https://cdn.shopify.com/s/files/1/0868/0462/7772/files/image-icon-600nw-211642900.webp?v=1732989423';
-
 import { useState, useEffect, useCallback } from 'react';
 
 function Supplier({}) {
   const { supplierId } = useParams();
-  console.log('🚀 ~ supplierId:', supplierId);
+
   const initialQuery = 'кабель';
   const [query, setQuery] = useState(initialQuery);
   const [selectedItems, setSelectedItems] = useState([]);

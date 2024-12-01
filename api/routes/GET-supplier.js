@@ -14,7 +14,7 @@ export default async function route({ request, reply, connections }) {
       limit,
       page,
     });
-    let products, count;
+    let products, count, productsWithExistingFlag;
 
     switch (supplierId) {
       case 'easy':
@@ -24,7 +24,7 @@ export default async function route({ request, reply, connections }) {
           page: +page,
         }));
 
-        const productsWithExistingFlag = await flagExistingShopifyProducts(
+        productsWithExistingFlag = await flagExistingShopifyProducts(
           shopify,
           products
         );
@@ -37,7 +37,12 @@ export default async function route({ request, reply, connections }) {
           page: +page,
         }));
 
-        return reply.send({ count, products });
+        productsWithExistingFlag = await flagExistingShopifyProducts(
+          shopify,
+          products
+        );
+
+        return reply.send({ count, products: productsWithExistingFlag });
       default:
         return reply.send({ products: [], count: 0 });
     }

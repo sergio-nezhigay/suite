@@ -25,8 +25,11 @@ export default async function flagExistingShopifyProducts(
 
   const productsWithPresenceFlag = [];
   for (const product of products) {
+    const query = product?.vendor
+      ? `barcode:${product?.part_number} AND vendor:${product?.vendor}`
+      : `barcode:${product?.part_number}`;
     const { productVariants } = await shopify.graphql(existingProductQuery, {
-      query: `barcode:${product?.part_number} AND vendor:${product?.vendor}`,
+      query,
     });
 
     const checkedProduct = {
