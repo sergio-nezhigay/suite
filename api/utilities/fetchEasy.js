@@ -1,6 +1,6 @@
 import { parseStringPromise } from 'xml2js';
 
-export async function fetchEasy({ query = '', limit = 10, page = 1 }) {
+export async function fetchEasy({ query, limit, page }) {
   try {
     const response = await fetch(process.env.EASY_BUY_URL);
     const xmlText = await response.text();

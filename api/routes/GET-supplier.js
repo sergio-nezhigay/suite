@@ -7,7 +7,12 @@ import getShopifyClient from '../utilities/getShopifyClient';
 export default async function route({ request, reply, connections }) {
   try {
     const shopify = getShopifyClient(connections);
-    const { query, limit, page, supplierId } = getUrlParams(request);
+    const {
+      query = '',
+      limit = 50,
+      page = 1,
+      supplierId,
+    } = getUrlParams(request);
     console.log('route { supplierId,query, limit, page } ', {
       supplierId,
       query,

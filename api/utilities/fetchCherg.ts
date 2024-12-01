@@ -20,7 +20,13 @@ type ProductsRowData = {
   'EBJ81UG8BBU0-GN-F': string;
 };
 
-export default async function fetchCherg() {
+interface FetchingFunc {
+  query: string;
+  limit: number;
+  page: number;
+}
+
+export default async function fetchCherg({ query, limit, page }: FetchingFunc) {
   await doc.loadInfo();
   const sheet = doc.sheetsById[35957627];
   const rows = await sheet.getRows<ProductsRowData>();
@@ -37,7 +43,8 @@ export default async function fetchCherg() {
       warranty: 36,
     };
   });
-  const filtered = mappedRows.filter(({ instock }) => instock);
 
-  return { products: filtered, count: filtered.length };
+  const filtered = mappedRows.filter(({ instock }) => instock);
+  const paginatedOffers = filtered.slice((page - 1) * limit, page * limit);
+  return { products: paginatedOffers, count: filtered.length };
 }

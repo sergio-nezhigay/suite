@@ -12,50 +12,64 @@ import {
 
 import { useState, useEffect, useCallback } from 'react';
 
+const itemsPerPage = 50;
+
 function Supplier({}) {
   const { supplierId } = useParams();
 
-  const initialQuery = 'кабель';
-  const [query, setQuery] = useState(initialQuery);
+  const [query, setQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
-
   const [totalItems, setTotalItems] = useState(0);
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
+
   const [page, setPage] = useState(1);
 
   const [loading, setLoading] = useState(false);
-  const itemsPerPage = 50;
 
   useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await fetch(
-          `/supplier?query=${debouncedQuery}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}`
-        );
-        const result = await response.json();
+    const controller = new AbortController();
+    const debounceTimeout = setTimeout(() => {
+      fetchData(query, controller.signal);
+    }, 300);
 
-        if (response.ok) {
-          setProducts(result.products);
-          setTotalItems(result.count);
-        } else {
-          shopify.toast.show('Failed to fetch products. ' + result.error, {
-            duration: 5000,
-            isError: true,
-          });
-        }
-      } catch (error) {
+    return () => {
+      clearTimeout(debounceTimeout);
+      controller.abort();
+    };
+  }, [query, page, supplierId]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [query, supplierId]);
+
+  const fetchData = async (query, signal) => {
+    setLoading(true);
+    try {
+      const response = await fetch(
+        `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}`,
+        { signal }
+      );
+      if (!response.ok) {
+        shopify.toast.show('Failed to fetch products. ' + result.error, {
+          duration: 5000,
+          isError: true,
+        });
+      }
+      const result = await response.json();
+
+      setProducts(result.products);
+      setTotalItems(result.count);
+    } catch (error) {
+      if (error.name !== 'AbortError') {
         shopify.toast.show('Failed to fetch products. ' + error, {
           duration: 5000,
           isError: true,
         });
-      } finally {
-        setLoading(false);
       }
-    };
-    fetchProducts();
-  }, [page, debouncedQuery, supplierId]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const productsToCreate = products
     .filter(({ id }) => selectedItems.includes(id))
@@ -86,15 +100,6 @@ function Supplier({}) {
       },
     },
   ];
-
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      setDebouncedQuery(query);
-      setPage(1);
-    }, 500);
-
-    return () => clearTimeout(timeoutId);
-  }, [query]);
 
   const handleFiltersQueryChange = useCallback(
     (value) => {
