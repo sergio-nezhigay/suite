@@ -1,6 +1,7 @@
 import { Products } from 'api/types';
 import createProducts from '../../utilities/createProducts';
-import getShopifyClient from '../../utilities/getShopifyClient';
+import {getShopifyClient} from '../../utilities/getShopifyClient';
+
 import { RouteHandler } from 'gadget-server';
 
 interface RequestBody {

@@ -1,11 +1,34 @@
 import { parseStringPromise } from 'xml2js';
 
-export async function fetchEasy({ query, limit, page }) {
+import { FetchingFunc } from 'api/types';
+
+interface Offer {
+  name?: string;
+  vendorCode?: string;
+  vendor?: string;
+  picture?: string;
+  price?: string;
+  id?: string;
+  description?: string;
+  $: { available: string }; // Customize as needed
+}
+
+interface ParsedObj {
+  yml_catalog: {
+    shop: {
+      offers: {
+        offer: Offer[];
+      };
+    };
+  };
+}
+
+export async function fetchEasy({ query, limit, page }: FetchingFunc) {
   try {
-    const response = await fetch(process.env.EASY_BUY_URL);
+    const response = await fetch(process.env.EASY_BUY_URL || '');
     const xmlText = await response.text();
 
-    const parsedObj = await parseStringPromise(xmlText, {
+    const parsedObj: ParsedObj = await parseStringPromise(xmlText, {
       explicitArray: false,
     });
 
@@ -33,7 +56,7 @@ export async function fetchEasy({ query, limit, page }) {
       }
     );
 
-    const mappedOffers = filteredOffers.map((offer) => {
+    const mappedOffers = filteredOffers.map((offer, index) => {
       let pictures = Array.isArray(offer?.picture)
         ? offer.picture
         : offer?.picture
@@ -49,7 +72,7 @@ export async function fetchEasy({ query, limit, page }) {
         vendor: offer.vendor || 'Informatica',
         instock: offer.$.available === 'true' ? 5 : 0,
         warranty: 12,
-        id: offer?.$?.id || `offer-${index}`,
+        id: offer?.id || `offer-${index}`,
       };
     });
 
