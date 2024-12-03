@@ -10,6 +10,13 @@ export type Products = Product[];
 
 export interface FetchingFunc {
   query: string;
-  limit: number;
-  page: number;
+  limit: string;
+  page: string;
+}
+
+export interface BrainFetch {
+  category: string;
+  limit: string;
+  page: string;
+  sid?: string;
 }

@@ -1,6 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 import { FetchingFunc } from 'api/types';
+import { getPaginatedData } from './getPaginatedData';
 
 const serviceAccountAuth = new JWT({
   email: process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
@@ -16,14 +17,15 @@ const doc = new GoogleSpreadsheet(
 type ProductsRowData = {
   Параметры: string;
   Модель: string;
-  Цена: number;
-  Остаток: number;
+  Цена: string;
+  Остаток: string;
   'EBJ81UG8BBU0-GN-F': string;
 };
 
 export async function fetchCherg({ query, limit, page }: FetchingFunc) {
   await doc.loadInfo();
   const sheet = doc.sheetsById[35957627];
+
   const rows = await sheet.getRows<ProductsRowData>();
 
   const mappedRows = rows.map((row) => {
@@ -39,9 +41,12 @@ export async function fetchCherg({ query, limit, page }: FetchingFunc) {
     };
   });
 
-  const filtered = mappedRows.filter(
+  const products = mappedRows.filter(
     ({ instock, part_number }) => instock && part_number
   );
-  const paginatedOffers = filtered.slice((page - 1) * limit, page * limit);
-  return { products: paginatedOffers, count: filtered.length };
+
+  return {
+    products: getPaginatedData(products, Number(limit), Number(page)),
+    count: products.length,
+  };
 }

@@ -1,6 +1,7 @@
 import { parseStringPromise } from 'xml2js';
 
 import { FetchingFunc } from 'api/types';
+import { getPaginatedData } from './getPaginatedData';
 
 interface Offer {
   name?: string;
@@ -56,7 +57,7 @@ export async function fetchEasy({ query, limit, page }: FetchingFunc) {
       }
     );
 
-    const mappedOffers = filteredOffers.map((offer, index) => {
+    const products = filteredOffers.map((offer, index) => {
       let pictures = Array.isArray(offer?.picture)
         ? offer.picture
         : offer?.picture
@@ -76,11 +77,10 @@ export async function fetchEasy({ query, limit, page }: FetchingFunc) {
       };
     });
 
-    const paginatedOffers = mappedOffers.slice(
-      (page - 1) * limit,
-      page * limit
-    );
-    return { products: paginatedOffers, count: filteredOffers.length };
+    return {
+      products: getPaginatedData(products, Number(limit), Number(page)),
+      count: filteredOffers.length,
+    };
   } catch (error) {
     console.error('Error fetching or processing the XML:', error);
     throw error;

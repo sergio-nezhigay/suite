@@ -30,22 +30,22 @@ export default async function route({ request, reply, connections }) {
       case 'easy':
         ({ products, count } = await fetchEasy({
           query,
-          limit: +limit,
-          page: +page,
+          limit,
+          page,
         }));
         break;
       case 'cherg':
         ({ products, count } = await fetchCherg({
           query,
-          limit: +limit,
-          page: +page,
+          limit,
+          page,
         }));
         break;
       case 'brain':
         ({ products, count } = await fetchBrain({
           query,
-          limit: +limit,
-          page: +page,
+          limit: limit,
+          page: page,
         }));
         break;
       default:
