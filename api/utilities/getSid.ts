@@ -1,4 +1,4 @@
-export async function getSid() {
+export default async function getSid() {
   const login = process.env.BRAIN_AUTH_LOGIN;
   const password = process.env.BRAIN_AUTH_PASSWORD;
   if (!login || !password) {
@@ -30,7 +30,7 @@ export async function getSid() {
       throw new Error('Login error');
     }
   } catch (error) {
-    console.error('Authentication error:', error.message);
+    console.error('Authentication error:', error);
     throw new Error('Authentication error occurred');
   }
 }

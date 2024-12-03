@@ -27,7 +27,8 @@ export async function fetchEasy({ query, limit, page }) {
         return (
           (words.every((word) => title.includes(word)) ||
             words.every((word) => vendorCode.includes(word))) &&
-          available
+          available &&
+          vendorCode
         );
       }
     );

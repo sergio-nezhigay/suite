@@ -1,6 +1,6 @@
 import { AppConnections } from '.gadget/server/types';
 
-export default function getShopifyClient(connections: AppConnections) {
+export function getShopifyClient(connections: AppConnections) {
   connections.shopify.maxRetries = 10;
   const shopify = connections.shopify.current;
 

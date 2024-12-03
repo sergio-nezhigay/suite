@@ -1,8 +1,11 @@
-import { fetchEasy } from '../utilities/fetchEasy';
-import fetchCherg from '../utilities/fetchCherg';
-import { getUrlParams } from '../utilities/getUrlParams';
-import flagExistingShopifyProducts from '../utilities/flagExistingShopifyProducts';
-import getShopifyClient from '../utilities/getShopifyClient';
+import {
+  getShopifyClient,
+  flagExistingShopifyProducts,
+  getUrlParams,
+  fetchBrain,
+  fetchCherg,
+  fetchEasy,
+} from '../utilities';
 
 export default async function route({ request, reply, connections }) {
   try {
@@ -19,7 +22,9 @@ export default async function route({ request, reply, connections }) {
       limit,
       page,
     });
-    let products, count, productsWithExistingFlag;
+    let products = [],
+      count = 0,
+      productsWithExistingFlag;
 
     switch (supplierId) {
       case 'easy':
@@ -28,29 +33,29 @@ export default async function route({ request, reply, connections }) {
           limit: +limit,
           page: +page,
         }));
-
-        productsWithExistingFlag = await flagExistingShopifyProducts(
-          shopify,
-          products
-        );
-
-        return reply.send({ count, products: productsWithExistingFlag });
+        break;
       case 'cherg':
         ({ products, count } = await fetchCherg({
           query,
           limit: +limit,
           page: +page,
         }));
-
-        productsWithExistingFlag = await flagExistingShopifyProducts(
-          shopify,
-          products
-        );
-
-        return reply.send({ count, products: productsWithExistingFlag });
+        break;
+      case 'brain':
+        ({ products, count } = await fetchBrain({
+          query,
+          limit: +limit,
+          page: +page,
+        }));
+        break;
       default:
-        return reply.send({ products: [], count: 0 });
     }
+    productsWithExistingFlag = await flagExistingShopifyProducts(
+      shopify,
+      products
+    );
+
+    return reply.send({ count, products: productsWithExistingFlag });
   } catch (error) {
     return reply.status(500).send({
       error: 'products fetch failed',

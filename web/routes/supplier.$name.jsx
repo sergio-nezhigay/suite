@@ -141,6 +141,14 @@ function Supplier({}) {
       setLoading(false);
     }
   };
+
+  const handleSelectionChange = (selected) => {
+    const selectableItems = products
+      .filter((product) => !product.existsInShopify)
+      .map((product) => product.id);
+    setSelectedItems(selected.filter((id) => selectableItems.includes(id)));
+  };
+
   console.log(products);
   return (
     <Page title={`${supplierId}, page ${page}`}>
@@ -152,7 +160,7 @@ function Supplier({}) {
         items={products}
         renderItem={renderItem}
         selectedItems={selectedItems}
-        onSelectionChange={setSelectedItems}
+        onSelectionChange={handleSelectionChange}
         promotedBulkActions={promotedBulkActions}
         resolveItemId={(id) => id}
         flushFilters={true}

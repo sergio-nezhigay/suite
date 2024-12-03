@@ -7,3 +7,9 @@ export interface Product {
   part_number: string;
 }
 export type Products = Product[];
+
+export interface FetchingFunc {
+  query: string;
+  limit: number;
+  page: number;
+}

@@ -1,7 +1,7 @@
 import { Products } from 'api/types';
 import Shopify from 'shopify-api-node';
 
-export default async function flagExistingShopifyProducts(
+export async function flagExistingShopifyProducts(
   shopify: Shopify,
   products: Products
 ) {
