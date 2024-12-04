@@ -179,6 +179,7 @@ export async function addOrderNote({
   orderId: string;
   note: string;
 }) {
+  console.log('🚀 ~ addOrderNote:', note, orderId);
   if (!orderId) {
     throw new Error(`Order ID is required but was not provided`);
   }

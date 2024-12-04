@@ -16,6 +16,7 @@ export interface FetchingFunc {
 
 export interface BrainFetch {
   category: string;
+  query: string;
   limit: string;
   page: string;
   sid?: string;

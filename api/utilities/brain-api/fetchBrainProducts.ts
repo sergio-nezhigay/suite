@@ -1,6 +1,7 @@
 import { BrainFetch } from 'api/types';
 
 export default async function fetchBrainProducts({
+  query,
   category,
   sid,
   limit,
@@ -11,11 +12,10 @@ export default async function fetchBrainProducts({
       `Session identifier: no SID provided at fetchBrainProducts`
     );
   }
+  const searchString = query ? `&search=${query}` : '';
+  const fetchUrl = `http://api.brain.com.ua/products/${category}/${sid}?${searchString}&limit=${limit}&offset=${page}`;
 
-  const fetchUrl = `http://api.brain.com.ua/products/${category}/${sid}?&limit=${limit}&offset=${page}`;
-  console.log('🚀 ~ fetchUrl:', fetchUrl);
   const response = await fetch(fetchUrl);
-  console.log('🚀 ~ response:', response);
 
   if (!response.ok) {
     throw new Error(
@@ -23,6 +23,5 @@ export default async function fetchBrainProducts({
     );
   }
   const result = await response.json();
-  console.log('🚀 ~ result:', result);
   return result;
 }

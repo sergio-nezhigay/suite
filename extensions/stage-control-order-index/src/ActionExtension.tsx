@@ -1,4 +1,3 @@
-import React from 'react';
 import { useCallback, useEffect, useState } from 'react';
 import {
   reactExtension,
@@ -9,17 +8,8 @@ import {
   Select,
 } from '@shopify/ui-extensions-react/admin';
 import { stages } from 'extensions/shared/stages';
-import {
-  addOrderNote,
-  getOrdersTags,
-  updateOrdersTags,
-} from './shopifyOperations';
-//import {
-//  getOrdersTags,
-//  updateOrdersTags,
-//} from '../../shared/shopifyOperations';
-
-//import { stages } from '../../shared/stages';
+import { getOrdersTags, updateOrdersTags } from './shopifyOperations';
+import { addOrderNote } from 'shared/shopifyOperations';
 
 const TARGET = 'admin.order-index.selection-action.render';
 

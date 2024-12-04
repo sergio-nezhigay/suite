@@ -38,8 +38,10 @@ function App() {
     setLoading(true);
     setValue(newValue);
     await updateOrdersTags({ value: newValue, orderIds: [orderId] });
-    const note = `Stage updated to "${newValue}"`;
-    addOrderNote({ orderId, note });
+
+    const note = `Stage updated to "${newValue}. "`;
+
+    await addOrderNote({ orderId, note });
     setLoading(false);
   }, []);
 

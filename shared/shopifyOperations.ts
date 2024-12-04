@@ -1,5 +1,6 @@
 import { log } from 'console';
 import { makeGraphQLQuery } from './makeGraphQLQuery';
+import makeIPMessage from './makeIPMessage';
 
 export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   const orderTagPromises = orderIds.map((id) => {
@@ -236,6 +237,8 @@ export async function addOrderNote({
   if (!orderId) {
     throw new Error(`Order ID is required but was not provided`);
   }
+  const updatedNote = note + (await makeIPMessage());
+
   const mutation = `#graphql
         mutation updateOrderNote($input: OrderInput!) {
             orderUpdate(input: $input) {
@@ -259,7 +262,7 @@ export async function addOrderNote({
   }>(mutation, {
     input: {
       id: orderId,
-      note,
+      note: updatedNote,
     },
   });
   if (errors) {
