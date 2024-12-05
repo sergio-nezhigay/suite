@@ -1,36 +1,57 @@
-export default async function getSid() {
+import axios from 'axios';
+import { api } from 'gadget-server';
+
+interface GetSid {
+  refresh?: boolean;
+}
+
+const checkEnvVariables = (): void => {
   const login = process.env.BRAIN_AUTH_LOGIN;
   const password = process.env.BRAIN_AUTH_PASSWORD;
+
   if (!login || !password) {
     throw new Error(
-      'Server misconfiguration: Brain login or password is missing'
+      'Server misconfiguration: Brain login or password is missing in env'
     );
   }
+};
 
-  const body = new URLSearchParams({ login, password });
-
-  try {
-    const response = await fetch('http://api.brain.com.ua/auth', {
-      method: 'POST',
+const fetchSessionFromApi = async (): Promise<string> => {
+  const response = await axios.post(
+    'http://api.brain.com.ua/auth',
+    getAuthBody(),
+    {
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
       },
-      body: body.toString(),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Authentication failed: ${await response.text()}`);
     }
+  );
 
-    const data = await response.json();
-    if (data.status === 1) {
-      return data.result;
+  return response.data.result;
+};
+
+const getAuthBody = (): string => {
+  const login = process.env.BRAIN_AUTH_LOGIN!;
+  const password = process.env.BRAIN_AUTH_PASSWORD!;
+  return new URLSearchParams({ login, password }).toString();
+};
+
+export async function getSID({
+  refresh = false,
+}: GetSid = {}): Promise<string> {
+  try {
+    if (!refresh) {
+      const { sid } = await api.brainSession.findFirst();
+      if (!sid) throw new Error(`Failed to get SID from db`);
+      return sid;
     } else {
-      console.error('Login error:', data.error_message);
-      throw new Error('Login error');
+      checkEnvVariables();
+      const newSid = await fetchSessionFromApi();
+      const { sid } = await api.brainSession.update('1', { sid: newSid });
+      if (!sid) throw new Error(`Failed to update SID to db`);
+      return sid;
     }
   } catch (error) {
-    console.error('Authentication error:', error);
-    throw new Error('Authentication error occurred');
+    throw new Error(`Failed to get SID: ${error}`);
   }
 }

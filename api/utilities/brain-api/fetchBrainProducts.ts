@@ -1,27 +1,29 @@
-import { BrainFetch } from 'api/types';
+import { FetchingFunc } from 'api/types';
+import { brainRequest } from './brainRequest';
 
-export default async function fetchBrainProducts({
-  query,
-  category,
-  sid,
-  limit,
-  page,
-}: BrainFetch) {
-  if (!sid) {
-    throw new Error(
-      `Session identifier: no SID provided at fetchBrainProducts`
-    );
-  }
-  const searchString = query ? `&search=${query}` : '';
-  const fetchUrl = `http://api.brain.com.ua/products/${category}/${sid}?${searchString}&limit=${limit}&offset=${page}`;
+export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
+  console.log('🚀 ~ fetchBrainProducts:', { query, limit, page });
+  const category = '1181';
+  const fetchUrl = `http://api.brain.com.ua/products/${category}`;
+  const { result } = await brainRequest(fetchUrl, {
+    searchString: query,
+    limit,
+    offset: page,
+  });
 
-  const response = await fetch(fetchUrl);
-
-  if (!response.ok) {
-    throw new Error(
-      `Fetch failed: ${response.status} - ${await response.text()}`
-    );
-  }
-  const result = await response.json();
-  return result;
+  const products = result?.list.map((product: any) => {
+    const pictures = product?.large_image ? [product?.large_image] : [];
+    return {
+      id: product.productID,
+      price: product.price,
+      name: product.name,
+      description: product.brief_description,
+      pictures: pictures,
+      part_number: product.articul,
+      vendor: 'Test',
+      instock: 0,
+      warranty: product.warranty,
+    };
+  });
+  return { products: products, count: products.length };
 }

@@ -1,31 +1,19 @@
-import { getUrlParams } from '../utilities/getUrlParams';
-import { fetchBrainWithRetry } from '../utilities';
+import { brainRequest } from '../utilities';
 
-export default async function route({
-  request,
-  record,
-  reply,
-  connections,
-  session,
-}) {
-  console.log(
-    '===== LOG START =====',
-    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  );
+export default async function route({ request, reply }) {
+  const category = '1181';
+  const page = '1';
+  const searchString = '133';
+  const limit = '10';
 
-  session?.set('id', 'record.sessionId');
-  const id = session?.get('id');
-  console.log('🚀 ~ SID:', id);
+  const fetchUrl = `http://api.brain.com.ua/products/${category}`;
 
-  try {
-    const { category, sid, limit, page } = getUrlParams(request);
-    const data = await fetchBrainWithRetry({ category, sid, limit, page });
+  const test = await brainRequest(fetchUrl, {
+    searchString,
+    limit,
+    offset: page,
+  });
+  console.log('🚀 ~ test:', test);
 
-    return reply.send({ list: data.result });
-  } catch (error) {
-    return reply.status(500).send({
-      error: 'products fetch failed',
-      details: error.message,
-    });
-  }
+  return reply.send({ message: 'route test' });
 }

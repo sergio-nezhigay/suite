@@ -2,7 +2,7 @@ import {
   getShopifyClient,
   flagExistingShopifyProducts,
   getUrlParams,
-  fetchBrain,
+  fetchBrainProducts,
   fetchCherg,
   fetchEasy,
 } from '../utilities';
@@ -42,7 +42,7 @@ export default async function route({ request, reply, connections }) {
         }));
         break;
       case 'brain':
-        ({ products, count } = await fetchBrain({
+        ({ products, count } = await fetchBrainProducts({
           query,
           limit: limit,
           page: page,

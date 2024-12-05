@@ -29,7 +29,8 @@
     "@fastify/cors": "^8.5.0",
     "openai": "^4.61.0",
     "google-spreadsheet": "^4.1.4",
-    "google-auth-library": "^9.15.0"
+    "google-auth-library": "^9.15.0",
+    "axios": "^1.7.9"
   },
   "devDependencies": {
     "@shopify/cli": "^3.66.1",
