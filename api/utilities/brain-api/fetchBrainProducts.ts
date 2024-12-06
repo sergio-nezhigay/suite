@@ -1,10 +1,14 @@
+// http://api.brain.com.ua/products/categoryID/SID [?vendorID=vendorID] [&search=search] [&filterID=filterID] [&filters[]=filterID] [&limit=limit] [&offset=offset] [&sortby=field_name] [&order=order] [&lang=lang]
+
 import { FetchingFunc } from 'api/types';
 import { brainRequest } from './brainRequest';
+import { fetchBrainProduct } from './fetchBrainProduct';
+import { fetchBrainProductsPictures } from './fetchBrainProductsPictures';
 
 export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
   console.log('🚀 ~ fetchBrainProducts:', { query, limit, page });
-  const category = '1181';
-  const fetchUrl = `http://api.brain.com.ua/products/${category}`;
+  const categoryID = '1181';
+  const fetchUrl = `http://api.brain.com.ua/products/${categoryID}`;
   const { result } = await brainRequest(fetchUrl, {
     searchString: query,
     limit,
@@ -25,5 +29,16 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
       warranty: product.warranty,
     };
   });
+  //  const test = fetchBrainProduct(products[0].part_number);
+  //  console.log('🚀 ~ test:', test);
+
+  //  const pics = await fetchBrainProductsPictures({ query, limit, page });
+
+  //  console.log(
+  //    '===== LOG START =====',
+  //    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  //  );
+  //  console.log('pics:', JSON.stringify(pics, null, 4));
+
   return { products: products, count: products.length };
 }

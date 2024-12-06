@@ -12,7 +12,7 @@ import {
 
 import { useState, useEffect, useCallback } from 'react';
 
-const itemsPerPage = 50;
+const itemsPerPage = 5;
 
 function Supplier({}) {
   const { supplierId } = useParams();
