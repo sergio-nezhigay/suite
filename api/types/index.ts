@@ -21,3 +21,10 @@ export interface BrainFetch {
   page: string;
   sid?: string;
 }
+
+export interface RequestParams {
+  url: string;
+  params?: Record<string, any>;
+  method?: 'GET' | 'POST';
+  postData?: Record<string, any>;
+}

@@ -1,24 +1,22 @@
+import { RequestParams } from 'api/types';
 import axios from 'axios';
 import { api } from 'gadget-server';
 
 const MAX_REQUESTS_PER_SECOND = 3;
 const TIME_INTERVAL = 1000 / MAX_REQUESTS_PER_SECOND;
 
-export async function rateLimitedRequest(
-  url: string,
-  params: Record<string, any> = {}
-) {
-  console.log('🚀 ~ params:', params);
+export async function rateLimitedRequest({
+  url,
+  params = {},
+  method = 'GET',
+  postData = {},
+}: RequestParams) {
   const { sid, ...queryParams } = params;
   const fullPath = sid ? `${url}/${sid}` : url;
 
-  console.log('🚀 ~ urlWithSid:', fullPath);
-
   const urlObj = new URL(fullPath);
   const searchParams = new URLSearchParams(queryParams);
-  urlObj.search = searchParams.toString();
-
-  console.log('🚀 ~ Final URL:', urlObj.toString());
+  if (method === 'GET') urlObj.search = searchParams.toString();
 
   const brainSession = await api.brainSession.findFirst();
   if (!brainSession.lastRequestTime)
@@ -33,12 +31,20 @@ export async function rateLimitedRequest(
   }
 
   try {
-    const response = await axios.get(urlObj.toString(), { params });
-
+    let response;
+    if (method === 'GET') {
+      response = await axios.get(urlObj.toString(), { params });
+    } else if (method === 'POST') {
+      response = await axios.post(urlObj.toString(), postData, {
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+      });
+    }
     await api.brainSession.update(brainSession.id, {
       lastRequestTime: new Date(currentTime),
     });
-    return response.data;
+    return response?.data;
   } catch (error) {
     console.error('Error in rate-limited request:', error);
     throw error;

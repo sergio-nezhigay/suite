@@ -13,7 +13,6 @@ export default async function route({ request, reply }) {
     limit,
     offset: page,
   });
-  console.log('🚀 ~ test:', test);
 
   return reply.send({ message: 'route test' });
 }

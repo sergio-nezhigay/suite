@@ -4,16 +4,26 @@ import { FetchingFunc } from 'api/types';
 import { brainRequest } from './brainRequest';
 import { fetchBrainProduct } from './fetchBrainProduct';
 import { fetchBrainProductsPictures } from './fetchBrainProductsPictures';
+import { fetchBrainProductsContent } from './fetchBrainProductsContent';
 
 export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
   console.log('🚀 ~ fetchBrainProducts:', { query, limit, page });
   const categoryID = '1181';
-  const fetchUrl = `http://api.brain.com.ua/products/${categoryID}`;
-  const { result } = await brainRequest(fetchUrl, {
-    searchString: query,
-    limit,
-    offset: page,
+
+  const { result } = await brainRequest({
+    url: `http://api.brain.com.ua/products/${categoryID}`,
+    params: {
+      searchString: query,
+      limit,
+      offset: page,
+    },
   });
+
+  console.log(
+    '===== LOG START =====',
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+  console.log('result:', JSON.stringify(result, null, 4));
 
   const products = result?.list.map((product: any) => {
     const pictures = product?.large_image ? [product?.large_image] : [];
@@ -29,16 +39,8 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
       warranty: product.warranty,
     };
   });
-  //  const test = fetchBrainProduct(products[0].part_number);
-  //  console.log('🚀 ~ test:', test);
-
-  //  const pics = await fetchBrainProductsPictures({ query, limit, page });
-
-  //  console.log(
-  //    '===== LOG START =====',
-  //    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  //  );
-  //  console.log('pics:', JSON.stringify(pics, null, 4));
+  const test = await fetchBrainProductsContent([products[0].id]);
+  console.log('🚀 ~ test:', test);
 
   return { products: products, count: products.length };
 }

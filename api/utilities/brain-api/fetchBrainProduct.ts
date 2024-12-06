@@ -3,7 +3,8 @@
 import { brainRequest } from './brainRequest';
 
 export async function fetchBrainProduct(articul: string) {
-  const fetchUrl = `http://api.brain.com.ua/product/articul/${articul}`;
-  const { result } = await brainRequest(fetchUrl);
+  const { result } = await brainRequest({
+    url: `http://api.brain.com.ua/product/articul/${articul}`,
+  });
   return { product: result };
 }

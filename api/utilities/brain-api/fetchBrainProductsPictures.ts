@@ -10,11 +10,14 @@ export async function fetchBrainProductsPictures({
 }: FetchingFunc) {
   console.log('🚀 ~ fetchBrainProductsPictures:', { query, limit, page });
   const categoryID = '1181';
-  const fetchUrl = `http://api.brain.com.ua/products_pictures/${categoryID}`;
-  const { result } = await brainRequest(fetchUrl, {
-    searchString: query,
-    limit,
-    offset: page,
+
+  const { result } = await brainRequest({
+    url: `http://api.brain.com.ua/products_pictures/${categoryID}`,
+    params: {
+      searchString: query,
+      limit,
+      offset: page,
+    },
   });
   console.log('🚀 ~ result:', result);
 
