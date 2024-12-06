@@ -29,7 +29,11 @@ export async function rateLimitedRequest({
     console.log(`Rate-limited. Waiting ${delay} ms`);
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-
+  console.log(
+    '===== LOG START =====',
+    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  );
+  console.log('rateLimitedRequest urlObj:', JSON.stringify(urlObj, null, 4));
   try {
     let response;
     if (method === 'GET') {

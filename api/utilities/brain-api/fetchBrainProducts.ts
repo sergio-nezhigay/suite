@@ -2,12 +2,11 @@
 
 import { FetchingFunc } from 'api/types';
 import { brainRequest } from './brainRequest';
-import { fetchBrainProduct } from './fetchBrainProduct';
-import { fetchBrainProductsPictures } from './fetchBrainProductsPictures';
+
 import { fetchBrainProductsContent } from './fetchBrainProductsContent';
+import { fetchBrainBrands } from './fetchBrainBrands';
 
 export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
-  console.log('🚀 ~ fetchBrainProducts:', { query, limit, page });
   const categoryID = '1181';
 
   const { result } = await brainRequest({
@@ -19,28 +18,50 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
     },
   });
 
-  console.log(
-    '===== LOG START =====',
-    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  const products = result?.list.map((product: any) => ({
+    id: product.productID,
+    price: product.price,
+    name: product.name,
+    part_number: product.articul,
+    instock: 1,
+    warranty: product.warranty,
+    vendorID: product.vendorID,
+  }));
+  const productIDs = products.map(({ id }: { id: string }) => id);
+  const productsContent = await fetchBrainProductsContent(productIDs);
+  const productContentList = productsContent?.result?.list || [];
+
+  const brands = await fetchBrainBrands();
+  const mappedProducts = products.map(
+    ({ id, vendorID, ...productFields }: { id: string; vendorID: string }) => {
+      const vendor = brands.find(
+        (brand: { vendorID: string }) => vendorID === brand.vendorID
+      );
+      const productContent1 = productContentList.find(
+        (product: { productID: string }) => id === product.productID
+      );
+
+      const description =
+        (productContent1.brief_description || '') +
+        (productContent1.description || '');
+
+      const pictures = productContent1.images.map(
+        (image: { full_image: string; medium_image: string }) => {
+          const imageFinal = image?.full_image.includes('no-photo')
+            ? image?.medium_image
+            : image?.full_image;
+          return imageFinal;
+        }
+      );
+      return {
+        ...productFields,
+        id,
+        vendor: vendor?.name,
+        description,
+        pictures,
+      };
+    }
   );
-  console.log('result:', JSON.stringify(result, null, 4));
 
-  const products = result?.list.map((product: any) => {
-    const pictures = product?.large_image ? [product?.large_image] : [];
-    return {
-      id: product.productID,
-      price: product.price,
-      name: product.name,
-      description: product.brief_description,
-      pictures: pictures,
-      part_number: product.articul,
-      vendor: 'Test',
-      instock: 0,
-      warranty: product.warranty,
-    };
-  });
-  const test = await fetchBrainProductsContent([products[0].id]);
-  console.log('🚀 ~ test:', test);
-
-  return { products: products, count: products.length };
+  return { products: mappedProducts, count: products.length };
 }
