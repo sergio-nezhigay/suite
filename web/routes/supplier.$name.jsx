@@ -8,11 +8,12 @@ import {
   Page,
   InlineGrid,
   Thumbnail,
+  Spinner,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
 
-const itemsPerPage = 5;
+const itemsPerPage = 20;
 
 function Supplier({}) {
   const { supplierId } = useParams();
@@ -148,7 +149,12 @@ function Supplier({}) {
 
   console.log(products);
   return (
-    <Page title={`${supplierId}, page ${page}`}>
+    <Page
+      title=<>
+        {`${supplierId}, page ${page}. `}
+        {loading && <Spinner size='small' />}
+      </>
+    >
       <ResourceList
         resourceName={{
           singular: 'product',
