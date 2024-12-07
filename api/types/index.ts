@@ -1,3 +1,10 @@
+export type ProductOptions = {
+  [key: string]: {
+    name: string;
+    valueNames: string[];
+  };
+};
+
 export interface Product {
   title: string;
   vendor: string;
@@ -5,6 +12,7 @@ export interface Product {
   pictures: string[];
   price: string;
   part_number: string;
+  options?: ProductOptions;
 }
 export type Products = Product[];
 

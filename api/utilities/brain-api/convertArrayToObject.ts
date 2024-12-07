@@ -1,3 +1,5 @@
+import { ProductOptions } from 'api/types';
+
 type InputItem = {
   OptionID: string;
   OptionName: string;
@@ -7,18 +9,19 @@ type InputItem = {
   FilterName: string;
 };
 
-type OutputObject = Record<string, string[]>;
-
-export function convertArrayToObject(items: InputItem[]): OutputObject {
+export function convertArrayToObject(items: InputItem[]): ProductOptions {
   return items.reduce((acc, item) => {
-    const { OptionName, ValueName } = item;
+    const { OptionName, OptionID, ValueName } = item;
 
-    if (!acc[OptionName]) {
-      acc[OptionName] = [];
+    if (!acc[OptionID]) {
+      acc[OptionID] = {
+        name: OptionName,
+        valueNames: [],
+      };
     }
 
-    acc[OptionName].push(ValueName);
+    acc[OptionID].valueNames.push(ValueName);
 
     return acc;
-  }, {} as OutputObject);
+  }, {} as ProductOptions);
 }

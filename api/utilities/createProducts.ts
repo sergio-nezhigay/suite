@@ -1,4 +1,4 @@
-import { Products } from 'api/types';
+import { ProductOptions, Products } from 'api/types';
 import Shopify from 'shopify-api-node';
 import transliterate from './transliterate';
 import fetchChatGPT from './fetchChatGPT';
@@ -65,6 +65,11 @@ export default async function createProducts({
     const prompt = preparePrompt(product.title, product.description);
     const response = (await fetchChatGPT(prompt)) || '';
     const { title, html } = parseGeneratedDescription(response);
+    console.log(
+      '===== LOG START =====',
+      new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    );
+    console.log('product.options:', JSON.stringify(product.options, null, 4));
 
     const media = product.pictures.map((picture) => ({
       mediaContentType: 'IMAGE',
@@ -76,6 +81,8 @@ export default async function createProducts({
         vendor: product.vendor,
         descriptionHtml: html || null,
         handle,
+
+        metafields: object2metafields(product?.options),
       },
       media,
     };
@@ -86,6 +93,14 @@ export default async function createProducts({
     );
 
     if (!productCreate?.product) {
+      console.log(
+        '===== LOG START =====',
+        new Date().toLocaleTimeString([], {
+          hour: '2-digit',
+          minute: '2-digit',
+        })
+      );
+      console.log('productCreate:', JSON.stringify(productCreate, null, 4));
       throw new Error('Failed to create one or more products.');
     }
 
@@ -112,4 +127,15 @@ export default async function createProducts({
     message: 'Products created successfully',
     createdProducts,
   };
+}
+
+function object2metafields(metaObject: ProductOptions | undefined) {
+  if (!metaObject) return null;
+  const metaArray = Object.keys(metaObject).map((metaKey) => ({
+    namespace: 'custom',
+    key: metaKey,
+    type: 'list.single_line_text_field',
+    value: JSON.stringify(metaObject[metaKey].valueNames),
+  }));
+  return metaArray;
 }

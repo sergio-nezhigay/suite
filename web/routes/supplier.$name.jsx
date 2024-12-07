@@ -73,12 +73,9 @@ function Supplier({}) {
 
   const productsToCreate = products
     .filter(({ id }) => selectedItems.includes(id))
-    .map(({ name, vendor, description, pictures, part_number }) => ({
+    .map(({ name, ...props }) => ({
       title: name,
-      vendor,
-      description,
-      pictures,
-      part_number,
+      ...props,
     }));
 
   const promotedBulkActions = [
