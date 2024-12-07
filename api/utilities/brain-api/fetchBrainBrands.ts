@@ -9,7 +9,5 @@ export async function fetchBrainBrands() {
   if (status !== 1) {
     throw Error('fetchBrainBrands error');
   }
-  console.log('🚀 ~fetchBrainBrands result:', result);
-
   return result;
 }

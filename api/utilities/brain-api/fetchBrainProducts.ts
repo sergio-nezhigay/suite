@@ -5,6 +5,7 @@ import { brainRequest } from './brainRequest';
 
 import { fetchBrainProductsContent } from './fetchBrainProductsContent';
 import { fetchBrainBrands } from './fetchBrainBrands';
+import { convertArrayToObject } from './convertArrayToObject';
 
 export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
   const categoryID = '1181';
@@ -12,7 +13,7 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
   const { result } = await brainRequest({
     url: `http://api.brain.com.ua/products/${categoryID}`,
     params: {
-      searchString: query,
+      search: query,
       limit,
       offset: page,
     },
@@ -28,8 +29,8 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
     vendorID: product.vendorID,
   }));
   const productIDs = products.map(({ id }: { id: string }) => id);
-  const productsContent = await fetchBrainProductsContent(productIDs);
-  const productContentList = productsContent?.result?.list || [];
+  const extendedProductsContent = await fetchBrainProductsContent(productIDs);
+  const productsContent = extendedProductsContent?.result?.list || [];
 
   const brands = await fetchBrainBrands();
   const mappedProducts = products.map(
@@ -37,15 +38,16 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
       const vendor = brands.find(
         (brand: { vendorID: string }) => vendorID === brand.vendorID
       );
-      const productContent1 = productContentList.find(
+      const productContent = productsContent.find(
         (product: { productID: string }) => id === product.productID
       );
 
+      const options = convertArrayToObject(productContent?.options || []);
       const description =
-        (productContent1.brief_description || '') +
-        (productContent1.description || '');
+        (productContent.brief_description || '') +
+        (productContent.description || '');
 
-      const pictures = productContent1.images.map(
+      const pictures = productContent.images.map(
         (image: { full_image: string; medium_image: string }) => {
           const imageFinal = image?.full_image.includes('no-photo')
             ? image?.medium_image
@@ -59,6 +61,7 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
         vendor: vendor?.name,
         description,
         pictures,
+        options,
       };
     }
   );

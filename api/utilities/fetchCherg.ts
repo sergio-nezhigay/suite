@@ -41,8 +41,14 @@ export async function fetchCherg({ query, limit, page }: FetchingFunc) {
     };
   });
 
+  const words = query
+    .toLowerCase()
+    .split(' ')
+    .filter((word) => word);
+
   const products = mappedRows.filter(
-    ({ instock, part_number }) => instock && part_number
+    ({ instock, part_number, name }) =>
+      words.every((word) => name.includes(word)) && instock && part_number
   );
 
   return {
