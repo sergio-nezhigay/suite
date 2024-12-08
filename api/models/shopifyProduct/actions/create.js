@@ -5,9 +5,11 @@ import {
   ActionOptions,
 } from 'gadget-server';
 
-import getShopifyClient from '../../../utilities/getShopifyClient';
-import updateMetafield from '../../../utilities/updateMetafield';
-import { applyTags } from '../../../utilities/utils';
+import {
+  getShopifyClient,
+  updateMetafield,
+  applyTags,
+} from '../../../utilities';
 
 /** @type { ActionRun } */
 export const run = async ({ params, record }) => {

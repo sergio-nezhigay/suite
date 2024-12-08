@@ -118,8 +118,10 @@ function Supplier({}) {
       });
 
       if (!response.ok) {
-        shopify.toast.show(error + 'Failed to create products.', {
-          duration: 5000,
+        const error = JSON.stringify(response);
+        console.log(error);
+        shopify.toast.show('Failed to create' + error, {
+          duration: 10000,
           isError: true,
         });
       }
@@ -131,8 +133,9 @@ function Supplier({}) {
         }
       );
     } catch (error) {
-      shopify.toast.show(error + ' Error creating products', {
-        duration: 5000,
+      console.log(error);
+      shopify.toast.show('Error creating products' + error, {
+        duration: 10000,
         isError: true,
       });
     } finally {

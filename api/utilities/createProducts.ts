@@ -5,18 +5,11 @@ import fetchChatGPT from './fetchChatGPT';
 import parseGeneratedDescription from './parseGeneratedDescription';
 import preparePrompt from './preparePrompt';
 
-export default async function createProducts({
-  shopify,
-  products,
-}: {
-  shopify: Shopify;
-  products: Products;
-}) {
-  const createProductQuery = `
-      mutation CreateProductWithMedia(
-      $input: ProductInput!,
-      $media: [CreateMediaInput!]!
-    )  {
+const createProductQuery = `
+mutation CreateProductWithMedia(
+$input: ProductInput!,
+$media: [CreateMediaInput!]!
+)  {
         productCreate(
             input: $input,
             media: $media
@@ -36,97 +29,112 @@ export default async function createProducts({
                 field
                 message
                 }
-            }
-      }
-    `;
-  const updateVariantQuery = `
-    mutation UpdateProductVariant(
-      $input: ProductVariantInput!
-    ) {
-      productVariantUpdate(input: $input) {
-        productVariant {
-          id
-          price
-          sku
-          inventoryQuantity
         }
-        userErrors {
-          field
-          message
-        }
-      }
     }
-  `;
+`;
 
+const productVariantsBulkUpdateQuery = `
+    mutation productVariantsBulkUpdate(
+        $productId: ID!,
+        $variants: [ProductVariantsBulkInput!]!
+    )       {
+                productVariantsBulkUpdate(productId: $productId,variants: $variants) {
+                    product {
+                        id
+                    }
+                    productVariants {
+                        id
+                    }
+                    userErrors {
+                        field
+                        message
+                    }
+                }
+}
+`;
+
+export default async function createProducts({
+  shopify,
+  products,
+}: {
+  shopify: Shopify;
+  products: Products;
+}) {
   const createdProducts = [];
 
-  for (const product of products) {
-    const handle = transliterate(product.title);
-    const prompt = preparePrompt(product.title, product.description);
-    const response = (await fetchChatGPT(prompt)) || '';
-    const { title, html } = parseGeneratedDescription(response);
-    console.log(
-      '===== LOG START =====',
-      new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    );
-    console.log('product.options:', JSON.stringify(product.options, null, 4));
+  try {
+    for (const product of products) {
+      const handle = transliterate(product.title);
+      const prompt = preparePrompt(product.title, product.description);
+      const response = (await fetchChatGPT(prompt)) || '';
+      const { title, html } = parseGeneratedDescription(response);
 
-    const media = product.pictures.map((picture) => ({
-      mediaContentType: 'IMAGE',
-      originalSource: picture,
-    }));
-    const createProductVariables = {
-      input: {
-        title: title,
-        vendor: product.vendor,
-        descriptionHtml: html || null,
-        handle,
+      const media = Array.isArray(product.pictures)
+        ? product.pictures.map((picture) => ({
+            mediaContentType: 'IMAGE',
+            originalSource: picture,
+          }))
+        : [];
 
-        metafields: object2metafields(product?.options),
-      },
-      media,
-    };
+      const createProductVariables = {
+        input: {
+          title: title,
+          vendor: product.vendor,
+          descriptionHtml: html || null,
+          handle,
 
-    const { productCreate } = await shopify.graphql(
-      createProductQuery,
-      createProductVariables
-    );
+          metafields: object2metafields(product?.options),
+        },
+        media,
+      };
 
-    if (!productCreate?.product) {
-      console.log(
-        '===== LOG START =====',
-        new Date().toLocaleTimeString([], {
-          hour: '2-digit',
-          minute: '2-digit',
-        })
+      const { productCreate } = await shopify.graphql(
+        createProductQuery,
+        createProductVariables
       );
-      console.log('productCreate:', JSON.stringify(productCreate, null, 4));
-      throw new Error('Failed to create one or more products.');
+
+      if (!productCreate?.product) {
+        throw new Error(
+          'Failed to create one or more products.',
+          productCreate
+        );
+      }
+
+      const updateVariantBulkVariables = {
+        productId: productCreate.product?.id,
+        variants: [
+          {
+            id: productCreate.product?.variants.edges[0].node.id,
+            inventoryItem: { tracked: true },
+            barcode: product.part_number || '',
+            price: product.price || 0,
+          },
+        ],
+      };
+
+      const { productVariantsBulkUpdate } = await shopify.graphql(
+        productVariantsBulkUpdateQuery,
+        updateVariantBulkVariables
+      );
+
+      if (!productVariantsBulkUpdate?.productVariants) {
+        throw new Error(
+          'Failed to update variant.',
+          productVariantsBulkUpdate.userErrors
+        );
+      }
+
+      createdProducts.push(productCreate.product);
     }
 
-    const variantId = productCreate.product.variants.edges[0].node.id;
-    const updateVariantVariables = {
-      input: {
-        id: variantId,
-        price: product.price || 0,
-        barcode: product.part_number || '',
-      },
+    return {
+      message: 'Products created successfully',
+      createdProducts,
     };
-    const { productVariantUpdate } = await shopify.graphql(
-      updateVariantQuery,
-      updateVariantVariables
-    );
-
-    if (!productVariantUpdate?.productVariant) {
-      throw new Error('Failed to update variant.');
-    }
-    createdProducts.push(productCreate.product);
+  } catch (error) {
+    console.error('Create/update Error:', error);
+    throw error;
   }
-
-  return {
-    message: 'Products created successfully',
-    createdProducts,
-  };
 }
 
 function object2metafields(metaObject: ProductOptions | undefined) {

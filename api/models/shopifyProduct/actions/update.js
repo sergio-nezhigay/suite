@@ -1,6 +1,6 @@
 import { applyParams, save, ActionOptions } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
-import { applyTags } from '../../../utilities/utils';
+import { applyTags } from '../../../utilities';
 
 /** @type { ActionRun } */
 export const run = async ({ params, record }) => {

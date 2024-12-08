@@ -7,7 +7,7 @@ export default async function fetchChatGPT(prompt: string) {
       temperature: 0.2,
       messages: [{ role: 'user', content: prompt }],
     });
-    console.log(`API response received for prompt: ${prompt}`);
+
     return response.choices[0].message.content;
   } catch (error) {
     console.error(`Error in fetchWithRetry for prompt "${prompt}":`, error);

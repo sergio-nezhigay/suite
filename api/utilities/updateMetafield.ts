@@ -1,6 +1,6 @@
 import Shopify from 'shopify-api-node';
 
-export default async function updateMetafield({
+export async function updateMetafield({
   shopify,
   variables,
 }: {

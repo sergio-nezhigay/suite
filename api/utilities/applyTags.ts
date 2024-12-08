@@ -1,6 +1,12 @@
 import { api, logger, connections } from 'gadget-server';
 
-export const applyTags = async (record) => {
+interface Record {
+  id: string;
+  body: string;
+  tags: string[];
+}
+
+export const applyTags = async (record: Record): Promise<void> => {
   // get a unique list of words used in the record's description
   let newTags = [...new Set(record.body.match(/\w+(?:'\w+)*/g))];
 
