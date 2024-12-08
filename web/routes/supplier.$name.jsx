@@ -152,12 +152,7 @@ function Supplier({}) {
 
   console.log(products);
   return (
-    <Page
-      title=<>
-        {`${supplierId}, page ${page}. `}
-        {loading && <Spinner size='small' />}
-      </>
-    >
+    <Page title={`${supplierId}, page ${page}. `}>
       <ResourceList
         resourceName={{
           singular: 'product',
