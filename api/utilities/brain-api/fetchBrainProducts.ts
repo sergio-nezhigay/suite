@@ -8,7 +8,7 @@ import { fetchBrainBrands } from './fetchBrainBrands';
 import { convertArrayToObject } from './convertArrayToObject';
 
 export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
-  const categoryID = '1181';
+  const categoryID = '1235';
 
   const { result } = await brainRequest({
     url: `http://api.brain.com.ua/products/${categoryID}`,

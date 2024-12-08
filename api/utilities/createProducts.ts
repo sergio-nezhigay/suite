@@ -75,7 +75,7 @@ export default async function createProducts({
       mediaContentType: 'IMAGE',
       originalSource: picture,
     }));
-    const variables = {
+    const createProductVariables = {
       input: {
         title: title,
         vendor: product.vendor,
@@ -89,7 +89,7 @@ export default async function createProducts({
 
     const { productCreate } = await shopify.graphql(
       createProductQuery,
-      variables
+      createProductVariables
     );
 
     if (!productCreate?.product) {
@@ -105,7 +105,7 @@ export default async function createProducts({
     }
 
     const variantId = productCreate.product.variants.edges[0].node.id;
-    const variables2 = {
+    const updateVariantVariables = {
       input: {
         id: variantId,
         price: product.price || 0,
@@ -114,7 +114,7 @@ export default async function createProducts({
     };
     const { productVariantUpdate } = await shopify.graphql(
       updateVariantQuery,
-      variables2
+      updateVariantVariables
     );
 
     if (!productVariantUpdate?.productVariant) {

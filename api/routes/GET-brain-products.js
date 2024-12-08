@@ -1,7 +1,7 @@
 import { brainRequest } from '../utilities';
 
 export default async function route({ request, reply }) {
-  const category = '1181';
+  const category = '1235';
   const page = '1';
   const searchString = '133';
   const limit = '10';

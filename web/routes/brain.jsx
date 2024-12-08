@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 export default function Brain() {
   const [page, setPage] = useState(1);
   const itemsPerPage = 5;
-  const category = '1181';
+  const category = '1235';
 
   useEffect(() => {
     const fetchProducts = async () => {
