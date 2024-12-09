@@ -18,8 +18,15 @@ function ComboboxExample({
   const [searchTerm, setSearchTerm] = useState('');
   const [allOptions, setAllOptions] = useState<Option[]>([]);
 
-  const [limitedBySearchOptions, setLimitedBySearchOptions] =
-    useState(allOptions);
+  const escapeSpecialRegExCharacters = useCallback(
+    (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
+    []
+  );
+  const filterRegex = new RegExp(escapeSpecialRegExCharacters(searchTerm), 'i');
+  const limitedOptions =
+    searchTerm === ''
+      ? allOptions
+      : allOptions.filter((option) => option.label.match(filterRegex));
 
   useEffect(() => {
     async function fetchCategories() {
@@ -41,44 +48,28 @@ function ComboboxExample({
     fetchCategories();
   }, [searchTerm]);
 
-  const escapeSpecialRegExCharacters = useCallback(
-    (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'),
-    []
-  );
-
   const updateText = useCallback(
     (value: string) => {
       setSearchTerm(value);
-
-      if (value === '') {
-        setLimitedBySearchOptions(allOptions);
-        return;
-      }
-
-      const filterRegex = new RegExp(escapeSpecialRegExCharacters(value), 'i');
-      const resultOptions = allOptions.filter((option) =>
-        option.label.match(filterRegex)
-      );
-      setLimitedBySearchOptions(resultOptions);
     },
     [allOptions, escapeSpecialRegExCharacters]
   );
 
   const updateSelection = useCallback(
     (selected: string) => {
-      const matchedOption = limitedBySearchOptions.find((option) => {
+      const matchedOption = limitedOptions.find((option) => {
         return option.value.match(selected);
       });
 
       setSelectedOption(selected);
       setSearchTerm((matchedOption && matchedOption.label) || '');
     },
-    [limitedBySearchOptions]
+    [limitedOptions]
   );
 
   const optionsMarkup =
-    limitedBySearchOptions.length > 0
-      ? limitedBySearchOptions.map((option) => {
+    limitedOptions.length > 0
+      ? limitedOptions.map((option) => {
           const { label, value } = option;
 
           return (
@@ -109,7 +100,7 @@ function ComboboxExample({
           />
         }
       >
-        {limitedBySearchOptions.length > 0 ? (
+        {limitedOptions.length > 0 ? (
           <Listbox onSelect={updateSelection}>{optionsMarkup}</Listbox>
         ) : null}
       </Combobox>
