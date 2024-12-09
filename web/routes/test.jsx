@@ -1,12 +1,16 @@
-import { Page, Text, Button, Banner } from '@shopify/polaris';
-
-import CategoryInput from '../components/CategoryInput';
+import { Page, Button } from '@shopify/polaris';
+import { useState } from 'react';
+import CategorySelector from '../components/CategorySelector';
 
 export default function Test() {
+  const [selectedOption, setSelectedOption] = useState('');
   return (
     <Page title='Test'>
-      <CategoryInput />
-      <Button>test</Button>
+      <CategorySelector
+        selectedOption={selectedOption}
+        setSelectedOption={setSelectedOption}
+      />
+      <Button>test {selectedOption}</Button>
     </Page>
   );
 }

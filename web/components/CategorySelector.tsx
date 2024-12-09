@@ -8,11 +8,18 @@ type Option = {
   label: string;
 };
 
-function ComboboxExample() {
+function ComboboxExample({
+  selectedOption,
+  setSelectedOption,
+}: {
+  selectedOption: string;
+  setSelectedOption: (value: string) => {};
+}) {
   const [searchTerm, setSearchTerm] = useState('');
-  const [unselectedOptions, setUnselectedOptions] = useState<Option[]>([]);
-  const [selectedOption, setSelectedOption] = useState<string | undefined>();
-  const [availableOptions, setAvailableOptions] = useState(unselectedOptions);
+  const [allOptions, setAllOptions] = useState<Option[]>([]);
+
+  const [limitedBySearchOptions, setLimitedBySearchOptions] =
+    useState(allOptions);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -21,14 +28,14 @@ function ComboboxExample() {
       });
 
       if (data.length > 0) {
-        const cats = data.map((option) => {
+        const categories = data.map((option) => {
           const value = option?.categoryID || '';
           return {
             value: value.toString(),
             label: option?.name || '',
           };
         });
-        setUnselectedOptions(cats);
+        setAllOptions(categories);
       }
     }
     fetchCategories();
@@ -44,33 +51,34 @@ function ComboboxExample() {
       setSearchTerm(value);
 
       if (value === '') {
-        setAvailableOptions(unselectedOptions);
+        setLimitedBySearchOptions(allOptions);
         return;
       }
 
       const filterRegex = new RegExp(escapeSpecialRegExCharacters(value), 'i');
-      const resultOptions = unselectedOptions.filter((option) =>
+      const resultOptions = allOptions.filter((option) =>
         option.label.match(filterRegex)
       );
-      setAvailableOptions(resultOptions);
+      setLimitedBySearchOptions(resultOptions);
     },
-    [unselectedOptions, escapeSpecialRegExCharacters]
+    [allOptions, escapeSpecialRegExCharacters]
   );
 
   const updateSelection = useCallback(
     (selected: string) => {
-      const matchedOption = availableOptions.find((option) => {
+      const matchedOption = limitedBySearchOptions.find((option) => {
         return option.value.match(selected);
       });
+
       setSelectedOption(selected);
       setSearchTerm((matchedOption && matchedOption.label) || '');
     },
-    [availableOptions]
+    [limitedBySearchOptions]
   );
 
   const optionsMarkup =
-    availableOptions.length > 0
-      ? availableOptions.map((option) => {
+    limitedBySearchOptions.length > 0
+      ? limitedBySearchOptions.map((option) => {
           const { label, value } = option;
 
           return (
@@ -87,7 +95,7 @@ function ComboboxExample() {
       : null;
 
   return (
-    <div style={{ height: '225px' }}>
+    <div style={{ height: '50px' }}>
       <Combobox
         activator={
           <Combobox.TextField
@@ -101,7 +109,7 @@ function ComboboxExample() {
           />
         }
       >
-        {availableOptions.length > 0 ? (
+        {limitedBySearchOptions.length > 0 ? (
           <Listbox onSelect={updateSelection}>{optionsMarkup}</Listbox>
         ) : null}
       </Combobox>
