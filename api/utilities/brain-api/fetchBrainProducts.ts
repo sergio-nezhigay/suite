@@ -19,15 +19,17 @@ export async function fetchBrainProducts({ query, limit, page }: FetchingFunc) {
     },
   });
 
-  const products = result?.list.map((product: any) => ({
-    id: product.productID,
-    price: product.price,
-    name: product.name,
-    part_number: product.articul,
-    instock: 1,
-    warranty: product.warranty,
-    vendorID: product.vendorID,
-  }));
+  const products = result?.list
+    .filter(({ stocks }: { stocks: any[] }) => stocks.length > 0)
+    .map((product: any) => ({
+      id: product.productID,
+      price: product.price,
+      name: product.name,
+      part_number: product.articul,
+      instock: product.stocks.length, // for a test
+      warranty: product.warranty,
+      vendorID: product.vendorID,
+    }));
   const productIDs = products.map(({ id }: { id: string }) => id);
   const extendedProductsContent = await fetchBrainProductsContent(productIDs);
   const productsContent = extendedProductsContent?.result?.list || [];

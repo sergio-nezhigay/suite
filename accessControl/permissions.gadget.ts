@@ -20,6 +20,14 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        brainCategories: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyBulkOperation: {
           read: {
             filter:

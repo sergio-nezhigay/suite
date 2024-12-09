@@ -5,8 +5,7 @@ import {
   CreateShopifyOrderActionContext,
 } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
-import updateMetafield from '../../../utilities/updateMetafield';
-import getShopifyClient from '../../../utilities/getShopifyClient';
+import { updateMetafield, getShopifyClient } from '../../../utilities';
 
 /**
  * @param { CreateShopifyOrderActionContext } context

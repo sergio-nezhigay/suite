@@ -49,8 +49,8 @@ function App() {
         <Route index element={<Index />} />
         <Route path='/feeds' element={<Feeds />} />
         <Route path='/brain' element={<Brain />} />
-        {/*<Route path='/easy' element={<Easy />} />
-        <Route path='/test' element={<Test />} />*/}
+        {/*<Route path='/easy' element={<Easy />} />*/}
+        <Route path='/test' element={<Test />} />
         <Route path='/tagger' element={<Tagger />} />
         <Route path='/supplier/:supplierId' element={<Supplier />} />
         <Route path='/upload' element={<FileUploadPage />} />
@@ -112,6 +112,7 @@ function EmbeddedApp() {
         <Link to='/feeds'>Feeds</Link>
         <Link to='/brain'>Brain</Link>
         <Link to='/tagger'>Tagger</Link>
+        <Link to='/test'>Test</Link>
         <Link to='/supplier/easy'>Supplier Easy</Link>
         <Link to='/supplier/brain'>Supplier Brain</Link>
         <Link to='/supplier/cherg'>Supplier Cherg</Link>

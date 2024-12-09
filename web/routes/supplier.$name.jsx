@@ -8,10 +8,10 @@ import {
   Page,
   InlineGrid,
   Thumbnail,
-  Spinner,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
+//import CategoryInput from '../components/CategoryInput.jsx';
 
 const itemsPerPage = 20;
 
@@ -153,6 +153,7 @@ function Supplier({}) {
   console.log(products);
   return (
     <Page title={`${supplierId}, page ${page}. `}>
+      {/*<CategoryInput />*/}
       <ResourceList
         resourceName={{
           singular: 'product',
