@@ -15,12 +15,14 @@ export default async function route({ request, reply, connections }) {
       limit = 50,
       page = 1,
       supplierId,
+      categoryId,
     } = getUrlParams(request);
-    console.log('route { supplierId,query, limit, page } ', {
+    console.log('route { supplierId,query, limit, page, categoryId } ', {
       supplierId,
       query,
       limit,
       page,
+      categoryId,
     });
     let products = [],
       count = 0,
@@ -46,6 +48,7 @@ export default async function route({ request, reply, connections }) {
           query,
           limit: limit,
           page: page,
+          categoryId,
         }));
         break;
       default:

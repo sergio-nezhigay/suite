@@ -8,7 +8,7 @@ type Option = {
   label: string;
 };
 
-function ComboboxExample({
+function CategorySelector({
   selectedOption,
   setSelectedOption,
 }: {
@@ -92,10 +92,10 @@ function ComboboxExample({
           <Combobox.TextField
             prefix={<Icon source={SearchIcon} />}
             onChange={updateText}
-            label='Search categories'
+            label='Виберіть категорію'
             labelHidden
             value={searchTerm}
-            placeholder='Search categories'
+            placeholder='Виберіть категорію'
             autoComplete='off'
           />
         }
@@ -108,4 +108,4 @@ function ComboboxExample({
   );
 }
 
-export default ComboboxExample;
+export default CategorySelector;

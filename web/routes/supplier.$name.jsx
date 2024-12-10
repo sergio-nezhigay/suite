@@ -11,9 +11,9 @@ import {
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
-//import CategoryInput from '../components/CategoryInput.jsx';
+import CategorySelector from '../components/CategorySelector';
 
-const itemsPerPage = 20;
+const itemsPerPage = 5;
 
 function Supplier({}) {
   const { supplierId } = useParams();
@@ -22,9 +22,8 @@ function Supplier({}) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-
+  const [brainCategory, setBrainCategory] = useState('1235');
   const [page, setPage] = useState(1);
-
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -47,7 +46,7 @@ function Supplier({}) {
     setLoading(true);
     try {
       const response = await fetch(
-        `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}`,
+        `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}&categoryId=${brainCategory}`,
         { signal }
       );
       if (!response.ok) {
@@ -153,7 +152,12 @@ function Supplier({}) {
   console.log(products);
   return (
     <Page title={`${supplierId}, page ${page}. `}>
-      {/*<CategoryInput />*/}
+      {supplierId === 'brain' && (
+        <CategorySelector
+          selectedOption={brainCategory}
+          setSelectedOption={setBrainCategory}
+        />
+      )}
       <ResourceList
         resourceName={{
           singular: 'product',
@@ -171,6 +175,8 @@ function Supplier({}) {
             queryValue={query}
             filters={[]}
             onQueryChange={handleFiltersQueryChange}
+            queryPlaceholder='Пошук товару'
+            loading={loading}
           />
         }
         loading={loading}
