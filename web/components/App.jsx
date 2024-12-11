@@ -108,11 +108,11 @@ function EmbeddedApp() {
           Shop Information
         </Link>
 
-        <Link to='/supplier/easy'>Supplier Easy</Link>
-        <Link to='/supplier/brain'>Supplier Brain</Link>
-        <Link to='/supplier/cherg'>Supplier Cherg</Link>
-        {/*<Link to='/upload'>Upload</Link>*/}
+        <Link to='/supplier/brain'>Brain</Link>
+        <Link to='/supplier/easy'>Easy</Link>
+        <Link to='/supplier/cherg'>Cherg</Link>
         <Link to='/feeds'>Feeds</Link>
+        {/*<Link to='/upload'>Upload</Link>*/}
         {/*<Link to='/brain'>Brain</Link>*/}
         {/*<Link to='/tagger'>Tagger</Link>*/}
         {/*<Link to='/test'>Test</Link>*/}

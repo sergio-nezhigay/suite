@@ -13,7 +13,7 @@ import {
 import { useState, useEffect, useCallback } from 'react';
 import CategorySelector from '../components/CategorySelector';
 
-const itemsPerPage = 5;
+const itemsPerPage = 20;
 
 function Supplier({}) {
   const { supplierId } = useParams();

@@ -28,16 +28,23 @@ export async function fetchBrainProducts({
     products = result?.list.filter(
       ({ stocks }: { stocks: any[] }) => stocks.length > 0
     );
-    if (products.length === 0) {
-      const { product } = await fetchBrainProduct(query);
+
+    if (query !== '' && isValidArticul(query)) {
+      console.log('🚀 ~ query:', query);
+      const data = await fetchBrainProduct(query);
+      console.log('🚀 ~ data:', data);
+      const product = data?.product;
       if (
-        product.stocks.length > 0 ||
-        Object.keys(product.stocks_expected).length > 0
+        product &&
+        (product?.stocks.length > 0 ||
+          (product?.stocks_expected &&
+            Object.keys(product.stocks_expected).length > 0))
       ) {
         products.push(product);
       }
     }
 
+    console.log('🚀 ~ products:', products);
     const productIDs = products.map(
       ({ productID }: { productID: string }) => productID
     );
@@ -48,12 +55,14 @@ export async function fetchBrainProducts({
     const mappedProducts = products.map(
       ({
         productID,
+        articul,
         vendorID,
         name,
         retail_price_uah,
         warranty,
       }: {
         productID: string;
+        articul: string;
         vendorID: string;
         name: string;
         retail_price_uah: string;
@@ -88,12 +97,18 @@ export async function fetchBrainProducts({
           options,
           price: retail_price_uah,
           warranty,
+          part_number: articul,
         };
       }
     );
 
     return { products: mappedProducts, count: products.length };
   } catch (error) {
-    console.log('error:', JSON.stringify(error, null, 4));
+    console.log('error:', error);
   }
+}
+
+function isValidArticul(articul: string) {
+  const regex = /^[a-zA-Z0-9-]+$/;
+  return regex.test(articul);
 }

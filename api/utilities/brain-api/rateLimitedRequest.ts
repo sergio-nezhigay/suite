@@ -1,5 +1,6 @@
 import { RequestParams } from 'api/types';
 import axios from 'axios';
+import { error } from 'console';
 import { api } from 'gadget-server';
 
 const MAX_REQUESTS_PER_SECOND = 3;
@@ -48,6 +49,15 @@ export async function rateLimitedRequest({
     await api.brainSession.update(brainSession.id, {
       lastRequestTime: new Date(currentTime),
     });
+
+    if (response?.data?.status === '0') {
+      if (response?.data?.error_code === 'Incorrect product')
+        return { product: null };
+      else {
+        throw error('Brain error' + response?.data?.error_code || '');
+      }
+    }
+
     return response?.data;
   } catch (error) {
     console.error('Error in rate-limited request:', error);

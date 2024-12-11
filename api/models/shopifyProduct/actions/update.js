@@ -10,14 +10,24 @@ export const run = async ({ params, record }) => {
 };
 
 /** @type { ActionOnSuccess } */
-export const onSuccess = async ({ record, logger, api, connections }) => {
-  if (record.body && record.changed('body')) {
-    await applyTags({
-      body: record.body,
-      tags: record.tags,
-      id: record.id,
-    });
-  }
+//export const onSuccess = async ({ record, logger, api, connections }) => {
+//  if (record.body && record.changed('body')) {
+//    await applyTags({
+//      body: record.body,
+//      tags: record.tags,
+//      id: record.id,
+//    });
+//  }
+//};
+
+export const onSuccess = async ({
+  params,
+  record,
+  logger,
+  api,
+  connections,
+}) => {
+  // Your logic goes here
 };
 
 /** @type { ActionOptions } */

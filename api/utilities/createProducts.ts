@@ -106,8 +106,8 @@ export default async function createProducts({
           {
             id: productCreate.product?.variants.edges[0].node.id,
             inventoryItem: { tracked: true },
-            barcode: product.part_number || '',
-            price: product.price || 0,
+            barcode: product?.part_number.toLowerCase() || '',
+            price: product?.price || 0,
           },
         ],
       };
