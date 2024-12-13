@@ -137,13 +137,37 @@ export default async function createProducts({
   }
 }
 
-function object2metafields(metaObject: ProductOptions | undefined) {
+function object2metafields(metaObject: ProductOptions | undefined): Array<{
+  namespace: string;
+  key: string;
+  type: string;
+  value: string;
+}> | null {
   if (!metaObject) return null;
-  const metaArray = Object.keys(metaObject).map((metaKey) => ({
-    namespace: 'custom',
-    key: metaKey,
-    type: 'list.single_line_text_field',
-    value: JSON.stringify(metaObject[metaKey].valueNames),
-  }));
-  return metaArray;
+
+  const KEYS: Record<string, string[]> = {
+    '773': ['773', '4767'], // Volume
+    '9279': ['9279', '4764'], // Type
+  };
+
+  const findMetaKey = (searchedValue: string): string => {
+    for (const [key, value] of Object.entries(KEYS)) {
+      if (value.includes(searchedValue)) {
+        return key;
+      }
+    }
+    return searchedValue;
+  };
+
+  return Object.keys(metaObject).map((metaKey) => {
+    const key = findMetaKey(metaKey);
+    const meta = {
+      namespace: 'custom',
+      key,
+      type: 'list.single_line_text_field',
+      value: JSON.stringify(metaObject[metaKey].valueNames),
+    };
+    console.log('🚀 ~ meta:', meta);
+    return meta;
+  });
 }

@@ -8,6 +8,7 @@ import {
   Page,
   InlineGrid,
   Thumbnail,
+  Box,
 } from '@shopify/polaris';
 
 import { useState, useEffect, useCallback } from 'react';
@@ -22,7 +23,7 @@ function Supplier({}) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [brainCategory, setBrainCategory] = useState('1235');
+  const [brainCategory, setBrainCategory] = useState('7926');
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
@@ -218,12 +219,12 @@ function Supplier({}) {
         sortOrder={index}
         disabled={existsInShopify}
         accessibilityLabel={`View details for ${name}`}
+        verticalAlignment='center'
       >
         <InlineGrid
           columns={['twoThirds', 'oneThird']}
-          gap='200'
+          gap='100'
           alignItems='center'
-          align=''
         >
           <Text variant='bodyMd' fontWeight={fontWeight} as='h3'>
             {name}

@@ -7,6 +7,7 @@ import { fetchBrainProductsContent } from './fetchBrainProductsContent';
 import { fetchBrainBrands } from './fetchBrainBrands';
 import { convertArrayToObject } from './convertArrayToObject';
 import { fetchBrainProduct } from './fetchBrainProduct';
+import { error } from 'console';
 
 export async function fetchBrainProducts({
   query,
@@ -14,9 +15,10 @@ export async function fetchBrainProducts({
   page,
   categoryId,
 }: FetchingFunc) {
-  let products = [];
+  let products = [],
+    count = 0;
   try {
-    const { result } = await brainRequest({
+    const { result, status, error_message } = await brainRequest({
       url: `http://api.brain.com.ua/products/${categoryId}`,
       params: {
         search: query,
@@ -24,15 +26,20 @@ export async function fetchBrainProducts({
         offset: page,
       },
     });
+    if (status === 0) {
+      throw error(error_message);
+    }
+    if (result?.count) {
+      count = result?.count;
+    }
 
     products = result?.list.filter(
       ({ stocks }: { stocks: any[] }) => stocks.length > 0
     );
 
-    if (query !== '' && isValidArticul(query)) {
-      console.log('🚀 ~ query:', query);
+    if (products && products.length === 0 && isValidArticul(query)) {
       const data = await fetchBrainProduct(query);
-      console.log('🚀 ~ data:', data);
+
       const product = data?.product;
       if (
         product &&
@@ -41,10 +48,10 @@ export async function fetchBrainProducts({
             Object.keys(product.stocks_expected).length > 0))
       ) {
         products.push(product);
+        count = 1;
       }
     }
 
-    console.log('🚀 ~ products:', products);
     const productIDs = products.map(
       ({ productID }: { productID: string }) => productID
     );
@@ -102,13 +109,15 @@ export async function fetchBrainProducts({
       }
     );
 
-    return { products: mappedProducts, count: products.length };
+    return { products: mappedProducts, count };
   } catch (error) {
     console.log('error:', error);
+    return { products: [], count: 0, error: error };
   }
 }
 
 function isValidArticul(articul: string) {
+  if (!articul) return false;
   const regex = /^[a-zA-Z0-9-]+$/;
   return regex.test(articul);
 }

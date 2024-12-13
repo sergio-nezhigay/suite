@@ -9,7 +9,7 @@ export async function fetchBrainProductsPictures({
   page,
 }: FetchingFunc) {
   console.log('🚀 ~ fetchBrainProductsPictures:', { query, limit, page });
-  const categoryID = '1235';
+  const categoryID = '7936';
 
   const { result } = await brainRequest({
     url: `http://api.brain.com.ua/products_pictures/${categoryID}`,

@@ -60,9 +60,6 @@ export default async function route({ request, reply, connections }) {
 
     return reply.send({ count, products: productsWithExistingFlag });
   } catch (error) {
-    return reply.status(500).send({
-      error: 'products fetch failed',
-      details: error.message,
-    });
+    return reply.status(500).send(error);
   }
 }
