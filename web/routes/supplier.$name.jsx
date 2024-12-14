@@ -1,4 +1,4 @@
-import { useParams } from 'react-router-dom';
+import { useParams, useSearchParams } from 'react-router-dom';
 import {
   ResourceList,
   ResourceItem,
@@ -14,17 +14,18 @@ import {
 import { useState, useEffect, useCallback } from 'react';
 import CategorySelector from '../components/CategorySelector';
 
-const itemsPerPage = 20;
+const itemsPerPage = 50;
 
 function Supplier({}) {
   const { supplierId } = useParams();
+  const [searchParams, setSearchParams] = useSearchParams();
 
-  const [query, setQuery] = useState('');
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [brainCategory, setBrainCategory] = useState('7926');
-  const [page, setPage] = useState(1);
+  const page = Number(searchParams.get('page')) || 1;
+  const query = searchParams.get('query') || '';
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -39,17 +40,12 @@ function Supplier({}) {
     };
   }, [query, page, supplierId]);
 
-  useEffect(() => {
-    setPage(1);
-  }, [query, supplierId]);
-
   const fetchData = async (query, signal) => {
     setLoading(true);
     try {
-      const response = await fetch(
-        `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}&categoryId=${brainCategory}`,
-        { signal }
-      );
+      const fetchUrl = `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}&categoryId=${brainCategory}`;
+      console.log('🚀 ~ fetchUrl:', fetchUrl);
+      const response = await fetch(fetchUrl, { signal });
       if (!response.ok) {
         shopify.toast.show('Failed to fetch products. ' + result.error, {
           duration: 5000,
@@ -89,7 +85,8 @@ function Supplier({}) {
             return {
               ...product,
               existsInShopify:
-                product.existsInShopify || selectedItems.includes(product.id),
+                (product.existsInShopify && product.instock > 0) ||
+                selectedItems.includes(product.id),
             };
           });
           return newProducts;
@@ -98,13 +95,6 @@ function Supplier({}) {
       },
     },
   ];
-
-  const handleFiltersQueryChange = useCallback(
-    (value) => {
-      setQuery(value);
-    },
-    [setQuery]
-  );
 
   const createProducts = async () => {
     try {
@@ -150,6 +140,31 @@ function Supplier({}) {
     setSelectedItems(selected.filter((id) => selectableItems.includes(id)));
   };
 
+  const handleFiltersQueryChange = useCallback((value) => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set('query', value);
+      newParams.set('page', 1);
+      return newParams;
+    });
+  }, []);
+
+  const handleNextPage = () => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set('page', page + 1);
+      return newParams;
+    });
+  };
+
+  const handlePrevPage = () => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set('page', Math.max(page - 1, 1));
+      return newParams;
+    });
+  };
+
   console.log(products);
   return (
     <Page title={`${supplierId}, page ${page}. `}>
@@ -185,8 +200,8 @@ function Supplier({}) {
         pagination={{
           hasNext: page * itemsPerPage < totalItems,
           hasPrevious: page > 1,
-          onPrevious: () => setPage(page - 1),
-          onNext: () => setPage(page + 1),
+          onPrevious: handlePrevPage,
+          onNext: handleNextPage,
         }}
         hasMoreItems={totalItems > products.length}
       />
@@ -201,13 +216,17 @@ function Supplier({}) {
       price = 0,
       part_number,
       existsInShopify,
+      instock,
     } = item;
     const formattedPrice =
-      typeof price === 'string'
+      instock === 0
+        ? 0
+        : typeof price === 'string'
         ? price.match(/\d+/)?.[0] || '0'
         : Math.floor(price || 0);
-    const fontWeight = existsInShopify ? '' : 'bold';
-    const mediaSize = existsInShopify ? 'large' : 'large';
+
+    const fontWeight = !existsInShopify && instock > 0 ? 'bold' : '';
+    const mediaSize = 'large';
     const media = pictures?.[0] ? (
       <Thumbnail size={mediaSize} name={name} source={pictures?.[0]} />
     ) : null;
@@ -217,7 +236,7 @@ function Supplier({}) {
         id={id}
         media={media}
         sortOrder={index}
-        disabled={existsInShopify}
+        disabled={existsInShopify || instock === 0}
         accessibilityLabel={`View details for ${name}`}
         verticalAlignment='center'
       >

@@ -17,27 +17,29 @@ export async function fetchBrainProducts({
 }: FetchingFunc) {
   let products = [],
     count = 0;
+  const offset = page ? +page - 1 : 0;
   try {
     const { result, status, error_message } = await brainRequest({
       url: `http://api.brain.com.ua/products/${categoryId}`,
       params: {
         search: query,
         limit,
-        offset: page,
+        offset,
       },
     });
     if (status === 0) {
       throw error(error_message);
     }
     if (result?.count) {
-      count = result?.count;
+      count = +result?.count;
     }
 
-    products = result?.list.filter(
-      ({ stocks }: { stocks: any[] }) => stocks.length > 0
-    );
+    products = result?.list;
+    //products = result?.list.filter(
+    //  ({ stocks }: { stocks: any[] }) => stocks.length > 0
+    //);
 
-    if (products && products.length === 0 && isValidArticul(query)) {
+    if (!count && isValidArticul(query)) {
       const data = await fetchBrainProduct(query);
 
       const product = data?.product;
@@ -67,6 +69,7 @@ export async function fetchBrainProducts({
         name,
         retail_price_uah,
         warranty,
+        stocks,
       }: {
         productID: string;
         articul: string;
@@ -74,6 +77,7 @@ export async function fetchBrainProducts({
         name: string;
         retail_price_uah: string;
         warranty: string;
+        stocks: string[];
       }) => {
         const vendor = brands.find(
           (brand: { vendorID: string }) => vendorID == brand.vendorID
@@ -105,6 +109,7 @@ export async function fetchBrainProducts({
           price: retail_price_uah,
           warranty,
           part_number: articul,
+          instock: stocks.length > 0 ? 5 : 0,
         };
       }
     );
