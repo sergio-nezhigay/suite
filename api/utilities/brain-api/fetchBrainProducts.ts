@@ -35,9 +35,6 @@ export async function fetchBrainProducts({
     }
 
     products = result?.list;
-    //products = result?.list.filter(
-    //  ({ stocks }: { stocks: any[] }) => stocks.length > 0
-    //);
 
     if (!count && isValidArticul(query)) {
       const data = await fetchBrainProduct(query);
@@ -70,6 +67,7 @@ export async function fetchBrainProducts({
         retail_price_uah,
         warranty,
         stocks,
+        stocks_expected,
       }: {
         productID: string;
         articul: string;
@@ -78,6 +76,11 @@ export async function fetchBrainProducts({
         retail_price_uah: string;
         warranty: string;
         stocks: string[];
+        stocks_expected:
+          | any[]
+          | {
+              [key: string]: string;
+            };
       }) => {
         const vendor = brands.find(
           (brand: { vendorID: string }) => vendorID == brand.vendorID
@@ -109,7 +112,10 @@ export async function fetchBrainProducts({
           price: retail_price_uah,
           warranty,
           part_number: articul,
-          instock: stocks.length > 0 ? 5 : 0,
+          instock:
+            stocks.length > 0 || Object.keys(stocks_expected).length > 0
+              ? 5
+              : 0,
         };
       }
     );

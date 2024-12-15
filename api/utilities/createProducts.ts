@@ -83,7 +83,7 @@ export default async function createProducts({
           descriptionHtml: html || null,
           handle,
 
-          metafields: object2metafields(product?.options),
+          metafields: mapObjectToMetafields(product?.options),
         },
         media,
       };
@@ -93,10 +93,10 @@ export default async function createProducts({
         createProductVariables
       );
 
-      if (!productCreate?.product) {
+      if (productCreate?.userErrors && productCreate?.userErrors.length > 0) {
+        console.log('🚀 ~ productCreate userErrors:', productCreate.userErrors);
         throw new Error(
-          'Failed to create one or more products.',
-          productCreate
+          'Failed to create a product' + productCreate.userErrors
         );
       }
 
@@ -137,7 +137,7 @@ export default async function createProducts({
   }
 }
 
-function object2metafields(metaObject: ProductOptions | undefined): Array<{
+function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
   namespace: string;
   key: string;
   type: string;
@@ -145,29 +145,34 @@ function object2metafields(metaObject: ProductOptions | undefined): Array<{
 }> | null {
   if (!metaObject) return null;
 
-  const KEYS: Record<string, string[]> = {
-    '773': ['773', '4767'], // Volume
-    '9279': ['9279', '4764'], // Type
+  const ATTRIBUTE_MAPPINGS = {
+    '773': { namespace: 'custom', keys: ['773', '4767', '682'] }, // Volume
+    '9279': { namespace: 'custom', keys: ['9279', '4764', '1456'] }, // Type
+    inputs: { namespace: 'custom', keys: ['9491'] },
+    outputs: { namespace: 'custom', keys: ['9492'] },
+    color: { namespace: 'custom', keys: ['18525'] },
+    features: { namespace: 'custom', keys: ['1146'] },
   };
 
-  const findMetaKey = (searchedValue: string): string => {
-    for (const [key, value] of Object.entries(KEYS)) {
-      if (value.includes(searchedValue)) {
-        return key;
+  const getAttributeMapping = (
+    searchedValue: string
+  ): { key: string; namespace: string } => {
+    for (const [key, mapping] of Object.entries(ATTRIBUTE_MAPPINGS)) {
+      if (mapping.keys.includes(searchedValue)) {
+        return { key, namespace: mapping.namespace };
       }
     }
-    return searchedValue;
+    return { key: searchedValue, namespace: 'custom' }; // Default namespace if not found
   };
 
   return Object.keys(metaObject).map((metaKey) => {
-    const key = findMetaKey(metaKey);
-    const meta = {
-      namespace: 'custom',
+    const { key, namespace } = getAttributeMapping(metaKey);
+
+    return {
+      namespace,
       key,
       type: 'list.single_line_text_field',
       value: JSON.stringify(metaObject[metaKey].valueNames),
     };
-    console.log('🚀 ~ meta:', meta);
-    return meta;
   });
 }

@@ -23,7 +23,7 @@ function Supplier({}) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [brainCategory, setBrainCategory] = useState('7926');
+  const [brainCategory, setBrainCategory] = useState('1287');
   const page = Number(searchParams.get('page')) || 1;
   const query = searchParams.get('query') || '';
   const [loading, setLoading] = useState(false);
@@ -135,7 +135,7 @@ function Supplier({}) {
 
   const handleSelectionChange = (selected) => {
     const selectableItems = products
-      .filter((product) => !product.existsInShopify)
+      .filter((product) => !product.existsInShopify && product.instock > 0)
       .map((product) => product.id);
     setSelectedItems(selected.filter((id) => selectableItems.includes(id)));
   };
