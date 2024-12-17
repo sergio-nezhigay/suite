@@ -147,11 +147,12 @@ function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
 
   const ATTRIBUTE_MAPPINGS = {
     '773': { namespace: 'custom', keys: ['773', '4767', '682'] }, // Volume
-    '9279': { namespace: 'custom', keys: ['9279', '4764', '1456'] }, // Type
-    inputs: { namespace: 'custom', keys: ['9491'] },
+    '1441': { namespace: 'custom', keys: ['1441', '18915'] }, // Subtype
+    '9279': { namespace: 'custom', keys: ['9279', '4764', '1456', '374'] }, // Type
+    inputs: { namespace: 'custom', keys: ['9491', '380'] },
     outputs: { namespace: 'custom', keys: ['9492'] },
-    color: { namespace: 'custom', keys: ['18525'] },
-    features: { namespace: 'custom', keys: ['1146'] },
+    color: { namespace: 'custom', keys: ['18525', '17191'] },
+    features: { namespace: 'custom', keys: ['1146', '385'] },
   };
 
   const getAttributeMapping = (
