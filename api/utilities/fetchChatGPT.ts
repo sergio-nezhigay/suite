@@ -1,8 +1,15 @@
-import { openai } from '../openai';
+import { AppConnections } from '.gadget/server/types';
+//import { openai } from '../openai';
 
-export default async function fetchChatGPT(prompt: string) {
+export default async function fetchChatGPT({
+  prompt,
+  connections,
+}: {
+  prompt: string;
+  connections: AppConnections;
+}) {
   try {
-    const response = await openai.chat.completions.create({
+    const response = await connections.openai.chat.completions.create({
       model: 'gpt-4o-mini',
       temperature: 0.2,
       messages: [{ role: 'user', content: prompt }],

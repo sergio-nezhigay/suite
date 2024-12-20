@@ -1,9 +1,11 @@
 import { ProductOptions, Products } from 'api/types';
-import Shopify from 'shopify-api-node';
+
 import transliterate from './transliterate';
 import fetchChatGPT from './fetchChatGPT';
 import parseGeneratedDescription from './parseGeneratedDescription';
 import preparePrompt from './preparePrompt';
+import { AppConnections } from '.gadget/server/types';
+import { getShopifyClient } from './getShopifyClient';
 
 const createProductQuery = `
 mutation CreateProductWithMedia(
@@ -54,19 +56,19 @@ const productVariantsBulkUpdateQuery = `
 `;
 
 export default async function createProducts({
-  shopify,
   products,
+  connections,
 }: {
-  shopify: Shopify;
   products: Products;
+  connections: AppConnections;
 }) {
   const createdProducts = [];
-
   try {
+    const shopify = getShopifyClient(connections);
     for (const product of products) {
       const handle = transliterate(product.title);
       const prompt = preparePrompt(product.title, product.description);
-      const response = (await fetchChatGPT(prompt)) || '';
+      const response = (await fetchChatGPT({ prompt, connections })) || '';
       const { title, html } = parseGeneratedDescription(response);
 
       const media = Array.isArray(product.pictures)

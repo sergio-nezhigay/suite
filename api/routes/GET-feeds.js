@@ -8,7 +8,7 @@ const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 const IN_STOCK = 'in stock';
 const OUT_OF_STOCK = 'out-of-stock';
 
-export default async function route({ request, reply, connections }) {
+export default async function route({ reply, connections }) {
   try {
     const shopify = connections.shopify.current;
 
@@ -92,22 +92,31 @@ function makeGenericFeed(products) {
     });
 }
 const makeHotlineFeed = (products) => {
-  return products.map((product) => ({
-    'id товару': product.id.replace(/\D/g, ''),
-    'Назва товару': product.title,
-    description: product.description,
-    URL:
-      product.link + '/?utm_source=hotline&utm_medium=cpc&utm_campaign=hotline',
-    Грн: product.price,
-    'image link': product.imageURLs.length > 0 && product.imageURLs[0],
-    'Категорія товару': product.collection,
-    Shipping: product.delivery_days,
-    Виробник: product.brand,
-    'Доступність товару':
-      product.availability === IN_STOCK ? 'В наличии' : 'нет в наличии',
-    Гарантія: product.warranty,
-    'Код товару': product.mpn,
-  }));
+  return products
+    .filter(
+      ({ title, sku }) =>
+        !(
+          sku.toLowerCase().includes('ме') &&
+          title.toLowerCase().includes('fury')
+        )
+    )
+    .map((product) => ({
+      'id товару': product.id.replace(/\D/g, ''),
+      'Назва товару': product.title,
+      description: product.description,
+      URL:
+        product.link +
+        '/?utm_source=hotline&utm_medium=cpc&utm_campaign=hotline',
+      Грн: product.price,
+      'image link': product.imageURLs.length > 0 && product.imageURLs[0],
+      'Категорія товару': product.collection,
+      Shipping: product.delivery_days,
+      Виробник: product.brand,
+      'Доступність товару':
+        product.availability === IN_STOCK ? 'В наличии' : 'нет в наличии',
+      Гарантія: product.warranty,
+      'Код товару': product.mpn,
+    }));
 };
 
 const makeMerchantFeed = (products) => {

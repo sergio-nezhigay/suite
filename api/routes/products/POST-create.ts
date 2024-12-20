@@ -1,6 +1,5 @@
 import { Products } from 'api/types';
 import createProducts from '../../utilities/createProducts';
-import { getShopifyClient } from '../../utilities/getShopifyClient';
 
 import { RouteHandler } from 'gadget-server';
 
@@ -9,7 +8,6 @@ interface RequestBody {
 }
 
 const route: RouteHandler = async ({ request, reply, connections }) => {
-  const shopify = getShopifyClient(connections);
   const { products }: RequestBody = request.body as RequestBody;
 
   if (!products || !Array.isArray(products)) {
@@ -19,7 +17,10 @@ const route: RouteHandler = async ({ request, reply, connections }) => {
   }
 
   try {
-    const createdProducts = await createProducts({ shopify, products });
+    const createdProducts = await createProducts({
+      products,
+      connections,
+    });
     return reply.send(createdProducts);
   } catch (error) {
     if (error instanceof Error) {
