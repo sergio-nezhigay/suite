@@ -12,7 +12,7 @@ const promptTemplate = `
 
 **Результат**: JSON з полями:
 1. **html**: оформлений опис.
-2. **title**: оптимальна назва з p/n.
+2. **title**: коротка назва, включаюча код.
 `;
 
 export default function preparePrompt(

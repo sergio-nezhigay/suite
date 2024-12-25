@@ -5,17 +5,17 @@
   "license": "UNLICENSED",
   "private": true,
   "scripts": {
-    "vite:build": "NODE_ENV=production vite build",
     "shopify": "shopify",
     "dev": "shopify app dev",
     "info": "shopify app info",
     "generate": "shopify app generate",
     "deploy": "shopify app deploy",
-    "ggt": "npx ggt dev ./ --app=admin-action-block --env=development"
+    "ggt": "npx ggt dev ./ --app=admin-action-block --env=development",
+    "build": "NODE_ENV=production vite build"
   },
   "dependencies": {
     "@gadget-client/admin-action-block": "link:.gadget/client",
-    "@gadgetinc/react": "^0.16.6",
+    "@gadgetinc/react": "^0.18.5",
     "xml2js": "^0.6.2",
     "@gadgetinc/react-shopify-app-bridge": "^0.16.3",
     "@shopify/app-bridge-react": "4.0.0",
@@ -30,17 +30,19 @@
     "openai": "^4.61.0",
     "google-spreadsheet": "^4.1.4",
     "google-auth-library": "^9.15.0",
-    "axios": "^1.7.9"
+    "axios": "^1.7.9",
+    "fastify": "^4.24.2"
   },
   "devDependencies": {
+    "@shopify/app-bridge-types": "^0.0.15",
     "@shopify/cli": "^3.66.1",
-    "@types/node": "^20.12.8",
+    "@types/node": "^20.17.7",
     "@types/react": "^18.0.28",
     "@types/react-dom": "^18.0.11",
     "@types/xml2js": "^0.4.14",
     "@vitejs/plugin-react-swc": "3.2.0",
     "typescript": "^5.4.5",
-    "vite": "^4.4.9"
+    "vite": "^5.3.5"
   },
   "workspaces": [
     "extensions/*"

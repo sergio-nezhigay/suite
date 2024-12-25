@@ -23,7 +23,7 @@ import FileUploadPage from '../routes/upload';
 import Index from '../routes/index';
 //import Brain from '../routes/brain';
 //import Easy from '../routes/easy';
-//import Test from '../routes/test';
+import Test from '../routes/test';
 import Tagger from '../routes/tagger';
 import Supplier from '../routes/supplier.$name';
 
@@ -50,7 +50,7 @@ function App() {
         <Route path='/feeds' element={<Feeds />} />
         {/*<Route path='/brain' element={<Brain />} />*/}
         {/*<Route path='/easy' element={<Easy />} />*/}
-        {/*<Route path='/test' element={<Test />} />*/}
+        <Route path='/test' element={<Test />} />
         <Route path='/tagger' element={<Tagger />} />
         <Route path='/supplier/:supplierId' element={<Supplier />} />
         <Route path='/upload' element={<FileUploadPage />} />
@@ -115,7 +115,7 @@ function EmbeddedApp() {
         {/*<Link to='/upload'>Upload</Link>*/}
         {/*<Link to='/brain'>Brain</Link>*/}
         {/*<Link to='/tagger'>Tagger</Link>*/}
-        {/*<Link to='/test'>Test</Link>*/}
+        <Link to='/test'>Test</Link>
       </NavMenu>
     </>
   );

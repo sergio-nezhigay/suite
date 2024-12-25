@@ -6,7 +6,25 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Product",
-  fields: {},
+  fields: {
+    chatRecommendations: {
+      type: "hasManyThrough",
+      sibling: {
+        model: "chatLog",
+        relatedField: "recommendedProducts",
+      },
+      join: {
+        model: "recommendedProduct",
+        belongsToSelfField: "product",
+        belongsToSiblingField: "chatLog",
+      },
+      storageKey: "ErcS7AQ68IU3",
+    },
+    descriptionEmbedding: {
+      type: "vector",
+      storageKey: "yg3yaf_ICtKa",
+    },
+  },
   shopify: {
     fields: [
       "body",

@@ -1,11 +1,11 @@
-import { ProductOptions, Products } from 'api/types';
-
 import transliterate from './transliterate';
 import fetchChatGPT from './fetchChatGPT';
 import parseGeneratedDescription from './parseGeneratedDescription';
 import preparePrompt from './preparePrompt';
-import { AppConnections } from '.gadget/server/types';
+
 import { getShopifyClient } from './getShopifyClient';
+import { AppConnections } from 'gadget-server';
+import { Products, ProductOptions } from '../types';
 
 const createProductQuery = `
 mutation CreateProductWithMedia(
@@ -121,8 +121,7 @@ export default async function createProducts({
 
       if (!productVariantsBulkUpdate?.productVariants) {
         throw new Error(
-          'Failed to update variant.',
-          productVariantsBulkUpdate.userErrors
+          'Failed to update variant.' + productVariantsBulkUpdate.userErrors
         );
       }
 
@@ -149,12 +148,15 @@ function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
 
   const ATTRIBUTE_MAPPINGS = {
     '773': { namespace: 'custom', keys: ['773', '4767', '682'] }, // Volume
-    '1441': { namespace: 'custom', keys: ['1441', '18915'] }, // Subtype
-    '9279': { namespace: 'custom', keys: ['9279', '4764', '1456', '374'] }, // Type
-    inputs: { namespace: 'custom', keys: ['9491', '380'] },
+    '1441': { namespace: 'custom', keys: ['1441', '18915', '87'] }, // Subtype
+    '9279': {
+      namespace: 'custom',
+      keys: ['9279', '4764', '1456', '374', '84'],
+    }, // Type
+    inputs: { namespace: 'custom', keys: ['9491', '380', '7336'] },
     outputs: { namespace: 'custom', keys: ['9492'] },
-    color: { namespace: 'custom', keys: ['18525', '17191'] },
-    features: { namespace: 'custom', keys: ['1146', '385'] },
+    color: { namespace: 'custom', keys: ['18525', '17191', '19252'] },
+    features: { namespace: 'custom', keys: ['1146', '385', '7335'] },
   };
 
   const getAttributeMapping = (

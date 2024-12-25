@@ -1,4 +1,4 @@
-import { AppConnections } from '.gadget/server/types';
+import { AppConnections } from 'gadget-server';
 
 export function getShopifyClient(connections: AppConnections) {
   connections.shopify.maxRetries = 10;

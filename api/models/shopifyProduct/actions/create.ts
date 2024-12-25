@@ -5,23 +5,31 @@ import {
   ActionOptions,
 } from 'gadget-server';
 
-import {
-  getShopifyClient,
-  updateMetafield,
-  applyTags,
-} from '../../../utilities';
+import { getShopifyClient, updateMetafield } from '../../../utilities';
 
-/** @type { ActionRun } */
-export const run = async ({ params, record }) => {
+export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
   await save(record);
 };
 
-/** @type { ActionOnSuccess } */
-export const onSuccess = async ({ record, api, connections }) => {
+export const onSuccess: ActionOnSuccess = async ({
+  record,
+  api,
+  connections,
+}) => {
   const shopify = getShopifyClient(connections);
+  await processSKU(api, shopify, record);
+  if (!record.descriptionEmbedding && record.body && record.title) {
+    await api.enqueue(api.shopifyProduct.createEmbedding, { id: record.id });
+  }
+};
 
+async function processSKU(
+  api: any,
+  shopify: any,
+  record: Record<string, any>
+): Promise<void> {
   const { currentSKUValue, skuRecordId } = await getLastSKU(api);
 
   await api.lastSKU.update(skuRecordId, { value: currentSKUValue + 1 });
@@ -37,25 +45,17 @@ export const onSuccess = async ({ record, api, connections }) => {
     ],
   };
   await updateMetafield({ shopify, variables });
+}
 
-  //  tags processing
-  if (record.body) {
-    await applyTags({
-      body: record.body,
-      tags: record.tags,
-      id: record.id,
-    });
-  }
-};
-
-/** @type { ActionOptions } */
-export const options = {
-  actionType: 'create',
-};
-
-async function getLastSKU(api) {
+async function getLastSKU(
+  api: any
+): Promise<{ currentSKUValue: number; skuRecordId: string }> {
   const lastSKURecord = await api.lastSKU.findMany();
   const currentSKUValue = lastSKURecord[0]?.value;
   const skuRecordId = lastSKURecord[0]?.id;
   return { currentSKUValue, skuRecordId };
 }
+
+export const options: ActionOptions = {
+  actionType: 'create',
+};

@@ -8,22 +8,29 @@
     "web/components/CategoryInput.jsx"
   ],
   "compilerOptions": {
-    "lib": ["DOM", "DOM.Iterable", "ES2015", "ES2022"],
+    "lib": ["es2020", "DOM"],
     "module": "ESNext",
-    "target": "ES2015",
+    "target": "es2020",
     "strict": true,
     "skipLibCheck": true,
-    "moduleResolution": "Bundler",
+    "moduleResolution": "node",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
+    "allowJs": true,
+    "checkJs": true,
+    "noImplicitAny": true,
+    "noEmit": true,
+    "sourceMap": true,
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
     "isolatedModules": true,
     "resolveJsonModule": true,
     "jsx": "react-jsx",
-    "baseUrl": ".",
+    "baseUrl": "/",
     "paths": {
       "@/*": ["./app/*"]
     },
-    "types": ["node"]
+    "types": ["@shopify/app-bridge-types"]
   }
 }
