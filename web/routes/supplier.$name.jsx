@@ -23,7 +23,7 @@ function Supplier({}) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [brainCategory, setBrainCategory] = useState('1547');
+  const [brainCategory, setBrainCategory] = useState('8410');
   const page = Number(searchParams.get('page')) || 1;
   const query = searchParams.get('query') || '';
   const [loading, setLoading] = useState(false);

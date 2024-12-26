@@ -19,13 +19,13 @@ export const onSuccess: ActionOnSuccess = async ({
   connections,
 }) => {
   const shopify = getShopifyClient(connections);
-  await processSKU(api, shopify, record);
+  await updateSKU(api, shopify, record);
   if (!record.descriptionEmbedding && record.body && record.title) {
     await api.enqueue(api.shopifyProduct.createEmbedding, { id: record.id });
   }
 };
 
-async function processSKU(
+async function updateSKU(
   api: any,
   shopify: any,
   record: Record<string, any>

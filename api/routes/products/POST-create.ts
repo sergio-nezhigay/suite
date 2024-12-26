@@ -1,4 +1,4 @@
-import { Products } from 'api/types';
+import { Products } from '../../types';
 import createProducts from '../../utilities/createProducts';
 
 import { RouteHandler } from 'gadget-server';
