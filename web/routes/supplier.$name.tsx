@@ -8,22 +8,35 @@ import {
   Page,
   InlineGrid,
   Thumbnail,
-  Box,
 } from '@shopify/polaris';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect } from 'react';
 import CategorySelector from '../components/CategorySelector';
+
+interface Product {
+  id: string;
+  name: string;
+  pictures: string[];
+  price: string | number;
+  part_number: string;
+  existsInShopify: boolean;
+  instock: number;
+}
+
+interface FetchResponse {
+  products: Product[];
+  count: number;
+}
 
 const itemsPerPage = 50;
 
-function Supplier({}) {
+function Supplier() {
   const { supplierId } = useParams();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const [selectedItems, setSelectedItems] = useState([]);
-  const [products, setProducts] = useState([]);
+  const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [products, setProducts] = useState<Product[]>([]);
   const [totalItems, setTotalItems] = useState(0);
-  //  const [brainCategory, setBrainCategory] = useState('8410');
   const brainCategory = searchParams.get('category') || '8410';
   const page = Number(searchParams.get('page')) || 1;
   const query = searchParams.get('query') || '';
@@ -41,7 +54,10 @@ function Supplier({}) {
     };
   }, [query, page, supplierId]);
 
-  const fetchData = async (query: string, signal: AbortSignal) => {
+  const fetchData = async (
+    query: string,
+    signal: AbortSignal
+  ): Promise<void> => {
     setLoading(true);
     try {
       const fetchUrl = `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}&categoryId=${brainCategory}`;
@@ -53,12 +69,12 @@ function Supplier({}) {
           isError: true,
         });
       }
-      const result = await response.json();
+      const result: FetchResponse = await response.json();
 
       setProducts(result.products);
       setTotalItems(result.count);
     } catch (error) {
-      if (error?.name !== 'AbortError') {
+      if ((error as any)?.name !== 'AbortError') {
         shopify.toast.show('Failed to fetch products. ' + error, {
           duration: 5000,
           isError: true,
@@ -134,20 +150,20 @@ function Supplier({}) {
     }
   };
 
-  const handleSelectionChange = (selected) => {
+  const handleSelectionChange = (selected: string[]): void => {
     const selectableItems = products
       .filter((product) => !product.existsInShopify && product.instock > 0)
       .map((product) => product.id);
     setSelectedItems(selected.filter((id) => selectableItems.includes(id)));
   };
 
-  const handleFiltersQueryChange = (value) => {
+  const handleFiltersQueryChange = (value: string): void => {
     console.log('🚀 ~ handleFiltersQueryChange:');
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
       console.log('🚀 ~ newParams:', newParams);
       newParams.set('query', value);
-      newParams.set('page', 1);
+      newParams.set('page', '1');
       return newParams;
     });
   };
@@ -178,6 +194,25 @@ function Supplier({}) {
     });
   };
 
+  const handleClearAll = () => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.delete('query');
+      newParams.delete('category');
+      newParams.set('page', '1');
+      return newParams;
+    });
+  };
+
+  const handleQueryClear = () => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.delete('query'); // Clear the query parameter
+      newParams.set('page', '1'); // Reset to the first page
+      return newParams;
+    });
+  };
+
   console.log(products);
   return (
     <Page title={`${supplierId}, page ${page}. `}>
@@ -197,7 +232,6 @@ function Supplier({}) {
         selectedItems={selectedItems}
         onSelectionChange={handleSelectionChange}
         promotedBulkActions={promotedBulkActions}
-        resolveItemId={(id) => id}
         flushFilters={true}
         filterControl={
           <Filters
@@ -206,6 +240,8 @@ function Supplier({}) {
             onQueryChange={handleFiltersQueryChange}
             queryPlaceholder='Пошук товару'
             loading={loading}
+            onQueryClear={handleQueryClear}
+            onClearAll={handleClearAll}
           />
         }
         loading={loading}
@@ -221,7 +257,7 @@ function Supplier({}) {
     </Page>
   );
 
-  function renderItem(item, _, index) {
+  function renderItem(item: Product, _: any, index: number): JSX.Element {
     const {
       id,
       name,
@@ -238,11 +274,12 @@ function Supplier({}) {
         ? price.match(/\d+/)?.[0] || '0'
         : Math.floor(price || 0);
 
-    const fontWeight = !existsInShopify && instock > 0 ? 'bold' : '';
+    const fontWeight: 'regular' | 'medium' | 'bold' | undefined =
+      !existsInShopify && instock > 0 ? 'bold' : undefined;
     const mediaSize = 'large';
     const media = pictures?.[0] ? (
-      <Thumbnail size={mediaSize} name={name} source={pictures?.[0]} />
-    ) : null;
+      <Thumbnail size={mediaSize} alt={name} source={pictures?.[0]} />
+    ) : undefined;
 
     return (
       <ResourceItem
@@ -252,6 +289,13 @@ function Supplier({}) {
         disabled={existsInShopify || instock === 0}
         accessibilityLabel={`View details for ${name}`}
         verticalAlignment='center'
+        onClick={() => {
+          setSelectedItems((prevSelectedItems) =>
+            prevSelectedItems.includes(id)
+              ? prevSelectedItems.filter((selectedId) => selectedId !== id)
+              : [...prevSelectedItems, id]
+          );
+        }}
       >
         <InlineGrid
           columns={['twoThirds', 'oneThird']}
