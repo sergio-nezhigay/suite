@@ -158,10 +158,8 @@ function Supplier() {
   };
 
   const handleFiltersQueryChange = (value: string): void => {
-    console.log('🚀 ~ handleFiltersQueryChange:');
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
-      console.log('🚀 ~ newParams:', newParams);
       newParams.set('query', value);
       newParams.set('page', '1');
       return newParams;

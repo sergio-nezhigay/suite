@@ -15,7 +15,7 @@ function CategorySelector({
   selectedOption: string;
   setSelectedOption: (value: string) => void;
 }) {
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState<string>('');
   const [allOptions, setAllOptions] = useState<Option[]>([]);
 
   const escapeSpecialRegExCharacters = useCallback(
@@ -33,6 +33,7 @@ function CategorySelector({
       const data = await api.brainCategories.findMany({
         search: searchTerm,
       });
+      console.log('🚀 ~ data:', data);
 
       if (data.length > 0) {
         const categories = data.map((option) => {

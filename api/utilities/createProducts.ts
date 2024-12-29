@@ -157,7 +157,7 @@ function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
     outputs: { namespace: 'custom', keys: ['9492'] },
     color: { namespace: 'custom', keys: ['18525', '17191', '19252', '20830'] },
     features: { namespace: 'custom', keys: ['1146', '385', '7335', '20835'] },
-    length: { namespace: 'custom', keys: ['20823'] },
+    length: { namespace: 'custom', keys: ['20823', '6387'] },
     width: { namespace: 'custom', keys: ['20824'] },
   };
 
