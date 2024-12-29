@@ -23,7 +23,8 @@ function Supplier({}) {
   const [selectedItems, setSelectedItems] = useState([]);
   const [products, setProducts] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
-  const [brainCategory, setBrainCategory] = useState('8410');
+  //  const [brainCategory, setBrainCategory] = useState('8410');
+  const brainCategory = searchParams.get('category') || '8410';
   const page = Number(searchParams.get('page')) || 1;
   const query = searchParams.get('query') || '';
   const [loading, setLoading] = useState(false);
@@ -40,14 +41,14 @@ function Supplier({}) {
     };
   }, [query, page, supplierId]);
 
-  const fetchData = async (query, signal) => {
+  const fetchData = async (query: string, signal: AbortSignal) => {
     setLoading(true);
     try {
       const fetchUrl = `/supplier?query=${query}&page=${page}&limit=${itemsPerPage}&supplierId=${supplierId}&categoryId=${brainCategory}`;
       console.log('🚀 ~ fetchUrl:', fetchUrl);
       const response = await fetch(fetchUrl, { signal });
       if (!response.ok) {
-        shopify.toast.show('Failed to fetch products. ' + result.error, {
+        shopify.toast.show('Failed to fetch products. ' + response, {
           duration: 5000,
           isError: true,
         });
@@ -57,7 +58,7 @@ function Supplier({}) {
       setProducts(result.products);
       setTotalItems(result.count);
     } catch (error) {
-      if (error.name !== 'AbortError') {
+      if (error?.name !== 'AbortError') {
         shopify.toast.show('Failed to fetch products. ' + error, {
           duration: 5000,
           isError: true,
@@ -140,19 +141,31 @@ function Supplier({}) {
     setSelectedItems(selected.filter((id) => selectableItems.includes(id)));
   };
 
-  const handleFiltersQueryChange = useCallback((value) => {
+  const handleFiltersQueryChange = (value) => {
+    console.log('🚀 ~ handleFiltersQueryChange:');
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
+      console.log('🚀 ~ newParams:', newParams);
       newParams.set('query', value);
       newParams.set('page', 1);
       return newParams;
     });
-  }, []);
+  };
+
+  const handleCategoryChange = (value: string): void => {
+    setSearchParams((prevParams) => {
+      const newParams = new URLSearchParams(prevParams);
+      newParams.set('category', value);
+      newParams.set('query', '');
+      newParams.set('page', '1');
+      return newParams;
+    });
+  };
 
   const handleNextPage = () => {
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
-      newParams.set('page', page + 1);
+      newParams.set('page', (page + 1).toString());
       return newParams;
     });
   };
@@ -160,7 +173,7 @@ function Supplier({}) {
   const handlePrevPage = () => {
     setSearchParams((prevParams) => {
       const newParams = new URLSearchParams(prevParams);
-      newParams.set('page', Math.max(page - 1, 1));
+      newParams.set('page', Math.max(page - 1, 1).toString());
       return newParams;
     });
   };
@@ -171,7 +184,7 @@ function Supplier({}) {
       {supplierId === 'brain' && (
         <CategorySelector
           selectedOption={brainCategory}
-          setSelectedOption={setBrainCategory}
+          setSelectedOption={handleCategoryChange}
         />
       )}
       <ResourceList

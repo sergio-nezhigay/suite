@@ -13,7 +13,7 @@ function CategorySelector({
   setSelectedOption,
 }: {
   selectedOption: string;
-  setSelectedOption: (value: string) => {};
+  setSelectedOption: (value: string) => void;
 }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [allOptions, setAllOptions] = useState<Option[]>([]);

@@ -27,7 +27,7 @@ const route: RouteHandler<{
         cosineSimilarityTo: embeddingResponse.data[0].embedding,
       },
     },
-    first: 2,
+    first: 10,
     filter: {
       variants: {
         some: {
