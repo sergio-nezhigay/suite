@@ -5,14 +5,9 @@ function ChatFormExample() {
   const [message, setMessage] = useState('');
 
   const handleSubmit = useCallback(async () => {
-    if (message.trim() === '') {
-      console.log('Message is empty, not sending.');
-      return;
-    }
-
     console.log('Sending message:', message);
     try {
-      const response = await fetch('/chat', {
+      const response = await fetch('/test', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -43,7 +38,7 @@ function ChatFormExample() {
           helpText='Enter your message and submit it to the server.'
         />
 
-        <Button submit>Send</Button>
+        <Button submit>Test</Button>
       </FormLayout>
     </Form>
   );

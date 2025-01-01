@@ -24,6 +24,17 @@ export const schema: GadgetModel = {
       type: "vector",
       storageKey: "yg3yaf_ICtKa",
     },
+    specificationsType: {
+      type: "string",
+      shopifyMetafield: {
+        privateMetafield: false,
+        namespace: "specifications",
+        key: "type",
+        metafieldType: "single_line_text_field",
+        allowMultipleEntries: false,
+      },
+      storageKey: "P2NfIWlwtALw",
+    },
   },
   shopify: {
     fields: [
