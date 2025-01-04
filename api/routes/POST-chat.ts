@@ -128,7 +128,7 @@ const route: RouteHandler<{
   };
 
   //  await reply.send(JSON.stringify(chatResponse.choices[0].message.content));
-  await reply.send(openAIResponseStream(chatResponse, { onComplete }));
+  await reply.send(openAIResponseStream(open ai completion result json, { onComplete }));
 };
 
 export default route;

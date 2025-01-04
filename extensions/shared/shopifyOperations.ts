@@ -28,6 +28,7 @@ interface OrderInfo {
   total: string;
   customerId: string;
   shippingPhone: string | null;
+  address: string | null;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -47,6 +48,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         }
         shippingAddress {
           phone
+          address1
+          city
+          zip
         }
       }
     }`;
@@ -59,19 +63,31 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         shopMoney: { amount: string };
       };
       customer: { id: string };
-      shippingAddress: { phone: string | null };
+      shippingAddress: {
+        phone: string;
+        address1: string;
+        city: string;
+        zip: string;
+      };
     };
   }>(query, { id: orderId });
 
   if (data?.order) {
     const { tags, name, phone, totalPriceSet, customer, shippingAddress } =
       data?.order;
+    //const zip =
+    //  shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}, ` : '';
+    const zip =
+      shippingAddress?.zip !== '12345'
+        ? `postalCodeUA: ${shippingAddress?.zip}, `
+        : '';
     return {
       tags,
       orderNumber: name,
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
       shippingPhone: phone || shippingAddress?.phone || null,
+      address: `${zip}${shippingAddress?.city}, ${shippingAddress?.address1}`,
     };
   }
   throw new Error(`Order ${orderId} not found`);
