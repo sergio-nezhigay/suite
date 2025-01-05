@@ -1,5 +1,3 @@
-import React from 'react';
-
 import { useEffect, useState } from 'react';
 import {
   Badge,
@@ -12,25 +10,21 @@ import {
   Text,
 } from '@shopify/ui-extensions-react/admin';
 
-import {
-  getOrderInfo,
-  getCustomerPhone,
-  addOrderNote,
-} from '../../shared/shopifyOperations';
+import { getOrderInfo, addOrderNote } from '../../shared/shopifyOperations';
 
 import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
 
+import { SmsTemplates } from '@gadget-client/admin-action-block';
+
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
-import { SmsTemplates } from '.gadget/client/types';
-
-type SmsTemplate = SmsTemplates & {
-  smsTextReplaced: string;
-};
+//type SmsTemplate = SmsTemplates & {
+//  smsTextReplaced: string;
+//};
 
 function App() {
   const { data } = useApi(TARGET);
@@ -43,8 +37,9 @@ function App() {
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const { orderNumber, total, customerId, shippingPhone } =
-          await getOrderInfo(orderId);
+        const { orderNumber, total, shippingPhone } = await getOrderInfo(
+          orderId
+        );
 
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
@@ -55,7 +50,6 @@ function App() {
           }),
         }));
         setSmsTemplates(resultsProcessed);
-        //const phone = await getCustomerPhone(customerId);
 
         if (!shippingPhone) {
           setStatus('Phone not found');

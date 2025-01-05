@@ -7,9 +7,15 @@ import {
   Button,
   Select,
 } from '@shopify/ui-extensions-react/admin';
-import { stages } from 'extensions/shared/stages';
-import { getOrdersTags, updateOrdersTags } from './shopifyOperations';
-import { addOrderNote } from 'shared/shopifyOperations';
+//import { stages } from 'extensions/shared/stages';
+//import { getOrdersTags, updateOrdersTags } from './shopifyOperations';
+import {
+  addOrderNote,
+  getOrdersTags,
+  updateOrdersTags,
+} from '../../shared/shopifyOperations';
+import { stages } from '../../shared/stages';
+//import { addOrderNote } from 'shared/shopifyOperations';
 
 const TARGET = 'admin.order-index.selection-action.render';
 

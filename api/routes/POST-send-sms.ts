@@ -6,6 +6,7 @@ const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({
   reply,
 }) => {
   const { to, message } = request.body;
+  console.log('🚀 ~ RouteHandler:', to, message);
 
   if (!to || !message) {
     return await reply
@@ -38,3 +39,5 @@ const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({
     }
   }
 };
+
+export default route;

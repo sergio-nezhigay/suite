@@ -24,7 +24,6 @@ function WarehouseExtension() {
   const [responseData, setResponseData] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // Fetch order info (address and zip) on component mount
   useEffect(() => {
     if (!orderId) return;
 
