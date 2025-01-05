@@ -29,6 +29,7 @@ interface OrderInfo {
   customerId: string;
   shippingPhone: string | null;
   address: string | null;
+  zip: string | null;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -87,7 +88,8 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
       shippingPhone: phone || shippingAddress?.phone || null,
-      address: `${zip}${shippingAddress?.city}, ${shippingAddress?.address1}`,
+      address: `${shippingAddress?.city}, ${shippingAddress?.address1}`,
+      zip,
     };
   }
   throw new Error(`Order ${orderId} not found`);
