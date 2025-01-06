@@ -16,8 +16,9 @@ export default reactExtension(TARGET, () => <WarehouseExtension />);
 
 function WarehouseExtension() {
   const { data } = useApi(TARGET);
-  const orderId = data.selected[0]?.id; // Ensure `selected` exists and has an ID
+  const orderId = data.selected[0]?.id;
   const [orderInfo, setOrderInfo] = useState<{
+    city: string;
     address: string;
     zip: string;
   } | null>(null);
@@ -29,11 +30,11 @@ function WarehouseExtension() {
 
     const fetchOrderInfo = async () => {
       try {
-        const { address, zip } = await getOrderInfo(orderId);
-        setOrderInfo({ address, zip });
+        const { city, address, zip } = await getOrderInfo(orderId);
+        setOrderInfo({ city, address, zip });
       } catch (error) {
         console.error('Error fetching order info:', error);
-        setOrderInfo({ address: 'Unknown', zip: 'Unknown' }); // Fallback in case of error
+        setOrderInfo({ city: 'Unknown', address: 'Unknown', zip: 'Unknown' });
       }
     };
 
@@ -42,7 +43,7 @@ function WarehouseExtension() {
 
   const handleGetSimilarWarehouses = async () => {
     if (!orderInfo) {
-      alert('Order information not available!');
+      console.error('No order info to fetch similar warehouses');
       return;
     }
 
@@ -63,7 +64,7 @@ function WarehouseExtension() {
       }
 
       const result = await response.json();
-      setResponseData(JSON.stringify(result, null, 2)); // Pretty-print JSON for display
+      setResponseData(JSON.stringify(result, null, 2));
     } catch (error) {
       console.error('Error fetching similar warehouses:', error);
       setResponseData('Error fetching similar warehouses');
@@ -76,6 +77,7 @@ function WarehouseExtension() {
     <AdminBlock title='NovaPoshta'>
       <BlockStack>
         <Text fontWeight='bold'>Order Information</Text>
+        <Text>City: {orderInfo?.city || 'Loading...'}</Text>
         <Text>Address: {orderInfo?.address || 'Loading...'}</Text>
         <Text>ZIP Code: {orderInfo?.zip || ''}</Text>
         <Button

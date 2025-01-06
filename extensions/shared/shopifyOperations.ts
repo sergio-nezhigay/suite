@@ -29,6 +29,7 @@ interface OrderInfo {
   total: string;
   customerId: string;
   shippingPhone: string | null;
+  city: string | null;
   address: string | null;
   zip: string | null;
 }
@@ -77,19 +78,18 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   if (data?.order) {
     const { tags, name, phone, totalPriceSet, customer, shippingAddress } =
       data?.order;
-    //const zip =
-    //  shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}, ` : '';
+    console.log('🚀 ~ shippingAddress:', shippingAddress);
+
     const zip =
-      shippingAddress?.zip !== '12345'
-        ? `postalCodeUA: ${shippingAddress?.zip}, `
-        : '';
+      shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
     return {
       tags,
       orderNumber: name,
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
       shippingPhone: phone || shippingAddress?.phone || null,
-      address: `${shippingAddress?.city}, ${shippingAddress?.address1}`,
+      city: shippingAddress?.city,
+      address: shippingAddress?.address1,
       zip,
     };
   }
