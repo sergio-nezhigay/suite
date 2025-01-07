@@ -5,7 +5,10 @@ import {
   BlockStack,
   Text,
   Button,
+  InlineStack,
+  ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
+
 import { useState, useEffect } from 'react';
 
 import { getOrderInfo } from '../../shared/shopifyOperations';
@@ -14,15 +17,41 @@ const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <WarehouseExtension />);
 
+type ProgressBarProps = {
+  progress: number;
+};
+
+const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
+  const totalLength = 20;
+  const filledLength = Math.round((progress / 100) * totalLength);
+
+  const filler =
+    '#'.repeat(filledLength) + '-'.repeat(totalLength - filledLength);
+
+  return (
+    <InlineStack inlineSize='100%' blockSize={12}>
+      <Text>{filler}</Text>
+    </InlineStack>
+  );
+};
+
 function WarehouseExtension() {
   const { data } = useApi(TARGET);
   const orderId = data.selected[0]?.id;
   const [orderInfo, setOrderInfo] = useState<{
-    city: string;
-    address: string;
-    zip: string;
+    city: string | null;
+    address: string | null;
+    zip: string | null;
   } | null>(null);
-  const [responseData, setResponseData] = useState<string | null>(null);
+  const [responseData, setResponseData] = useState<{
+    bestWarehouse: {
+      id: string;
+      description: string;
+      cityDescription: string;
+    } | null;
+    matchProbability: number;
+  } | null>(null);
+
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -64,10 +93,10 @@ function WarehouseExtension() {
       }
 
       const result = await response.json();
-      setResponseData(JSON.stringify(result, null, 2));
+      setResponseData(result);
     } catch (error) {
       console.error('Error fetching similar warehouses:', error);
-      setResponseData('Error fetching similar warehouses');
+      setResponseData(null);
     } finally {
       setLoading(false);
     }
@@ -79,14 +108,33 @@ function WarehouseExtension() {
         <Text fontWeight='bold'>Order Information</Text>
         <Text>City: {orderInfo?.city || 'Loading...'}</Text>
         <Text>Address: {orderInfo?.address || 'Loading...'}</Text>
-        <Text>ZIP Code: {orderInfo?.zip || ''}</Text>
+        {/*<Text>ZIP Code: {orderInfo?.zip || ''}</Text>*/}
         <Button
           onPress={handleGetSimilarWarehouses}
           disabled={loading || !orderInfo}
         >
           {loading ? 'Fetching...' : 'Get similar warehouses'}
         </Button>
-        {responseData && <Text>{responseData}</Text>}
+        {loading && <ProgressIndicator size='base' />}
+        {!loading && responseData?.bestWarehouse && (
+          <BlockStack>
+            <Text fontWeight='bold'>Best Warehouse</Text>
+            {/*<Text>ID: {responseData.bestWarehouse.id}</Text>*/}
+            <Text>{responseData.bestWarehouse.cityDescription}</Text>
+            <Text>{responseData.bestWarehouse.description}</Text>
+
+            <Text fontWeight='bold' fontVariant='numeric'>
+              Probability: {Math.round(responseData.matchProbability * 100)}%
+            </Text>
+            <ProgressBar
+              progress={Math.round(responseData.matchProbability * 100)}
+            />
+          </BlockStack>
+        )}
+
+        {responseData === null && !loading && (
+          <Text>No similar warehouses found.</Text>
+        )}
       </BlockStack>
     </AdminBlock>
   );
