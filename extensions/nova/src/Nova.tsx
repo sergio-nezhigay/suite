@@ -12,6 +12,7 @@ import {
 import { useState, useEffect } from 'react';
 
 import { getOrderInfo } from '../../shared/shopifyOperations';
+import NovaPoshtaActions from './NovaPoshtaActions';
 
 const TARGET = 'admin.order-details.block.render';
 
@@ -20,6 +21,23 @@ export default reactExtension(TARGET, () => <WarehouseExtension />);
 type ProgressBarProps = {
   progress: number;
 };
+
+export type Warehouse = {
+  id: string;
+  description: string;
+  cityDescription: string;
+  ref: string;
+};
+
+export type OrderInfo = {
+  city: string | null;
+  address: string | null;
+  email: string | null;
+  firstName: string;
+  lastName: string;
+  shippingPhone: string | null;
+  zip: string | null;
+} | null;
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   const totalLength = 20;
@@ -35,22 +53,16 @@ const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   );
 };
 
+type BestWarehouse = {
+  matchProbability: number;
+  bestWarehouse: Warehouse;
+};
+
 function WarehouseExtension() {
   const { data } = useApi(TARGET);
   const orderId = data.selected[0]?.id;
-  const [orderInfo, setOrderInfo] = useState<{
-    city: string | null;
-    address: string | null;
-    zip: string | null;
-  } | null>(null);
-  const [responseData, setResponseData] = useState<{
-    bestWarehouse: {
-      id: string;
-      description: string;
-      cityDescription: string;
-    } | null;
-    matchProbability: number;
-  } | null>(null);
+  const [orderInfo, setOrderInfo] = useState<OrderInfo>(null);
+  const [responseData, setResponseData] = useState<BestWarehouse | null>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -59,11 +71,11 @@ function WarehouseExtension() {
 
     const fetchOrderInfo = async () => {
       try {
-        const { city, address, zip } = await getOrderInfo(orderId);
-        setOrderInfo({ city, address, zip });
+        const orderInfo = await getOrderInfo(orderId);
+        setOrderInfo(orderInfo);
       } catch (error) {
         console.error('Error fetching order info:', error);
-        setOrderInfo({ city: 'Unknown', address: 'Unknown', zip: 'Unknown' });
+        setOrderInfo(null);
       }
     };
 
@@ -92,7 +104,7 @@ function WarehouseExtension() {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const result = await response.json();
+      const result: BestWarehouse = await response.json();
       setResponseData(result);
     } catch (error) {
       console.error('Error fetching similar warehouses:', error);
@@ -129,6 +141,12 @@ function WarehouseExtension() {
             <ProgressBar
               progress={Math.round(responseData.matchProbability * 100)}
             />
+            {orderInfo && responseData.bestWarehouse && (
+              <NovaPoshtaActions
+                warehouse={responseData.bestWarehouse}
+                orderInfo={orderInfo}
+              />
+            )}
           </BlockStack>
         )}
 

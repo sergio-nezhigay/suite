@@ -28,6 +28,9 @@ interface OrderInfo {
   orderNumber: string;
   total: string;
   customerId: string;
+  firstName: string;
+  lastName: string;
+  email: string | null;
   shippingPhone: string | null;
   city: string | null;
   address: string | null;
@@ -40,6 +43,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       order(id: $id) {
         name
         phone
+        email
         totalPriceSet {
             shopMoney {
                 amount
@@ -50,6 +54,8 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
             id
         }
         shippingAddress {
+          firstName
+          lastName
           phone
           address1
           city
@@ -62,11 +68,14 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       tags: string[];
       name: string;
       phone: string | null;
+      email: string | null;
       totalPriceSet: {
         shopMoney: { amount: string };
       };
       customer: { id: string };
       shippingAddress: {
+        firstName: string;
+        lastName: string;
         phone: string;
         address1: string;
         city: string;
@@ -76,8 +85,15 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   }>(query, { id: orderId });
 
   if (data?.order) {
-    const { tags, name, phone, totalPriceSet, customer, shippingAddress } =
-      data?.order;
+    const {
+      tags,
+      name,
+      email,
+      phone,
+      totalPriceSet,
+      customer,
+      shippingAddress,
+    } = data?.order;
     console.log('🚀 ~ shippingAddress:', shippingAddress);
 
     const zip =
@@ -87,7 +103,10 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       orderNumber: name,
       total: totalPriceSet.shopMoney.amount,
       customerId: customer?.id,
+      firstName: shippingAddress?.firstName,
+      lastName: shippingAddress?.lastName,
       shippingPhone: phone || shippingAddress?.phone || null,
+      email: email || null,
       city: shippingAddress?.city,
       address: shippingAddress?.address1,
       zip,
