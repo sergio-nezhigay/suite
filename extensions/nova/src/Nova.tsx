@@ -11,7 +11,7 @@ import {
 
 import { useState, useEffect } from 'react';
 
-import { getOrderInfo } from '../../shared/shopifyOperations';
+import { getOrderInfo, OrderInfo } from '../../shared/shopifyOperations';
 import NovaPoshtaActions from './NovaPoshtaActions';
 
 const TARGET = 'admin.order-details.block.render';
@@ -29,15 +29,16 @@ export type Warehouse = {
   ref: string;
 };
 
-export type OrderInfo = {
-  city: string | null;
-  address: string | null;
-  email: string | null;
-  firstName: string;
-  lastName: string;
-  shippingPhone: string | null;
-  zip: string | null;
-} | null;
+//export type OrderInfo = {
+//  city: string | null;
+//  address: string | null;
+//  total: string;
+//  email: string | null;
+//  firstName: string;
+//  lastName: string;
+//  shippingPhone: string | null;
+//  zip: string | null;
+//} | null;
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   const totalLength = 20;

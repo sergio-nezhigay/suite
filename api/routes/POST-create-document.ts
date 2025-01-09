@@ -35,7 +35,7 @@ const route: RouteHandler<{
     );
     console.log(
       '🚀 ~ responseCounterPartyCreated:',
-      responseCounterPartyCreated
+      JSON.stringify(responseCounterPartyCreated)
     );
 
     const payload = {
@@ -44,9 +44,12 @@ const route: RouteHandler<{
       methodProperties: {
         ...documentData,
         Recipient: responseCounterPartyCreated.data[0].Ref,
+        ContactRecipient:
+          responseCounterPartyCreated.data[0].ContactPerson.data[0].Ref,
         DateTime: new Date().toLocaleDateString('uk-UA'),
       },
     };
+    console.log('🚀 ~InternetDocument payload:', payload);
     const response = await sendRequestNP(payload);
     await reply.send(response);
   } catch (error: any) {

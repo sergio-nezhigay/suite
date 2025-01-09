@@ -23,13 +23,14 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
-interface OrderInfo {
+export interface OrderInfo {
   tags: string[];
   orderNumber: string;
   total: string;
   customerId: string;
   firstName: string;
   lastName: string;
+  clientIp: string;
   email: string | null;
   shippingPhone: string | null;
   city: string | null;
@@ -44,6 +45,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         name
         phone
         email
+        clientIp
         totalPriceSet {
             shopMoney {
                 amount
@@ -67,6 +69,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
     order: {
       tags: string[];
       name: string;
+      clientIp: string;
       phone: string | null;
       email: string | null;
       totalPriceSet: {
@@ -92,9 +95,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       phone,
       totalPriceSet,
       customer,
+      clientIp,
       shippingAddress,
     } = data?.order;
-    console.log('🚀 ~ shippingAddress:', shippingAddress);
 
     const zip =
       shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
@@ -107,6 +110,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       lastName: shippingAddress?.lastName,
       shippingPhone: phone || shippingAddress?.phone || null,
       email: email || null,
+      clientIp,
       city: shippingAddress?.city,
       address: shippingAddress?.address1,
       zip,

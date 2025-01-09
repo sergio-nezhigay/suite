@@ -8,7 +8,8 @@ import {
   ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
-import { OrderInfo, Warehouse } from './Nova';
+import { Warehouse } from './Nova';
+import { OrderInfo } from '../../shared/shopifyOperations';
 
 function NovaPoshtaActions({
   warehouse,
@@ -37,16 +38,15 @@ function NovaPoshtaActions({
         ServiceType: 'WarehouseWarehouse',
         SeatsAmount: '1',
         Description: `Комп'ютерні аксесуари`,
-        Cost: '200',
+        Cost: orderInfo.total,
         CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
         Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
         SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
         ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
         SendersPhone: '380507025777',
-        //CityRecipient: '8d5a980d-391c-11dd-90d9-001a92567626',
+        CityRecipient: '8d5a980d-391c-11dd-90d9-001a92567626',
         RecipientAddress: warehouse.ref,
-        ContactRecipient: '33a5aa3b-cda3-11ef-bcd0-48df37b921da',
-        RecipientsPhone: '380997979789',
+        RecipientsPhone: orderInfo.shippingPhone,
       },
     };
 
