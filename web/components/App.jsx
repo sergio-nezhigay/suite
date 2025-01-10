@@ -111,6 +111,7 @@ function EmbeddedApp() {
         <Link to='/supplier/brain'>Brain</Link>
         <Link to='/supplier/easy'>Easy</Link>
         <Link to='/supplier/cherg'>Cherg</Link>
+        <Link to='/supplier/schusev'>Schusev</Link>
         <Link to='/feeds'>Feeds</Link>
         {/*<Link to='/upload'>Upload</Link>*/}
         {/*<Link to='/brain'>Brain</Link>*/}

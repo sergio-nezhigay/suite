@@ -1,19 +1,30 @@
+import { RouteHandler } from 'fastify';
+import { connections } from 'gadget-server';
 import {
   getShopifyClient,
   flagExistingShopifyProducts,
   getUrlParams,
   fetchBrainProducts,
   fetchCherg,
+  fetchSchusev,
   fetchEasy,
 } from '../utilities';
 
-export default async function route({ request, reply, connections }) {
+const route: RouteHandler<{
+  Querystring: {
+    query: string | undefined;
+    limit?: string | undefined;
+    page?: string | undefined;
+    supplierId?: string | undefined;
+    categoryId?: string | undefined;
+  };
+}> = async ({ request, reply }) => {
   try {
     const shopify = getShopifyClient(connections);
     const {
       query = '',
-      limit = 50,
-      page = 1,
+      limit = '50',
+      page = '1',
       supplierId,
       categoryId,
     } = getUrlParams(request);
@@ -43,6 +54,13 @@ export default async function route({ request, reply, connections }) {
           page,
         }));
         break;
+      case 'schusev':
+        ({ products, count } = await fetchSchusev({
+          query,
+          limit,
+          page,
+        }));
+        break;
       case 'brain':
         ({ products, count } = await fetchBrainProducts({
           query,
@@ -52,6 +70,10 @@ export default async function route({ request, reply, connections }) {
         }));
         break;
       default:
+        console.warn(`Unknown supplier: ${supplierId}`);
+        return reply
+          .status(400)
+          .send({ error: `Unknown supplier: ${supplierId}` });
     }
     productsWithExistingFlag = await flagExistingShopifyProducts(
       shopify,
@@ -62,4 +84,5 @@ export default async function route({ request, reply, connections }) {
   } catch (error) {
     return reply.status(500).send(error);
   }
-}
+};
+export default route;

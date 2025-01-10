@@ -9,3 +9,4 @@ export * from './flagExistingShopifyProducts';
 export * from './getUrlParams';
 export * from './fetchCherg';
 export * from './fetchEasy';
+export * from './fetchSchusev';

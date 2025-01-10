@@ -1,14 +1,22 @@
-export function getUrlParams(request: {
-  url: string | URL;
-  headers: { host: string };
-}): Record<string, string> {
-  const url = new URL(request.url, `http://${request.headers.host}`);
-  const searchParams = new URLSearchParams(url.search);
+import { FastifyRequest } from 'fastify';
 
-  const params: Record<string, string> = {};
-  for (const [key, value] of searchParams.entries()) {
-    params[key] = value;
-  }
-
-  return params;
+interface QueryParams {
+  query?: string;
+  limit?: string;
+  page?: string;
+  supplierId?: string;
+  categoryId?: string;
 }
+
+export function getUrlParams(request: FastifyRequest) {
+  const query = request.query as QueryParams;
+  return {
+    query: query.query || undefined,
+    limit: query.limit || undefined,
+    page: query.page || undefined,
+    supplierId: query.supplierId || undefined,
+    categoryId: query.categoryId || undefined,
+  };
+}
+
+export default getUrlParams;
