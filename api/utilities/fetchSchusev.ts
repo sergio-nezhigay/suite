@@ -2,12 +2,12 @@ import { parse } from 'csv-parse/sync';
 import iconv from 'iconv-lite';
 import { getPaginatedData } from './getPaginatedData';
 import { FetchingFunc } from '../types';
+const SCHUSEV_PRICE_URL = process.env.SCHUSEV_PRICE_URL || '';
 
 export async function fetchSchusev({ query, limit, page }: FetchingFunc) {
   try {
-    const response = await fetch(
-      'https://advokatessa.com.ua/wp-content/uploads/priceukraine.csv'
-    );
+    const response = await fetch(SCHUSEV_PRICE_URL);
+
     const buffer = await response.arrayBuffer();
     const decodedText = iconv.decode(Buffer.from(buffer), 'win1251');
 
