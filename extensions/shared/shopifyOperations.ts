@@ -36,6 +36,7 @@ export interface OrderInfo {
   city: string | null;
   address: string | null;
   zip: string | null;
+  paymentMethod: string | null;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -63,6 +64,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
           city
           zip
         }
+        paymentMethod: metafield(namespace: "custom", key: "payment_method") {
+            value
+        }
       }
     }`;
   const { data } = await makeGraphQLQuery<{
@@ -84,6 +88,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         city: string;
         zip: string;
       };
+      paymentMethod: { value: string };
     };
   }>(query, { id: orderId });
 
@@ -97,6 +102,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       customer,
       clientIp,
       shippingAddress,
+      paymentMethod,
     } = data?.order;
 
     const zip =
@@ -114,6 +120,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       city: shippingAddress?.city,
       address: shippingAddress?.address1,
       zip,
+      paymentMethod: paymentMethod?.value,
     };
   }
   throw new Error(`Order ${orderId} not found`);

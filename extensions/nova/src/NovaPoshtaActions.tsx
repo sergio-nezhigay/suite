@@ -24,30 +24,43 @@ function NovaPoshtaActions({
   const [loading, setLoading] = useState<boolean>(false);
 
   const handleCreateDocument = async () => {
+    const documentData = {
+      PayerType: 'Recipient',
+      PaymentMethod: 'Cash',
+      CargoType: 'Parcel',
+      VolumeGeneral: '0.1',
+      Weight: '0.3',
+      ServiceType: 'WarehouseWarehouse',
+      SeatsAmount: '1',
+      Description: `Комп'ютерні аксесуари`,
+      Cost: orderInfo.total,
+      CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
+      Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
+      SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
+      ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
+      SendersPhone: '380507025777',
+      CityRecipient: warehouse.cityRef,
+      RecipientAddress: warehouse.ref,
+      RecipientsPhone: orderInfo.shippingPhone,
+    };
     const payload = {
       firstName: orderInfo?.firstName,
       lastName: orderInfo?.lastName,
       phone: orderInfo?.shippingPhone,
       email: orderInfo?.email,
-      documentData: {
-        PayerType: 'Recipient',
-        PaymentMethod: 'Cash',
-        CargoType: 'Parcel',
-        VolumeGeneral: '0.1',
-        Weight: '0.3',
-        ServiceType: 'WarehouseWarehouse',
-        SeatsAmount: '1',
-        Description: `Комп'ютерні аксесуари`,
-        Cost: orderInfo.total,
-        CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
-        Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
-        SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
-        ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
-        SendersPhone: '380507025777',
-        CityRecipient: '8d5a980d-391c-11dd-90d9-001a92567626',
-        RecipientAddress: warehouse.ref,
-        RecipientsPhone: orderInfo.shippingPhone,
-      },
+      documentData:
+        orderInfo.paymentMethod === 'Передплата безготівка'
+          ? documentData
+          : {
+              ...documentData,
+              BackwardDeliveryData: [
+                {
+                  PayerType: 'Recipient',
+                  CargoType: 'Money',
+                  RedeliveryString: orderInfo.total,
+                },
+              ],
+            },
     };
 
     await sendRequest(`${backendBaseUrl}/create-document`, payload);

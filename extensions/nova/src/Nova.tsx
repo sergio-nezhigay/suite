@@ -27,18 +27,10 @@ export type Warehouse = {
   description: string;
   cityDescription: string;
   ref: string;
+  cityRef: string;
+  longitude: string;
+  latitude: string;
 };
-
-//export type OrderInfo = {
-//  city: string | null;
-//  address: string | null;
-//  total: string;
-//  email: string | null;
-//  firstName: string;
-//  lastName: string;
-//  shippingPhone: string | null;
-//  zip: string | null;
-//} | null;
 
 const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
   const totalLength = 20;
@@ -93,7 +85,7 @@ function WarehouseExtension() {
     setResponseData(null);
 
     try {
-      const response = await fetch('https://2--development.gadget.app/test', {
+      const response = await fetch('https://novaposhta.gadget.app/find', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
