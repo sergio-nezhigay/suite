@@ -6,20 +6,21 @@ import {
   Text,
   Button,
   InlineStack,
-  ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
 import { useState, useEffect } from 'react';
 
 import { getOrderInfo, OrderInfo } from '../../shared/shopifyOperations';
+//import NovaPoshtaActions from './NovaPoshtaActions';
+import NovaPoshtaSelector from './NovaPoshtaSelector';
 import NovaPoshtaActions from './NovaPoshtaActions';
 
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <WarehouseExtension />);
 
-type ProgressBarProps = {
-  progress: number;
+type ProbabilityBarProps = {
+  probability: number;
 };
 
 export type Warehouse = {
@@ -32,21 +33,21 @@ export type Warehouse = {
   latitude: string;
 };
 
-const ProgressBar: React.FC<ProgressBarProps> = ({ progress }) => {
+const ProbabilityBar: React.FC<ProbabilityBarProps> = ({ probability }) => {
   const totalLength = 20;
-  const filledLength = Math.round((progress / 100) * totalLength);
+  const filledLength = Math.round((probability / 100) * totalLength);
 
   const filler =
     '#'.repeat(filledLength) + '-'.repeat(totalLength - filledLength);
 
   return (
-    <InlineStack inlineSize='100%' blockSize={12}>
-      <Text>{filler}</Text>
-    </InlineStack>
+    //<InlineStack inlineSize='100%' blockSize={12}>
+    <Text>{filler}</Text>
+    //</InlineStack>
   );
 };
 
-type BestWarehouse = {
+export type BestWarehouse = {
   matchProbability: number;
   bestWarehouse: Warehouse;
 };
@@ -109,31 +110,40 @@ function WarehouseExtension() {
 
   return (
     <AdminBlock title='NovaPoshta'>
-      <BlockStack>
-        <Text fontWeight='bold'>Order Information</Text>
-        <Text>City: {orderInfo?.city || 'Loading...'}</Text>
-        <Text>Address: {orderInfo?.address || 'Loading...'}</Text>
-        {/*<Text>ZIP Code: {orderInfo?.zip || ''}</Text>*/}
+      <BlockStack gap>
+        <InlineStack gap inlineAlignment='space-between'>
+          <Text fontWeight='bold'>Order Information</Text>
+          <Text>
+            Пункт: {orderInfo?.city || 'Loading...'}. Адреса:{' '}
+            {orderInfo?.address || ''}
+          </Text>
+        </InlineStack>
+
         <Button
           onPress={handleGetSimilarWarehouses}
           disabled={loading || !orderInfo}
         >
-          {loading ? 'Fetching...' : 'Get similar warehouses'}
+          {loading
+            ? 'Fetching...'
+            : `${
+                responseData?.bestWarehouse
+                  ? 'Refresh warehouse'
+                  : 'Get warehouse'
+              }`}
         </Button>
-        {loading && <ProgressIndicator size='base' />}
-        {!loading && responseData?.bestWarehouse && (
-          <BlockStack>
-            <Text fontWeight='bold'>Best Warehouse</Text>
-            {/*<Text>ID: {responseData.bestWarehouse.id}</Text>*/}
-            <Text>{responseData.bestWarehouse.cityDescription}</Text>
-            <Text>{responseData.bestWarehouse.description}</Text>
 
-            <Text fontWeight='bold' fontVariant='numeric'>
-              Probability: {Math.round(responseData.matchProbability * 100)}%
-            </Text>
-            <ProgressBar
-              progress={Math.round(responseData.matchProbability * 100)}
-            />
+        {!loading && responseData?.bestWarehouse && (
+          <BlockStack gap>
+            <InlineStack gap inlineAlignment='space-between'>
+              <Text fontWeight='bold' fontVariant='numeric'>
+                Probability: {Math.round(responseData.matchProbability * 100)}%
+              </Text>
+              <ProbabilityBar
+                probability={Math.round(responseData.matchProbability * 100)}
+              />
+            </InlineStack>
+
+            <NovaPoshtaSelector bestWarehouse={responseData.bestWarehouse} />
             {orderInfo && responseData.bestWarehouse && (
               <NovaPoshtaActions
                 warehouse={responseData.bestWarehouse}

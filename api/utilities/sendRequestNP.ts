@@ -1,5 +1,6 @@
 export const sendRequestNP = async (payload: object) => {
   try {
+    console.log('🚀 ~ payload:', payload);
     const res = await fetch('https://api.novaposhta.ua/v2.0/json/', {
       method: 'POST',
       headers: {

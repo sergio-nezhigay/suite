@@ -10,6 +10,7 @@ import {
 
 import { Warehouse } from './Nova';
 import { OrderInfo } from '../../shared/shopifyOperations';
+import { SHOPIFY_APP_URL } from '../../shared/data';
 
 function NovaPoshtaActions({
   warehouse,
@@ -18,7 +19,6 @@ function NovaPoshtaActions({
   warehouse: Warehouse;
   orderInfo: OrderInfo;
 }) {
-  const backendBaseUrl = 'https://admin-action-block.gadget.app';
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -63,7 +63,10 @@ function NovaPoshtaActions({
             },
     };
 
-    await sendRequest(`${backendBaseUrl}/create-document`, payload);
+    await sendRequest(
+      `${SHOPIFY_APP_URL}/nova-poshta/create-document`,
+      payload
+    );
   };
 
   const sendRequest = async (url: string, payload: object) => {

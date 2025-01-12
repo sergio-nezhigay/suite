@@ -1,5 +1,5 @@
-import { RouteHandler } from 'fastify';
-import { sendRequestNP } from '../utilities/sendRequestNP';
+import type { RouteHandler } from 'gadget-server';
+import { sendRequestNP } from '../../utilities/sendRequestNP';
 
 const route: RouteHandler<{
   Body: {

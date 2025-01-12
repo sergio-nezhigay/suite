@@ -1,4 +1,4 @@
-import { RouteHandler } from 'fastify';
+import type { RouteHandler } from 'gadget-server';
 import { sendSms } from '../utilities/sendSms';
 
 const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({

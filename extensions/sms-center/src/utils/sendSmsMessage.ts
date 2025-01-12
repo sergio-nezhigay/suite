@@ -1,3 +1,4 @@
+import { SHOPIFY_APP_URL } from '../../../shared/data';
 import validateAndFormatPhoneNumber from './validateAndFormatPhoneNumber';
 
 type SmsResponse = {
@@ -23,19 +24,16 @@ export const sendSmsMessage = async (
     const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
     console.log('Formatted number:', formattedNumber);
 
-    const response = await fetch(
-      'https://admin-action-block.gadget.app/send-sms',
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          to: formattedNumber,
-          message: messageText,
-        }),
-      }
-    );
+    const response = await fetch(`${SHOPIFY_APP_URL}/send-sms`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: formattedNumber,
+        message: messageText,
+      }),
+    });
 
     console.log('Response status:', response.status);
     console.log('Response headers:', response.headers);
