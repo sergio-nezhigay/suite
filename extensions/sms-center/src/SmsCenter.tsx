@@ -32,21 +32,21 @@ function App() {
     const loadSmsTemplates = async () => {
       try {
         const orderInfo = await getOrderInfo(orderId);
-
+        const orderDetails = orderInfo?.orderDetails;
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
           smsTextReplaced: replacePlaceholders(res.smsText, {
-            orderTotal: orderInfo?.total || '',
-            orderNumber: orderInfo?.orderNumber || '',
+            orderTotal: orderDetails?.total || '',
+            orderNumber: orderDetails?.orderNumber || '',
           }),
         }));
         setSmsTemplates(resultsProcessed);
 
-        if (!orderInfo?.shippingPhone) {
+        if (!orderDetails?.shippingPhone) {
           setStatus('Phone not found');
         } else {
-          setCustomerPhone(orderInfo?.shippingPhone);
+          setCustomerPhone(orderDetails?.shippingPhone);
           setStatus('Ready to send SMS');
         }
       } catch (err: any) {

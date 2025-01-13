@@ -16,7 +16,7 @@ interface City {
 }
 
 import { SHOPIFY_APP_URL } from '../../shared/data';
-import { BestWarehouse } from '../../shared/shopifyOperations';
+import { NovaPoshtaWarehouse } from '../../shared/shopifyOperations';
 
 interface WarehouseNP {
   Ref: string;
@@ -26,7 +26,7 @@ interface WarehouseNP {
 export default function NovaPoshtaSelector({
   bestWarehouse,
 }: {
-  bestWarehouse: BestWarehouse;
+  bestWarehouse: NovaPoshtaWarehouse;
 }) {
   const [cityQuery, setCityQuery] = useState(
     bestWarehouse.cityDescription.toLowerCase()

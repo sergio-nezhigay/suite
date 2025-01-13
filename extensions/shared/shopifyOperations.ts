@@ -23,15 +23,14 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
-export interface BestWarehouse {
+export interface NovaPoshtaWarehouse {
   cityDescription: string;
   cityRef: string;
   warehouseDescription: string;
   warehouseRef: string;
   matchProbability: number;
 }
-
-export type OrderInfo = {
+export interface OrderDetails {
   tags: string[];
   orderNumber: string;
   total: string;
@@ -45,7 +44,11 @@ export type OrderInfo = {
   address: string | null;
   zip: string | null;
   paymentMethod: string | null;
-  nova_poshta_warehouse: BestWarehouse;
+}
+
+export type OrderInfo = {
+  orderDetails: OrderDetails;
+  novaPoshtaWarehouse: NovaPoshtaWarehouse;
 } | null;
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -122,8 +125,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
     const zip =
       shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
     try {
-      const novaPoshtaParsed = JSON.parse(nova_poshta_warehouse?.value || '{}');
-      return {
+      const orderDetails = {
         tags,
         orderNumber: name,
         total: totalPriceSet.shopMoney.amount,
@@ -137,7 +139,10 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         address: shippingAddress?.address1,
         zip,
         paymentMethod: paymentMethod?.value,
-        nova_poshta_warehouse: novaPoshtaParsed,
+      };
+      return {
+        orderDetails,
+        novaPoshtaWarehouse: JSON.parse(nova_poshta_warehouse?.value || '{}'),
       };
     } catch (error) {
       throw new Error(`Parsing error: ${error}`);

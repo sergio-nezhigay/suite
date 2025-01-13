@@ -8,10 +8,19 @@ import {
   ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
-import { OrderInfo } from '../../shared/shopifyOperations';
+import {
+  NovaPoshtaWarehouse,
+  OrderDetails,
+} from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
-function NovaPoshtaActions({ orderInfo }: { orderInfo: OrderInfo }) {
+function NovaPoshtaActions({
+  orderDetails,
+  recepientWarehouse,
+}: {
+  orderDetails: OrderDetails;
+  recepientWarehouse: NovaPoshtaWarehouse;
+}) {
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -26,23 +35,23 @@ function NovaPoshtaActions({ orderInfo }: { orderInfo: OrderInfo }) {
       ServiceType: 'WarehouseWarehouse',
       SeatsAmount: '1',
       Description: `Комп'ютерні аксесуари`,
-      Cost: orderInfo?.total,
+      Cost: orderDetails?.total,
       CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
       Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
       SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
       ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
       SendersPhone: '380507025777',
-      CityRecipient: orderInfo?.nova_poshta_warehouse?.cityRef,
-      RecipientAddress: orderInfo?.nova_poshta_warehouse?.warehouseRef,
-      RecipientsPhone: orderInfo?.shippingPhone,
+      CityRecipient: recepientWarehouse?.cityRef,
+      RecipientAddress: recepientWarehouse?.warehouseRef,
+      RecipientsPhone: orderDetails?.shippingPhone,
     };
     const payload = {
-      firstName: orderInfo?.firstName,
-      lastName: orderInfo?.lastName,
-      phone: orderInfo?.shippingPhone,
-      email: orderInfo?.email,
+      firstName: orderDetails?.firstName,
+      lastName: orderDetails?.lastName,
+      phone: orderDetails?.shippingPhone,
+      email: orderDetails?.email,
       documentData:
-        orderInfo?.paymentMethod === 'Передплата безготівка'
+        orderDetails?.paymentMethod === 'Передплата безготівка'
           ? documentData
           : {
               ...documentData,
@@ -50,7 +59,7 @@ function NovaPoshtaActions({ orderInfo }: { orderInfo: OrderInfo }) {
                 {
                   PayerType: 'Recipient',
                   CargoType: 'Money',
-                  RedeliveryString: orderInfo?.total,
+                  RedeliveryString: orderDetails?.total,
                 },
               ],
             },
