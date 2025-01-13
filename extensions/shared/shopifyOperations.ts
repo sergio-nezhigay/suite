@@ -23,6 +23,14 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
+export interface BestWarehouse {
+  cityDescription: string;
+  cityRef: string;
+  warehouseDescription: string;
+  warehouseRef: string;
+  matchProbability: number;
+}
+
 export interface OrderInfo {
   tags: string[];
   orderNumber: string;
@@ -37,6 +45,7 @@ export interface OrderInfo {
   address: string | null;
   zip: string | null;
   paymentMethod: string | null;
+  nova_poshta_warehouse: BestWarehouse;
 }
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -67,6 +76,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         paymentMethod: metafield(namespace: "custom", key: "payment_method") {
             value
         }
+        nova_poshta_warehouse: metafield(namespace: "custom", key: "nova_poshta_warehouse") {
+            value
+        }
       }
     }`;
   const { data } = await makeGraphQLQuery<{
@@ -89,6 +101,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         zip: string;
       };
       paymentMethod: { value: string };
+      nova_poshta_warehouse: { value: string };
     };
   }>(query, { id: orderId });
 
@@ -103,25 +116,32 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       clientIp,
       shippingAddress,
       paymentMethod,
+      nova_poshta_warehouse,
     } = data?.order;
 
     const zip =
       shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
-    return {
-      tags,
-      orderNumber: name,
-      total: totalPriceSet.shopMoney.amount,
-      customerId: customer?.id,
-      firstName: shippingAddress?.firstName,
-      lastName: shippingAddress?.lastName,
-      shippingPhone: phone || shippingAddress?.phone || null,
-      email: email || null,
-      clientIp,
-      city: shippingAddress?.city,
-      address: shippingAddress?.address1,
-      zip,
-      paymentMethod: paymentMethod?.value,
-    };
+    try {
+      const novaPoshtaParsed = JSON.parse(nova_poshta_warehouse?.value || '{}');
+      return {
+        tags,
+        orderNumber: name,
+        total: totalPriceSet.shopMoney.amount,
+        customerId: customer?.id,
+        firstName: shippingAddress?.firstName,
+        lastName: shippingAddress?.lastName,
+        shippingPhone: phone || shippingAddress?.phone || null,
+        email: email || null,
+        clientIp,
+        city: shippingAddress?.city,
+        address: shippingAddress?.address1,
+        zip,
+        paymentMethod: paymentMethod?.value,
+        nova_poshta_warehouse: novaPoshtaParsed,
+      };
+    } catch (error) {
+      throw new Error(`Parsing error: ${error}`);
+    }
   }
   throw new Error(`Order ${orderId} not found`);
 }

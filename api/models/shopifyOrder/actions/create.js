@@ -1,14 +1,14 @@
 import {
   applyParams,
   save,
-  ActionOptions,
-  CreateShopifyOrderActionContext,
+  //  ActionOptions,
+  //  CreateShopifyOrderActionContext,
 } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 import { updateMetafield, getShopifyClient } from '../../../utilities';
 
 /**
- * @param { CreateShopifyOrderActionContext } context
+ * @param { import('gadget-server').CreateShopifyOrderActionContext } context
  */
 export async function run({ params, record }) {
   applyParams(params, record);
@@ -17,20 +17,35 @@ export async function run({ params, record }) {
 }
 
 /**
- * @param { CreateShopifyOrderActionContext } context
+ * @param { import('gadget-server').CreateShopifyOrderActionContext } context
  */
 export async function onSuccess({ record, connections }) {
+  console.log('🚀 ~ onSuccess:');
   // Your logic goes here
   const shopify = getShopifyClient(connections);
   const orderId = `gid://shopify/Order/${record.id}`;
-  const gateWays = await getOrderGateway({ shopify, orderId });
+  const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
+    shopify,
+    orderId,
+  });
 
-  const gateway = gateWays?.[0]?.gateway;
+  const { bestWarehouse, matchProbability } = await findBestWarehouse({
+    shippingAddress,
+  });
+  console.log('🚀 ~ bestWarehouse:', bestWarehouse);
 
   const paymentMethod =
     gateway === 'Накладений платіж'
       ? 'Накладений платіж'
       : 'Передплата безготівка';
+
+  const warehouseData = {
+    warehouseDescription: bestWarehouse.description,
+    cityDescription: bestWarehouse.cityDescription,
+    warehouseRef: bestWarehouse.ref,
+    cityRef: bestWarehouse.cityRef,
+    matchProbability,
+  };
   const variables = {
     metafields: [
       {
@@ -39,15 +54,21 @@ export async function onSuccess({ record, connections }) {
         key: 'payment_method',
         value: paymentMethod,
       },
+      {
+        ownerId: orderId,
+        namespace: 'custom',
+        key: 'nova_poshta_warehouse',
+        value: JSON.stringify(warehouseData),
+      },
     ],
   };
   await updateMetafield({ shopify, variables });
 }
 
-/** @type { ActionOptions } */
+/** @type { import('gadget-server').ActionOptions } */
 export const options = { actionType: 'create' };
 
-export default async function getOrderGateway({ shopify, orderId }) {
+export default async function getOrderGatewayAndAddress({ shopify, orderId }) {
   const orderquery = `
             query GetOrderPaymentGatewayNames($id: ID!)  {
                 order(id: $id) {
@@ -56,6 +77,10 @@ export default async function getOrderGateway({ shopify, orderId }) {
                     transactions {
                         gateway
                     }
+                    shippingAddress {
+                        address1
+                        city
+                    }
                 }
             }
         `;
@@ -63,6 +88,28 @@ export default async function getOrderGateway({ shopify, orderId }) {
     id: orderId,
   };
   const { order } = await shopify.graphql(orderquery, variables);
+  console.log('🚀 ~ order:', order);
 
-  return order?.transactions;
+  return {
+    gateway: order?.transactions?.[0]?.gateway,
+    shippingAddress: order?.shippingAddress,
+  };
+}
+
+async function findBestWarehouse({ shippingAddress }) {
+  console.log('🚀 ~ shippingAddress:', shippingAddress);
+  const response = await fetch('https://novaposhta.gadget.app/find', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(shippingAddress),
+  });
+
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+
+  const result = await response.json();
+  return result;
 }

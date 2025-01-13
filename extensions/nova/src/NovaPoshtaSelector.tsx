@@ -14,8 +14,8 @@ interface City {
   Description: string;
 }
 
-import { Warehouse } from './Nova';
 import { SHOPIFY_APP_URL } from '../../shared/data';
+import { BestWarehouse } from '../../shared/shopifyOperations';
 
 interface WarehouseNP {
   Ref: string;
@@ -25,7 +25,7 @@ interface WarehouseNP {
 export default function NovaPoshtaSelector({
   bestWarehouse,
 }: {
-  bestWarehouse: Warehouse;
+  bestWarehouse: BestWarehouse;
 }) {
   const [cityQuery, setCityQuery] = useState(
     bestWarehouse.cityDescription.toLowerCase()
@@ -37,7 +37,7 @@ export default function NovaPoshtaSelector({
 
   const [warehouses, setWarehouses] = useState<WarehouseNP[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<string | null>(
-    bestWarehouse.ref
+    bestWarehouse.warehouseRef
   );
 
   const [loadingCities, setLoadingCities] = useState(false);
