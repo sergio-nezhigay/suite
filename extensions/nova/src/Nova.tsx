@@ -4,8 +4,8 @@ import {
   AdminBlock,
   BlockStack,
   Text,
-  Button,
   InlineStack,
+  ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
 import { useState, useEffect } from 'react';
@@ -28,13 +28,9 @@ const ProbabilityBar: React.FC<ProbabilityBarProps> = ({ probability }) => {
   const filledLength = Math.round((probability / 100) * totalLength);
 
   const filler =
-    '#'.repeat(filledLength) + '-'.repeat(totalLength - filledLength);
+    '-'.repeat(filledLength) + '?'.repeat(totalLength - filledLength);
 
-  return (
-    //<InlineStack inlineSize='100%' blockSize={12}>
-    <Text>{filler}</Text>
-    //</InlineStack>
-  );
+  return <Text>{filler}</Text>;
 };
 
 function WarehouseExtension() {
@@ -47,6 +43,7 @@ function WarehouseExtension() {
     if (!orderId) return;
 
     const fetchOrderInfo = async () => {
+      setLoading(true);
       try {
         const orderInfo = await getOrderInfo(orderId);
         console.log('🚀 ~ orderInfo:', orderInfo);
@@ -54,83 +51,52 @@ function WarehouseExtension() {
       } catch (error) {
         console.error('Error fetching order info:', error);
         setOrderInfo(null);
+      } finally {
+        setLoading(false);
       }
     };
 
     fetchOrderInfo();
   }, [orderId]);
 
-  //  const handleGetSimilarWarehouses = async () => {
-  //    if (!orderInfo) {
-  //      console.error('No order info to fetch similar warehouses');
-  //      return;
-  //    }
-
-  //    setLoading(true);
-  //    setResponseData(null);
-
-  //    try {
-  //      const response = await fetch('https://novaposhta.gadget.app/find', {
-  //        method: 'POST',
-  //        headers: {
-  //          'Content-Type': 'application/json',
-  //        },
-  //        body: JSON.stringify(orderInfo),
-  //      });
-
-  //      if (!response.ok) {
-  //        throw new Error(`HTTP error! status: ${response.status}`);
-  //      }
-
-  //      const result: BestWarehouse = await response.json();
-  //      setResponseData(result);
-  //    } catch (error) {
-  //      console.error('Error fetching similar warehouses:', error);
-  //      setResponseData(null);
-  //    } finally {
-  //      setLoading(false);
-  //    }
-  //  };
-
   return (
     <AdminBlock title='NovaPoshta'>
       <BlockStack gap>
-        <InlineStack gap inlineAlignment='space-between'>
-          <Text fontWeight='bold'>Order Information</Text>
-          {/*<Text>{JSON.stringify(orderInfo)}</Text>*/}
-          <Text>
-            Пункт: {orderInfo?.city || 'Loading...'}. Адреса:{' '}
-            {orderInfo?.address || ''}
-          </Text>
-        </InlineStack>
-
-        {!loading && orderInfo?.nova_poshta_warehouse && (
-          <BlockStack gap>
+        {loading ? (
+          <ProgressIndicator size='small-300' />
+        ) : (
+          <>
             <InlineStack gap inlineAlignment='space-between'>
-              <Text fontWeight='bold' fontVariant='numeric'>
-                Probability:{' '}
-                {Math.round(
-                  orderInfo.nova_poshta_warehouse?.matchProbability * 100
-                )}
-                %
+              <Text fontWeight='bold'>Order Information</Text>
+              <Text>
+                Пункт: {orderInfo?.city || 'N/A'}. Адреса:{' '}
+                {orderInfo?.address || 'N/A'}
               </Text>
-              <ProbabilityBar
-                probability={Math.round(
-                  orderInfo.nova_poshta_warehouse?.matchProbability * 100
-                )}
-              />
             </InlineStack>
 
-            <NovaPoshtaSelector
-              bestWarehouse={orderInfo.nova_poshta_warehouse}
-            />
-            {/*{orderInfo && responseData.bestWarehouse && (
-              <NovaPoshtaActions
-                warehouse={responseData.bestWarehouse}
-                orderInfo={orderInfo}
-              />
-            )}*/}
-          </BlockStack>
+            {orderInfo && orderInfo.nova_poshta_warehouse && (
+              <BlockStack gap>
+                <InlineStack gap inlineAlignment='space-between'>
+                  <Text fontWeight='bold' fontVariant='numeric'>
+                    Probability:{' '}
+                    {Math.round(
+                      orderInfo.nova_poshta_warehouse?.matchProbability * 100
+                    )}
+                    %
+                  </Text>
+                  <ProbabilityBar
+                    probability={Math.round(
+                      orderInfo.nova_poshta_warehouse?.matchProbability * 100
+                    )}
+                  />
+                </InlineStack>
+                <NovaPoshtaSelector
+                  bestWarehouse={orderInfo.nova_poshta_warehouse}
+                />
+                <NovaPoshtaActions orderInfo={orderInfo} />
+              </BlockStack>
+            )}
+          </>
         )}
       </BlockStack>
     </AdminBlock>

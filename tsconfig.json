@@ -1,20 +1,6 @@
 {
-  "include": [
-    "env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    "**/*.js",
-    "**/*.jsx",
-    "web/components/CategoryInput.jsx"
-  ],
   "compilerOptions": {
-    "lib": ["es2020", "DOM"],
-    "module": "ESNext",
-    "target": "es2020",
     "strict": true,
-    "skipLibCheck": true,
-    "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "allowJs": true,
     "checkJs": true,
@@ -24,13 +10,13 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "forceConsistentCasingInFileNames": true,
-    "isolatedModules": true,
-    "resolveJsonModule": true,
+    "target": "es2020",
+    "lib": ["es2020", "DOM"],
+    "skipLibCheck": true,
     "jsx": "react-jsx",
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
     "baseUrl": "/",
-    "paths": {
-      "@/*": ["./app/*"]
-    },
     "types": ["@shopify/app-bridge-types"]
   }
 }

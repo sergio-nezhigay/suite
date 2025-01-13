@@ -31,7 +31,7 @@ export interface BestWarehouse {
   matchProbability: number;
 }
 
-export interface OrderInfo {
+export type OrderInfo = {
   tags: string[];
   orderNumber: string;
   total: string;
@@ -46,7 +46,7 @@ export interface OrderInfo {
   zip: string | null;
   paymentMethod: string | null;
   nova_poshta_warehouse: BestWarehouse;
-}
+} | null;
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   const query = `#graphql

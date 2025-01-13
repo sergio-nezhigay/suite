@@ -8,17 +8,10 @@ import {
   ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
-import { Warehouse } from './Nova';
 import { OrderInfo } from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
-function NovaPoshtaActions({
-  warehouse,
-  orderInfo,
-}: {
-  warehouse: Warehouse;
-  orderInfo: OrderInfo;
-}) {
+function NovaPoshtaActions({ orderInfo }: { orderInfo: OrderInfo }) {
   const [response, setResponse] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -33,15 +26,15 @@ function NovaPoshtaActions({
       ServiceType: 'WarehouseWarehouse',
       SeatsAmount: '1',
       Description: `Комп'ютерні аксесуари`,
-      Cost: orderInfo.total,
+      Cost: orderInfo?.total,
       CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
       Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
       SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
       ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
       SendersPhone: '380507025777',
-      CityRecipient: warehouse.cityRef,
-      RecipientAddress: warehouse.ref,
-      RecipientsPhone: orderInfo.shippingPhone,
+      CityRecipient: orderInfo?.nova_poshta_warehouse?.cityRef,
+      RecipientAddress: orderInfo?.nova_poshta_warehouse?.warehouseRef,
+      RecipientsPhone: orderInfo?.shippingPhone,
     };
     const payload = {
       firstName: orderInfo?.firstName,
@@ -49,7 +42,7 @@ function NovaPoshtaActions({
       phone: orderInfo?.shippingPhone,
       email: orderInfo?.email,
       documentData:
-        orderInfo.paymentMethod === 'Передплата безготівка'
+        orderInfo?.paymentMethod === 'Передплата безготівка'
           ? documentData
           : {
               ...documentData,
@@ -57,7 +50,7 @@ function NovaPoshtaActions({
                 {
                   PayerType: 'Recipient',
                   CargoType: 'Money',
-                  RedeliveryString: orderInfo.total,
+                  RedeliveryString: orderInfo?.total,
                 },
               ],
             },

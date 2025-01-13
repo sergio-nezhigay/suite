@@ -7,6 +7,7 @@ import {
   TextField,
   Select,
   Text,
+  ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
 interface City {
@@ -40,10 +41,8 @@ export default function NovaPoshtaSelector({
     bestWarehouse.warehouseRef
   );
 
-  const [loadingCities, setLoadingCities] = useState(false);
-  const [loadingWarehouses, setLoadingWarehouses] = useState(false);
+  const [loading, setLoading] = useState(false);
 
-  // Fetch cities based on query
   useEffect(() => {
     if (cityQuery.trim() === '') {
       setCities([]);
@@ -51,7 +50,7 @@ export default function NovaPoshtaSelector({
     }
 
     const fetchCities = async () => {
-      setLoadingCities(true);
+      setLoading(true);
       try {
         const payload = {
           modelName: 'Address',
@@ -70,7 +69,7 @@ export default function NovaPoshtaSelector({
       } catch (error) {
         console.error('Failed to fetch cities', error);
       } finally {
-        setLoadingCities(false);
+        setLoading(false);
       }
     };
 
@@ -85,7 +84,7 @@ export default function NovaPoshtaSelector({
     }
 
     const fetchWarehouses = async () => {
-      setLoadingWarehouses(true);
+      setLoading(true);
       try {
         const response = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/general`, {
           method: 'POST',
@@ -103,7 +102,7 @@ export default function NovaPoshtaSelector({
       } catch (error) {
         console.error('Failed to fetch warehouses', error);
       } finally {
-        setLoadingWarehouses(false);
+        setLoading(false);
       }
     };
 
@@ -112,39 +111,49 @@ export default function NovaPoshtaSelector({
 
   return (
     <BlockStack>
-      <TextField
-        label='Редагуйте назву пункта'
-        value={cityQuery}
-        onChange={setCityQuery}
-        placeholder='Назва'
-      />
-      <InlineStack gap>
-        {!loadingCities && cities.length > 0 && (
-          <Select
-            label='Оберіть пункт'
-            options={cities.map((city) => ({
-              value: city.Ref,
-              label: city.Description,
-            }))}
-            onChange={(value) => {
-              setSelectedCity(value);
-              setSelectedWarehouse(null);
-            }}
-            value={selectedCity || ''}
+      {loading ? (
+        <ProgressIndicator size='small-300' />
+      ) : (
+        <>
+          <TextField
+            label='Редагуйте назву пункта'
+            value={cityQuery}
+            onChange={setCityQuery}
+            placeholder='Назва'
           />
-        )}
-        {selectedCity && !loadingWarehouses && warehouses.length > 0 && (
-          <Select
-            label='Оберіть відділення'
-            options={warehouses.map((warehouse) => ({
-              value: warehouse.Ref,
-              label: warehouse.Description,
-            }))}
-            onChange={setSelectedWarehouse}
-            value={selectedWarehouse || ''}
-          />
-        )}
-      </InlineStack>
+          <InlineStack gap>
+            {cities.length > 0 && (
+              <InlineStack inlineSize={`${35}%`}>
+                <Select
+                  label='Оберіть пункт'
+                  options={cities.map((city) => ({
+                    value: city.Ref,
+                    label: city.Description,
+                  }))}
+                  onChange={(value) => {
+                    setSelectedCity(value);
+                    setSelectedWarehouse(null);
+                  }}
+                  value={selectedCity || ''}
+                />
+              </InlineStack>
+            )}
+            {selectedCity && warehouses.length > 0 && (
+              <InlineStack inlineSize={`${65}%`}>
+                <Select
+                  label='Оберіть відділення'
+                  options={warehouses.map((warehouse) => ({
+                    value: warehouse.Ref,
+                    label: warehouse.Description,
+                  }))}
+                  onChange={setSelectedWarehouse}
+                  value={selectedWarehouse || ''}
+                />
+              </InlineStack>
+            )}
+          </InlineStack>
+        </>
+      )}
     </BlockStack>
   );
 }

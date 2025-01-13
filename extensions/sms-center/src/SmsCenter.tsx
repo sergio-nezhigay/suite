@@ -16,15 +16,9 @@ import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
 
-import { SmsTemplates } from '@gadget-client/admin-action-block';
-
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
-
-//type SmsTemplate = SmsTemplates & {
-//  smsTextReplaced: string;
-//};
 
 function App() {
   const { data } = useApi(TARGET);
@@ -37,24 +31,22 @@ function App() {
   useEffect(() => {
     const loadSmsTemplates = async () => {
       try {
-        const { orderNumber, total, shippingPhone } = await getOrderInfo(
-          orderId
-        );
+        const orderInfo = await getOrderInfo(orderId);
 
         const results = await fetchSmsTemplates();
         const resultsProcessed = results.map((res) => ({
           ...res,
           smsTextReplaced: replacePlaceholders(res.smsText, {
-            orderTotal: total,
-            orderNumber,
+            orderTotal: orderInfo?.total || '',
+            orderNumber: orderInfo?.orderNumber || '',
           }),
         }));
         setSmsTemplates(resultsProcessed);
 
-        if (!shippingPhone) {
+        if (!orderInfo?.shippingPhone) {
           setStatus('Phone not found');
         } else {
-          setCustomerPhone(shippingPhone);
+          setCustomerPhone(orderInfo?.shippingPhone);
           setStatus('Ready to send SMS');
         }
       } catch (err: any) {
