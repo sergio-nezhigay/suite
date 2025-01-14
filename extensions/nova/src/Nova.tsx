@@ -14,7 +14,6 @@ import {
   getOrderInfo,
   NovaPoshtaWarehouse,
   OrderDetails,
-  OrderInfo,
 } from '../../shared/shopifyOperations';
 import NovaPoshtaSelector from './NovaPoshtaSelector';
 import NovaPoshtaActions from './NovaPoshtaActions';
@@ -56,6 +55,13 @@ function WarehouseExtension() {
     fetchOrderInfo();
   }, [orderId]);
 
+  const updateProbability = () => {
+    setNovaPoshtaWarehouse({
+      ...novaPoshtaWarehouse,
+      matchProbability: 1,
+    });
+  };
+
   const probability = Math.round(
     (novaPoshtaWarehouse?.matchProbability || 0) * 100
   );
@@ -77,7 +83,11 @@ function WarehouseExtension() {
 
             <BlockStack gap>
               <ProbabilityIndicator probability={probability} />
-              <NovaPoshtaSelector bestWarehouse={novaPoshtaWarehouse} />
+              <NovaPoshtaSelector
+                bestWarehouse={novaPoshtaWarehouse}
+                updateProbability={updateProbability}
+                orderId={orderId}
+              />
               <NovaPoshtaActions
                 orderDetails={orderDetails}
                 recepientWarehouse={novaPoshtaWarehouse}

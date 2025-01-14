@@ -1,3 +1,4 @@
+import Shopify from 'shopify-api-node';
 import makeIPMessage from '../../shared/makeIPMessage';
 import { makeGraphQLQuery } from './makeGraphQLQuery';
 
@@ -296,4 +297,42 @@ export async function addOrderNote({
     throw new Error(`Failed to update order note: ${userErrorMessages}`);
   }
   return data?.orderUpdate?.order?.note || '';
+}
+
+export async function updateWarehouse({
+  warehouse,
+  orderId,
+}: {
+  warehouse: NovaPoshtaWarehouse;
+  orderId: string;
+}) {
+  console.log('🚀 ~ warehouse:', warehouse);
+  console.log('🚀 ~ orderId:', orderId);
+  const metafieldMutation = `#graphql
+            mutation UpdateMetafield($metafields: [MetafieldsSetInput!]!) {
+              metafieldsSet(metafields: $metafields) {
+                metafields {
+                  id
+                  value
+                }
+                userErrors {
+                  field
+                  message
+                }
+              }
+            }
+          `;
+  const variables = {
+    metafields: [
+      {
+        ownerId: orderId,
+        namespace: 'custom',
+        key: 'nova_poshta_warehouse',
+        value: JSON.stringify(warehouse),
+        type: 'json',
+      },
+    ],
+  };
+  const response = await makeGraphQLQuery(metafieldMutation, variables);
+  return response;
 }

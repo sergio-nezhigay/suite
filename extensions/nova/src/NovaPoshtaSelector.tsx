@@ -18,7 +18,10 @@ interface City {
 }
 
 import { SHOPIFY_APP_URL } from '../../shared/data';
-import { NovaPoshtaWarehouse } from '../../shared/shopifyOperations';
+import {
+  NovaPoshtaWarehouse,
+  updateWarehouse,
+} from '../../shared/shopifyOperations';
 
 interface WarehouseNP {
   Ref: string;
@@ -31,8 +34,12 @@ function containsOnlyOneWord(str: string) {
 
 export default function NovaPoshtaSelector({
   bestWarehouse,
+  updateProbability,
+  orderId,
 }: {
   bestWarehouse: NovaPoshtaWarehouse;
+  updateProbability: () => void;
+  orderId: string;
 }) {
   const [cityQuery, setCityQuery] = useState(
     bestWarehouse?.cityDescription
@@ -123,19 +130,24 @@ export default function NovaPoshtaSelector({
     fetchWarehouses();
   }, [selectedCity]);
 
-  const logSelectedValues = () => {
-    console.log('Selected City Ref:', selectedCity);
+  const logSelectedValues = async () => {
     const selectedCityObj = cities.find((city) => city.Ref === selectedCity);
-    console.log('Selected City Description:', selectedCityObj?.Description);
 
-    console.log('Selected Warehouse Ref:', selectedWarehouse);
     const selectedWarehouseObj = warehouses.find(
       (warehouse) => warehouse.Ref === selectedWarehouse
     );
-    console.log(
-      'Selected Warehouse Description:',
-      selectedWarehouseObj?.Description
-    );
+
+    await updateWarehouse({
+      warehouse: {
+        cityRef: selectedCity,
+        cityDescription: selectedCityObj?.Description,
+        warehouseRef: selectedWarehouse,
+        warehouseDescription: selectedWarehouseObj?.Description,
+        matchProbability: 1,
+      },
+      orderId,
+    });
+    updateProbability();
   };
 
   return (
@@ -149,7 +161,7 @@ export default function NovaPoshtaSelector({
       />
       <InlineStack gap>
         {cities.length > 0 && (
-          <InlineStack inlineSize={`${35}%`}>
+          <InlineStack inlineSize={`${40}%`}>
             <Select
               label='Оберіть пункт'
               options={cities.map((city) => {
@@ -170,7 +182,7 @@ export default function NovaPoshtaSelector({
           </InlineStack>
         )}
         {selectedCity && warehouses.length > 0 && (
-          <InlineStack inlineSize={`${65}%`}>
+          <InlineStack inlineSize={`${60}%`}>
             <Select
               label='Оберіть відділення'
               options={warehouses.map((warehouse) => ({

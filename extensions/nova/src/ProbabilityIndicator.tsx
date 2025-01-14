@@ -7,8 +7,9 @@ type ProbabilityIndicatorProps = {
 const ProbabilityIndicator: React.FC<ProbabilityIndicatorProps> = ({
   probability,
 }) => {
+  if (probability === 100) return <Text>Адресу підтверджено</Text>;
   const totalLength = 10;
-  const filledLength = Math.round((probability / 100) * totalLength);
+  const filledLength = Math.floor((probability / 100) * totalLength);
 
   const filler =
     '-'.repeat(filledLength) + '?'.repeat(totalLength - filledLength);
@@ -16,7 +17,7 @@ const ProbabilityIndicator: React.FC<ProbabilityIndicatorProps> = ({
   return (
     <InlineStack gap inlineAlignment='space-between'>
       <Text fontWeight='bold' fontVariant='numeric'>
-        Probability: {probability}%
+        Ймовірність : {probability}%
       </Text>
       <Text>{filler}</Text>
     </InlineStack>
