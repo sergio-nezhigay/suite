@@ -14,6 +14,7 @@ import {
 interface City {
   Ref: string;
   Description: string;
+  AreaDescription: string;
 }
 
 import { SHOPIFY_APP_URL } from '../../shared/data';
@@ -22,6 +23,10 @@ import { NovaPoshtaWarehouse } from '../../shared/shopifyOperations';
 interface WarehouseNP {
   Ref: string;
   Description: string;
+}
+
+function containsOnlyOneWord(str: string) {
+  return str.trim().split(/\s+/).length === 1;
 }
 
 export default function NovaPoshtaSelector({
@@ -55,7 +60,6 @@ export default function NovaPoshtaSelector({
     const fetchCities = async () => {
       setLoading(true);
       try {
-        setCities([]);
         const payload = {
           modelName: 'Address',
           calledMethod: 'getCities',
@@ -92,7 +96,6 @@ export default function NovaPoshtaSelector({
 
     const fetchWarehouses = async () => {
       setLoading(true);
-      setWarehouses([]);
       try {
         const response = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/general`, {
           method: 'POST',
@@ -136,7 +139,7 @@ export default function NovaPoshtaSelector({
   };
 
   return (
-    <BlockStack>
+    <BlockStack gap>
       {loading && <ProgressIndicator size='small-300' />}
       <TextField
         label='Редагуйте назву пункта'
@@ -145,33 +148,42 @@ export default function NovaPoshtaSelector({
         placeholder='Назва'
       />
       <InlineStack gap>
-        <InlineStack inlineSize={`${35}%`}>
-          <Select
-            label='Оберіть пункт'
-            options={cities.map((city) => ({
-              value: city.Ref,
-              label: city.Description,
-            }))}
-            onChange={(value) => {
-              setSelectedCity(value);
-              setSelectedWarehouse(null);
-            }}
-            value={selectedCity || ''}
-          />
-        </InlineStack>
-
-        <InlineStack inlineSize={`${65}%`}>
-          <Select
-            label='Оберіть відділення'
-            options={warehouses.map((warehouse) => ({
-              value: warehouse.Ref,
-              label: warehouse.Description,
-            }))}
-            onChange={setSelectedWarehouse}
-            value={selectedWarehouse || ''}
-          />
-        </InlineStack>
+        {cities.length > 0 && (
+          <InlineStack inlineSize={`${35}%`}>
+            <Select
+              label='Оберіть пункт'
+              options={cities.map((city) => {
+                const label = containsOnlyOneWord(city.Description)
+                  ? `${city.Description} (${city.AreaDescription} обл.)`
+                  : city.Description;
+                return {
+                  value: city.Ref,
+                  label: label,
+                };
+              })}
+              onChange={(value) => {
+                setSelectedCity(value);
+                setSelectedWarehouse(null);
+              }}
+              value={selectedCity || ''}
+            />
+          </InlineStack>
+        )}
+        {selectedCity && warehouses.length > 0 && (
+          <InlineStack inlineSize={`${65}%`}>
+            <Select
+              label='Оберіть відділення'
+              options={warehouses.map((warehouse) => ({
+                value: warehouse.Ref,
+                label: warehouse.Description,
+              }))}
+              onChange={setSelectedWarehouse}
+              value={selectedWarehouse || ''}
+            />
+          </InlineStack>
+        )}
       </InlineStack>
+
       <Button
         onClick={logSelectedValues}
         disabled={selectedCity && selectedWarehouse ? false : true}
