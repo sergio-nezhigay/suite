@@ -134,7 +134,9 @@ async function findBestWarehouse({
   });
 
   if (!response.ok) {
-    throw new Error(`HTTP error! status: ${response.status}`);
+    throw new Error(
+      `Fetching best warehouse error: ${JSON.stringify(response)}`
+    );
   }
 
   const result = await response.json();

@@ -56,6 +56,10 @@ function WarehouseExtension() {
     fetchOrderInfo();
   }, [orderId]);
 
+  const probability = Math.round(
+    (novaPoshtaWarehouse?.matchProbability || 0) * 100
+  );
+
   return (
     <AdminBlock title='NovaPoshta'>
       <BlockStack gap>
@@ -71,20 +75,14 @@ function WarehouseExtension() {
               </Text>
             </InlineStack>
 
-            {novaPoshtaWarehouse && (
-              <BlockStack gap>
-                <ProbabilityIndicator
-                  probability={Math.round(
-                    novaPoshtaWarehouse?.matchProbability * 100
-                  )}
-                />
-                <NovaPoshtaSelector bestWarehouse={novaPoshtaWarehouse} />
-                <NovaPoshtaActions
-                  orderDetails={orderDetails}
-                  recepientWarehouse={novaPoshtaWarehouse}
-                />
-              </BlockStack>
-            )}
+            <BlockStack gap>
+              <ProbabilityIndicator probability={probability} />
+              <NovaPoshtaSelector bestWarehouse={novaPoshtaWarehouse} />
+              <NovaPoshtaActions
+                orderDetails={orderDetails}
+                recepientWarehouse={novaPoshtaWarehouse}
+              />
+            </BlockStack>
           </>
         )}
       </BlockStack>
