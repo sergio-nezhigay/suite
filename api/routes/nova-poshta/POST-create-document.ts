@@ -7,14 +7,12 @@ const route: RouteHandler<{
     lastName: string;
     phone: string;
     email: string;
-    paymentMethod: string;
     documentData: object;
   };
 }> = async ({ request, reply }) => {
-  const { firstName, lastName, phone, email, documentData, paymentMethod } =
-    request.body;
+  const { firstName, lastName, phone, email, documentData } = request.body;
 
-  if (!documentData || !firstName || !lastName || !phone || !paymentMethod) {
+  if (!documentData || !firstName || !lastName || !phone) {
     return await reply.status(400).send({ error: 'All fields are required' });
   }
 

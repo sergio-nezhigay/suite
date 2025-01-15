@@ -30,16 +30,16 @@ function NovaPoshtaActions({
       PayerType: 'Recipient',
       PaymentMethod: 'Cash',
       CargoType: 'Parcel',
-      VolumeGeneral: '0.1',
+      VolumeGeneral: '0.001',
       Weight: '0.3',
       ServiceType: 'WarehouseWarehouse',
       SeatsAmount: '1',
       Description: `Комп'ютерні аксесуари`,
       Cost: orderDetails?.total,
-      CitySender: '8d5a980d-391c-11dd-90d9-001a92567626',
-      Sender: '6a11bc85-464d-11e8-8b24-005056881c6b',
-      SenderAddress: '53102715-1c75-11e4-acce-0050568002cf',
-      ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b',
+      CitySender: 'db5c88d9-391c-11dd-90d9-001a92567626', // буча
+      Sender: '6a11bc85-464d-11e8-8b24-005056881c6b', //сн
+      SenderAddress: 'd81f61a9-72f9-11ec-81d3-b8830365bd14', // №5
+      ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b', // сн-конт
       SendersPhone: '380507025777',
       CityRecipient: recepientWarehouse?.cityRef,
       RecipientAddress: recepientWarehouse?.warehouseRef,

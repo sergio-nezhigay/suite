@@ -152,17 +152,20 @@ function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
     '1441': { namespace: 'custom', keys: ['1441', '18915', '87', '20829'] }, // Subtype
     '9279': {
       namespace: 'custom',
-      keys: ['9279', '4764', '1456', '374', '84', '20841', '737'],
+      keys: ['9279', '4764', '1456', '374', '84', '20841', '737', '13456'],
     }, // Type
-    inputs: { namespace: 'custom', keys: ['9491', '380', '7336', '20840'] },
-    outputs: { namespace: 'custom', keys: ['9492', '669'] },
+    inputs: {
+      namespace: 'custom',
+      keys: ['9491', '380', '7336', '20840', '9829'],
+    },
+    outputs: { namespace: 'custom', keys: ['9492', '669', '9834'] },
     color: {
       namespace: 'custom',
-      keys: ['18525', '17191', '19252', '20830', '17211'],
+      keys: ['18525', '17191', '19252', '20830', '17211', '17163'],
     },
     features: {
       namespace: 'custom',
-      keys: ['1146', '385', '7335', '20835', '738'],
+      keys: ['1146', '385', '7335', '20835', '738', '19351'],
     },
     length: { namespace: 'custom', keys: ['20823', '6387'] },
     width: { namespace: 'custom', keys: ['20824', '32458'] },

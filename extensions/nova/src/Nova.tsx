@@ -29,7 +29,7 @@ function WarehouseExtension() {
 
   const [orderDetails, setOrderDetails] = useState<OrderDetails>(null);
   const [novaPoshtaWarehouse, setNovaPoshtaWarehouse] =
-    useState<NovaPoshtaWarehouse>(null);
+    useState<NovaPoshtaWarehouse | null>(null);
 
   const [loading, setLoading] = useState(false);
 
@@ -41,8 +41,10 @@ function WarehouseExtension() {
       try {
         const orderInfo = await getOrderInfo(orderId);
         console.log('🚀 ~ orderInfo:', orderInfo);
-        setOrderDetails(orderInfo.orderDetails);
-        setNovaPoshtaWarehouse(orderInfo.novaPoshtaWarehouse);
+        if (orderInfo) {
+          setOrderDetails(orderInfo.orderDetails);
+          setNovaPoshtaWarehouse(orderInfo.novaPoshtaWarehouse);
+        }
       } catch (error) {
         console.error('Error fetching order info:', error);
         setOrderDetails(null);
@@ -56,10 +58,12 @@ function WarehouseExtension() {
   }, [orderId]);
 
   const updateProbability = () => {
-    setNovaPoshtaWarehouse({
-      ...novaPoshtaWarehouse,
-      matchProbability: 1,
-    });
+    if (novaPoshtaWarehouse) {
+      setNovaPoshtaWarehouse({
+        ...novaPoshtaWarehouse,
+        matchProbability: 1,
+      });
+    }
   };
 
   const probability = Math.round(

@@ -36,22 +36,18 @@ const route: RouteHandler<{
   const vendor = product.vendor;
   const barcode = product.barcode;
 
-  const titleUpdated = title
+  const titleStripped = title
     .toLowerCase()
-    .replace(new RegExp(vendor.toLowerCase(), 'g'), '')
+    //.replace(new RegExp(vendor.toLowerCase(), 'g'), '')
     .replace(new RegExp(barcode.toLowerCase(), 'g'), '');
-  console.log('🚀 ~ titleUpdated:', titleUpdated);
-  const descrUpdated = descr
+  console.log('🚀 ~ titleUpdated:', titleStripped);
+  const descrStripped = descr
     .toLowerCase()
-    .replace(new RegExp(vendor.toLowerCase(), 'g'), '')
+    //.replace(new RegExp(vendor.toLowerCase(), 'g'), '')
     .replace(new RegExp(barcode.toLowerCase(), 'g'), '');
-  console.log('🚀 ~ descrUpdated:', descrUpdated);
+  console.log('🚀 ~ descrUpdated:', descrStripped);
 
-  //  const input = descrUpdated;
-  const input = title;
-  //  const input = title + descr;
-  //  const input = titleUpdated + descrUpdated;
-  //  const input = titleUpdated;
+  const input = titleStripped + descrStripped;
 
   console.log({ message: input });
 
@@ -77,6 +73,9 @@ const route: RouteHandler<{
       },
       specificationsType: {
         equals: product.specificationsType,
+      },
+      vendor: {
+        equals: product.vendor,
       },
     },
     select: {

@@ -48,12 +48,12 @@ export default function NovaPoshtaSelector({
   );
   const [cities, setCities] = useState<City[]>([]);
   const [selectedCity, setSelectedCity] = useState<string | null>(
-    bestWarehouse?.cityRef
+    bestWarehouse?.cityRef || null
   );
 
   const [warehouses, setWarehouses] = useState<WarehouseNP[]>([]);
   const [selectedWarehouse, setSelectedWarehouse] = useState<string | null>(
-    bestWarehouse?.warehouseRef
+    bestWarehouse?.warehouseRef || null
   );
 
   const [loading, setLoading] = useState(false);
@@ -139,11 +139,11 @@ export default function NovaPoshtaSelector({
 
     await updateWarehouse({
       warehouse: {
-        cityRef: selectedCity,
-        cityDescription: selectedCityObj?.Description,
-        warehouseRef: selectedWarehouse,
-        warehouseDescription: selectedWarehouseObj?.Description,
-        matchProbability: 1,
+        cityRef: selectedCity || '',
+        cityDescription: selectedCityObj?.Description || '',
+        warehouseRef: selectedWarehouse || '',
+        warehouseDescription: selectedWarehouseObj?.Description || '',
+        matchProbability: 1 || 0,
       },
       orderId,
     });

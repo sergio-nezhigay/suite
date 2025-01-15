@@ -24,14 +24,14 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   return tags;
 }
 
-export interface NovaPoshtaWarehouse {
+export type NovaPoshtaWarehouse = {
   cityDescription: string;
   cityRef: string;
   warehouseDescription: string;
   warehouseRef: string;
   matchProbability: number;
-}
-export interface OrderDetails {
+} | null;
+export type OrderDetails = {
   tags: string[];
   orderNumber: string;
   total: string;
@@ -45,7 +45,7 @@ export interface OrderDetails {
   address: string | null;
   zip: string | null;
   paymentMethod: string | null;
-}
+} | null;
 
 export type OrderInfo = {
   orderDetails: OrderDetails;
