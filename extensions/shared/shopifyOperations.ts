@@ -60,7 +60,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         phone
         email
         clientIp
-        totalPriceSet {
+        currentSubtotalPriceSet {
             shopMoney {
                 amount
             }
@@ -92,7 +92,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       clientIp: string;
       phone: string | null;
       email: string | null;
-      totalPriceSet: {
+      currentSubtotalPriceSet: {
         shopMoney: { amount: string };
       };
       customer: { id: string };
@@ -115,7 +115,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       name,
       email,
       phone,
-      totalPriceSet,
+      currentSubtotalPriceSet,
       customer,
       clientIp,
       shippingAddress,
@@ -129,7 +129,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       const orderDetails = {
         tags,
         orderNumber: name,
-        total: totalPriceSet.shopMoney.amount,
+        total: currentSubtotalPriceSet.shopMoney.amount,
         customerId: customer?.id,
         firstName: shippingAddress?.firstName,
         lastName: shippingAddress?.lastName,

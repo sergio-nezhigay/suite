@@ -237,6 +237,10 @@ export const permissions: GadgetPermissions = {
           },
         },
       },
+      actions: {
+        makeRecommendations: true,
+        test2: true,
+      },
     },
     unauthenticated: {
       storageKey: "unauthenticated",
@@ -257,6 +261,10 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+      },
+      actions: {
+        makeRecommendations: true,
+        test2: true,
       },
     },
   },

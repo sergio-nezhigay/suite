@@ -1,36 +1,12 @@
-import { RouteHandler } from 'gadget-server';
+import { connections } from 'gadget-server';
 
-const route: RouteHandler<{ Body: { message: string } }> = async ({
-  reply,
+export const findSimilarProducts = async ({
+  product,
   api,
-  connections,
-  request,
+}: {
+  product: any;
+  api: any;
 }) => {
-  const productId = request?.body?.message || '9708717146428';
-
-  const data = await api.shopifyProduct.findOne(productId, {
-    select: {
-      title: true,
-      body: true,
-      vendor: true,
-      specificationsType: true,
-      specificationsProperties: true,
-      specificationsFrequency: true,
-      variants: { edges: { node: { price: true, barcode: true } } },
-    },
-  });
-
-  const product = {
-    title: data.title || '',
-    body: data.body || '',
-    vendor: data.vendor || '',
-    barcode: data.variants.edges[0]?.node.barcode || '',
-    price: data.variants.edges[0]?.node.price || 0,
-    specificationsType: data.specificationsType,
-    specificationsProperties: data.specificationsProperties,
-    specificationsFrequency: data.specificationsFrequency,
-  };
-
   const input = stripText(product.title + product.body, [
     product.barcode,
     product.vendor,
@@ -45,7 +21,7 @@ const route: RouteHandler<{ Body: { message: string } }> = async ({
 
   const products = await fetchProducts(api, embedding, filters, 50);
 
-  const filteredProducts = products.filter(({ id }) => id !== productId);
+  const filteredProducts = products.filter(({ id }) => id !== product.id);
 
   const productsBranded = filteredProducts.filter(
     ({ vendor, price }) =>
@@ -61,10 +37,8 @@ const route: RouteHandler<{ Body: { message: string } }> = async ({
     ...productsNonBranded.slice(0, 10 - Math.min(5, productsBranded.length)),
   ];
 
-  await reply.send(finalProducts);
+  return finalProducts.map(({ handle, id, title }) => ({ handle, id, title }));
 };
-
-export default route;
 
 const stripText = (text: string, termsToRemove: string[]): string =>
   termsToRemove.reduce(
