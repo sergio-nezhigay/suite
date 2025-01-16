@@ -149,16 +149,29 @@ function mapObjectToMetafields(metaObject: ProductOptions | undefined): Array<{
   const ATTRIBUTE_MAPPINGS = {
     '777': { namespace: 'custom', keys: ['1110', '1430', '33321'] }, // Interface
     '773': { namespace: 'custom', keys: ['773', '4767', '682', '730'] }, // Volume
-    '1441': { namespace: 'custom', keys: ['1441', '18915', '87', '20829'] }, // Subtype
+    '1441': {
+      namespace: 'custom',
+      keys: ['1441', '18915', '87', '20829', '11603'],
+    }, // Subtype
     '9279': {
       namespace: 'custom',
-      keys: ['9279', '4764', '1456', '374', '84', '20841', '737', '13456'],
+      keys: [
+        '9279',
+        '4764',
+        '1456',
+        '374',
+        '84',
+        '20841',
+        '737',
+        '13456',
+        '11598',
+      ],
     }, // Type
     inputs: {
       namespace: 'custom',
       keys: ['9491', '380', '7336', '20840', '9829'],
     },
-    outputs: { namespace: 'custom', keys: ['9492', '669', '9834'] },
+    outputs: { namespace: 'custom', keys: ['9492', '669', '9834', '11601'] },
     color: {
       namespace: 'custom',
       keys: ['18525', '17191', '19252', '20830', '17211', '17163'],
