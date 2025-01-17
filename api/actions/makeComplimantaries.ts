@@ -1,5 +1,5 @@
+import { complimentaryProducts } from '../data/complimentaryProducts';
 import { updateMetafield } from '../utilities';
-import { findSimilarProducts } from '../utilities/findSimilarProducts';
 
 export const run: ActionRun = async ({ api, connections }) => {
   const allRecords = [];
@@ -19,7 +19,7 @@ export const run: ActionRun = async ({ api, connections }) => {
       variants: { edges: { node: { price: true, barcode: true } } },
     },
     filter: {
-      specificationsType: { startsWith: 'DDR4' },
+      specificationsProperties: { startsWith: 'Для ноутбука' },
     },
   });
   console.log('🚀 ~ records:', records);
@@ -27,7 +27,6 @@ export const run: ActionRun = async ({ api, connections }) => {
   while (records.hasNextPage) {
     console.log('Pausing before fetching the next batch...');
     await new Promise((resolve) => setTimeout(resolve, pauseDuration));
-
     records = await records.nextPage();
     allRecords.push(...records);
   }
@@ -44,20 +43,19 @@ export const run: ActionRun = async ({ api, connections }) => {
   }));
   console.log('🚀 ~ products length:', products.length);
 
+  const value = JSON.stringify(
+    complimentaryProducts.map(({ id }) => `gid://shopify/Product/${id}`)
+  );
+
   for (const product of products) {
-    const similarProducts = await findSimilarProducts({ product, api });
-    console.log('🚀 ~ similarProducts:', similarProducts);
-    const relatedProductReferences = similarProducts.map(
-      (similarProduct) => `\"gid://shopify/Product/${similarProduct.id}\"`
-    );
     const variables = {
       metafields: [
         {
           ownerId: `gid://shopify/Product/${product.id}`,
           namespace: 'shopify--discovery--product_recommendation',
-          key: 'related_products',
-          //  key: 'complementary_products',
-          value: `[${relatedProductReferences.join(', ')}]`,
+          //  key: 'related_products',
+          key: 'complementary_products',
+          value,
           type: 'list.product_reference',
         },
       ],
