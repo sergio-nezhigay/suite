@@ -1,7 +1,7 @@
 import { parseStringPromise } from 'xml2js';
 
-import { FetchingFunc } from 'api/types';
 import { getPaginatedData } from './getPaginatedData';
+import { FetchingFunc } from '../../types';
 
 interface Offer {
   name?: string;

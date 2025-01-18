@@ -1,7 +1,7 @@
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 //import { FetchingFunc } from 'api/types';
-import { getPaginatedData } from '../getPaginatedData';
+import { getPaginatedData } from './getPaginatedData';
 import { FetchingFunc } from '../../types';
 
 const serviceAccountAuth = new JWT({
