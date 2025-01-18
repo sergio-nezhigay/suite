@@ -55,7 +55,7 @@ const productVariantsBulkUpdateQuery = `
 }
 `;
 
-export default async function createProducts({
+export async function createProducts({
   products,
   connections,
 }: {

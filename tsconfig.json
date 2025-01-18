@@ -16,7 +16,10 @@
     "jsx": "react-jsx",
     "moduleResolution": "node",
     "resolveJsonModule": true,
-    "baseUrl": "/",
+    "baseUrl": ".",
+    "paths": {
+      "@*": ["./api*"]
+    },
     "types": ["@shopify/app-bridge-types"]
   }
 }

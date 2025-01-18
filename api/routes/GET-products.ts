@@ -1,6 +1,29 @@
-export default async function route({ request, reply, connections }) {
-  const shopify = connections.shopify.current;
+import { RouteHandler } from 'gadget-server';
+import Shopify from 'shopify-api-node';
 
+interface BulkOperation {
+  id: string;
+  status: string;
+  url?: string;
+}
+
+interface UserError {
+  field?: string;
+  message: string;
+}
+
+interface BulkOperationResponse {
+  bulkOperationRunQuery: {
+    bulkOperation: BulkOperation;
+    userErrors: UserError[];
+  };
+}
+
+const route: RouteHandler = async ({ reply, connections }) => {
+  const shopify = connections.shopify.current;
+  if (!shopify) {
+    return reply.status(400).send({ error: 'No shopify client' });
+  }
   const bulkMutation = `
       mutation {
         bulkOperationRunQuery(
@@ -29,17 +52,18 @@ export default async function route({ request, reply, connections }) {
       }
     `;
 
-  const { bulkOperationRunQuery } = await shopify.graphql(bulkMutation);
+  const { bulkOperationRunQuery }: BulkOperationResponse =
+    await shopify.graphql(bulkMutation);
   const { bulkOperation, userErrors } = bulkOperationRunQuery;
 
   if (userErrors.length > 0) {
     return reply.status(400).send({ error: userErrors });
   }
 
-  const bulkOperationStatus = await pollBulkOperationStatus(
+  const bulkOperationStatus = await pollBulkOperationStatus({
     shopify,
-    bulkOperation
-  );
+    bulkOperation,
+  });
 
   if (bulkOperationStatus.url) {
     const products = await fetchBulkOperationResults(bulkOperationStatus.url);
@@ -47,9 +71,15 @@ export default async function route({ request, reply, connections }) {
   }
 
   return reply.status(500).send({ error: 'No bulk result URL found' });
-}
+};
 
-async function pollBulkOperationStatus(shopify, bulkOperation) {
+async function pollBulkOperationStatus({
+  shopify,
+  bulkOperation,
+}: {
+  shopify: Shopify;
+  bulkOperation: BulkOperation;
+}) {
   let status = bulkOperation.status;
   let url = null;
 
@@ -83,7 +113,7 @@ async function pollBulkOperationStatus(shopify, bulkOperation) {
   return { status, url };
 }
 
-async function fetchBulkOperationResults(bulkResultUrl) {
+async function fetchBulkOperationResults(bulkResultUrl: string) {
   const resultResponse = await fetch(bulkResultUrl);
   const resultText = await resultResponse.text();
 
@@ -92,3 +122,5 @@ async function fetchBulkOperationResults(bulkResultUrl) {
     .filter(Boolean)
     .map((line) => JSON.parse(line));
 }
+
+export default route;

@@ -1,5 +1,6 @@
 import type { RouteHandler } from 'gadget-server';
-import { sendSms } from '../utilities/sendSms';
+
+import { sendSms } from '@/utilities/';
 
 const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({
   request,

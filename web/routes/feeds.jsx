@@ -44,7 +44,7 @@ export default function Feeds() {
       </Text>
 
       <Button onClick={handleFeedGeneration} loading={loading}>
-        Generate Product Feed
+        Generate Product Feed.
       </Button>
 
       {feedResponse && (

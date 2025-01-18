@@ -1,5 +1,6 @@
 import { RouteHandler } from 'gadget-server';
 import { connections } from 'gadget-server';
+
 import {
   getShopifyClient,
   flagExistingShopifyProducts,
@@ -8,7 +9,7 @@ import {
   fetchCherg,
   fetchSchusev,
   fetchEasy,
-} from '../utilities';
+} from '@/utilities/';
 
 const route: RouteHandler<{
   Querystring: {

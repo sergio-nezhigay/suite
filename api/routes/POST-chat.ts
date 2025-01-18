@@ -1,21 +1,11 @@
-import {
-  api,
-  connections,
-  logger,
-  RouteContext,
-  RouteHandler,
-} from 'gadget-server';
+import { RouteHandler } from 'gadget-server';
 import { openAIResponseStream } from 'gadget-server/ai';
-import { request } from 'http';
 
 const route: RouteHandler<{
   Body: { message: string };
 }> = async ({ request, reply, api, logger, connections }) => {
   const { message } = request.body;
 
-  console.log('🚀 ~ message:', message);
-
-  // embed the incoming message from the user
   const embeddingResponse = await connections.openai.embeddings.create({
     input: message,
     model: 'text-embedding-3-small',

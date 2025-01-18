@@ -1,9 +1,12 @@
 import { RouteHandler } from 'gadget-server';
 
-import { getProducts, Product } from '../utilities/getProducts';
-import { uploadFile } from '../utilities/uploadFile';
+import {
+  getProducts,
+  Product,
+  makeRozetkaFeed,
+  uploadFile,
+} from '@/utilities/';
 
-import { makeRozetkaFeed } from '../utilities/makeRozetkaFeed';
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 
 const IN_STOCK = 'in stock';
@@ -15,8 +18,10 @@ const route: RouteHandler = async ({ reply, connections }) => {
     if (!shopify) throw new Error('No Shopify client found');
 
     const products = await getProducts(shopify);
+    console.log('🚀 ~ products:', products);
 
     const genericFeed = makeGenericFeed(products);
+    console.log('🚀 ~ genericFeed:', genericFeed);
 
     const hotlineFeed = makeHotlineFeed(genericFeed);
 
@@ -24,6 +29,7 @@ const route: RouteHandler = async ({ reply, connections }) => {
 
     await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
     const merchantFeed = makeMerchantFeed(genericFeed);
+    console.log('🚀 ~ merchantFeed:', merchantFeed);
     const merchantFileContent = products2CSV(merchantFeed);
     await uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv');
     const remarketingFeed = makeRemarketingFeed(genericFeed);
@@ -66,54 +72,63 @@ export interface GenericProductFeed {
 }
 
 function makeGenericFeed(products: Product[]): GenericProductFeed[] {
+  console.log('Input products length:', products.length);
+
   const basicProductUrl = 'https://informatica.com.ua/products/';
-  return products
-    .map((product) => {
-      const firstVariantWithPrice = product.variants.find(
-        (variant) => variant.price
-      );
+  const mappedProducts = products.map((product) => {
+    const firstVariantWithPrice = product.variants.find(
+      (variant) => variant.price
+    );
 
-      const imageURLs = product.variants
-        .filter((variant) => variant.mediaContentType === 'IMAGE')
-        .map((variant) => variant?.image?.url || '');
-      const collectionVariant = product.variants.find(
-        (variant) =>
-          variant?.id && variant.id.startsWith('gid://shopify/Collection/')
-      );
-      const collectionName = collectionVariant?.title || '';
-      const inventoryQuantity = firstVariantWithPrice?.inventoryQuantity || 0;
-      const availability = inventoryQuantity > 0 ? IN_STOCK : OUT_OF_STOCK;
-      const price = Math.floor(Number(firstVariantWithPrice?.price) || 0);
+    const imageURLs = product.variants
+      .filter((variant) => variant.mediaContentType === 'IMAGE')
+      .map((variant) => variant?.image?.url || '');
 
-      return {
-        id: product?.id,
-        id_woocommerce: product?.id_woocommerce?.value || '',
-        title: product?.title || '',
-        brand: product?.vendor || '',
-        warranty: product?.warranty?.value || '',
-        rozetka_tag: product?.rozetka_tag?.value || '',
-        rozetka_filter: prepareProductDescription(
-          product?.rozetka_filter?.value || ''
-        ),
-        description: prepareProductDescription(product?.descriptionHtml) || '',
-        price,
-        sku: firstVariantWithPrice?.sku || '',
-        mpn: firstVariantWithPrice?.barcode || '',
-        inventoryQuantity,
-        availability,
-        imageURLs,
-        link: basicProductUrl + product.handle,
-        collection: collectionName,
-        delivery_days: isTodayWeekend() ? '1' : '0',
-      };
-    })
-    .filter(({ availability, sku }) => {
-      const supplier = sku.split('^')[1] || '';
-      return (
-        availability === IN_STOCK &&
-        genericSuppliers.includes(supplier.toLowerCase())
-      );
-    });
+    const collectionVariant = product.variants.find(
+      (variant) =>
+        variant?.id && variant.id.startsWith('gid://shopify/Collection/')
+    );
+    const collectionName = collectionVariant?.title || '';
+    const inventoryQuantity = firstVariantWithPrice?.inventoryQuantity || 0;
+    const availability = inventoryQuantity > 0 ? IN_STOCK : OUT_OF_STOCK;
+    const price = Math.floor(Number(firstVariantWithPrice?.price) || 0);
+
+    return {
+      id: product?.id,
+      id_woocommerce: product?.id_woocommerce?.value || '',
+      title: product?.title || '',
+      brand: product?.vendor || '',
+      warranty: product?.warranty?.value || '',
+      rozetka_tag: product?.rozetka_tag?.value || '',
+      rozetka_filter: prepareProductDescription(
+        product?.rozetka_filter?.value || ''
+      ),
+      description: prepareProductDescription(product?.descriptionHtml) || '',
+      price,
+      sku: firstVariantWithPrice?.sku || '',
+      mpn: firstVariantWithPrice?.barcode || '',
+      inventoryQuantity,
+      availability,
+      imageURLs,
+      link: basicProductUrl + product.handle,
+      collection: collectionName,
+      delivery_days: isTodayWeekend() ? '1' : '0',
+    };
+  });
+
+  console.log('Mapped products length:', mappedProducts.length);
+
+  const filteredProducts = mappedProducts.filter(({ availability, sku }) => {
+    const supplier = sku.split('^')[1] || '';
+    return (
+      availability === IN_STOCK &&
+      genericSuppliers.includes(supplier.toLowerCase())
+    );
+  });
+
+  console.log('Filtered products length:', filteredProducts.length);
+
+  return filteredProducts;
 }
 
 interface HotlineProductFeed {
@@ -193,6 +208,15 @@ const makeRemarketingFeed = (products: GenericProductFeed[]) => {
 };
 
 function products2CSV(productFeed: any[]): string {
+  if (!productFeed || productFeed.length === 0) {
+    throw new Error('Product feed is empty or undefined.');
+  }
+
+  if (typeof productFeed[0] !== 'object' || productFeed[0] === null) {
+    throw new Error(
+      'The first element of the product feed is not a valid object.'
+    );
+  }
   const headers = Object.keys(productFeed[0]);
 
   let csvContent = headers.join('\t') + '\n';
