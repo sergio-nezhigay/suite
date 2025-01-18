@@ -1,4 +1,51 @@
-export async function getProducts(shopifyConnection) {
+import Shopify from 'shopify-api-node';
+
+interface BulkOperation {
+  id: string;
+  status: string;
+}
+
+interface UserError {
+  field: string;
+  message: string;
+}
+
+export interface ProductVariant {
+  id: string;
+  price: string;
+  sku: string;
+  title: string;
+  inventoryQuantity: number;
+  barcode: string;
+  mediaContentType: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+  image: {
+    id: string;
+    url: string;
+  } | null;
+}
+
+export interface Product {
+  id: string;
+  handle: string;
+  title: string;
+  vendor: string;
+  descriptionHtml: string;
+  warranty: { value: string } | null;
+  rozetka_filter: { value: string } | null;
+  rozetka_tag: { value: string } | null;
+  id_woocommerce: { value: string } | null;
+  collections: { edges: { node: { id: string; title: string } }[] };
+  media: {
+    edges: {
+      node: { id: string; image: { url: string }; mediaContentType: string };
+    }[];
+  };
+  variants: ProductVariant[];
+}
+
+export async function getProducts(
+  shopifyConnection: Shopify
+): Promise<Product[]> {
   const bulkMutation = `
     mutation {
       bulkOperationRunQuery(
@@ -12,19 +59,18 @@ export async function getProducts(shopifyConnection) {
                 title
                 vendor
                 descriptionHtml
-           warranty:metafield(namespace: "custom", key: "warranty") {
-
-          value
-        }
-         rozetka_filter:metafield(namespace: "custom", key: "rozetka_filter") {
-                value
-            }
-         rozetka_tag:metafield(namespace: "custom", key: "rozetka_tag") {
-                value
-            }
-         id_woocommerce:metafield(namespace: "custom", key: "id-woocommerce") {
-                value
-            }
+                warranty:metafield(namespace: "custom", key: "warranty") {
+                  value
+                }
+                rozetka_filter:metafield(namespace: "custom", key: "rozetka_filter") {
+                  value
+                }
+                rozetka_tag:metafield(namespace: "custom", key: "rozetka_tag") {
+                  value
+                }
+                id_woocommerce:metafield(namespace: "custom", key: "id-woocommerce") {
+                  value
+                }
                 collections(first: 1) {
                   edges {
                     node {
@@ -80,7 +126,9 @@ export async function getProducts(shopifyConnection) {
   const { bulkOperation, userErrors } = bulkOperationRunQuery;
 
   if (userErrors.length > 0) {
-    throw new Error(`Error: ${userErrors.map((e) => e.message).join(', ')}`);
+    throw new Error(
+      `Error: ${userErrors.map((e: UserError) => e.message).join(', ')}`
+    );
   }
 
   const bulkOperationStatus = await pollBulkOperationStatus(
@@ -97,7 +145,10 @@ export async function getProducts(shopifyConnection) {
   throw new Error('No bulk result URL found');
 }
 
-async function pollBulkOperationStatus(shopify, bulkOperation) {
+async function pollBulkOperationStatus(
+  shopify: Shopify,
+  bulkOperation: BulkOperation
+): Promise<{ status: string; url: string | null }> {
   let status = bulkOperation.status;
   let url = null;
 
@@ -105,16 +156,16 @@ async function pollBulkOperationStatus(shopify, bulkOperation) {
     await new Promise((resolve) => setTimeout(resolve, 5000));
 
     const currentOperationQuery = `
-        {
-          currentBulkOperation {
-            id
-            status
-            url
-            errorCode
-            objectCount
-          }
+      {
+        currentBulkOperation {
+          id
+          status
+          url
+          errorCode
+          objectCount
         }
-      `;
+      }
+    `;
 
     const { currentBulkOperation } = await shopify.graphql(
       currentOperationQuery
@@ -131,7 +182,9 @@ async function pollBulkOperationStatus(shopify, bulkOperation) {
   return { status, url };
 }
 
-async function fetchBulkOperationResults(bulkResultUrl) {
+async function fetchBulkOperationResults(
+  bulkResultUrl: string | URL | Request
+): Promise<Product[]> {
   const resultResponse = await fetch(bulkResultUrl);
   const resultText = await resultResponse.text();
 
@@ -140,16 +193,14 @@ async function fetchBulkOperationResults(bulkResultUrl) {
     .filter(Boolean)
     .map((line) => JSON.parse(line));
 
-  const productsMap = {};
+  const productsMap: {
+    [key: string]: Product & { variants: ProductVariant[] };
+  } = {};
 
   resultItems.forEach((item) => {
     if (item.id && !item.__parentId) {
-      //  const cleanDescription = prepareProductDescription(
-      //    item.descriptionHtml || ''
-      //  );
       productsMap[item.id] = {
         ...item,
-        //description: cleanDescription,
         variants: [],
       };
     }

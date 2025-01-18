@@ -1,6 +1,4 @@
-import { FastifyRequest } from 'fastify';
-
-interface QueryParams {
+interface UrlParams {
   query?: string;
   limit?: string;
   page?: string;
@@ -8,15 +6,12 @@ interface QueryParams {
   categoryId?: string;
 }
 
-export function getUrlParams(request: FastifyRequest) {
-  const query = request.query as QueryParams;
+export const getUrlParams = (request: { query: UrlParams }): UrlParams => {
   return {
-    query: query.query || undefined,
-    limit: query.limit || undefined,
-    page: query.page || undefined,
-    supplierId: query.supplierId || undefined,
-    categoryId: query.categoryId || undefined,
+    query: request.query.query,
+    limit: request.query.limit,
+    page: request.query.page,
+    supplierId: request.query.supplierId,
+    categoryId: request.query.categoryId,
   };
-}
-
-export default getUrlParams;
+};

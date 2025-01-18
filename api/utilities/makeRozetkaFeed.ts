@@ -1,7 +1,9 @@
+import { GenericProductFeed } from '../routes/GET-feeds';
+
 const stopBrands = ['Kingston', 'Samsung'];
 const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];
 
-export const makeRozetkaFeed = (products) => {
+export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
   const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
   const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>\n`;
@@ -107,7 +109,7 @@ export const makeRozetkaFeed = (products) => {
 };
 
 // Function to extract categoryId from rozetka_filter string
-const parseCategoryId = (rozetka_filter) => {
+const parseCategoryId = (rozetka_filter: string) => {
   if (typeof rozetka_filter !== 'string') {
     return 'unknown';
   }
@@ -115,7 +117,7 @@ const parseCategoryId = (rozetka_filter) => {
   return match ? match[0] : 'unknown';
 };
 
-const parseRozetkaFilter = (rozetka_filter) => {
+const parseRozetkaFilter = (rozetka_filter: string) => {
   const [categoryId, paramsString] = rozetka_filter
     .split(':')
     .map((item) => item.trim());

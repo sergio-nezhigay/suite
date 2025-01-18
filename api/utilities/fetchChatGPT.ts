@@ -1,5 +1,4 @@
-import { AppConnections } from '.gadget/server/types';
-//import { openai } from '../openai';
+import { AppConnections } from 'gadget-server';
 
 export default async function fetchChatGPT({
   prompt,

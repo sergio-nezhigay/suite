@@ -1,4 +1,4 @@
-import { RouteHandler } from 'fastify';
+import { RouteHandler } from 'gadget-server';
 import { connections } from 'gadget-server';
 import {
   getShopifyClient,

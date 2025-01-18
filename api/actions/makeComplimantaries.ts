@@ -1,4 +1,4 @@
-import { complimentaryProducts } from '../data/complimentaryProducts';
+import { complimentaryProductsDesktops } from '../data/complimentaryProductsDesktops';
 import { updateMetafield } from '../utilities';
 
 export const run: ActionRun = async ({ api, connections }) => {
@@ -19,7 +19,7 @@ export const run: ActionRun = async ({ api, connections }) => {
       variants: { edges: { node: { price: true, barcode: true } } },
     },
     filter: {
-      specificationsProperties: { startsWith: 'Для ноутбука' },
+      specificationsProperties: { startsWith: `Для комп'ютера` },
     },
   });
   console.log('🚀 ~ records:', records);
@@ -44,7 +44,7 @@ export const run: ActionRun = async ({ api, connections }) => {
   console.log('🚀 ~ products length:', products.length);
 
   const value = JSON.stringify(
-    complimentaryProducts.map(({ id }) => `gid://shopify/Product/${id}`)
+    complimentaryProductsDesktops.map(({ id }) => `gid://shopify/Product/${id}`)
   );
 
   for (const product of products) {
