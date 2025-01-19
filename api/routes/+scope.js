@@ -2,7 +2,11 @@ import cors from '@fastify/cors';
 
 export default async function (server) {
   await server.register(cors, {
-    // allow requests from any domain
-    origin: true,
+    origin: [
+      'https://admin.shopify.com',
+      'https://extensions.shopifycdn.com',
+      'http://localhost:3000',
+      'https://informatica.com.ua',
+    ],
   });
 }
