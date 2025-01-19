@@ -1,5 +1,4 @@
-import { updateMetafield } from '../utilities';
-import { findSimilarProducts } from '../utilities/findSimilarProducts';
+import { findSimilarProducts, updateMetafield } from 'api/utilities';
 
 export const run: ActionRun = async ({ api, connections }) => {
   const allRecords = [];

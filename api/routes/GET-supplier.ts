@@ -9,7 +9,7 @@ import {
   fetchCherg,
   fetchSchusev,
   fetchEasy,
-} from '@/utilities/';
+} from 'api/utilities';
 
 const route: RouteHandler<{
   Querystring: {

@@ -94,6 +94,22 @@ async function uploadFileToShopify(
   fileContent: string | Blob,
   fileName: string
 ): Promise<void> {
+  if (!stagedTarget || !stagedTarget.url || !stagedTarget.parameters) {
+    throw new Error('Invalid staged target: Missing URL or parameters.');
+  }
+
+  if (
+    !fileContent ||
+    (typeof fileContent !== 'string' && !(fileContent instanceof Blob))
+  ) {
+    throw new Error(
+      'Invalid file content: Must be a non-empty string or Blob.'
+    );
+  }
+
+  if (!fileName || typeof fileName !== 'string' || fileName.trim() === '') {
+    throw new Error('Invalid file name: Must be a non-empty string.');
+  }
   const formData = new FormData();
   stagedTarget.parameters.forEach((param) =>
     formData.append(param.name, param.value)
@@ -104,6 +120,7 @@ async function uploadFileToShopify(
     method: 'POST',
     body: formData,
   });
+
   if (!response.ok) throw new Error('File upload failed');
 }
 

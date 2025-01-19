@@ -1,4 +1,4 @@
-import { GenericProductFeed } from '../routes/GET-feeds';
+import { GenericProductFeed } from 'routes/GET-feeds';
 
 const stopBrands = ['Kingston', 'Samsung'];
 const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];

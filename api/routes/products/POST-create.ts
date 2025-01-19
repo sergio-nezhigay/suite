@@ -1,5 +1,5 @@
-import { Products } from '@/types/';
-import { createProducts } from '@/utilities/';
+import { Products } from 'api/types';
+import { createProducts } from 'api/utilities';
 
 import { RouteHandler } from 'gadget-server';
 

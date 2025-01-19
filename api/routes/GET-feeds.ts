@@ -5,7 +5,7 @@ import {
   Product,
   makeRozetkaFeed,
   uploadFile,
-} from '@/utilities/';
+} from 'api/utilities';
 
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 
@@ -72,8 +72,6 @@ export interface GenericProductFeed {
 }
 
 function makeGenericFeed(products: Product[]): GenericProductFeed[] {
-  console.log('Input products length:', products.length);
-
   const basicProductUrl = 'https://informatica.com.ua/products/';
   const mappedProducts = products.map((product) => {
     const firstVariantWithPrice = product.variants.find(
@@ -116,8 +114,6 @@ function makeGenericFeed(products: Product[]): GenericProductFeed[] {
     };
   });
 
-  console.log('Mapped products length:', mappedProducts.length);
-
   const filteredProducts = mappedProducts.filter(({ availability, sku }) => {
     const supplier = sku.split('^')[1] || '';
     return (
@@ -125,8 +121,6 @@ function makeGenericFeed(products: Product[]): GenericProductFeed[] {
       genericSuppliers.includes(supplier.toLowerCase())
     );
   });
-
-  console.log('Filtered products length:', filteredProducts.length);
 
   return filteredProducts;
 }
@@ -208,8 +202,8 @@ const makeRemarketingFeed = (products: GenericProductFeed[]) => {
 };
 
 function products2CSV(productFeed: any[]): string {
-  if (!productFeed || productFeed.length === 0) {
-    throw new Error('Product feed is empty or undefined.');
+  if (productFeed.length === 0) {
+    return '';
   }
 
   if (typeof productFeed[0] !== 'object' || productFeed[0] === null) {

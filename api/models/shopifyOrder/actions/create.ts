@@ -1,5 +1,5 @@
 import Shopify from 'shopify-api-node';
-import { updateMetafield, getShopifyClient } from '../../../utilities';
+import { updateMetafield, getShopifyClient } from 'api/utilities';
 
 import {
   applyParams,

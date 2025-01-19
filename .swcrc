@@ -1,8 +1,10 @@
 {
   "jsc": {
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "@*": ["./api*"]
+      "utilities/*": ["./api/utilities/*"],
+      "routes/*": ["./api/routes/*"],
+      "types/*": ["./api/types/*"]
     }
   }
 }

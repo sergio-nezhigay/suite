@@ -1,5 +1,3 @@
-import Shopify from 'shopify-api-node';
-import makeIPMessage from '../../shared/makeIPMessage';
 import { makeGraphQLQuery } from './makeGraphQLQuery';
 
 export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
@@ -335,4 +333,11 @@ export async function updateWarehouse({
   };
   const response = await makeGraphQLQuery(metafieldMutation, variables);
   return response;
+}
+
+async function makeIPMessage() {
+  const response = await fetch('https://api.ipify.org?format=json');
+  const data = await response.json();
+  const ipMessage = data?.ip ? ` by ${data.ip}` : '';
+  return ipMessage;
 }

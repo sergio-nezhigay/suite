@@ -1,13 +1,13 @@
 // http://api.brain.com.ua/products/categoryID/SID [?vendorID=vendorID] [&search=search] [&filterID=filterID] [&filters[]=filterID] [&limit=limit] [&offset=offset] [&sortby=field_name] [&order=order] [&lang=lang]
 
 import { FetchingFunc } from 'api/types';
-import { brainRequest } from './brainRequest';
-
-import { fetchBrainProductsContent } from './fetchBrainProductsContent';
-import { fetchBrainBrands } from './fetchBrainBrands';
-import { convertArrayToObject } from './convertArrayToObject';
-import { fetchBrainProduct } from './fetchBrainProduct';
-import { error } from 'console';
+import {
+  brainRequest,
+  fetchBrainProductsContent,
+  fetchBrainBrands,
+  convertArrayToObject,
+  fetchBrainProduct,
+} from 'api/utilities';
 
 export async function fetchBrainProducts({
   query,
@@ -28,7 +28,7 @@ export async function fetchBrainProducts({
       },
     });
     if (status === 0) {
-      throw error(error_message);
+      throw Error(error_message);
     }
     if (result?.count) {
       count = +result?.count;

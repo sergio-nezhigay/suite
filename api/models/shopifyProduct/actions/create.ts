@@ -5,7 +5,7 @@ import {
   ActionOptions,
 } from 'gadget-server';
 
-import { getShopifyClient, updateMetafield } from '../../../utilities';
+import { getShopifyClient, updateMetafield } from 'api/utilities';
 
 export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);

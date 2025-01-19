@@ -1,6 +1,6 @@
 // http://api.brain.com.ua/vendors/[categoryID/]SID
 
-import { brainRequest } from './brainRequest';
+import { brainRequest } from 'api/utilities';
 
 export async function fetchBrainBrands() {
   const { status, result } = await brainRequest({
