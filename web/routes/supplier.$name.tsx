@@ -116,7 +116,7 @@ function Supplier() {
   const createProducts = async () => {
     try {
       setLoading(true);
-      const response = await fetch('/products/create', {
+      const response = await fetch('/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
