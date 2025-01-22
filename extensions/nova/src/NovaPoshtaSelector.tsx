@@ -1,15 +1,18 @@
 import { useEffect, useState } from 'react';
 import {
-  render,
   BlockStack,
   InlineStack,
-  Section,
   TextField,
   Select,
-  Text,
   ProgressIndicator,
   Button,
+  Text,
 } from '@shopify/ui-extensions-react/admin';
+import {
+  NovaPoshtaWarehouse,
+  updateWarehouse,
+} from '../../shared/shopifyOperations';
+import useNovaposhtaApiKey from './useNovaposhtaApiKey';
 
 interface City {
   Ref: string;
@@ -17,19 +20,92 @@ interface City {
   AreaDescription: string;
 }
 
-import { SHOPIFY_APP_URL } from '../../shared/data';
-import {
-  NovaPoshtaWarehouse,
-  updateWarehouse,
-} from '../../shared/shopifyOperations';
-
 interface WarehouseNP {
   Ref: string;
   Description: string;
 }
 
-function containsOnlyOneWord(str: string) {
+const novaposhtaApiUrl = 'https://api.novaposhta.ua/v2.0/json/';
+
+function isSingleWord(str: string) {
   return str.trim().split(/\s+/).length === 1;
+}
+
+async function fetchData(url: string, payload: any) {
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(payload),
+  });
+  return response.json();
+}
+
+function useCitySuggestions(searchQuery: string, apiKey: string) {
+  const [cityOptions, setCityOptions] = useState<City[]>([]);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!searchQuery || searchQuery.trim() === '') {
+      setCityOptions([]);
+      return;
+    }
+
+    const fetchCitySuggestions = async () => {
+      setLoading(true);
+      try {
+        const payload = {
+          modelName: 'Address',
+          calledMethod: 'getCities',
+          methodProperties: { FindByString: searchQuery },
+          apiKey,
+        };
+        const { data } = await fetchData(novaposhtaApiUrl, payload);
+        setCityOptions(data || []);
+      } catch (error) {
+        console.error('Failed to fetch cities', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCitySuggestions();
+  }, [searchQuery, apiKey]);
+
+  return { cityOptions, isLoading };
+}
+
+function useWarehouseSuggestions(chosenCityRef: string | null, apiKey: string) {
+  const [warehouseOptions, setWarehouseOptions] = useState<WarehouseNP[]>([]);
+  const [isLoading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!chosenCityRef) {
+      setWarehouseOptions([]);
+      return;
+    }
+
+    const fetchWarehouseSuggestions = async () => {
+      setLoading(true);
+      try {
+        const payload = {
+          modelName: 'AddressGeneral',
+          calledMethod: 'getWarehouses',
+          methodProperties: { CityRef: chosenCityRef },
+          apiKey,
+        };
+        const { data } = await fetchData(novaposhtaApiUrl, payload);
+        setWarehouseOptions(data || []);
+      } catch (error) {
+        console.error('Failed to fetch warehouses', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchWarehouseSuggestions();
+  }, [chosenCityRef, apiKey]);
+
+  return { warehouseOptions, isLoading };
 }
 
 export default function NovaPoshtaSelector({
@@ -41,166 +117,104 @@ export default function NovaPoshtaSelector({
   updateProbability: () => void;
   orderId: string;
 }) {
-  const [cityQuery, setCityQuery] = useState(
-    bestWarehouse?.cityDescription
-      ? bestWarehouse?.cityDescription.toLowerCase()
-      : ''
+  const [searchQuery, setSearchQuery] = useState(
+    bestWarehouse?.cityDescription?.toLowerCase() || ''
   );
-  const [cities, setCities] = useState<City[]>([]);
-  const [selectedCity, setSelectedCity] = useState<string | null>(
+  const [chosenCityRef, setChosenCityRef] = useState<string | null>(
     bestWarehouse?.cityRef || null
   );
-
-  const [warehouses, setWarehouses] = useState<WarehouseNP[]>([]);
-  const [selectedWarehouse, setSelectedWarehouse] = useState<string | null>(
+  const [chosenWarehouseRef, setChosenWarehouseRef] = useState<string | null>(
     bestWarehouse?.warehouseRef || null
   );
 
-  const [loading, setLoading] = useState(false);
+  const { apiKey, error, loadingApiKey } = useNovaposhtaApiKey();
+  const { cityOptions, isLoading: isLoadingCities } = useCitySuggestions(
+    searchQuery,
+    apiKey
+  );
+  const { warehouseOptions, isLoading: isLoadingWarehouses } =
+    useWarehouseSuggestions(chosenCityRef, apiKey);
 
-  useEffect(() => {
-    if (!cityQuery || cityQuery.trim() === '') {
-      setCities([]);
-      return;
-    }
-
-    const fetchCities = async () => {
-      setLoading(true);
-      try {
-        const payload = {
-          modelName: 'Address',
-          calledMethod: 'getCities',
-          methodProperties: {
-            FindByString: cityQuery,
-          },
-        };
-        const response = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/general`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(payload),
-        });
-        const { data } = await response.json();
-        if (data && data.length === 1) {
-          setSelectedCity(data[0].Ref);
-        }
-        setCities(data || []);
-      } catch (error) {
-        console.error('Failed to fetch cities', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchCities();
-  }, [cityQuery]);
-
-  // Fetch warehouses for the selected city
-  useEffect(() => {
-    if (!selectedCity) {
-      setWarehouses([]);
-      return;
-    }
-
-    const fetchWarehouses = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/general`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            modelName: 'AddressGeneral',
-            calledMethod: 'getWarehouses',
-            methodProperties: {
-              CityRef: selectedCity,
-            },
-          }),
-        });
-        const { data } = await response.json();
-        if (data && data.length === 1) {
-          setSelectedWarehouse(data[0].Ref);
-        }
-        setWarehouses(data || []);
-      } catch (error) {
-        console.error('Failed to fetch warehouses', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWarehouses();
-  }, [selectedCity]);
-
-  const logSelectedValues = async () => {
-    const selectedCityObj = cities.find((city) => city.Ref === selectedCity);
-
-    const selectedWarehouseObj = warehouses.find(
-      (warehouse) => warehouse.Ref === selectedWarehouse
+  const saveSelectedCityAndWarehouse = async () => {
+    const selectedCityObj = cityOptions.find(
+      (city) => city.Ref === chosenCityRef
+    );
+    const selectedWarehouseObj = warehouseOptions.find(
+      (warehouse) => warehouse.Ref === chosenWarehouseRef
     );
 
     await updateWarehouse({
       warehouse: {
-        cityRef: selectedCity || '',
+        cityRef: chosenCityRef || '',
         cityDescription: selectedCityObj?.Description || '',
-        warehouseRef: selectedWarehouse || '',
+        warehouseRef: chosenWarehouseRef || '',
         warehouseDescription: selectedWarehouseObj?.Description || '',
-        matchProbability: 1 || 0,
+        matchProbability: 1,
       },
       orderId,
     });
     updateProbability();
   };
 
+  if (loadingApiKey || isLoadingCities || isLoadingWarehouses) {
+    return <ProgressIndicator size='small-300' />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!apiKey) {
+    return <Text>No API key found.</Text>;
+  }
+
   return (
     <BlockStack gap>
-      {loading && <ProgressIndicator size='small-300' />}
       <TextField
         label='Редагуйте назву пункта'
-        value={cityQuery}
-        onChange={setCityQuery}
+        value={searchQuery}
+        onChange={setSearchQuery}
         placeholder='Назва'
       />
       <InlineStack gap>
-        {cities.length > 0 && (
-          <InlineStack inlineSize={`${40}%`}>
+        {cityOptions.length > 0 && (
+          <InlineStack inlineSize='40%'>
             <Select
               label='Оберіть пункт'
-              options={cities.map((city) => {
-                const label = containsOnlyOneWord(city.Description)
+              options={cityOptions.map((city) => ({
+                value: city.Ref,
+                label: isSingleWord(city.Description)
                   ? `${city.Description} (${city.AreaDescription} обл.)`
-                  : city.Description;
-                return {
-                  value: city.Ref,
-                  label: label,
-                };
-              })}
+                  : city.Description,
+              }))}
               onChange={(value) => {
-                setSelectedCity(value);
-                setSelectedWarehouse(null);
+                setChosenCityRef(value);
+                setChosenWarehouseRef(null);
               }}
-              value={selectedCity || ''}
+              value={chosenCityRef || ''}
             />
           </InlineStack>
         )}
-        {selectedCity && warehouses.length > 0 && (
-          <InlineStack inlineSize={`${60}%`}>
+        {chosenCityRef && warehouseOptions.length > 0 && (
+          <InlineStack inlineSize='60%'>
             <Select
               label='Оберіть відділення'
-              options={warehouses.map((warehouse) => ({
+              options={warehouseOptions.map((warehouse) => ({
                 value: warehouse.Ref,
                 label: warehouse.Description,
               }))}
-              onChange={setSelectedWarehouse}
-              value={selectedWarehouse || ''}
+              onChange={setChosenWarehouseRef}
+              value={chosenWarehouseRef || ''}
             />
           </InlineStack>
         )}
       </InlineStack>
 
       <Button
-        onClick={logSelectedValues}
-        disabled={selectedCity && selectedWarehouse ? false : true}
+        onClick={saveSelectedCityAndWarehouse}
+        disabled={!chosenCityRef || !chosenWarehouseRef}
       >
-        {selectedCity && selectedWarehouse
+        {chosenCityRef && chosenWarehouseRef
           ? 'Зберегти адресу'
           : 'Адреса не обрана'}
       </Button>
