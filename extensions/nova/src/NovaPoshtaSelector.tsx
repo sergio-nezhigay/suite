@@ -40,12 +40,12 @@ async function fetchData(url: string, payload: any) {
   return response.json();
 }
 
-function useCitySuggestions(searchQuery: string, apiKey: string) {
+function useCitySuggestions(searchQuery: string, apiKey: string | null) {
   const [cityOptions, setCityOptions] = useState<City[]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!searchQuery || searchQuery.trim() === '') {
+    if (!apiKey || !searchQuery || searchQuery.trim() === '') {
       setCityOptions([]);
       return;
     }
@@ -74,12 +74,15 @@ function useCitySuggestions(searchQuery: string, apiKey: string) {
   return { cityOptions, isLoading };
 }
 
-function useWarehouseSuggestions(chosenCityRef: string | null, apiKey: string) {
+function useWarehouseSuggestions(
+  chosenCityRef: string | null,
+  apiKey: string | null
+) {
   const [warehouseOptions, setWarehouseOptions] = useState<WarehouseNP[]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!chosenCityRef) {
+    if (!chosenCityRef || !apiKey) {
       setWarehouseOptions([]);
       return;
     }
@@ -171,7 +174,7 @@ export default function NovaPoshtaSelector({
   return (
     <BlockStack gap>
       <TextField
-        label='Редагуйте назву пункта'
+        label='Редагуйте назву пункта:'
         value={searchQuery}
         onChange={setSearchQuery}
         placeholder='Назва'
@@ -180,7 +183,7 @@ export default function NovaPoshtaSelector({
         {cityOptions.length > 0 && (
           <InlineStack inlineSize='40%'>
             <Select
-              label='Оберіть пункт'
+              label='Оберіть пункт..'
               options={cityOptions.map((city) => ({
                 value: city.Ref,
                 label: isSingleWord(city.Description)

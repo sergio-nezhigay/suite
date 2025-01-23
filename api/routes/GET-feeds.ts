@@ -7,6 +7,7 @@ import {
   uploadFile,
 } from 'api/utilities';
 
+//const genericSuppliers = ['щу', 'ии', 'че'];
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 
 const IN_STOCK = 'in stock';

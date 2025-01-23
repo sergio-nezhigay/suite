@@ -38,11 +38,6 @@ export default function Feeds() {
         onAction: () => navigate('/'),
       }}
     >
-      <Text variant='bodyMd' as='p'>
-        This is a simple test for generating product feeds in a Shopify app
-        using a GET request.
-      </Text>
-
       <Button onClick={handleFeedGeneration} loading={loading}>
         Generate Product Feed.
       </Button>

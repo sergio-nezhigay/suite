@@ -1,32 +1,41 @@
 import { GenericProductFeed } from 'routes/GET-feeds';
 
-const stopBrands = ['Kingston', 'Samsung'];
+const stopBrands = ['Kingston', 'Samsung', 'Xiaomi'];
 const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];
+const DEFAULT_CATEGORY_MAPPING = {
+  "Пам'ять оперативна": 'c80081',
+  'USB-RS232': 'c80073',
+  'Аудіо перехідники оптика - тюльпани': 'c80073',
+  'HDMI - VGA': 'c80073',
+  'HDMI-RCA': 'c80073',
+  'Світлодіодні стрічки': 'c234721',
+  'USB Type C': 'c80073',
+  'RCA-3.5mm': 'c80073',
+  'HDMI-DisplayPort': 'c80073',
+  'USB кабелі': 'c80073',
+  'Зарядні пристрої': 'c146341',
+  'VGA-RCA': 'c80073',
+  'Перехідники для зарядки ноутбуків та роутерів': 'c80073',
+  'HDMI-SCART': 'c80073',
+};
 
 export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
   const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
   const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>\n`;
 
-  // Filter out products without rozetka_filter
   const filteredProducts = products.filter((product) => {
     const supplier = product.sku.split('^')[1] || '';
     return (
-      typeof product.rozetka_filter === 'string' &&
-      product.rozetka_filter.trim() &&
       !stopBrands.includes(product.brand) &&
       rozetkaSuppliers.includes(supplier.toLowerCase())
     );
   });
 
-  // Extract unique categoryIds from products' rozetka_filter
   const categoryIds = [
-    ...new Set(
-      filteredProducts.map((product) => parseCategoryId(product.rozetka_filter))
-    ),
+    ...new Set(filteredProducts.map((product) => parseCategoryId(product))),
   ];
 
-  // Build the categories section using the unique categoryIds
   const categoriesSection = categoryIds
     .map(
       (categoryId) => `<category id="${categoryId}">Category Name</category>`
@@ -50,7 +59,7 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
 
   const offers = filteredProducts
     .map((product) => {
-      const { categoryId, params } = parseRozetkaFilter(product.rozetka_filter);
+      const { categoryId, params } = parseRozetkaFilter(product);
 
       // Calculate oldPrice as 10% higher than the price
 
@@ -74,10 +83,11 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
         )
         .join('');
 
-      const oldRozetkaId = isMemory
-        ? product.id_woocommerce + '-1'
-        : product.id_woocommerce;
-      const id = oldRozetkaId || product.id;
+      const oldRozetkaMemoryId =
+        isMemory && product.id_woocommerce
+          ? product.id_woocommerce + '-1'
+          : product.id_woocommerce;
+      const id = oldRozetkaMemoryId || product.id;
 
       return `
           <offer id="${id}" available="${product.availability === 'in stock'}">
@@ -108,16 +118,27 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
   return xmlHeader + shopInfo + offers + shopClose;
 };
 
-// Function to extract categoryId from rozetka_filter string
-const parseCategoryId = (rozetka_filter: string) => {
-  if (typeof rozetka_filter !== 'string') {
-    return 'unknown';
+const parseCategoryId = (product: GenericProductFeed) => {
+  const rozetka_filter = product.rozetka_filter;
+  if (typeof rozetka_filter !== 'string' || !rozetka_filter.trim()) {
+    return getDefaultCategoryId(product);
   }
+
   const match = rozetka_filter.match(/^c\d+/);
-  return match ? match[0] : 'unknown';
+  return match ? match[0] : getDefaultCategoryId(product);
 };
 
-const parseRozetkaFilter = (rozetka_filter: string) => {
+const parseRozetkaFilter = (product: GenericProductFeed) => {
+  const rozetka_filter = product.rozetka_filter;
+  if (
+    !rozetka_filter ||
+    typeof rozetka_filter !== 'string' ||
+    !rozetka_filter.trim()
+  ) {
+    const fallbackCategoryId = getDefaultCategoryId(product);
+    return { categoryId: fallbackCategoryId, params: [] };
+  }
+
   const [categoryId, paramsString] = rozetka_filter
     .split(':')
     .map((item) => item.trim());
@@ -143,4 +164,16 @@ const parseRozetkaFilter = (rozetka_filter: string) => {
     });
 
   return { categoryId, params };
+};
+
+const getDefaultCategoryId = (product: GenericProductFeed) => {
+  const lowerCaseCollection = product.collection.toLowerCase();
+
+  for (const [key, value] of Object.entries(DEFAULT_CATEGORY_MAPPING)) {
+    if (lowerCaseCollection.includes(key)) {
+      return value;
+    }
+  }
+
+  return 'c4670691';
 };

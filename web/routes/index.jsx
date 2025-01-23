@@ -9,7 +9,7 @@ export default function () {
         <Layout.Section>
           <Card>
             <Text as='h2' variant='headingLg'>
-              How to create SMS Templates
+              How to create SMS Templates:
             </Text>
             <Text as='p'>
               To create SMS templates, use placeholders to represent dynamic

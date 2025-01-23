@@ -129,6 +129,12 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyLocation: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyLocation.gelly",
+          },
+        },
         shopifyOrder: {
           read: {
             filter:
@@ -239,7 +245,6 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         makeRecommendations: true,
-        test2: true,
       },
     },
     unauthenticated: {
@@ -264,7 +269,6 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         makeRecommendations: true,
-        test2: true,
       },
     },
   },
