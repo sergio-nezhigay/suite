@@ -42,44 +42,65 @@ export const run: ActionRun = async ({ params, record }) => {
 };
 
 export const onSuccess: ActionOnSuccess = async ({ record, connections }) => {
-  const shopify = getShopifyClient(connections);
-  const orderId = `gid://shopify/Order/${record.id}`;
-  const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
-    shopify,
-    orderId,
-  });
-  const paymentMethod =
-    gateway === 'Накладений платіж'
-      ? 'Накладений платіж'
-      : 'Передплата безготівка';
+  try {
+    const shopify = getShopifyClient(connections);
+    const orderId = `gid://shopify/Order/${record.id}`;
 
-  const { bestWarehouse, matchProbability } = await findBestWarehouse({
-    shippingAddress,
-  });
+    const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
+      shopify,
+      orderId,
+    }).catch((err) => {
+      console.error('Error fetching order gateway and address:', err);
+      throw err;
+    });
 
-  const variables = {
-    metafields: [
-      {
-        ownerId: orderId,
-        namespace: 'custom',
-        key: 'payment_method',
-        value: paymentMethod,
-      },
-      {
-        ownerId: orderId,
-        namespace: 'custom',
-        key: 'nova_poshta_warehouse',
-        value: JSON.stringify({
-          warehouseDescription: bestWarehouse.description,
-          cityDescription: bestWarehouse.cityDescription,
-          warehouseRef: bestWarehouse.ref,
-          cityRef: bestWarehouse.cityRef,
-          matchProbability,
-        }),
-      },
-    ],
-  };
-  await updateMetafield({ shopify, variables });
+    const paymentMethod =
+      gateway === 'Накладений платіж'
+        ? 'Накладений платіж'
+        : 'Передплата безготівка';
+
+    const { bestWarehouse, matchProbability } = await findBestWarehouse({
+      shippingAddress,
+    }).catch((err) => {
+      console.error('Error finding best warehouse:', err);
+      throw err;
+    });
+
+    const variables = {
+      metafields: [
+        {
+          ownerId: orderId,
+          namespace: 'custom',
+          key: 'payment_method',
+          value: paymentMethod,
+          type: 'single_line_text_field',
+        },
+        {
+          ownerId: orderId,
+          namespace: 'custom',
+          key: 'nova_poshta_warehouse',
+          value: JSON.stringify({
+            warehouseDescription: bestWarehouse.description,
+            cityDescription: bestWarehouse.cityDescription,
+            warehouseRef: bestWarehouse.ref,
+            cityRef: bestWarehouse.cityRef,
+            matchProbability,
+          }),
+          type: 'json',
+        },
+      ],
+    };
+    console.log('🚀 ~ variables:', variables);
+
+    await updateMetafield({ shopify, variables }).catch((err) => {
+      console.error('Error updating metafield:', err);
+      throw err;
+    });
+
+    console.log('onSuccess completed successfully for Order ID:', orderId);
+  } catch (err) {
+    console.error('Error in onSuccess function:', err);
+  }
 };
 
 export const options: ActionOptions = {
