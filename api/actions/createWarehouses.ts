@@ -21,7 +21,7 @@ export const run: ActionRun = async ({ api, logger }) => {
     );
     logger.info('🚀 Received response from Nova Poshta API', {
       responseData: response.data,
-    }); // Log the full response
+    });
 
     const data = response.data;
 
@@ -50,7 +50,6 @@ export const run: ActionRun = async ({ api, logger }) => {
 
     const BATCH_SIZE = 70;
 
-    // Log the warehouses prepared for upsert
     logger.info(
       `🔍 Preparing to upsert warehouses in batches of ${BATCH_SIZE}`
     );
