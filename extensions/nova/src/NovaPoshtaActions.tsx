@@ -102,7 +102,7 @@ function NovaPoshtaActions({
       <BlockStack>
         <InlineStack>
           <Button onClick={handleCreateDocument} disabled={loading}>
-            Create Document
+            Створити декларацію
           </Button>
         </InlineStack>
 

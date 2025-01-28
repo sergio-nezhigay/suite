@@ -77,15 +77,14 @@ function WarehouseExtension() {
           <ProgressIndicator size='small-300' />
         ) : (
           <>
-            <InlineStack gap inlineAlignment='space-between'>
-              <Text fontWeight='bold'>Order Information</Text>
-              <Text>
-                Пункт: {orderDetails?.city || 'N/A'}. Адреса:{' '}
-                {orderDetails?.address || 'N/A'}
-              </Text>
-            </InlineStack>
-
             <BlockStack gap>
+              <InlineStack gap inlineAlignment='space-between'>
+                <Text fontWeight='bold'>Заповнено замовником:</Text>
+                <Text>
+                  {orderDetails?.city}, {orderDetails?.address}
+                </Text>
+              </InlineStack>
+
               <ProbabilityIndicator probability={probability} />
               <NovaPoshtaSelector
                 bestWarehouse={novaPoshtaWarehouse}

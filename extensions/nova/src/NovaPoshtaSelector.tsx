@@ -40,12 +40,16 @@ async function fetchData(url: string, payload: any) {
   return response.json();
 }
 
-function useCitySuggestions(searchQuery: string, apiKey: string | null) {
+function useCitySuggestions(
+  searchQuery: string,
+  apiKey: string | null,
+  setChosenCityRef: any
+) {
   const [cityOptions, setCityOptions] = useState<City[]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!apiKey || !searchQuery || searchQuery.trim() === '') {
+    if (!apiKey || searchQuery.trim() === '') {
       setCityOptions([]);
       return;
     }
@@ -60,7 +64,13 @@ function useCitySuggestions(searchQuery: string, apiKey: string | null) {
           apiKey,
         };
         const { data } = await fetchData(novaposhtaApiUrl, payload);
+
         setCityOptions(data || []);
+        if (data.length > 0) {
+          setChosenCityRef(data[0].Ref);
+        } else {
+          setChosenCityRef(null);
+        }
       } catch (error) {
         console.error('Failed to fetch cities', error);
       } finally {
@@ -76,7 +86,8 @@ function useCitySuggestions(searchQuery: string, apiKey: string | null) {
 
 function useWarehouseSuggestions(
   chosenCityRef: string | null,
-  apiKey: string | null
+  apiKey: string | null,
+  setChosenWarehouseRef: any
 ) {
   const [warehouseOptions, setWarehouseOptions] = useState<WarehouseNP[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -84,6 +95,7 @@ function useWarehouseSuggestions(
   useEffect(() => {
     if (!chosenCityRef || !apiKey) {
       setWarehouseOptions([]);
+
       return;
     }
 
@@ -97,7 +109,10 @@ function useWarehouseSuggestions(
           apiKey,
         };
         const { data } = await fetchData(novaposhtaApiUrl, payload);
+
         setWarehouseOptions(data || []);
+
+        setChosenWarehouseRef(null);
       } catch (error) {
         console.error('Failed to fetch warehouses', error);
       } finally {
@@ -120,6 +135,13 @@ export default function NovaPoshtaSelector({
   updateProbability: () => void;
   orderId: string;
 }) {
+  const [savedWarehouse, setSavedWarehouse] = useState({
+    cityDescription: bestWarehouse?.cityDescription || '',
+    warehouseDescription: bestWarehouse?.warehouseDescription || '',
+  });
+
+  const [editModeActive, setEditModeActive] = useState(false);
+
   const [searchQuery, setSearchQuery] = useState(
     bestWarehouse?.cityDescription?.toLowerCase() || ''
   );
@@ -133,10 +155,23 @@ export default function NovaPoshtaSelector({
   const { apiKey, error, loadingApiKey } = useNovaposhtaApiKey();
   const { cityOptions, isLoading: isLoadingCities } = useCitySuggestions(
     searchQuery,
-    apiKey
+    apiKey,
+    setChosenCityRef
   );
   const { warehouseOptions, isLoading: isLoadingWarehouses } =
-    useWarehouseSuggestions(chosenCityRef, apiKey);
+    useWarehouseSuggestions(chosenCityRef, apiKey, setChosenWarehouseRef);
+
+  if (loadingApiKey) {
+    return <ProgressIndicator size='small-300' />;
+  }
+
+  if (error) {
+    return <Text>Error: {error}</Text>;
+  }
+
+  if (!apiKey) {
+    return <Text>No API key found.</Text>;
+  }
 
   const saveSelectedCityAndWarehouse = async () => {
     const selectedCityObj = cityOptions.find(
@@ -157,70 +192,83 @@ export default function NovaPoshtaSelector({
       orderId,
     });
     updateProbability();
+    setSavedWarehouse({
+      cityDescription: selectedCityObj?.Description || '',
+      warehouseDescription: selectedWarehouseObj?.Description || '',
+    });
   };
 
-  if (loadingApiKey || isLoadingCities || isLoadingWarehouses) {
-    return <ProgressIndicator size='small-300' />;
-  }
-
-  if (error) {
-    return <Text>Error: {error}</Text>;
-  }
-
-  if (!apiKey) {
-    return <Text>No API key found.</Text>;
-  }
-
   return (
-    <BlockStack gap>
-      <TextField
-        label='Редагуйте назву пункта:'
-        value={searchQuery}
-        onChange={setSearchQuery}
-        placeholder='Назва'
-      />
-      <InlineStack gap>
-        {cityOptions.length > 0 && (
-          <InlineStack inlineSize='40%'>
-            <Select
-              label='Оберіть пункт..'
-              options={cityOptions.map((city) => ({
-                value: city.Ref,
-                label: isSingleWord(city.Description)
-                  ? `${city.Description} (${city.AreaDescription} обл.)`
-                  : city.Description,
-              }))}
-              onChange={(value) => {
-                setChosenCityRef(value);
-                setChosenWarehouseRef(null);
-              }}
-              value={chosenCityRef || ''}
-            />
-          </InlineStack>
-        )}
-        {chosenCityRef && warehouseOptions.length > 0 && (
-          <InlineStack inlineSize='60%'>
-            <Select
-              label='Оберіть відділення'
-              options={warehouseOptions.map((warehouse) => ({
-                value: warehouse.Ref,
-                label: warehouse.Description,
-              }))}
-              onChange={setChosenWarehouseRef}
-              value={chosenWarehouseRef || ''}
-            />
-          </InlineStack>
-        )}
+    <BlockStack>
+      <InlineStack gap inlineAlignment='space-between'>
+        <Text fontWeight='bold'>Збережено:</Text>
+        <Text>
+          {savedWarehouse.cityDescription},{' '}
+          {savedWarehouse.warehouseDescription}
+        </Text>
       </InlineStack>
+      {editModeActive ? (
+        <>
+          <TextField
+            label='Редагуйте назву пункта:'
+            value={searchQuery}
+            onChange={(value) => {
+              setSearchQuery(value);
+              setChosenWarehouseRef(null);
+            }}
+            placeholder='Назва'
+          />
+          <InlineStack gap>
+            <InlineStack inlineSize='40%'>
+              {isLoadingCities ? (
+                <ProgressIndicator size='small-300' />
+              ) : (
+                <Select
+                  label='Оберіть пункт..'
+                  options={cityOptions.map((city) => ({
+                    value: city.Ref,
+                    label: isSingleWord(city.Description)
+                      ? `${city.Description} (${city.AreaDescription} обл.)`
+                      : city.Description,
+                  }))}
+                  onChange={(value) => {
+                    setChosenCityRef(value);
+                  }}
+                  value={chosenCityRef || ''}
+                />
+              )}
+            </InlineStack>
+            {isLoadingWarehouses ? (
+              <ProgressIndicator size='small-300' />
+            ) : (
+              <InlineStack inlineSize='60%'>
+                <Select
+                  label='Оберіть відділення'
+                  options={warehouseOptions.map((warehouse) => ({
+                    value: warehouse.Ref,
+                    label: warehouse.Description,
+                  }))}
+                  onChange={setChosenWarehouseRef}
+                  value={chosenWarehouseRef || ''}
+                />
+              </InlineStack>
+            )}
+          </InlineStack>
 
-      <Button
-        onClick={saveSelectedCityAndWarehouse}
-        disabled={!chosenCityRef || !chosenWarehouseRef}
-      >
-        {chosenCityRef && chosenWarehouseRef
-          ? 'Зберегти адресу'
-          : 'Адреса не обрана'}
-      </Button>
+          <Button
+            onClick={saveSelectedCityAndWarehouse}
+            disabled={!chosenCityRef || !chosenWarehouseRef}
+          >
+            {chosenCityRef && chosenWarehouseRef
+              ? 'Зберегти адресу'
+              : 'Адреса не обрана'}
+          </Button>
+        </>
+      ) : (
+        <Button onClick={() => setEditModeActive(true)}>
+          Редагувати адресу
+        </Button>
+      )}
     </BlockStack>
   );
 }
