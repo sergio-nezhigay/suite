@@ -98,7 +98,8 @@ export async function createProducts({
       if (productCreate?.userErrors && productCreate?.userErrors.length > 0) {
         console.log('🚀 ~ productCreate userErrors:', productCreate.userErrors);
         throw new Error(
-          'Failed to create a product' + productCreate.userErrors
+          'Failed to create a product' +
+            JSON.stringify(productCreate.userErrors)
         );
       }
 

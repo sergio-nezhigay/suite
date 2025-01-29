@@ -87,7 +87,8 @@ function useCitySuggestions(
 function useWarehouseSuggestions(
   chosenCityRef: string | null,
   apiKey: string | null,
-  setChosenWarehouseRef: any
+  setChosenWarehouseRef: any,
+  bestWarehouseRef?: string | null
 ) {
   const [warehouseOptions, setWarehouseOptions] = useState<WarehouseNP[]>([]);
   const [isLoading, setLoading] = useState(false);
@@ -95,7 +96,6 @@ function useWarehouseSuggestions(
   useEffect(() => {
     if (!chosenCityRef || !apiKey) {
       setWarehouseOptions([]);
-
       return;
     }
 
@@ -112,7 +112,16 @@ function useWarehouseSuggestions(
 
         setWarehouseOptions(data || []);
 
-        setChosenWarehouseRef(null);
+        if (data && data.length === 1) {
+          setChosenWarehouseRef(data[0].Ref);
+        } else if (data && data.length > 1 && bestWarehouseRef) {
+          const matchingWarehouse = data.find(
+            (w: { Ref: string }) => w.Ref === bestWarehouseRef
+          );
+          setChosenWarehouseRef(matchingWarehouse ? bestWarehouseRef : null);
+        } else {
+          setChosenWarehouseRef(null);
+        }
       } catch (error) {
         console.error('Failed to fetch warehouses', error);
       } finally {
@@ -121,7 +130,7 @@ function useWarehouseSuggestions(
     };
 
     fetchWarehouseSuggestions();
-  }, [chosenCityRef, apiKey]);
+  }, [chosenCityRef, apiKey, bestWarehouseRef]);
 
   return { warehouseOptions, isLoading };
 }
@@ -159,7 +168,12 @@ export default function NovaPoshtaSelector({
     setChosenCityRef
   );
   const { warehouseOptions, isLoading: isLoadingWarehouses } =
-    useWarehouseSuggestions(chosenCityRef, apiKey, setChosenWarehouseRef);
+    useWarehouseSuggestions(
+      chosenCityRef,
+      apiKey,
+      setChosenWarehouseRef,
+      bestWarehouse?.warehouseRef
+    );
 
   if (loadingApiKey) {
     return <ProgressIndicator size='small-300' />;
@@ -205,6 +219,9 @@ export default function NovaPoshtaSelector({
         <Text>
           {savedWarehouse.cityDescription},{' '}
           {savedWarehouse.warehouseDescription}
+          {savedWarehouse.warehouseDescription && ' ('}
+          {savedWarehouse.warehouseDescription && chosenWarehouseRef}
+          {savedWarehouse.warehouseDescription && ')'}
         </Text>
       </InlineStack>
       {editModeActive ? (

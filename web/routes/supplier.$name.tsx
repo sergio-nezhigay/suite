@@ -125,13 +125,18 @@ function Supplier() {
       });
 
       if (!response.ok) {
-        const error = JSON.stringify(response);
-        console.log(error);
-        shopify.toast.show('Failed to create' + error, {
-          duration: 10000,
-          isError: true,
-        });
+        let errorDetails = `HTTP ${response.status}`;
+        try {
+          const errorData = await response.json();
+          errorDetails = `HTTP ${response.status} - ${
+            errorData.message || JSON.stringify(errorData)
+          }`;
+        } catch (e) {
+          errorDetails = `HTTP ${response.status} - Unable to parse error response`;
+        }
+        throw new Error(`Failed to create products: ${errorDetails}`);
       }
+
       const data = await response.json();
       shopify.toast.show(
         data.createdProducts.length + ' products successfully created',
@@ -142,7 +147,7 @@ function Supplier() {
     } catch (error) {
       console.log(error);
       shopify.toast.show('Error creating products' + error, {
-        duration: 10000,
+        duration: 30000,
         isError: true,
       });
     } finally {
