@@ -23,13 +23,15 @@ export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
 }
 
 export type NovaPoshtaWarehouse = {
-  cityDescription: string;
-  cityRef: string;
-  warehouseDescription: string;
-  warehouseRef: string;
-  matchProbability: number;
+  cityDescription?: string;
+  cityRef?: string;
+  warehouseDescription?: string;
+  warehouseRef?: string;
+  matchProbability?: number;
 } | null;
+
 export type OrderDetails = {
+  id: string;
   tags: string[];
   orderNumber: string;
   total: string;
@@ -47,7 +49,11 @@ export type OrderDetails = {
 
 export type OrderInfo = {
   orderDetails: OrderDetails;
-  novaPoshtaWarehouse: NovaPoshtaWarehouse;
+  novaposhtaRecepientWarehouse: NovaPoshtaWarehouse;
+  novaposhtaDeclaration: {
+    number: string | null;
+    ref: string | null;
+  };
 } | null;
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
@@ -78,7 +84,13 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         paymentMethod: metafield(namespace: "custom", key: "payment_method") {
             value
         }
-        nova_poshta_warehouse: metafield(namespace: "custom", key: "nova_poshta_warehouse") {
+        novaposhtaRecepientWarehouse: metafield(namespace: "nova_poshta", key: "recepient_warehouse") {
+            value
+        }
+        novaposhtaDeclarationNumber: metafield(namespace: "nova_poshta", key: "declaration_number") {
+            value
+        }
+        novaposhtaDeclarationRef: metafield(namespace: "nova_poshta", key: "declaration_ref") {
             value
         }
       }
@@ -103,7 +115,9 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         zip: string;
       };
       paymentMethod: { value: string };
-      nova_poshta_warehouse: { value: string };
+      novaposhtaRecepientWarehouse: { value: string };
+      novaposhtaDeclarationNumber: { value: string };
+      novaposhtaDeclarationRef: { value: string };
     };
   }>(query, { id: orderId });
 
@@ -118,13 +132,16 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       clientIp,
       shippingAddress,
       paymentMethod,
-      nova_poshta_warehouse,
+      novaposhtaRecepientWarehouse,
+      novaposhtaDeclarationNumber,
+      novaposhtaDeclarationRef,
     } = data?.order;
 
     const zip =
       shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
     try {
       const orderDetails = {
+        id: orderId,
         tags,
         orderNumber: name,
         total: currentSubtotalPriceSet.shopMoney.amount,
@@ -141,7 +158,13 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       };
       return {
         orderDetails,
-        novaPoshtaWarehouse: JSON.parse(nova_poshta_warehouse?.value || '{}'),
+        novaposhtaRecepientWarehouse: JSON.parse(
+          novaposhtaRecepientWarehouse?.value || '{}'
+        ),
+        novaposhtaDeclaration: {
+          number: novaposhtaDeclarationNumber?.value || null,
+          ref: novaposhtaDeclarationRef?.value || null,
+        },
       };
     } catch (error) {
       throw new Error(`Parsing error: ${error}`);
@@ -324,8 +347,8 @@ export async function updateWarehouse({
     metafields: [
       {
         ownerId: orderId,
-        namespace: 'custom',
-        key: 'nova_poshta_warehouse',
+        namespace: 'nova_poshta',
+        key: 'recepient_warehouse',
         value: JSON.stringify(warehouse),
         type: 'json',
       },

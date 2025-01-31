@@ -13,7 +13,7 @@ import { useState, useEffect } from 'react';
 import {
   getOrderInfo,
   NovaPoshtaWarehouse,
-  OrderDetails,
+  OrderInfo,
 } from '../../shared/shopifyOperations';
 import NovaPoshtaSelector from './NovaPoshtaSelector';
 import NovaPoshtaActions from './NovaPoshtaActions';
@@ -26,11 +26,7 @@ export default reactExtension(TARGET, () => <WarehouseExtension />);
 function WarehouseExtension() {
   const { data } = useApi(TARGET);
   const orderId = data.selected[0]?.id;
-
-  const [orderDetails, setOrderDetails] = useState<OrderDetails>(null);
-  const [novaPoshtaWarehouse, setNovaPoshtaWarehouse] =
-    useState<NovaPoshtaWarehouse | null>(null);
-
+  const [orderInfo, setOrderInfo] = useState<OrderInfo>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -42,13 +38,11 @@ function WarehouseExtension() {
         const orderInfo = await getOrderInfo(orderId);
         console.log('🚀 ~ orderInfo:', orderInfo);
         if (orderInfo) {
-          setOrderDetails(orderInfo.orderDetails);
-          setNovaPoshtaWarehouse(orderInfo.novaPoshtaWarehouse);
+          setOrderInfo(orderInfo);
         }
       } catch (error) {
         console.error('Error fetching order info:', error);
-        setOrderDetails(null);
-        setNovaPoshtaWarehouse(null);
+        setOrderInfo(null);
       } finally {
         setLoading(false);
       }
@@ -57,18 +51,13 @@ function WarehouseExtension() {
     fetchOrderInfo();
   }, [orderId]);
 
-  const updateProbability = () => {
-    if (novaPoshtaWarehouse) {
-      setNovaPoshtaWarehouse({
-        ...novaPoshtaWarehouse,
-        matchProbability: 1,
-      });
-    }
-  };
-
   const probability = Math.round(
-    (novaPoshtaWarehouse?.matchProbability || 0) * 100
+    (orderInfo?.novaposhtaRecepientWarehouse?.matchProbability || 0) * 100
   );
+
+  const setNovaPoshtaWarehouse = (value: NovaPoshtaWarehouse) => {
+    setOrderInfo({ ...orderInfo, novaposhtaRecepientWarehouse: value });
+  };
 
   return (
     <AdminBlock title='NovaPoshta'>
@@ -81,19 +70,20 @@ function WarehouseExtension() {
               <InlineStack gap inlineAlignment='space-between'>
                 <Text fontWeight='bold'>Заповнено замовником:</Text>
                 <Text>
-                  {orderDetails?.city}, {orderDetails?.address}
+                  {orderInfo?.orderDetails?.city},{' '}
+                  {orderInfo?.orderDetails?.address}
                 </Text>
               </InlineStack>
 
               <ProbabilityIndicator probability={probability} />
               <NovaPoshtaSelector
-                bestWarehouse={novaPoshtaWarehouse}
-                updateProbability={updateProbability}
+                novaPoshtaWarehouse={orderInfo?.novaposhtaRecepientWarehouse}
+                setNovaPoshtaWarehouse={setNovaPoshtaWarehouse}
                 orderId={orderId}
               />
               <NovaPoshtaActions
-                orderDetails={orderDetails}
-                recepientWarehouse={novaPoshtaWarehouse}
+                orderInfo={orderInfo}
+                setOrderInfo={setOrderInfo}
               />
             </BlockStack>
           </>

@@ -9,22 +9,17 @@ export const sendRequestNP = async (payload: object) => {
     });
 
     const data = await res.json();
-    if (!res.ok) {
-      throw new Error(data.errors || 'Network error2');
-    }
-    if (!data.success) {
-      const errors =
-        Array.isArray(data.errors) && data.errors.length > 0
-          ? `Errors: ${JSON.stringify(data.errors)}`
-          : '';
-      const warnings =
-        Array.isArray(data.warnings) && data.warnings.length > 0
-          ? `Warnings: ${JSON.stringify(data.warnings)}`
-          : '';
 
-      const errorMessage =
-        [errors, warnings].filter(Boolean).join(' ') || 'Unknown error';
-      throw new Error(errorMessage);
+    if (!data.success) {
+      console.log('🚀 ~ Nova Poshta API Response:', data);
+
+      const errors =
+        Object.values(data.errors || {}).join('; ') || 'Unknown error';
+      const errorCodes = Object.values(data.errorCodes || {}).join(', ');
+
+      throw new Error(
+        `Nova Poshta API Error: ${errors} (Codes: ${errorCodes})`
+      );
     }
     return data;
   } catch (error: any) {

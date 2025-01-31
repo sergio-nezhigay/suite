@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
 import {
   AdminBlock,
   BlockStack,
@@ -6,120 +6,122 @@ import {
   Button,
   InlineStack,
   ProgressIndicator,
+  Badge,
 } from '@shopify/ui-extensions-react/admin';
 
-import {
-  NovaPoshtaWarehouse,
-  OrderDetails,
-} from '../../shared/shopifyOperations';
+import { OrderInfo } from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
+interface NovaPoshtaActionsProps {
+  orderInfo: OrderInfo;
+  setOrderInfo?: (info: OrderInfo) => void;
+}
+
 function NovaPoshtaActions({
-  orderDetails,
-  recepientWarehouse,
-}: {
-  orderDetails: OrderDetails;
-  recepientWarehouse: NovaPoshtaWarehouse;
-}) {
-  const [response, setResponse] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  orderInfo,
+  setOrderInfo,
+}: NovaPoshtaActionsProps) {
+  const [statusMessage, setStatusMessage] = useState<{
+    message: string;
+    type: 'success' | 'error' | null;
+  } | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
 
-  const handleCreateDocument = async () => {
-    const documentData = {
-      PayerType: 'Recipient',
-      PaymentMethod: 'Cash',
-      CargoType: 'Parcel',
-      VolumeGeneral: '0.001',
-      Weight: '0.3',
-      ServiceType: 'WarehouseWarehouse',
-      SeatsAmount: '1',
-      Description: `Комп'ютерні аксесуари`,
-      Cost: orderDetails?.total,
-      CitySender: 'db5c88d9-391c-11dd-90d9-001a92567626', // буча
-      Sender: '6a11bc85-464d-11e8-8b24-005056881c6b', //сн
-      SenderAddress: 'd81f61a9-72f9-11ec-81d3-b8830365bd14', // №5
-      ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b', // сн-конт
-      SendersPhone: '380507025777',
-      CityRecipient: recepientWarehouse?.cityRef,
-      RecipientAddress: recepientWarehouse?.warehouseRef,
-      RecipientsPhone: orderDetails?.shippingPhone,
-    };
-    const payload = {
-      firstName: orderDetails?.firstName,
-      lastName: orderDetails?.lastName,
-      phone: orderDetails?.shippingPhone,
-      email: orderDetails?.email,
-      documentData:
-        orderDetails?.paymentMethod === 'Передплата безготівка'
-          ? documentData
-          : {
-              ...documentData,
-              BackwardDeliveryData: [
-                {
-                  PayerType: 'Recipient',
-                  CargoType: 'Money',
-                  RedeliveryString: orderDetails?.total,
-                },
-              ],
-            },
-    };
+  const handleCreateDocument = useCallback(async () => {
+    setStatusMessage(null);
+    setLoading(true);
 
-    await sendRequest(
-      `${SHOPIFY_APP_URL}/nova-poshta/create-document`,
-      payload
-    );
-  };
-
-  const sendRequest = async (url: string, payload: object) => {
     try {
-      setError(null);
-      setLoading(true);
+      const payload = buildPayload(orderInfo);
+      const { declarationNumber, declarationRef } = await sendNovaPoshtaRequest(
+        `${SHOPIFY_APP_URL}/nova-poshta/create-document`,
+        payload
+      );
 
-      const res = await fetch(url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
+      await updateShopifyMetafields(
+        orderInfo.orderDetails.id,
+        declarationNumber,
+        declarationRef
+      );
+
+      setOrderInfo?.({
+        ...orderInfo,
+        novaposhtaDeclaration: {
+          number: declarationNumber,
+          ref: declarationRef,
         },
-        body: JSON.stringify(payload),
       });
 
-      const data = await res.json();
-      if (res.ok) {
-        setResponse(JSON.stringify(data, null, 2));
-      } else {
-        setError(data.error || 'An error occurred.');
-      }
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Unknown error');
+      setStatusMessage({ message: 'Декларацію створено', type: 'success' });
+    } catch (error) {
+      setStatusMessage({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: 'error',
+      });
     } finally {
       setLoading(false);
     }
-  };
+  }, [orderInfo, setOrderInfo]);
+
+  const handleCancelDeclaration = useCallback(async () => {
+    setStatusMessage(null);
+    setLoading(true);
+
+    try {
+      const response = await fetch(
+        `${SHOPIFY_APP_URL}/nova-poshta/cancel-document`,
+        {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            DocumentRefs: orderInfo.novaposhtaDeclaration.ref,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error('Не вдалося скасувати декларацію.');
+      }
+
+      setOrderInfo?.({ ...orderInfo, novaposhtaDeclaration: null });
+      setStatusMessage({ message: 'Декларацію скасовано', type: 'success' });
+    } catch (error) {
+      setStatusMessage({
+        message: error instanceof Error ? error.message : 'Unknown error',
+        type: 'error',
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, [orderInfo, setOrderInfo]);
 
   return (
     <AdminBlock title='Nova Poshta Sending'>
-      <BlockStack>
-        <InlineStack>
+      <BlockStack rowGap='base'>
+        {orderInfo?.novaposhtaDeclaration?.number ? (
+          <InlineStack inlineAlignment='space-between' blockAlignment='center'>
+            <Text>
+              Номер декларації: {orderInfo.novaposhtaDeclaration.number}
+            </Text>
+            <Button onClick={handleCancelDeclaration} disabled={loading}>
+              Скасувати декларацію
+            </Button>
+          </InlineStack>
+        ) : (
           <Button onClick={handleCreateDocument} disabled={loading}>
             Створити декларацію
           </Button>
-        </InlineStack>
+        )}
 
         {loading && <ProgressIndicator size='base' />}
 
-        {response && (
-          <BlockStack>
-            <Text>Response:</Text>
-            <Text>{response}</Text>
-          </BlockStack>
-        )}
-
-        {error && (
-          <BlockStack>
-            <Text>Error:</Text>
-            <Text>{error}</Text>
-          </BlockStack>
+        {statusMessage && (
+          <Badge
+            tone={statusMessage.type === 'error' ? 'critical' : 'success'}
+            size='base'
+          >
+            {statusMessage.message}
+          </Badge>
         )}
       </BlockStack>
     </AdminBlock>
@@ -127,3 +129,122 @@ function NovaPoshtaActions({
 }
 
 export default NovaPoshtaActions;
+
+export async function sendNovaPoshtaRequest(url: string, payload: object) {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+          'An error occurred while processing the Nova Poshta request.'
+      );
+    }
+
+    return {
+      declarationNumber: data.data[0].IntDocNumber,
+      declarationRef: data.data[0].Ref,
+    };
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : 'Unknown error');
+  }
+}
+
+function buildPayload(orderInfo: OrderInfo) {
+  const baseDocumentData = {
+    PayerType: 'Recipient',
+    PaymentMethod: 'Cash',
+    CargoType: 'Parcel',
+    ServiceType: 'WarehouseWarehouse',
+    SeatsAmount: '1',
+    OptionsSeat: [
+      {
+        volumetricWidth: '10',
+        volumetricLength: '10',
+        volumetricHeight: '4',
+        weight: '0.3',
+      },
+    ],
+    Description: `Комп'ютерні аксесуари`,
+    Cost: orderInfo?.orderDetails?.total,
+    CitySender: 'db5c88d9-391c-11dd-90d9-001a92567626', // Буча
+    Sender: '6a11bc85-464d-11e8-8b24-005056881c6b', // СН
+    SenderAddress: 'd81f61a9-72f9-11ec-81d3-b8830365bd14', // №5
+    ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b', // СН-контакт
+    SendersPhone: '380507025777',
+    CityRecipient: orderInfo?.novaposhtaRecepientWarehouse?.cityRef,
+    RecipientAddress: orderInfo?.novaposhtaRecepientWarehouse?.warehouseRef,
+    RecipientsPhone: orderInfo?.orderDetails?.shippingPhone,
+  };
+
+  return {
+    firstName: orderInfo?.orderDetails?.firstName,
+    lastName: orderInfo?.orderDetails?.lastName,
+    phone: orderInfo?.orderDetails?.shippingPhone,
+    email: orderInfo?.orderDetails?.email,
+    documentData:
+      orderInfo?.orderDetails?.paymentMethod === 'Передплата безготівка'
+        ? baseDocumentData
+        : {
+            ...baseDocumentData,
+            BackwardDeliveryData: [
+              {
+                PayerType: 'Recipient',
+                CargoType: 'Money',
+                RedeliveryString: orderInfo?.orderDetails?.total,
+              },
+            ],
+          },
+  };
+}
+
+async function updateShopifyMetafields(
+  orderId: string,
+  declarationNumber: string,
+  declarationRef: string
+) {
+  const res = await fetch('shopify:admin/api/2024-07/graphql.json', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      query: `
+        mutation SetOrderMetafield($metafields: [MetafieldsSetInput!]!) {
+          metafieldsSet(metafields: $metafields) {
+            userErrors { message }
+          }
+        }
+      `,
+      variables: {
+        metafields: [
+          {
+            ownerId: orderId,
+            namespace: 'nova_poshta',
+            key: 'declaration_number',
+            type: 'single_line_text_field',
+            value: declarationNumber,
+          },
+          {
+            ownerId: orderId,
+            namespace: 'nova_poshta',
+            key: 'declaration_ref',
+            type: 'single_line_text_field',
+            value: declarationRef,
+          },
+        ],
+      },
+    }),
+  });
+
+  const data = await res.json();
+  if (data.data.metafieldsSet.userErrors?.length > 0) {
+    throw new Error(data.data.metafieldsSet.userErrors[0].message);
+  }
+}

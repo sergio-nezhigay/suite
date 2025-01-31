@@ -77,8 +77,8 @@ export const onSuccess: ActionOnSuccess = async ({ record, connections }) => {
         },
         {
           ownerId: orderId,
-          namespace: 'custom',
-          key: 'nova_poshta_warehouse',
+          namespace: 'nova_poshta',
+          key: 'recepient_warehouse',
           value: JSON.stringify({
             warehouseDescription: bestWarehouse.description,
             cityDescription: bestWarehouse.cityDescription,
