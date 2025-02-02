@@ -7,7 +7,6 @@ import {
   uploadFile,
 } from 'api/utilities';
 
-//const genericSuppliers = ['щу', 'ии', 'че'];
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 
 const IN_STOCK = 'in stock';
@@ -19,20 +18,16 @@ const route: RouteHandler = async ({ reply, connections }) => {
     if (!shopify) throw new Error('No Shopify client found');
 
     const products = await getProducts(shopify);
-    console.log('🚀 ~ products:', products);
-
     const genericFeed = makeGenericFeed(products);
-    console.log('🚀 ~ genericFeed:', genericFeed);
 
     const hotlineFeed = makeHotlineFeed(genericFeed);
-
     const hotlineFileContent = products2CSV(hotlineFeed);
-
     await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
+
     const merchantFeed = makeMerchantFeed(genericFeed);
-    console.log('🚀 ~ merchantFeed:', merchantFeed);
     const merchantFileContent = products2CSV(merchantFeed);
     await uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv');
+
     const remarketingFeed = makeRemarketingFeed(genericFeed);
     const remarketingFileContent = products2CSV(remarketingFeed);
     await uploadFile(shopify, remarketingFileContent, 'remarketing.csv');

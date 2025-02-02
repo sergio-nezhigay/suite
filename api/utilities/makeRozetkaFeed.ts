@@ -19,6 +19,32 @@ const DEFAULT_CATEGORY_MAPPING = {
   'HDMI-SCART': 'c80073',
 };
 
+const ROZETKA_DEFAULT_PARAMS: Record<
+  string,
+  Array<{ paramName: string; paramValue: string }>
+> = {
+  'перехідники для зарядки ноутбуків та роутерів': [
+    {
+      paramName: 'Тип коннектора',
+      paramValue: 'DC connector',
+    },
+    {
+      paramName: 'Назначение',
+      paramValue: 'Для блоков питания',
+    },
+  ],
+  'hdmi - vga': [
+    {
+      paramName: 'Тип коннектора 1',
+      paramValue: 'VGA',
+    },
+    {
+      paramName: 'Тип коннектора 2',
+      paramValue: 'HDMI',
+    },
+  ],
+};
+
 export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
   const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
 
@@ -136,32 +162,36 @@ const parseRozetkaFilter = (product: GenericProductFeed) => {
     !rozetka_filter.trim()
   ) {
     const fallbackCategoryId = getDefaultCategoryId(product);
-    return { categoryId: fallbackCategoryId, params: [] };
+    return {
+      categoryId: fallbackCategoryId,
+      params: getRozetkaDefaultParams(product),
+    };
   }
 
   const [categoryId, paramsString] = rozetka_filter
     .split(':')
     .map((item) => item.trim());
 
-  if (!paramsString) {
-    return { categoryId, params: [] };
+  let params: string | any[] = [];
+  if (paramsString) {
+    params = paramsString
+      .split(';')
+      .map((param) => param.trim())
+      .filter(Boolean)
+      .map((param) => {
+        const [paramName, paramValue] = param
+          .split(/[=~]/)
+          .map((item) => item && item.trim());
+        return {
+          paramName: paramName || 'unknown',
+          paramValue: paramValue || 'unknown',
+        };
+      });
   }
 
-  const params = paramsString
-    .split(';')
-    .map((param) => param.trim())
-    .filter(Boolean)
-    .map((param) => {
-      const [paramName, paramValue] = param
-        .split(/[=~]/)
-        .map((item) => item && item.trim());
-
-      if (!paramName) {
-        return { paramName: 'unknown', paramValue: '' };
-      }
-
-      return { paramName, paramValue: paramValue || 'unknown' };
-    });
+  if (params.length === 0) {
+    params = getRozetkaDefaultParams(product);
+  }
 
   return { categoryId, params };
 };
@@ -176,4 +206,19 @@ const getDefaultCategoryId = (product: GenericProductFeed) => {
   }
 
   return 'c4670691';
+};
+
+const getRozetkaDefaultParams = (
+  product: GenericProductFeed
+): Array<{ paramName: string; paramValue: string }> => {
+  const lowerCaseCollection = product.collection.toLowerCase();
+
+  for (const [key, defaultParams] of Object.entries(ROZETKA_DEFAULT_PARAMS)) {
+    if (lowerCaseCollection.includes(key)) {
+      return defaultParams;
+    }
+  }
+
+  // Return an empty array if no default parameters match
+  return [];
 };

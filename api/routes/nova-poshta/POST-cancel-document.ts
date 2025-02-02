@@ -1,5 +1,6 @@
 import type { RouteHandler } from 'gadget-server';
-import { sendRequestNP } from 'api/utilities';
+import { sendRequestNP } from 'utilities/sendRequestNP';
+//import { sendRequestNP } from 'api/utilities';
 
 const route: RouteHandler<{
   Body: {
