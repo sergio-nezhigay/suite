@@ -1,6 +1,6 @@
 // http://api.brain.com.ua/products/content/SID [?lang=lang]
 
-import { brainRequest } from 'api/utilities';
+import { brainRequest } from '../utils/brainRequest';
 
 export async function fetchBrainProductsContent(productIDs: string[]) {
   const { result } = await brainRequest({

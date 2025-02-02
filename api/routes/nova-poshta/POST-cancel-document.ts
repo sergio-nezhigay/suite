@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'gadget-server';
-import { sendRequestNP } from 'utilities/sendRequestNP';
-//import { sendRequestNP } from 'api/utilities';
+import { npClient } from 'utilities/index';
 
 const route: RouteHandler<{
   Body: {
@@ -24,7 +23,7 @@ const route: RouteHandler<{
   };
 
   try {
-    const response = await sendRequestNP(payload);
+    const response = await npClient(payload);
     console.log('🚀 ~ Cancel document response:', JSON.stringify(response));
 
     if (response.success) {

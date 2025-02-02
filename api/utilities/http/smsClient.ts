@@ -1,6 +1,6 @@
 // sendSms.js
 
-export async function sendSms(recipientNumber: string, messageText: string) {
+export async function smsClient(recipientNumber: string, messageText: string) {
   const apiKey = process.env.SMS_API_KEY;
   const apiUrl = 'https://sms-sms.com.ua/api/v2/api.php';
 

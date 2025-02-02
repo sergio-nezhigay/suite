@@ -1,11 +1,37 @@
 import { RouteHandler } from 'gadget-server';
+import { getProducts, makeRozetkaFeed, uploadFile } from 'utilities/index';
 
-import {
-  getProducts,
-  Product,
-  makeRozetkaFeed,
-  uploadFile,
-} from 'api/utilities';
+export interface ProductVariant {
+  id: string;
+  price: string;
+  sku: string;
+  title: string;
+  inventoryQuantity: number;
+  barcode: string;
+  mediaContentType: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
+  image: {
+    id: string;
+    url: string;
+  } | null;
+}
+interface ShopifyProduct {
+  id: string;
+  handle: string;
+  title: string;
+  vendor: string;
+  descriptionHtml: string;
+  warranty: { value: string } | null;
+  rozetka_filter: { value: string } | null;
+  rozetka_tag: { value: string } | null;
+  id_woocommerce: { value: string } | null;
+  collections: { edges: { node: { id: string; title: string } }[] };
+  media: {
+    edges: {
+      node: { id: string; image: { url: string }; mediaContentType: string };
+    }[];
+  };
+  variants: ProductVariant[];
+}
 
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 
@@ -67,7 +93,7 @@ export interface GenericProductFeed {
   delivery_days: string;
 }
 
-function makeGenericFeed(products: Product[]): GenericProductFeed[] {
+function makeGenericFeed(products: ShopifyProduct[]): GenericProductFeed[] {
   const basicProductUrl = 'https://informatica.com.ua/products/';
   const mappedProducts = products.map((product) => {
     const firstVariantWithPrice = product.variants.find(

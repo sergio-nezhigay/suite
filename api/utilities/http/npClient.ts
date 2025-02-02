@@ -1,4 +1,4 @@
-export const sendRequestNP = async (payload: object) => {
+export const npClient = async (payload: object) => {
   try {
     const res = await fetch('https://api.novaposhta.ua/v2.0/json/', {
       method: 'POST',

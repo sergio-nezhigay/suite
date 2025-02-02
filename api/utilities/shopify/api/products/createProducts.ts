@@ -1,59 +1,11 @@
-import transliterate from './transliterate';
-import fetchChatGPT from './fetchChatGPT';
-import parseGeneratedDescription from './parseGeneratedDescription';
-import preparePrompt from './preparePrompt';
-
-import { getShopifyClient } from './getShopifyClient';
-import { AppConnections } from 'gadget-server';
-import { Products, ProductOptions } from '../types';
-
-const createProductQuery = `
-mutation CreateProductWithMedia(
-$input: ProductInput!,
-$media: [CreateMediaInput!]!
-)  {
-        productCreate(
-            input: $input,
-            media: $media
-        ) {
-            product {
-                id
-                title
-                variants(first: 1) {
-                    edges {
-                        node {
-                            id
-                        }
-                    }
-                }
-            },
-            userErrors {
-                field
-                message
-                }
-        }
-    }
-`;
-
-const productVariantsBulkUpdateQuery = `
-    mutation productVariantsBulkUpdate(
-        $productId: ID!,
-        $variants: [ProductVariantsBulkInput!]!
-    )       {
-                productVariantsBulkUpdate(productId: $productId,variants: $variants) {
-                    product {
-                        id
-                    }
-                    productVariants {
-                        id
-                    }
-                    userErrors {
-                        field
-                        message
-                    }
-                }
-}
-`;
+import { AppConnections } from '.gadget/server/types';
+import { Products, ProductOptions } from 'types/index';
+import fetchChatGPT from 'utilities/ai/fetchChatGPT';
+import parseGeneratedDescription from 'utilities/ai/parseGeneratedDescription';
+import preparePrompt from 'utilities/ai/prompts/preparePrompt';
+import transliterate from 'utilities/data/transliterate';
+import { getShopifyClient } from 'utilities/shopify/client/getShopifyClient';
+import { createProductQuery, productVariantsBulkUpdateQuery } from './queries';
 
 export async function createProducts({
   products,

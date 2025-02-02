@@ -1,7 +1,7 @@
 // http://api.brain.com.ua/products_pictures/categoryID/SID [?vendorID=vendorID] [&search=search] [&filterID=filterID] [&filters[]=filterID] [&limit=limit] [&offset=offset] [&sortby=field_name] [&order=order] [&lang=lang]
 
-import { FetchingFunc } from 'api/types';
-import { brainRequest } from 'api/utilities';
+import { FetchingFunc } from 'types/index';
+import { brainRequest } from '../utils/brainRequest';
 
 export async function fetchBrainProductsPictures({
   query,

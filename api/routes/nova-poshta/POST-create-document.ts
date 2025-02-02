@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'gadget-server';
-
-import { sendRequestNP } from 'api/utilities';
+import { npClient } from 'utilities/index';
 
 const route: RouteHandler<{
   Body: {
@@ -31,7 +30,7 @@ const route: RouteHandler<{
   };
 
   try {
-    const responseCounterPartyCreated = await sendRequestNP(
+    const responseCounterPartyCreated = await npClient(
       createCounterpartyPayload
     );
     console.log(
@@ -51,7 +50,7 @@ const route: RouteHandler<{
       },
     };
     console.log('🚀 ~InternetDocument payload:', payload);
-    const response = await sendRequestNP(payload);
+    const response = await npClient(payload);
     await reply.send(response);
   } catch (error: any) {
     await reply.status(500).send({ error: error.message });

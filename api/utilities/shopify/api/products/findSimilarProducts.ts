@@ -1,4 +1,5 @@
 import { connections } from 'gadget-server';
+import { createEmbedding } from 'utilities/ai/embeddings';
 
 export const findSimilarProducts = async ({
   product,
@@ -40,12 +41,6 @@ export const findSimilarProducts = async ({
   return finalProducts.map(({ handle, id, title }) => ({ handle, id, title }));
 };
 
-const stripText = (text: string, termsToRemove: string[]): string =>
-  termsToRemove.reduce(
-    (str, term) => str.replace(new RegExp(term.toLowerCase(), 'g'), ''),
-    text.toLowerCase()
-  );
-
 const fetchProducts = async (
   api: any,
   embedding: any,
@@ -73,15 +68,4 @@ const fetchProducts = async (
     ...product,
     price: product.variants.edges[0]?.node.price || 0,
   }));
-};
-
-const createEmbedding = async (
-  connections: any,
-  input: string
-): Promise<any> => {
-  const { data } = await connections.openai.embeddings.create({
-    input,
-    model: 'text-embedding-3-small',
-  });
-  return data[0].embedding;
 };

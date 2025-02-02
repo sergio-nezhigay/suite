@@ -3,13 +3,13 @@ import { connections } from 'gadget-server';
 
 import {
   getShopifyClient,
-  flagExistingShopifyProducts,
-  getUrlParams,
-  fetchBrainProducts,
+  fetchEasy,
   fetchCherg,
   fetchSchusev,
-  fetchEasy,
-} from 'api/utilities';
+  fetchBrainProducts,
+  flagExistingShopifyProducts,
+  getUrlParams,
+} from 'utilities/index';
 
 const route: RouteHandler<{
   Querystring: {

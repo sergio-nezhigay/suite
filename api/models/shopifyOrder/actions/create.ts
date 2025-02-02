@@ -1,5 +1,4 @@
 import Shopify from 'shopify-api-node';
-import { updateMetafield, getShopifyClient } from 'api/utilities';
 
 import {
   applyParams,
@@ -7,6 +6,8 @@ import {
   save,
   ActionOptions,
 } from 'gadget-server';
+import { updateMetafield } from 'utilities/shopify/api/metafields/updateMetafield';
+import { getShopifyClient } from 'utilities/shopify/client/getShopifyClient';
 
 interface Order {
   transactions: { gateway: string }[];

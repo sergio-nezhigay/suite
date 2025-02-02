@@ -1,5 +1,6 @@
 import { RequestParams } from 'api/types';
-import { getSID, rateLimitedRequest } from 'api/utilities';
+import { getSID } from './getSID';
+import { rateLimitedRequest } from './rateLimitedRequest';
 
 interface ResponseData {
   error_message?: string;

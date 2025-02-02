@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'gadget-server';
-
-import { sendRequestNP } from 'api/utilities';
+import { npClient } from 'utilities/index';
 
 const route: RouteHandler<{
   Body: {
@@ -10,7 +9,7 @@ const route: RouteHandler<{
   };
 }> = async ({ request, reply }) => {
   try {
-    const response = await sendRequestNP(request.body);
+    const response = await npClient(request.body);
     await reply.send(response);
   } catch (error: any) {
     await reply.status(500).send({ error: error.message });

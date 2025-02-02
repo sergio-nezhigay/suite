@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'gadget-server';
-
-import { sendSms } from 'api/utilities';
+import { smsClient } from 'utilities/index';
 
 const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({
   request,
@@ -16,7 +15,7 @@ const route: RouteHandler<{ Body: { to: string; message: string } }> = async ({
   }
 
   try {
-    const smsResponse = await sendSms(to, message);
+    const smsResponse = await smsClient(to, message);
     await reply.send({ status: 'SMS sent successfully', smsResponse });
   } catch (error) {
     if (error instanceof Error) {

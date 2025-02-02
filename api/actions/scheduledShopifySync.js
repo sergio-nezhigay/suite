@@ -1,32 +1,31 @@
-import { ActionOptions, ScheduledShopifySyncGlobalActionContext } from "gadget-server";
-import { globalShopifySync } from "gadget-server/shopify";
+import { globalShopifySync } from 'gadget-server/shopify';
 
 const HourInMs = 60 * 60 * 1000;
 
 /**
- * @param { ScheduledShopifySyncGlobalActionContext } context
+ * @param { import('gadget-server').ScheduledShopifySyncGlobalActionContext } context
  */
 export async function run({ params, logger, api, connections }) {
   const syncOnlyModels = connections.shopify.enabledModels
-    .filter(model => model.syncOnly)
-    .map(model => model.apiIdentifier);
+    .filter((model) => model.syncOnly)
+    .map((model) => model.apiIdentifier);
 
-  const syncSince = new Date(Date.now() - 25 * HourInMs)
+  const syncSince = new Date(Date.now() - 25 * HourInMs);
 
   await globalShopifySync({
     apiKeys: connections.shopify.apiKeys,
     syncSince,
-    models: syncOnlyModels
+    models: syncOnlyModels,
   });
-};
+}
 
-/** @type { ActionOptions } */
+/** @type { import('gadget-server').ActionOptions } */
 export const options = {
   triggers: {
     scheduler: [
       {
-        every: "day",
-        at: "08:01 UTC",
+        every: 'day',
+        at: '08:01 UTC',
       },
     ],
   },

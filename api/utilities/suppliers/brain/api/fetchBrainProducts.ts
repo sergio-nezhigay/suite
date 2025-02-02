@@ -1,13 +1,11 @@
 // http://api.brain.com.ua/products/categoryID/SID [?vendorID=vendorID] [&search=search] [&filterID=filterID] [&filters[]=filterID] [&limit=limit] [&offset=offset] [&sortby=field_name] [&order=order] [&lang=lang]
 
-import { FetchingFunc } from 'api/types';
-import {
-  brainRequest,
-  fetchBrainProductsContent,
-  fetchBrainBrands,
-  convertArrayToObject,
-  fetchBrainProduct,
-} from 'api/utilities';
+import { FetchingFunc } from 'types/index';
+import { brainRequest } from '../utils/brainRequest';
+import { convertArrayToObject } from '../utils/convertArrayToObject';
+import { fetchBrainBrands } from './fetchBrainBrands';
+import { fetchBrainProduct } from './fetchBrainProduct';
+import { fetchBrainProductsContent } from './fetchBrainProductsContent';
 
 export async function fetchBrainProducts({
   query,
