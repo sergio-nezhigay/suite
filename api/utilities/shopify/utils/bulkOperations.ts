@@ -1,7 +1,8 @@
 import Shopify from 'shopify-api-node';
 
 import { currentOperationQuery } from '../api/products/queries';
-import { BulkOperation, Product, ProductVariant } from '../api/products/types';
+import { BulkOperation } from '../api/products/types';
+import { ProductVariant, ShopifyProduct } from 'api/routes/GET-feeds';
 
 export async function pollBulkOperationStatus(
   shopify: Shopify,
@@ -30,7 +31,7 @@ export async function pollBulkOperationStatus(
 
 export async function fetchBulkOperationResults(
   bulkResultUrl: string | URL | Request
-): Promise<Product[]> {
+): Promise<ShopifyProduct[]> {
   const resultResponse = await fetch(bulkResultUrl);
   const resultText = await resultResponse.text();
 
@@ -40,7 +41,7 @@ export async function fetchBulkOperationResults(
     .map((line) => JSON.parse(line));
 
   const productsMap: {
-    [key: string]: Product & { variants: ProductVariant[] };
+    [key: string]: ShopifyProduct & { variants: ProductVariant[] };
   } = {};
 
   resultItems.forEach((item) => {

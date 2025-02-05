@@ -1,4 +1,4 @@
-export default function transliterate(text: string): string {
+export function transliterate(text: string): string {
   const cyrillicToLatinMap: Record<string, string> = {
     а: 'a',
     б: 'b',

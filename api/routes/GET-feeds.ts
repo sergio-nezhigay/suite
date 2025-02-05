@@ -1,5 +1,5 @@
 import { RouteHandler } from 'gadget-server';
-import { getProducts, makeRozetkaFeed, uploadFile } from 'utilities/index';
+import { getProducts, uploadFile, makeRozetkaFeed } from 'utilities';
 
 export interface ProductVariant {
   id: string;
@@ -14,7 +14,7 @@ export interface ProductVariant {
     url: string;
   } | null;
 }
-interface ShopifyProduct {
+export interface ShopifyProduct {
   id: string;
   handle: string;
   title: string;
@@ -93,19 +93,22 @@ export interface GenericProductFeed {
   delivery_days: string;
 }
 
-function makeGenericFeed(products: ShopifyProduct[]): GenericProductFeed[] {
+function makeGenericFeed(products: any[]): GenericProductFeed[] {
   const basicProductUrl = 'https://informatica.com.ua/products/';
   const mappedProducts = products.map((product) => {
     const firstVariantWithPrice = product.variants.find(
-      (variant) => variant.price
+      (variant: { price: any }) => variant.price
     );
 
     const imageURLs = product.variants
-      .filter((variant) => variant.mediaContentType === 'IMAGE')
-      .map((variant) => variant?.image?.url || '');
+      .filter(
+        (variant: { mediaContentType: string }) =>
+          variant.mediaContentType === 'IMAGE'
+      )
+      .map((variant: { image: { url: any } }) => variant?.image?.url || '');
 
     const collectionVariant = product.variants.find(
-      (variant) =>
+      (variant: { id: string }) =>
         variant?.id && variant.id.startsWith('gid://shopify/Collection/')
     );
     const collectionName = collectionVariant?.title || '';

@@ -1,7 +1,4 @@
-import {
-  complimentaryProductsDesktops,
-  updateMetafield,
-} from 'utilities/index';
+import { complimentaryProductsDesktops, updateMetafield } from 'utilities';
 
 export const run: ActionRun = async ({ api, connections }) => {
   const allRecords = [];

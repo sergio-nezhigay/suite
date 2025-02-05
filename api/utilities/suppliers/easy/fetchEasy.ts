@@ -1,6 +1,7 @@
-import { FetchingFunc } from 'types/index';
-import { getPaginatedData } from 'utilities/data/pagination';
 import { parseStringPromise } from 'xml2js';
+
+import { FetchingFunc } from 'types/index';
+import { getPaginatedData } from 'utilities';
 
 interface Offer {
   name?: string;

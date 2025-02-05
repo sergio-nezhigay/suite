@@ -1,6 +1,6 @@
 import { AppConnections } from 'gadget-server';
 
-export default async function fetchChatGPT({
+export async function fetchChatGPT({
   prompt,
   connections,
 }: {

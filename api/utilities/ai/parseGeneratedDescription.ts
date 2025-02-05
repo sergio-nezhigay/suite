@@ -1,4 +1,4 @@
-export default function parseGeneratedDescription(jsonResponse: string) {
+export function parseGeneratedDescription(jsonResponse: string) {
   try {
     if (jsonResponse.startsWith('```json')) {
       jsonResponse = jsonResponse

@@ -15,10 +15,7 @@ const promptTemplate = `
 2. **title**: коротка назва, включаюча код.
 `;
 
-export default function preparePrompt(
-  title: string,
-  description: string
-): string {
+export function preparePrompt(title: string, description: string): string {
   return promptTemplate
     .replace('{{title}}', title)
     .replace('{{description}}', description);

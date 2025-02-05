@@ -1,11 +1,15 @@
 import { AppConnections } from '.gadget/server/types';
 import { Products, ProductOptions } from 'types/index';
-import fetchChatGPT from 'utilities/ai/fetchChatGPT';
-import parseGeneratedDescription from 'utilities/ai/parseGeneratedDescription';
-import preparePrompt from 'utilities/ai/prompts/preparePrompt';
-import transliterate from 'utilities/data/transliterate';
-import { getShopifyClient } from 'utilities/shopify/client/getShopifyClient';
+
 import { createProductQuery, productVariantsBulkUpdateQuery } from './queries';
+
+import {
+  fetchChatGPT,
+  getShopifyClient,
+  transliterate,
+  preparePrompt,
+  parseGeneratedDescription,
+} from 'utilities';
 
 export async function createProducts({
   products,

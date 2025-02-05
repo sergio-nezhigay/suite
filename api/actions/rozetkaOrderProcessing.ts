@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 import { ActionRun } from './createWarehouses';
-import { getShopifyConnection, createOrder } from 'utilities/index';
+import { getShopifyConnection, createOrder } from 'utilities';
 
 const ORDER_STATUS_CODES = {
   ALL: '1',
@@ -16,7 +16,9 @@ const ROZETKA_API_BASE_URL = 'https://api-seller.rozetka.com.ua';
 let accessToken: string | null = null;
 
 export const run: ActionRun = async ({ connections }) => {
+  console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
+  console.log(' isProduction=', isProduction);
   if (!isProduction) return;
   accessToken = await fetchAccessToken();
   if (!accessToken) {
@@ -205,6 +207,8 @@ const handleError = (error: any, context: string) => {
 
 export const options = {
   triggers: {
-    scheduler: [{ every: 'hour', at: '0 mins' }],
+    scheduler: [
+      { every: "hour", at: "0 mins" },
+    ],
   },
 };

@@ -1,5 +1,5 @@
 import type { RouteHandler } from 'gadget-server';
-import { npClient } from 'utilities/index';
+import { npClient } from 'utilities';
 
 const route: RouteHandler<{
   Body: {

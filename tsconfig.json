@@ -18,9 +18,9 @@
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
-      "utilities/*": ["./api/utilities/*"],
-      "routes/*": ["./api/routes/*"],
-      "types/*": ["./api/types/*"]
+      "utilities": ["api/utilities"],
+      "routes/*": ["api/routes"],
+      "types/*": ["api/types"]
     },
     "types": ["@shopify/app-bridge-types"]
   }

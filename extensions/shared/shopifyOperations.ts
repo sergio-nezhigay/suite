@@ -47,14 +47,17 @@ export type OrderDetails = {
   paymentMethod: string | null;
 } | null;
 
-export type OrderInfo = {
-  orderDetails: OrderDetails;
-  novaposhtaRecepientWarehouse: NovaPoshtaWarehouse;
-  novaposhtaDeclaration: {
-    number: string | null;
-    ref: string | null;
-  };
-} | null;
+export type OrderInfo =
+  | {
+      orderDetails: OrderDetails;
+      novaposhtaRecepientWarehouse: NovaPoshtaWarehouse;
+      novaposhtaDeclaration: {
+        number: string | null;
+        ref: string | null;
+      };
+    }
+  | null
+  | undefined;
 
 export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
   const query = `#graphql

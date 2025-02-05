@@ -14,7 +14,7 @@ import { SHOPIFY_APP_URL } from '../../shared/data';
 
 interface NovaPoshtaActionsProps {
   orderInfo: OrderInfo;
-  setOrderInfo?: (info: OrderInfo) => void;
+  setOrderInfo: (info: OrderInfo) => void;
 }
 
 function NovaPoshtaActions({
@@ -39,11 +39,11 @@ function NovaPoshtaActions({
       );
 
       await updateShopifyMetafields(
-        orderInfo.orderDetails.id,
+        orderInfo?.orderDetails?.id || '',
         declarationNumber,
         declarationRef
       );
-
+      if (!orderInfo) return;
       setOrderInfo?.({
         ...orderInfo,
         novaposhtaDeclaration: {
@@ -74,7 +74,7 @@ function NovaPoshtaActions({
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            DocumentRefs: orderInfo.novaposhtaDeclaration.ref,
+            DocumentRefs: orderInfo?.novaposhtaDeclaration?.ref || '',
           }),
         }
       );
@@ -83,7 +83,14 @@ function NovaPoshtaActions({
         throw new Error('Не вдалося скасувати декларацію.');
       }
 
-      setOrderInfo?.({ ...orderInfo, novaposhtaDeclaration: null });
+      if (!orderInfo) return;
+      setOrderInfo({
+        ...orderInfo,
+        novaposhtaDeclaration: {
+          number: '',
+          ref: '',
+        },
+      });
       setStatusMessage({ message: 'Декларацію скасовано', type: 'success' });
     } catch (error) {
       setStatusMessage({

@@ -1,7 +1,8 @@
 import { parse } from 'csv-parse/sync';
 import iconv from 'iconv-lite';
+
+import { getPaginatedData } from 'utilities';
 import { FetchingFunc } from 'types/index';
-import { getPaginatedData } from 'utilities/data/pagination';
 
 const SCHUSEV_PRICE_URL = process.env.SCHUSEV_PRICE_URL || '';
 

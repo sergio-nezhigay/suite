@@ -9,7 +9,7 @@ import {
   fetchBrainProducts,
   flagExistingShopifyProducts,
   getUrlParams,
-} from 'utilities/index';
+} from 'utilities';
 
 const route: RouteHandler<{
   Querystring: {

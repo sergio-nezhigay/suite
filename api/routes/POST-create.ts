@@ -1,7 +1,7 @@
 import { Products } from 'api/types';
 
 import { RouteHandler } from 'gadget-server';
-import { createProducts } from 'utilities/index';
+import { createProducts } from 'utilities';
 
 interface RequestBody {
   products?: Products;

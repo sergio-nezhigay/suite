@@ -36,7 +36,7 @@ function WarehouseExtension() {
       setLoading(true);
       try {
         const orderInfo = await getOrderInfo(orderId);
-        console.log('🚀 ~ orderInfo:', orderInfo);
+        console.log('🚀 ~ orderInfo :', orderInfo);
         if (orderInfo) {
           setOrderInfo(orderInfo);
         }
@@ -56,6 +56,7 @@ function WarehouseExtension() {
   );
 
   const setNovaPoshtaWarehouse = (value: NovaPoshtaWarehouse) => {
+    if (!orderInfo) return;
     setOrderInfo({ ...orderInfo, novaposhtaRecepientWarehouse: value });
   };
 
@@ -68,7 +69,7 @@ function WarehouseExtension() {
           <>
             <BlockStack gap>
               <InlineStack gap inlineAlignment='space-between'>
-                <Text fontWeight='bold'>Заповнено замовником:</Text>
+                <Text fontWeight='bold'>Заповнено замовником :</Text>
                 <Text>
                   {orderInfo?.orderDetails?.city},{' '}
                   {orderInfo?.orderDetails?.address}

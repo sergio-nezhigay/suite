@@ -1,5 +1,5 @@
 import { connections } from 'gadget-server';
-import { createEmbedding } from 'utilities/ai/embeddings';
+import { createEmbedding, stripText } from 'utilities';
 
 export const findSimilarProducts = async ({
   product,

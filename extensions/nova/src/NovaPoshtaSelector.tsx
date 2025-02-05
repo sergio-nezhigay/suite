@@ -98,7 +98,7 @@ const useWarehouseSuggestions = (
           newRef = data[0].Ref;
         } else if (novaPoshtaWarehouseRef) {
           const matchedWarehouse = data?.find(
-            (w) => w.Ref === novaPoshtaWarehouseRef
+            (w: Warehouse) => w.Ref === novaPoshtaWarehouseRef
           );
           if (matchedWarehouse) {
             newRef = novaPoshtaWarehouseRef;
@@ -173,9 +173,9 @@ export default function NovaPoshtaSelector({
 
     await updateWarehouse({
       warehouse: {
-        cityRef: chosenCityRef,
+        cityRef: chosenCityRef || '',
         cityDescription: selectedCity?.Description || '',
-        warehouseRef: chosenWarehouseRef,
+        warehouseRef: chosenWarehouseRef || '',
         warehouseDescription: selectedWarehouse?.Description || '',
         matchProbability: 1,
       },
@@ -185,16 +185,16 @@ export default function NovaPoshtaSelector({
     setNovaPoshtaWarehouse({
       cityDescription: selectedCity?.Description,
       warehouseDescription: selectedWarehouse?.Description,
-      cityRef: chosenCityRef,
-      warehouseRef: chosenWarehouseRef,
+      cityRef: chosenCityRef || '',
+      warehouseRef: chosenWarehouseRef || '',
       matchProbability: 1,
     });
   };
 
   return (
     <BlockStack rowGap='base'>
-      {novaPoshtaWarehouse.cityDescription &&
-        novaPoshtaWarehouse.warehouseDescription && (
+      {novaPoshtaWarehouse?.cityDescription &&
+        novaPoshtaWarehouse?.warehouseDescription && (
           <InlineStack gap inlineAlignment='space-between'>
             <Text fontWeight='bold'>Збережено:</Text>
             <Text>
