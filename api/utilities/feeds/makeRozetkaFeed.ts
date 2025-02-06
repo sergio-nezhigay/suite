@@ -90,7 +90,7 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
       // Calculate oldPrice as 10% higher than the price
 
       const isMemory = product.collection.toLowerCase().includes("пам'ять");
-      const price = isMemory ? product.price * 1.04 : product.price * 1.05;
+      const price = isMemory ? product.price * 1.03 : product.price * 1.1;
       const oldPrice = (price * 1.1).toFixed(2);
       const state = isMemory ? 'used' : 'new';
       const name = isMemory

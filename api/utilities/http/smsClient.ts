@@ -41,8 +41,7 @@ export async function smsClient(recipientNumber: string, messageText: string) {
 
     if (!response.ok || responseBody.success === 0) {
       const errorCode = responseBody.error?.code || 'Unknown error';
-      const errorDescription =
-        responseBody.error?.description || 'No description provided';
+      const errorDescription = responseBody.error || 'No description provided';
       throw new Error(`API Error: ${errorCode} - ${errorDescription}`);
     }
 

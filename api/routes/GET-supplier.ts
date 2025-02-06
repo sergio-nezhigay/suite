@@ -1,5 +1,4 @@
-import { RouteHandler } from 'gadget-server';
-import { connections } from 'gadget-server';
+import { FastifyReply, FastifyRequest } from 'fastify';
 
 import {
   getShopifyClient,
@@ -10,16 +9,20 @@ import {
   flagExistingShopifyProducts,
   getUrlParams,
 } from 'utilities';
+import { connections } from '.gadget/server/types';
 
-const route: RouteHandler<{
-  Querystring: {
-    query: string | undefined;
-    limit?: string | undefined;
-    page?: string | undefined;
-    supplierId?: string | undefined;
-    categoryId?: string | undefined;
-  };
-}> = async ({ request, reply }) => {
+const route = async (
+  request: FastifyRequest<{
+    Querystring: {
+      query?: string;
+      limit?: string;
+      page?: string;
+      supplierId?: string;
+      categoryId?: string;
+    };
+  }>,
+  reply: FastifyReply
+) => {
   try {
     const shopify = getShopifyClient(connections);
     const {
@@ -86,4 +89,5 @@ const route: RouteHandler<{
     return reply.status(500).send(error);
   }
 };
+
 export default route;

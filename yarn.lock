@@ -358,6 +358,11 @@
   dependencies:
     fastify-plugin "^4.0.0"
 
+"@fastify/type-provider-typebox@^3.0.0":
+  version "3.6.0"
+  resolved "https://registry.yarnpkg.com/@fastify/type-provider-typebox/-/type-provider-typebox-3.6.0.tgz#e7fdd9c1e8d3b326b61617d60b8f09678740a8a5"
+  integrity sha512-HTeOLvirfGg0u1KGao3iXn5rZpYNqlrOmyDnXSXAbWVPa+mDQTTBNs/x5uZzOB6vFAqr0Xcf7x1lxOamNSYKjw==
+
 "@gadget-client/admin-action-block@link:.gadget/client":
   version "0.0.0"
   uid ""
@@ -689,6 +694,11 @@
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
+
+"@sinclair/typebox@^0.31.0":
+  version "0.31.28"
+  resolved "https://registry.yarnpkg.com/@sinclair/typebox/-/typebox-0.31.28.tgz#b68831e7bc7d09daac26968ea32f42bedc968ede"
+  integrity sha512-/s55Jujywdw/Jpan+vsy6JZs1z2ZTGxTmbZTPiuSL2wz9mfzA2gN1zzaqmvfi4pq+uOt7Du85fkiwv5ymW84aQ==
 
 "@sindresorhus/is@^4.0.0":
   version "4.6.0"

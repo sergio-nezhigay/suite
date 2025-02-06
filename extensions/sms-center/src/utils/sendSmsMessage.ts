@@ -18,9 +18,6 @@ export const sendSmsMessage = async (
   messageText: string
 ): Promise<SmsResponse> => {
   try {
-    console.log('Starting to process SMS send request...');
-    console.log('Receiver number before formatting:', receiverNumber);
-
     const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
     console.log('Formatted number:', formattedNumber);
 
@@ -35,9 +32,6 @@ export const sendSmsMessage = async (
       }),
     });
 
-    console.log('Response status:', response.status);
-    console.log('Response headers:', response.headers);
-
     if (!response.ok) {
       const errorData = await response.json();
       console.error('Error response from server:', errorData);
@@ -45,7 +39,7 @@ export const sendSmsMessage = async (
       return {
         status: 'error',
         messageId: '',
-        error: errorData.message || 'Failed to send SMS',
+        error: errorData.error || 'Failed to send SMS',
       };
     }
 

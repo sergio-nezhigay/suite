@@ -90,7 +90,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, connections }) => {
         },
       ],
     };
-    console.log('🚀 ~ variables:', variables);
 
     await updateMetafield({ shopify, variables }).catch((err) => {
       console.error('Error updating metafield:', err);
@@ -141,25 +140,40 @@ async function getOrderGatewayAndAddress({
   };
 }
 
+
 async function findBestWarehouse({
   shippingAddress,
 }: {
   shippingAddress: Address;
 }): Promise<FindBestWarehouseResult> {
-  const response = await fetch('https://novaposhta.gadget.app/find', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(shippingAddress),
-  });
+  try {
+    const response = await fetch('https://novaposhta.gadget.app/find', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(shippingAddress),
+    });
 
-  if (!response.ok) {
-    throw new Error(
-      `Fetching best warehouse error: ${JSON.stringify(response)}`
-    );
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.warn(`Nova Poshta API error: Status ${response.status}, Body: ${errorText}`);
+      throw new Error(`Fetching best warehouse failed`);
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error('Error finding best warehouse:', error);
+
+    return {
+      bestWarehouse: {
+        description: 'Unknown Warehouse',
+        cityDescription: shippingAddress.city || 'Unknown City',
+        ref: 'N/A',
+        cityRef: 'N/A',
+      },
+      matchProbability: 0,
+    };
   }
-
-  const result = await response.json();
-  return result;
 }
+

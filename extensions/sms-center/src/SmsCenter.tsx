@@ -60,8 +60,13 @@ function App() {
     setLoading(true);
     setStatus('Sending SMS...');
     try {
-      await sendSmsMessage(customerPhone, smsText);
-      const note = `Success, SMS sent ${smsText}`;
+      const response = await sendSmsMessage(customerPhone, smsText);
+      console.log('🚀 ~ response:', JSON.stringify(response));
+      if (response.status === 'error') {
+        throw new Error(response.error);
+      }
+
+      const note = `Success: SMS sent "${smsText}"`;
       await addOrderNote({ orderId, note });
       setStatus(note);
     } catch (error) {
