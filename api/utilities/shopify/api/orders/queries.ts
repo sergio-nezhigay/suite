@@ -1,3 +1,21 @@
+export const customerCreateMutation = `
+mutation customerCreate($input: CustomerInput!) {
+  customerCreate(input: $input) {
+    customer {
+      id
+      firstName
+      lastName
+      email
+      phone
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;
+
 export const orderCreateMutation = `
 mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOptionsInput) {
   orderCreate(order: $order, options: $options) {
@@ -32,6 +50,22 @@ mutation OrderCreate($order: OrderCreateOrderInput!, $options: OrderCreateOption
         transactions {
             gateway
         }
+    }
+  }
+}
+`;
+
+export const customerSearchQuery = `
+query searchCustomers($query: String!) {
+  customers(first: 1, query: $query) {
+    edges {
+      node {
+        id
+        firstName
+        lastName
+        email
+        phone
+      }
     }
   }
 }

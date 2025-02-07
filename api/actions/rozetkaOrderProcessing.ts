@@ -1,7 +1,12 @@
 import axios from 'axios';
+import Shopify from 'shopify-api-node';
 
 import { ActionRun } from './createWarehouses';
 import { getShopifyConnection, createOrder } from 'utilities';
+import {
+  createCustomer,
+  findCustomer,
+} from '../utilities/shopify/api/orders/createCustomer';
 
 const ORDER_STATUS_CODES = {
   ALL: '1',
@@ -15,11 +20,36 @@ const ROZETKA_API_BASE_URL = 'https://api-seller.rozetka.com.ua';
 
 let accessToken: string | null = null;
 
+async function getOrCreateCustomer(shopify: Shopify, order: any) {
+  try {
+    const existingCustomer = await findCustomer({
+      shopify,
+      phone: order.recipient_phone,
+    });
+
+    if (existingCustomer) {
+      console.log('Found existing customer:', existingCustomer);
+      return existingCustomer;
+    }
+
+    const customerVariables = mapCustomerToVariables(order);
+    const newCustomer = await createCustomer({
+      shopify,
+      variables: customerVariables,
+    });
+    console.log('Created new customer:', newCustomer);
+    return newCustomer;
+  } catch (error) {
+    throw new Error(`Failed to get/create customer: ${error}`);
+  }
+}
+
 export const run: ActionRun = async ({ connections }) => {
   console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
   console.log(' isProduction=', isProduction);
   if (!isProduction) return;
+
   accessToken = await fetchAccessToken();
   if (!accessToken) {
     return handleError(new Error('Failed to fetch access token'), 'run');
@@ -37,15 +67,19 @@ export const run: ActionRun = async ({ connections }) => {
   }
 
   for (const order of newOrders) {
-    const variables = mapOrderToVariables(order);
-
     try {
-      const createdOrder = await createOrder({ shopify, variables });
+      const customer = await getOrCreateCustomer(shopify, order);
+      console.log(`Customer ready for order ${order.id}`, customer);
+      const orderVariables = mapOrderToVariables(order, customer.id);
+      const createdOrder = await createOrder({
+        shopify,
+        variables: orderVariables,
+      });
       console.log(`Order ${order.id} created successfully`, createdOrder);
 
       const isStatusUpdated = await updateRozetkaStatus(
         order.id,
-        26, //  "Обрабатывается менеджером",
+        26,
         accessToken
       );
       if (isStatusUpdated) {
@@ -121,7 +155,18 @@ export const getNewOrders = async (accessToken: string) => {
   }
 };
 
-const mapOrderToVariables = (order: any) => {
+const mapCustomerToVariables = (order: any) => {
+  return {
+    input: {
+      firstName: order.recipient_title.first_name,
+      lastName: order.recipient_title.last_name,
+      email: `${order.recipient_phone}@example.com`,
+      phone: order.recipient_phone,
+    },
+  };
+};
+
+const mapOrderToVariables = (order: any, customerId: string) => {
   const lineItems =
     order?.purchases && order.purchases.length > 0
       ? order.purchases.map(
@@ -150,7 +195,7 @@ const mapOrderToVariables = (order: any) => {
         address1: order?.delivery?.place_number || 'адреса невідома',
         firstName: order.recipient_title.first_name,
         lastName: order.recipient_title.last_name,
-        city: order.delivery.city.name_ua || 'невідоме місто',
+        city: order.delivery.city.title || 'невідоме місто',
         zip: '12345',
         countryCode: 'UA',
         phone: order.recipient_phone,
@@ -207,8 +252,6 @@ const handleError = (error: any, context: string) => {
 
 export const options = {
   triggers: {
-    scheduler: [
-      { every: "hour", at: "0 mins" },
-    ],
+    scheduler: [{ every: 'hour', at: '0 mins' }],
   },
 };

@@ -103,12 +103,6 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
-        shopifyCustomerMergeable: {
-          read: {
-            filter:
-              "accessControl/filters/shopify/shopifyCustomerMergeable.gelly",
-          },
-        },
         shopifyFile: {
           read: {
             filter: "accessControl/filters/shopify/shopifyFile.gelly",
@@ -245,6 +239,18 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         makeRecommendations: true,
+      },
+    },
+    "shopify-storefront-customers": {
+      storageKey: "Role-Shopify-Customer",
+      models: {
+        shopifyCustomerAddress: {
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
       },
     },
     unauthenticated: {
