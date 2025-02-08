@@ -367,10 +367,10 @@
   version "0.0.0"
   uid ""
 
-"@gadgetinc/api-client-core@0.15.38":
-  version "0.15.38"
-  resolved "https://registry.yarnpkg.com/@gadgetinc/api-client-core/-/api-client-core-0.15.38.tgz#8427e3d74e7278f4d5346dce9517659fdbaa76eb"
-  integrity sha512-rLyOGxzly1LtT724NNpdKukFi4We6jjio/k3LXGINehjPEpSzcgSchjO3icp++GlhAyZCiFBt/cEBUKnLp3mXA==
+"@gadgetinc/api-client-core@0.15.40":
+  version "0.15.40"
+  resolved "https://registry.yarnpkg.com/@gadgetinc/api-client-core/-/api-client-core-0.15.40.tgz#cafa08ce31e17292423bf514fab8504c2a057bda"
+  integrity sha512-AePpyZEKoqDID05Qd6ACbE/9tASNFv3SY/DX254K8c1bBco/fl9MHJmPeghucwGdNyyNmx3stHaluNY1opn4bQ==
   dependencies:
     "@0no-co/graphql.web" "^1.0.4"
     "@n1ru4l/graphql-live-query" "^0.10.0"
@@ -679,6 +679,15 @@
     "@remote-ui/react" "^5.0.2"
     "@types/react" ">=18.2.67"
 
+"@shopify/ui-extensions-react@2025.1.x":
+  version "2025.1.3"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.1.3.tgz#85d313ddf15d3ad04277f67566f65cb14183d9e7"
+  integrity sha512-kSD7lIkHa/YMWOnPMsNFwU/IWKUxkAAfHXRVMlvsy84+wd/oo8/epZHnaE8iz6dBmFhKJyJCiYYwoxmNOe5OWA==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.12"
+    "@remote-ui/react" "^5.0.2"
+    "@types/react" ">=18.2.67"
+
 "@shopify/ui-extensions@2024.10.x":
   version "2024.10.2"
   resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2024.10.2.tgz#839a8fd139698afe1f140c3c80de77d43c53c9df"
@@ -691,6 +700,14 @@
   version "2024.7.0"
   resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2024.7.0.tgz#fc850a1ffdcb6628e9fc8d4b913593dc41b278f0"
   integrity sha512-q+Q2owY78W94FzROYU6RPl7t/soCnCaY49uSbePaxuPd3obydkLKbjSrcyTkzL9obC6rbX6dhx2i15ah8ww22Q==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.12"
+    "@remote-ui/core" "^2.2.4"
+
+"@shopify/ui-extensions@2025.1.x":
+  version "2025.1.3"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2025.1.3.tgz#1cb11aa4b539574a63b0c3fec48783f606efcbae"
+  integrity sha512-tvOUVnFPmKVzd1H2GuQzZQEXI/m3fxjN4njqyIhwyLiFKxsnD97nZ+//PrTqIVhe/WHIsOwvQ8b78utjXRsZJA==
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
