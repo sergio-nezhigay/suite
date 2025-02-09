@@ -194,7 +194,7 @@ const mapOrderToVariables = (order: Order, customerId: string) => {
               currencyCode: 'UAH',
             },
           },
-          sku: purchase.item.price_offer_id,
+          sku: 'rz_' + purchase.item.price_offer_id,
         }))
       : [];
   return {
