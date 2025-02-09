@@ -132,7 +132,9 @@ function generateHtml(orders: OrderResponse['nodes']): string {
           <pre>`;
 
   for (const order of orders) {
-    const customer = `${order.customer.firstName} ${order.customer.lastName}`;
+    const customer = `${order.customer?.firstName || ''} ${
+      order.customer?.lastName || ''
+    }`;
     const address = `${order.shippingAddress.city}, ${order.shippingAddress.address1}`;
     const phone = order.shippingAddress.phone || order.phone;
     const paymentMethod = order.paymentMetafield?.value || 'Не вказано';
@@ -151,14 +153,17 @@ function generateHtml(orders: OrderResponse['nodes']): string {
         totalDelta += delta * item.quantity;
         totalCost += cost * item.quantity;
 
-        const barcode = item.variant?.barcode ? item.variant.barcode : '';
-        const titleLowerCase = item.title.toLowerCase();
+        const shortTitle = sliceWithEllipsis(item.title, 50);
 
-        const titleWithBarcode = titleLowerCase.includes(barcode.toLowerCase())
+        const barcode = item.variant?.barcode ? item.variant.barcode : '';
+
+        const titleWithBarcode = shortTitle
+          .toLowerCase()
+          .includes(barcode.toLowerCase())
           ? ''
           : barcode.toUpperCase();
 
-        html += `\n${item.title.slice(0, 40)} ${titleWithBarcode} | ${String(
+        html += `\n${shortTitle} ${titleWithBarcode} | ${String(
           item.quantity
         )}шт | ${String(price.toFixed(0))} | ${String(
           cost.toFixed(0)
@@ -188,6 +193,11 @@ function generateHtml(orders: OrderResponse['nodes']): string {
       </html>`;
 
   return html;
+}
+
+function sliceWithEllipsis(title: string, maxLength: number) {
+  let shortTitle = title.slice(0, maxLength);
+  return title.length > shortTitle.length ? shortTitle + '...' : title;
 }
 
 export default route;

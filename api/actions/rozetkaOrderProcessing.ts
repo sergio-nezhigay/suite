@@ -16,11 +16,27 @@ const ORDER_STATUS_CODES = {
   SHIPPING: '5',
 };
 
+interface Order {
+  id: number;
+  recipient_phone: string;
+  recipient_title: { first_name: string; last_name: string };
+  delivery?: { place_number?: string; city?: { title?: string } };
+  purchases?: {
+    item: { price_offer_id: string };
+    item_name: string;
+    quantity: string;
+    price_with_discount?: string;
+    price: string;
+  }[];
+  amount_with_discount?: string;
+  amount: string;
+}
+
 const ROZETKA_API_BASE_URL = 'https://api-seller.rozetka.com.ua';
 
 let accessToken: string | null = null;
 
-async function getOrCreateCustomer(shopify: Shopify, order: any) {
+async function getOrCreateCustomer(shopify: Shopify, order: Order) {
   try {
     const existingCustomer = await findCustomer({
       shopify,
@@ -155,7 +171,7 @@ export const getNewOrders = async (accessToken: string) => {
   }
 };
 
-const mapCustomerToVariables = (order: any) => {
+const mapCustomerToVariables = (order: Order) => {
   return {
     input: {
       firstName: order.recipient_title.first_name,
@@ -166,26 +182,20 @@ const mapCustomerToVariables = (order: any) => {
   };
 };
 
-const mapOrderToVariables = (order: any, customerId: string) => {
+const mapOrderToVariables = (order: Order, customerId: string) => {
   const lineItems =
     order?.purchases && order.purchases.length > 0
-      ? order.purchases.map(
-          (purchase: {
-            item_name: string;
-            quantity: string;
-            price_with_discount: string;
-            price: string;
-          }) => ({
-            title: purchase.item_name,
-            quantity: purchase.quantity,
-            priceSet: {
-              shopMoney: {
-                amount: purchase.price_with_discount || purchase.price,
-                currencyCode: 'UAH',
-              },
+      ? order.purchases.map((purchase) => ({
+          title: purchase.item_name,
+          quantity: purchase.quantity,
+          priceSet: {
+            shopMoney: {
+              amount: purchase.price_with_discount || purchase.price,
+              currencyCode: 'UAH',
             },
-          })
-        )
+          },
+          sku: purchase.item.price_offer_id,
+        }))
       : [];
   return {
     order: {
@@ -195,7 +205,7 @@ const mapOrderToVariables = (order: any, customerId: string) => {
         address1: order?.delivery?.place_number || 'адреса невідома',
         firstName: order.recipient_title.first_name,
         lastName: order.recipient_title.last_name,
-        city: order.delivery.city.title || 'невідоме місто',
+        city: order.delivery?.city?.title || 'невідоме місто',
         zip: '12345',
         countryCode: 'UA',
         phone: order.recipient_phone,
