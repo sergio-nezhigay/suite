@@ -75,7 +75,7 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
             city
             address1
           }
-          lineItems(first: 20) {
+          lineItems(first: 10) {
             nodes {
               title
               quantity
@@ -109,7 +109,7 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
     }
 
     const print = generateHtml(orders);
-    console.log(print);
+
     return reply.type('text/html').send(print);
   } catch (error) {
     console.error('Error details:', error);
@@ -151,10 +151,16 @@ function generateHtml(orders: OrderResponse['nodes']): string {
         totalDelta += delta * item.quantity;
         totalCost += cost * item.quantity;
 
-        // Removed padding from columns
-        html += `\n${item.title.slice(0, 40)} ${
-          item.variant?.barcode || ''
-        } | ${String(item.quantity)}шт | ${String(price.toFixed(0))} | ${String(
+        const barcode = item.variant?.barcode ? item.variant.barcode : '';
+        const titleLowerCase = item.title.toLowerCase();
+
+        const titleWithBarcode = titleLowerCase.includes(barcode.toLowerCase())
+          ? ''
+          : barcode.toUpperCase();
+
+        html += `\n${item.title.slice(0, 40)} ${titleWithBarcode} | ${String(
+          item.quantity
+        )}шт | ${String(price.toFixed(0))} | ${String(
           cost.toFixed(0)
         )} | ${String(delta.toFixed(0))}`;
       } catch (error) {
