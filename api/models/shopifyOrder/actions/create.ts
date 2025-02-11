@@ -23,6 +23,7 @@ interface Warehouse {
   cityDescription: string;
   ref: string;
   cityRef: string;
+  settlementAreaDescription?: string;
 }
 
 interface OrderGatewayAndAddress {
@@ -84,6 +85,8 @@ export const onSuccess: ActionOnSuccess = async ({ record, connections }) => {
             cityDescription: bestWarehouse.cityDescription,
             warehouseRef: bestWarehouse.ref,
             cityRef: bestWarehouse.cityRef,
+            settlementAreaDescription:
+              bestWarehouse.settlementAreaDescription || '',
             matchProbability,
           }),
           type: 'json',
@@ -140,7 +143,6 @@ async function getOrderGatewayAndAddress({
   };
 }
 
-
 async function findBestWarehouse({
   shippingAddress,
 }: {
@@ -157,7 +159,9 @@ async function findBestWarehouse({
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.warn(`Nova Poshta API error: Status ${response.status}, Body: ${errorText}`);
+      console.warn(
+        `Nova Poshta API error: Status ${response.status}, Body: ${errorText}`
+      );
       throw new Error(`Fetching best warehouse failed`);
     }
 
@@ -176,4 +180,3 @@ async function findBestWarehouse({
     };
   }
 }
-

@@ -21,6 +21,7 @@ export * from './shopify/api/orders/createOrder';
 export * from './shopify/api/products/createProducts';
 export * from './shopify/client/getShopifyClient';
 export * from './shopify/client/getShopifyConnection';
+export * from './shopify/utils/offerId2Barcode';
 export * from './suppliers/brain/api/fetchBrainProducts';
 export * from './suppliers/cherg/fetchCherg';
 export * from './suppliers/easy/fetchEasy';

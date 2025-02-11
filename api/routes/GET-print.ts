@@ -34,6 +34,10 @@ interface OrderResponse {
             value: string;
           } | null;
         };
+        customAttributes: {
+          key: string;
+          value: string;
+        }[];
       }[];
     };
     paymentMetafield: {
@@ -93,6 +97,10 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
                   value
                 }
               }
+              customAttributes {
+                key
+                value
+              }
             }
           }
           paymentMetafield: metafield(namespace: "custom", key: "payment_method") {
@@ -144,30 +152,32 @@ function generateHtml(orders: OrderResponse['nodes']): string {
     let totalCost = 0;
 
     order.lineItems.nodes.forEach((item) => {
+      console.log('item', item);
       try {
         const price = parseFloat(item.discountedUnitPriceSet.shopMoney.amount);
         const delta = parseFloat(item.product?.deltaMetafield?.value || '0');
         const cost = price - delta;
 
         totalPrice += price * item.quantity;
-        totalDelta += delta * item.quantity;
+        const totalLineDelta = delta * item.quantity;
+        totalDelta += totalLineDelta;
         totalCost += cost * item.quantity;
 
-        const shortTitle = sliceWithEllipsis(item.title, 50);
+        const shortTitle = sliceWithEllipsis(item.title, 70);
 
         const barcode = item.variant?.barcode ? item.variant.barcode : '';
 
-        const titleWithBarcode = shortTitle
+        const processedBarcode = shortTitle
           .toLowerCase()
           .includes(barcode.toLowerCase())
           ? ''
           : barcode.toUpperCase();
 
-        html += `\n${shortTitle} ${titleWithBarcode} | ${String(
+        html += `\n${shortTitle} ${processedBarcode} | ${String(
           item.quantity
         )}шт | ${String(price.toFixed(0))} | ${String(
           cost.toFixed(0)
-        )} | ${String(delta.toFixed(0))}`;
+        )} | ${String(totalLineDelta.toFixed(0))}`;
       } catch (error) {
         console.error('Error processing line item:', error, item);
         html += `\nError processing item: ${item.title}`;
@@ -185,7 +195,7 @@ function generateHtml(orders: OrderResponse['nodes']): string {
           ${address}
           ${paymentMethod} ${String(totalPrice.toFixed(0))}грн`;
 
-    html += '\n=====================';
+    html += '\n__________________';
   }
 
   html += `</pre>
