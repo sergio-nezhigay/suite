@@ -19,7 +19,7 @@ interface OrderResponse {
     lineItems: {
       nodes: {
         title: string;
-        quantity: number;
+        unfulfilledQuantity: number;
         discountedUnitPriceSet: {
           shopMoney: {
             amount: string;
@@ -82,7 +82,7 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
           lineItems(first: 10) {
             nodes {
               title
-              quantity
+              unfulfilledQuantity
               discountedUnitPriceSet {
                 shopMoney {
                   amount
@@ -128,81 +128,121 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
 };
 
 function generateHtml(orders: OrderResponse['nodes']): string {
-  let html = `
-      <html>
-        <head>
-          <style>
-            body { font-family: monospace; font-size: 14px; }
-            pre { white-space: pre-wrap; }
-          </style>
-        </head>
-        <body>
-          <pre>`;
+  const styles = `
+      <style>
+        body { font-family: monospace; font-size: 14px; }
+        pre { white-space: pre-wrap; }
+      </style>`;
+
+  let html = `<html><head>${styles}</head><body><pre>`;
 
   for (const order of orders) {
-    const customer = `${order.customer?.firstName || ''} ${
-      order.customer?.lastName || ''
-    }`;
-    const address = `${order.shippingAddress.city}, ${order.shippingAddress.address1}`;
-    const phone = order.shippingAddress.phone || order.phone;
-    const paymentMethod = order.paymentMetafield?.value || 'Не вказано';
-
-    let totalPrice = 0;
-    let totalDelta = 0;
-    let totalCost = 0;
-
-    order.lineItems.nodes.forEach((item) => {
-      console.log('item', item);
-      try {
-        const price = parseFloat(item.discountedUnitPriceSet.shopMoney.amount);
-        const delta = parseFloat(item.product?.deltaMetafield?.value || '0');
-        const cost = price - delta;
-
-        totalPrice += price * item.quantity;
-        const totalLineDelta = delta * item.quantity;
-        totalDelta += totalLineDelta;
-        totalCost += cost * item.quantity;
-
-        const shortTitle = sliceWithEllipsis(item.title, 70);
-
-        const barcode = item.variant?.barcode ? item.variant.barcode : '';
-
-        const processedBarcode = shortTitle
-          .toLowerCase()
-          .includes(barcode.toLowerCase())
-          ? ''
-          : barcode.toUpperCase();
-
-        html += `\n${shortTitle} ${processedBarcode} | ${String(
-          item.quantity
-        )}шт | ${String(price.toFixed(0))} | ${String(
-          cost.toFixed(0)
-        )} | ${String(totalLineDelta.toFixed(0))}`;
-      } catch (error) {
-        console.error('Error processing line item:', error, item);
-        html += `\nError processing item: ${item.title}`;
-      }
-    });
-    html +=
-      order.lineItems.nodes.length > 1
-        ? `\nTOTALS: ${String(totalPrice.toFixed(0))} | ${String(
-            totalCost.toFixed(0)
-          )} | ${String(totalDelta.toFixed(0))}`
-        : '';
-
-    html += `
-          ${customer}, ${phone}
-          ${address}
-          ${paymentMethod} ${String(totalPrice.toFixed(0))}грн`;
-
-    html += '\n__________________';
+    const orderDetails = formatOrderDetails(order);
+    html += orderDetails;
   }
 
-  html += `</pre>
-        </body>
-      </html>`;
-
+  html += `</pre></body></html>`;
   return html;
+}
+
+function formatOrderDetails(order: OrderResponse['nodes'][number]): string {
+  const customer = `${order.customer?.firstName || ''} ${
+    order.customer?.lastName || ''
+  }`.trim();
+  const address = `${order.shippingAddress.city}, ${order.shippingAddress.address1}`;
+  const phone = order.shippingAddress.phone || order.phone;
+  const paymentMethod = order.paymentMetafield?.value || 'Не вказано';
+
+  let totalPrice = 0,
+    totalDelta = 0,
+    totalCost = 0;
+  let lineItemsText = '';
+  const items = order.lineItems.nodes.filter(
+    (item) => item.unfulfilledQuantity > 0
+  );
+
+  for (const item of items) {
+    const itemText = formatLineItem(item);
+    if (itemText) {
+      lineItemsText += itemText.text;
+      totalPrice += itemText.totalPrice;
+      totalDelta += itemText.totalDelta;
+      totalCost += itemText.totalCost;
+    }
+  }
+
+  const totalsText =
+    items.length > 1
+      ? `TOTALS: ${totalPrice.toFixed(0)} | ${totalCost.toFixed(
+          0
+        )} | ${totalDelta.toFixed(0)}`
+      : '';
+
+  let result = `${lineItemsText}`;
+
+  if (totalsText) {
+    result += `\n${totalsText}`;
+  }
+
+  result += `
+        ${paymentMethod} ${totalPrice.toFixed(0)}грн
+        т. ${phone}; ${customer}; ${address}
+        __________________`;
+
+  return result;
+}
+
+function formatLineItem(
+  item: OrderResponse['nodes'][number]['lineItems']['nodes'][number]
+) {
+  try {
+    console.log('item=', JSON.stringify(item, null, 2));
+
+    const quantity = item.unfulfilledQuantity;
+    const price = parseFloat(item.discountedUnitPriceSet.shopMoney.amount);
+
+    const customBarcode =
+      item.customAttributes.find((attr) => attr.key === '_barcode')?.value ||
+      '';
+    const customCost = parseFloat(
+      item.customAttributes.find((attr) => attr.key === '_cost')?.value || '0'
+    );
+
+    const barcode = item.variant?.barcode?.trim()
+      ? item.variant.barcode
+      : customBarcode;
+
+    const delta = item.product?.deltaMetafield?.value
+      ? parseFloat(item.product.deltaMetafield.value)
+      : price - customCost;
+
+    const cost = price - delta;
+    const totalLineDelta = delta * quantity;
+
+    const shortTitle = sliceWithEllipsis(item.title, 70);
+    const processedBarcode = shortTitle
+      .toLowerCase()
+      .includes(barcode.toLowerCase())
+      ? ''
+      : barcode.toUpperCase();
+
+    return {
+      text: `\n${shortTitle} ${processedBarcode} | ${quantity}шт | ${price.toFixed(
+        0
+      )} | ${cost.toFixed(0)} | ${totalLineDelta.toFixed(0)}`,
+      totalPrice: price * quantity,
+      totalDelta: totalLineDelta,
+      totalCost: cost * quantity,
+    };
+  } catch (error) {
+    console.error('Error processing line item:', error, item);
+    return {
+      text: `\nError processing item: ${item.title}`,
+      totalPrice: 0,
+      totalDelta: 0,
+      totalCost: 0,
+    };
+  }
 }
 
 function sliceWithEllipsis(title: string, maxLength: number) {
