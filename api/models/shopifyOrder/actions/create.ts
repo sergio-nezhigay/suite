@@ -175,6 +175,7 @@ async function findBestWarehouse({
         cityDescription: shippingAddress.city || 'Unknown City',
         ref: 'N/A',
         cityRef: 'N/A',
+        settlementAreaDescription: 'N/A',
       },
       matchProbability: 0,
     };

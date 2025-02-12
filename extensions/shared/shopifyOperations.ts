@@ -27,6 +27,7 @@ export type NovaPoshtaWarehouse = {
   cityRef?: string;
   warehouseDescription?: string;
   warehouseRef?: string;
+  settlementAreaDescription?: string;
   matchProbability?: number;
 } | null;
 

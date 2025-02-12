@@ -191,6 +191,14 @@ export default function NovaPoshtaSelector({
     });
   };
 
+  //  novaPoshtaWarehouse.cityDescription
+  //  novaPoshtaWarehouse.settlementAreaDescription
+  // const settlement = // need to avoid duplicates
+  // не показувати settlementAreaDescription для випадків як settlementAreaDescription = Сумська, cityDescription=Суми, або settlementAreaDescription = Київська, cityDescription=Київ
+  // але показувати коли settlementAreaDescription = Київська, сityDescription=Узин
+  //мені не подобається коли пишеться Київ, київська
+  //але Коли Узин, Київська - це нормально
+
   return (
     <BlockStack rowGap='base'>
       {novaPoshtaWarehouse?.cityDescription &&
@@ -198,7 +206,7 @@ export default function NovaPoshtaSelector({
           <InlineStack gap inlineAlignment='space-between'>
             <Text fontWeight='bold'>Збережено:</Text>
             <Text>
-              {novaPoshtaWarehouse.cityDescription},{' '}
+              {formatSettlement(novaPoshtaWarehouse)};{' '}
               {novaPoshtaWarehouse.warehouseDescription}
             </Text>
           </InlineStack>
@@ -267,3 +275,19 @@ export default function NovaPoshtaSelector({
     </BlockStack>
   );
 }
+
+const hasCommonRoot = (cityName: string, areaName: string) => {
+  const normalizedCity = cityName.toLowerCase().replace(/и|і|ї|є/g, 'i');
+  const normalizedArea = areaName.toLowerCase().replace(/и|і|ї|є/g, 'i');
+
+  return normalizedArea.startsWith(normalizedCity.slice(0, 3));
+};
+
+const formatSettlement = (city: NovaPoshtaWarehouse) => {
+  if (!city || !city.cityDescription) return '';
+  if (!city.settlementAreaDescription) return city.cityDescription;
+  if (hasCommonRoot(city.cityDescription, city.settlementAreaDescription)) {
+    return city.cityDescription;
+  }
+  return `${city.cityDescription}, ${city.settlementAreaDescription} обл.`;
+};
