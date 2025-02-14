@@ -32,11 +32,8 @@ function NovaPoshtaActions({
     setLoading(true);
 
     try {
-      const payload = buildPayload(orderInfo);
-      const { declarationNumber, declarationRef } = await sendNovaPoshtaRequest(
-        `${SHOPIFY_APP_URL}/nova-poshta/create-document`,
-        payload
-      );
+      const { declarationNumber, declarationRef } =
+        await createDocumentNovaPoshta(buildPayload(orderInfo));
 
       await updateShopifyMetafields(
         orderInfo?.orderDetails?.id || '',
@@ -137,9 +134,9 @@ function NovaPoshtaActions({
 
 export default NovaPoshtaActions;
 
-export async function sendNovaPoshtaRequest(url: string, payload: object) {
+export async function createDocumentNovaPoshta(payload: object) {
   try {
-    const res = await fetch(url, {
+    const res = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/create-document`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

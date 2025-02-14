@@ -10,35 +10,30 @@ import {
 } from '@shopify/ui-extensions-react/admin';
 import {
   NovaPoshtaWarehouse,
+  OrderInfo,
   updateWarehouse,
 } from '../../shared/shopifyOperations';
-import useNovaposhtaApiKey from './useNovaposhtaApiKey';
+import { SHOPIFY_APP_URL } from '../../shared/data';
 
 type City = { Ref: string; Description: string; AreaDescription: string };
 type Warehouse = { Ref: string; Description: string };
 
-const API_URL = 'https://api.novaposhta.ua/v2.0/json/';
 const isSingleWord = (str: string) => str.trim().split(/\s+/).length === 1;
 
-const fetchData = async (payload: any) => {
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(payload),
-  });
-  return response.json();
-};
-
-const useCitySuggestions = (
-  searchQuery: string,
-  apiKey: string | null,
-  setChosenCityRef: any
-) => {
+const useCitySuggestions = ({
+  searchQuery,
+  setChosenCityRef,
+  editModeActive,
+}: {
+  searchQuery: string;
+  setChosenCityRef: (ref: string | null) => void;
+  editModeActive: boolean;
+}) => {
   const [cityOptions, setCityOptions] = useState<City[]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!apiKey || !searchQuery.trim()) {
+    if (!editModeActive || !searchQuery.trim()) {
       setCityOptions([]);
       return;
     }
@@ -46,11 +41,10 @@ const useCitySuggestions = (
     const fetchCities = async () => {
       setLoading(true);
       try {
-        const { data } = await fetchData({
+        const { data } = await makeRequestNovaPoshta({
           modelName: 'Address',
           calledMethod: 'getCities',
           methodProperties: { FindByString: searchQuery },
-          apiKey,
         });
         setCityOptions(data || []);
         setChosenCityRef(data?.length ? data[0].Ref : null);
@@ -62,36 +56,42 @@ const useCitySuggestions = (
     };
 
     fetchCities();
-  }, [searchQuery, apiKey]);
+  }, [searchQuery, editModeActive]);
 
   return { cityOptions, isLoading };
 };
 
-const useWarehouseSuggestions = (
-  chosenCityRef: string | null,
-  apiKey: string | null,
-  setChosenWarehouseRef: any,
-  novaPoshtaWarehouseRef?: string | null
-) => {
+const useWarehouseSuggestions = ({
+  chosenCityRef,
+  setChosenWarehouseRef,
+  editModeActive,
+  novaPoshtaWarehouseRef,
+}: {
+  chosenCityRef: string | null;
+  setChosenWarehouseRef: (ref: string | null) => void;
+  editModeActive: boolean;
+  novaPoshtaWarehouseRef?: string | null;
+}) => {
   const [warehouseOptions, setWarehouseOptions] = useState<Warehouse[]>([]);
   const [isLoading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!chosenCityRef || !apiKey) {
+    if (!editModeActive || !chosenCityRef) {
       setWarehouseOptions([]);
       return;
     }
 
     const fetchWarehouses = async () => {
+      console.log('fetchWarehouses');
       setLoading(true);
       try {
-        const { data } = await fetchData({
+        const response = await makeRequestNovaPoshta({
           modelName: 'AddressGeneral',
           calledMethod: 'getWarehouses',
           methodProperties: { CityRef: chosenCityRef },
-          apiKey,
         });
-        setWarehouseOptions(data || []);
+        const data = (response.data || []) as Warehouse[];
+        setWarehouseOptions(data);
 
         let newRef: string | null = null;
         if (data?.length === 1) {
@@ -113,7 +113,7 @@ const useWarehouseSuggestions = (
     };
 
     fetchWarehouses();
-  }, [chosenCityRef, apiKey, novaPoshtaWarehouseRef]);
+  }, [chosenCityRef, novaPoshtaWarehouseRef, editModeActive]);
 
   return { warehouseOptions, isLoading };
 };
@@ -121,11 +121,11 @@ const useWarehouseSuggestions = (
 export default function NovaPoshtaSelector({
   novaPoshtaWarehouse,
   setNovaPoshtaWarehouse,
-  orderId,
+  orderInfo,
 }: {
   novaPoshtaWarehouse?: NovaPoshtaWarehouse;
   setNovaPoshtaWarehouse: (warehouse: NovaPoshtaWarehouse) => void;
-  orderId: string;
+  orderInfo: OrderInfo;
 }) {
   const [editModeActive, setEditModeActive] = useState(false);
 
@@ -139,31 +139,18 @@ export default function NovaPoshtaSelector({
     novaPoshtaWarehouse?.warehouseRef || null
   );
 
-  const { apiKey, error, loadingApiKey } = useNovaposhtaApiKey();
-  const { cityOptions, isLoading: isLoadingCities } = useCitySuggestions(
+  const { cityOptions, isLoading: isLoadingCities } = useCitySuggestions({
     searchQuery,
-    apiKey,
-    setChosenCityRef
-  );
+    setChosenCityRef,
+    editModeActive,
+  });
   const { warehouseOptions, isLoading: isLoadingWarehouses } =
-    useWarehouseSuggestions(
+    useWarehouseSuggestions({
       chosenCityRef,
-      apiKey,
       setChosenWarehouseRef,
-      novaPoshtaWarehouse?.warehouseRef
-    );
-
-  if (loadingApiKey) {
-    return <ProgressIndicator size='small-300' />;
-  }
-
-  if (error) {
-    return <Text>Error: {error}</Text>;
-  }
-
-  if (!apiKey) {
-    return <Text>No API key found.</Text>;
-  }
+      editModeActive,
+      novaPoshtaWarehouseRef: novaPoshtaWarehouse?.warehouseRef,
+    });
 
   const saveWarehouse = async () => {
     const selectedCity = cityOptions.find((city) => city.Ref === chosenCityRef);
@@ -171,16 +158,19 @@ export default function NovaPoshtaSelector({
       (warehouse) => warehouse.Ref === chosenWarehouseRef
     );
 
-    await updateWarehouse({
-      warehouse: {
-        cityRef: chosenCityRef || '',
-        cityDescription: selectedCity?.Description || '',
-        warehouseRef: chosenWarehouseRef || '',
-        warehouseDescription: selectedWarehouse?.Description || '',
-        matchProbability: 1,
-      },
-      orderId,
-    });
+    if (orderInfo?.orderDetails?.id) {
+      console.log('orderInfo.orderDetails=', orderInfo?.orderDetails);
+      await updateWarehouse({
+        warehouse: {
+          cityRef: chosenCityRef || '',
+          cityDescription: selectedCity?.Description || '',
+          warehouseRef: chosenWarehouseRef || '',
+          warehouseDescription: selectedWarehouse?.Description || '',
+          matchProbability: 1,
+        },
+        orderId: orderInfo.orderDetails.id,
+      });
+    }
 
     setNovaPoshtaWarehouse({
       cityDescription: selectedCity?.Description,
@@ -190,14 +180,6 @@ export default function NovaPoshtaSelector({
       matchProbability: 1,
     });
   };
-
-  //  novaPoshtaWarehouse.cityDescription
-  //  novaPoshtaWarehouse.settlementAreaDescription
-  // const settlement = // need to avoid duplicates
-  // не показувати settlementAreaDescription для випадків як settlementAreaDescription = Сумська, cityDescription=Суми, або settlementAreaDescription = Київська, cityDescription=Київ
-  // але показувати коли settlementAreaDescription = Київська, сityDescription=Узин
-  //мені не подобається коли пишеться Київ, київська
-  //але Коли Узин, Київська - це нормально
 
   return (
     <BlockStack rowGap='base'>
@@ -291,3 +273,28 @@ const formatSettlement = (city: NovaPoshtaWarehouse) => {
   }
   return `${city.cityDescription}, ${city.settlementAreaDescription} обл.`;
 };
+
+export async function makeRequestNovaPoshta(payload: object) {
+  try {
+    const res = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/general`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(payload),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(
+        data.error ||
+          'An error occurred while processing the Nova Poshta request.'
+      );
+    }
+
+    return data;
+  } catch (err) {
+    throw new Error(err instanceof Error ? err.message : 'Unknown error');
+  }
+}

@@ -173,7 +173,7 @@ function formatOrderDetails(order: OrderResponse['nodes'][number]): string {
 
   const totalsText =
     items.length > 1
-      ? `TOTALS: ${totalPrice.toFixed(0)} | ${totalCost.toFixed(
+      ? `Загалом: ${totalPrice.toFixed(0)} | ${totalCost.toFixed(
           0
         )} | ${totalDelta.toFixed(0)}`
       : '';

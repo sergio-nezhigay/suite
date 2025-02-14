@@ -80,7 +80,7 @@ function WarehouseExtension() {
               <NovaPoshtaSelector
                 novaPoshtaWarehouse={orderInfo?.novaposhtaRecepientWarehouse}
                 setNovaPoshtaWarehouse={setNovaPoshtaWarehouse}
-                orderId={orderId}
+                orderInfo={orderInfo}
               />
               <NovaPoshtaActions
                 orderInfo={orderInfo}
