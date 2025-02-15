@@ -69,7 +69,7 @@ function WarehouseExtension() {
           <>
             <BlockStack gap>
               <InlineStack gap inlineAlignment='space-between'>
-                <Text fontWeight='bold'>Заповнено замовником :</Text>
+                <Text fontWeight='bold'>Оригінал:</Text>
                 <Text>
                   {orderInfo?.orderDetails?.city},{' '}
                   {orderInfo?.orderDetails?.address}

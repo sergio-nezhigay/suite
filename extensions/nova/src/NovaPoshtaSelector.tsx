@@ -159,7 +159,6 @@ export default function NovaPoshtaSelector({
     );
 
     if (orderInfo?.orderDetails?.id) {
-      console.log('orderInfo.orderDetails=', orderInfo?.orderDetails);
       await updateWarehouse({
         warehouse: {
           cityRef: chosenCityRef || '',
@@ -262,7 +261,7 @@ const hasCommonRoot = (cityName: string, areaName: string) => {
   const normalizedCity = cityName.toLowerCase().replace(/и|і|ї|є/g, 'i');
   const normalizedArea = areaName.toLowerCase().replace(/и|і|ї|є/g, 'i');
 
-  return normalizedArea.startsWith(normalizedCity.slice(0, 3));
+  return normalizedCity.includes(normalizedArea.slice(0, 3));
 };
 
 const formatSettlement = (city: NovaPoshtaWarehouse) => {
