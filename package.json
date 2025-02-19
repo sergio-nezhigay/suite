@@ -1,0 +1,58 @@
+{
+  "name": "admin-action-block",
+  "version": "0.1.0",
+  "description": "Internal package for Gadget app admin-action-block (Development environment)",
+  "license": "UNLICENSED",
+  "private": true,
+  "scripts": {
+    "shopify": "shopify",
+    "dev": "shopify app dev",
+    "info": "shopify app info",
+    "generate": "shopify app generate",
+    "deploy": "shopify app deploy",
+    "ggt": "npx ggt dev ./ --app=admin-action-block --env=development",
+    "build": "NODE_ENV=production vite build"
+  },
+  "dependencies": {
+    "@gadget-client/admin-action-block": "link:.gadget/client",
+    "@gadgetinc/react": "^0.18.5",
+    "xml2js": "^0.6.2",
+    "@gadgetinc/react-shopify-app-bridge": "^0.16.3",
+    "@shopify/app-bridge-react": "4.0.0",
+    "@shopify/polaris": "^13.8.0",
+    "@shopify/polaris-icons": "^9.3.0",
+    "gadget-server": "link:.gadget/server",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "6.15.0",
+    "shopify-api-node": "^3.12.6",
+    "@fastify/cors": "^8.5.0",
+    "openai": "^4.61.0",
+    "google-spreadsheet": "^4.1.4",
+    "google-auth-library": "^9.15.0",
+    "axios": "^1.7.9",
+    "request": "^2.88.2",
+    "fastify": "^5.2.1",
+    "@fastify/type-provider-typebox": "^3.0.0",
+    "@sinclair/typebox": "^0.31.0"
+  },
+  "devDependencies": {
+    "@shopify/app-bridge-types": "^0.0.15",
+    "@shopify/cli": "^3.66.1",
+    "@types/node": "^20.17.7",
+    "@types/react": "^18.0.28",
+    "@types/react-dom": "^18.0.11",
+    "@types/xml2js": "^0.4.14",
+    "@vitejs/plugin-react-swc": "3.2.0",
+    "typescript": "^5.7.2",
+    "iconv-lite": "^0.6.3",
+    "csv-parse": "^5.6.0",
+    "vite": "^5.3.5"
+  },
+  "workspaces": [
+    "extensions/*"
+  ],
+  "trustedDependencies": [
+    "@shopify/plugin-cloudflare"
+  ]
+}

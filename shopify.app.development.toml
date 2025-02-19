@@ -1,0 +1,27 @@
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+
+client_id = "a98e00674e00da851db776a56ac3150d"
+name = "suite-development"
+handle = "admin-action-block-1"
+application_url = "https://admin-action-block--development.gadget.app/api/shopify/install-or-render"
+embedded = true
+
+[build]
+dev_store_url = "codeinspire2.myshopify.com"
+include_config_on_deploy = true
+
+[access_scopes]
+# Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
+scopes = "unauthenticated_read_customers,write_orders,write_files,read_files,write_products,write_payment_customizations,read_payment_customizations,write_pixels,read_customers,read_products,read_orders,unauthenticated_write_customers,read_locations,write_customers"
+
+[auth]
+redirect_urls = [
+  "https://admin-action-block--development.gadget.app/api/connections/auth/shopify/callback"
+]
+
+[webhooks]
+api_version = "2024-10"
+
+[pos]
+embedded = false
+
