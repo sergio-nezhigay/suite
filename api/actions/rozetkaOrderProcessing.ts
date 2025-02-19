@@ -7,6 +7,7 @@ import {
   createCustomer,
   findCustomer,
 } from '../utilities/shopify/api/orders/createCustomer';
+import { RozetkaOrder, ShopifyOrder } from 'types/*';
 
 const ORDER_STATUS_CODES = {
   ALL: '1',
@@ -16,54 +17,13 @@ const ORDER_STATUS_CODES = {
   SHIPPING: '5',
 };
 
-interface Order {
-  id: number;
-  recipient_phone: string;
-  recipient_title: { first_name: string; last_name: string };
-  delivery?: { place_number?: string; city?: { title?: string } };
-  purchases?: {
-    item: { price_offer_id: string };
-    item_name: string;
-    quantity: string;
-    price_with_discount?: string;
-    price: string;
-  }[];
-  amount_with_discount?: string;
-  amount: string;
-}
-
 const ROZETKA_API_BASE_URL = 'https://api-seller.rozetka.com.ua';
 
 let accessToken: string | null = null;
 
-async function findOrCreateShopifyCustomer(shopify: Shopify, order: Order) {
-  try {
-    const foundCustomer = await findCustomer({
-      shopify,
-      phone: order.recipient_phone,
-    });
-
-    if (foundCustomer) {
-      console.log('Found existing customer:', foundCustomer);
-      return foundCustomer;
-    }
-
-    const customerVariables = transformOrderToCustomerVariables(order);
-    const createdCustomer = await createCustomer({
-      shopify,
-      variables: customerVariables,
-    });
-    console.log('Created new customer:', createdCustomer);
-    return createdCustomer;
-  } catch (error) {
-    throw new Error(`Failed to get/create customer: ${error}`);
-  }
-}
-
 export const run: ActionRun = async ({ connections }) => {
   console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
-  console.log(' isProduction=', isProduction);
   if (!isProduction) return;
 
   accessToken = await getRozetkaAccessToken();
@@ -72,7 +32,7 @@ export const run: ActionRun = async ({ connections }) => {
   }
 
   const rozOrders = await getNewOrders(accessToken);
-  if (!rozOrders) {
+  if (!rozOrders || !rozOrders.length) {
     console.log('No new orders. run finished');
     return;
   }
@@ -100,29 +60,45 @@ export const run: ActionRun = async ({ connections }) => {
 
       console.log(`Order ${order.id} created successfully`, shopifyOrder);
 
-      const statusUpdatedInRozetka = await changeRozetkaOrderStatus(
-        order.id,
-        26,
-        accessToken
-      );
-      if (statusUpdatedInRozetka) {
-        console.log(`[Rozetka] Status for order ${order.id} changed`);
-      } else {
-        console.error(
-          `[Rozetka] Failed to update status for order ${order.id}`
-        );
-      }
+      await changeRozetkaOrderStatus(order.id, 26, accessToken);
     } catch (error) {
       logAndReturnError(error, `run - Order ${order.id}`);
     }
   }
 };
 
+async function findOrCreateShopifyCustomer(
+  shopify: Shopify,
+  order: RozetkaOrder
+) {
+  try {
+    const foundCustomer = await findCustomer({
+      shopify,
+      phone: order.recipient_phone,
+    });
+
+    if (foundCustomer) {
+      console.log('Found existing customer:', foundCustomer);
+      return foundCustomer;
+    }
+
+    const customerVariables = transformOrderToCustomerVariables(order);
+    const createdCustomer = await createCustomer({
+      shopify,
+      variables: customerVariables,
+    });
+    console.log('Created new customer:', createdCustomer);
+    return createdCustomer;
+  } catch (error) {
+    throw new Error(`Failed to get/create customer: ${error}`);
+  }
+}
+
 const changeRozetkaOrderStatus = async (
   orderId: number,
   status: number,
   accessToken: string
-) => {
+): Promise<void> => {
   try {
     const response = await axios.put(
       `${ROZETKA_API_BASE_URL}/orders/${orderId}`,
@@ -137,20 +113,17 @@ const changeRozetkaOrderStatus = async (
 
     if (response.data.success) {
       console.log(`Status updated to ${status} for Rozetka order ${orderId}`);
-      return true;
     } else {
-      console.log(`response.data- ${JSON.stringify(response.data)}`);
-      return logAndReturnError(
-        new Error('Failed to update status'),
-        'updateRozetkaStatus'
-      );
+      console.error(`Failed to update status for order ${orderId}`);
     }
   } catch (error) {
-    return logAndReturnError(error, 'updateRozetkaStatus');
+    console.error(`Error updating status for order ${orderId}:`, error);
   }
 };
 
-export const getNewOrders = async (accessToken: string) => {
+export const getNewOrders = async (
+  accessToken: string
+): Promise<RozetkaOrder[] | null> => {
   const ROZETKA_ORDERS_API_URL = `${ROZETKA_API_BASE_URL}/orders/search`;
 
   try {
@@ -179,7 +152,7 @@ export const getNewOrders = async (accessToken: string) => {
   }
 };
 
-const transformOrderToCustomerVariables = (order: Order) => {
+const transformOrderToCustomerVariables = (order: RozetkaOrder) => {
   return {
     input: {
       firstName: order.recipient_title.first_name,
@@ -191,9 +164,9 @@ const transformOrderToCustomerVariables = (order: Order) => {
 };
 
 const transformOrderToShopifyVariables = async (
-  order: Order,
+  order: RozetkaOrder,
   shopify: Shopify
-) => {
+): Promise<{ order: ShopifyOrder }> => {
   if (!order) throw new Error('Order is required');
 
   const mapPurchaseToLineItem = async (purchase: any) => {
@@ -285,15 +258,16 @@ const getRozetkaAccessToken = async (): Promise<string | null> => {
   }
 };
 
-const logAndReturnError = (error: any, context: string) => {
-  const message = error?.response?.data || error?.message || 'Unknown error';
+const logAndReturnError = (error: unknown, context: string): null => {
+  const err = error as any;
+  const message = err?.response?.data || err?.message || 'Unknown error';
   console.error(`[${context}] Error: ${message}`);
   return null;
 };
 
 export const options = {
   triggers: {
-    scheduler: [{ every: 'hour', at: '0 mins' }],
+    scheduler: [{ cron: "0 8-16 * * *" }],
   },
 };
 
@@ -355,10 +329,15 @@ export const getShopifyProductIdByOfferId = async (
   }
 };
 
+interface BarcodeCost {
+  barcode: string;
+  cost: string;
+}
+
 export const getBarcodeAndCostByProductId = async (
   productId: string,
   shopify: Shopify
-): Promise<{ barcode: string; cost: string }> => {
+): Promise<BarcodeCost> => {
   if (!productId) {
     console.warn(`[fetchBarcodeByProductId] No productId provided`);
     return { barcode: '', cost: '' };
@@ -414,7 +393,7 @@ export const getBarcodeAndCostByProductId = async (
 export const getBarcodeAndCostFromOfferId = async (
   offerId: string,
   shopify: Shopify
-): Promise<{ barcode: string; cost: string }> => {
+): Promise<BarcodeCost> => {
   const productId = await getShopifyProductIdByOfferId(offerId, shopify);
   if (!productId) return { barcode: '', cost: '' };
 

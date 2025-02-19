@@ -87,18 +87,14 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
     .map((product) => {
       const { categoryId, params } = parseRozetkaFilter(product);
 
-      // Calculate oldPrice as 10% higher than the price
-
       const isMemory = product.collection.toLowerCase().includes("пам'ять");
-      let price;
-      if (
-        !product.title.includes('Перехідник аудіо-оптика на 3.5 мм') &&
-        !product.title.includes('232')
-      ) {
-        price = isMemory ? product.price * 1.03 : product.price * 1.1;
-      } else {
-        price = product.price * 1.05;
-      }
+      const hasSpecialTitle =
+        product.title.includes('Перехідник аудіо-оптика на 3.5 мм') ||
+        product.title.includes('232');
+      const priceMultiplier = hasSpecialTitle ? 1.05 : isMemory ? 1.03 : 1.14;
+
+      const price = product.price * priceMultiplier;
+
       const oldPrice = (price * 1.1).toFixed(2);
       const state = isMemory ? 'used' : 'new';
       const name = isMemory
@@ -122,6 +118,9 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
           ? product.id_woocommerce + '-1'
           : product.id_woocommerce;
       const id = oldRozetkaMemoryId || product.id;
+      const brand = name.toLowerCase().includes('easycap')
+        ? 'Easycap'
+        : product.brand;
 
       return `
           <offer id="${id}" available="${product.availability === 'in stock'}">
@@ -132,7 +131,7 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
             <stock_quantity>${product.inventoryQuantity || 0}</stock_quantity>
             <currencyId>UAH</currencyId>
             <categoryId>${categoryId}</categoryId>
-            <vendor>${product.brand}</vendor>
+            <vendor>${brand}</vendor>
             <state>${state}</state>
             <picture>${product.imageURLs[0]}</picture>
             ${additionalImages}

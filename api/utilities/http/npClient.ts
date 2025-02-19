@@ -5,7 +5,7 @@ export const npClient = async (payload: object) => {
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ ...payload, apiKey: process.env.NP_API_KEY }),
+      body: JSON.stringify({ ...payload, apiKey: process.env.NP_API_KEY_SSh }),
     });
 
     const data = await res.json();

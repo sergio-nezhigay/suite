@@ -28,6 +28,11 @@ interface OrderResponse {
         variant: {
           sku: string;
           barcode: string;
+          inventoryItem: {
+            unitCost: {
+              amount: string;
+            };
+          };
         };
         product: {
           deltaMetafield: {
@@ -91,6 +96,11 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
               variant {
                 sku
                 barcode
+                inventoryItem {
+                  unitCost {
+                    amount
+                  }
+                }
               }
               product {
                 deltaMetafield: metafield(namespace: "custom", key: "delta") {
@@ -149,6 +159,7 @@ function formatOrderDetails(order: OrderResponse['nodes'][number]): string {
   const customer = `${order.customer?.firstName || ''} ${
     order.customer?.lastName || ''
   }`.trim();
+
   const address = `${order.shippingAddress.city}, ${order.shippingAddress.address1}`;
   const phone = order.shippingAddress.phone || order.phone;
   const paymentMethod = order.paymentMetafield?.value || 'Не вказано';
@@ -208,15 +219,15 @@ function formatLineItem(
       item.customAttributes.find((attr) => attr.key === '_cost')?.value || '0'
     );
 
+    const cost =
+      customCost || parseFloat(item.variant.inventoryItem.unitCost.amount);
+
     const barcode = item.variant?.barcode?.trim()
       ? item.variant.barcode
       : customBarcode;
 
-    const delta = item.product?.deltaMetafield?.value
-      ? parseFloat(item.product.deltaMetafield.value)
-      : price - customCost;
+    const delta = price - cost;
 
-    const cost = price - delta;
     const totalLineDelta = delta * quantity;
 
     const shortTitle = sliceWithEllipsis(item.title, 70);

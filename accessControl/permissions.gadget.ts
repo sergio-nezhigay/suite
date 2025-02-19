@@ -237,9 +237,6 @@ export const permissions: GadgetPermissions = {
           },
         },
       },
-      actions: {
-        makeRecommendations: true,
-      },
     },
     "shopify-storefront-customers": {
       storageKey: "Role-Shopify-Customer",
@@ -272,9 +269,6 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
-      },
-      actions: {
-        makeRecommendations: true,
       },
     },
   },

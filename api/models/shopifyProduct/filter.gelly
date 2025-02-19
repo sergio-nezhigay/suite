@@ -1,0 +1,3 @@
+filter ($trigger: GadgetTrigger) [
+  where $trigger.type == "shopify_webhook_false"
+]

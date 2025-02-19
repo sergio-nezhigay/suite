@@ -1,5 +1,5 @@
-import { applyParams, save, ActionOptions } from "gadget-server";
-import { preventCrossShopDataAccess } from "gadget-server/shopify";
+import { applyParams, save, ActionOptions } from 'gadget-server';
+import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 
 /** @type { ActionRun } */
 export const run = async ({ params, record, logger, api, connections }) => {
@@ -9,9 +9,22 @@ export const run = async ({ params, record, logger, api, connections }) => {
 };
 
 /** @type { ActionOnSuccess } */
-export const onSuccess = async ({ params, record, logger, api, connections }) => {
+export const onSuccess = async ({
+  params,
+  record,
+  logger,
+  api,
+  connections,
+}) => {
   // Your logic goes here
 };
 
 /** @type { ActionOptions } */
-export const options = { actionType: "update" };
+export const options = {
+  actionType: 'update',
+  triggers: {
+    shopify: {
+      filter: 'api/models/shopifyProductVariant/filter.gelly',
+    },
+  },
+};
