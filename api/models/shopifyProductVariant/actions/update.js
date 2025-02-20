@@ -22,9 +22,4 @@ export const onSuccess = async ({
 /** @type { ActionOptions } */
 export const options = {
   actionType: 'update',
-  triggers: {
-    shopify: {
-      filter: 'api/models/shopifyProductVariant/filter.gelly',
-    },
-  },
 };
