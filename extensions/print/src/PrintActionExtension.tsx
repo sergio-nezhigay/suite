@@ -23,7 +23,7 @@ function App() {
     const orderIds = data.selected.map((order) => order.id).join(',');
     const fullSrc = `/print?orderIds=${encodeURIComponent(orderIds)}`;
 
-    console.log(fullSrc);
+    //console.log(fullSrc);
     setSrc(fullSrc);
   }, [data.selected]);
 

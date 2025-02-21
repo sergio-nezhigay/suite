@@ -182,10 +182,11 @@ function buildPayload(orderInfo: OrderInfo) {
     CitySender: 'db5c88d9-391c-11dd-90d9-001a92567626', // Буча
     Sender: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da', // СШ
     //Sender: '6a11bc85-464d-11e8-8b24-005056881c6b', // СН getCounterparties /ref result
-    SenderAddress: 'd81f61a9-72f9-11ec-81d3-b8830365bd14', // №5
+    //SenderAddress: 'd81f61a9-72f9-11ec-81d3-b8830365bd14', // №5
+    SenderAddress: '84a24ee3-4d6e-11ee-9eb1-d4f5ef0df2b8', // №6
     ContactSender: 'ad3e51f3-ae6c-11ec-92e7-48df37b921da', // СШ
     //ContactSender: '72040cf9-0919-11e9-8b24-005056881c6b', // СН getCounterpartyContactPersons result
-    SendersPhone: '380507025777',
+    SendersPhone: '380632570653',
     CityRecipient: orderInfo?.novaposhtaRecepientWarehouse?.cityRef,
     RecipientAddress: orderInfo?.novaposhtaRecepientWarehouse?.warehouseRef,
     RecipientsPhone: orderInfo?.orderDetails?.shippingPhone,

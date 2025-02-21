@@ -9,7 +9,7 @@ type = "ui_extension"
 
 # Only 1 target can be specified for each Admin action extension
 [[extensions.targeting]]
-module = "./src/ActionExtension.tsx"
+module = "./src/SendExtension.tsx"
 # The target used here must match the target used in the module file (./src/ActionExtension.tsx)
 target = "admin.order-index.selection-action.render"
 

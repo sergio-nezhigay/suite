@@ -368,3 +368,126 @@ async function makeIPMessage() {
   const ipMessage = data?.ip ? ` by ${data.ip}` : '';
   return ipMessage;
 }
+
+export interface OrderResponse {
+  nodes: {
+    id: string;
+    name: string;
+    createdAt: string;
+    phone: string;
+    customer: {
+      firstName: string;
+      lastName: string;
+    };
+    shippingAddress: {
+      phone: string;
+      city: string;
+      address1: string;
+    };
+    lineItems: {
+      nodes: {
+        title: string;
+        unfulfilledQuantity: number;
+        discountedUnitPriceSet: {
+          shopMoney: {
+            amount: string;
+          };
+        };
+        variant: {
+          sku: string;
+          barcode: string;
+          inventoryItem: {
+            unitCost: {
+              amount: string;
+            };
+          };
+        };
+        product: {
+          deltaMetafield: {
+            value: string;
+          } | null;
+        };
+        customAttributes: {
+          key: string;
+          value: string;
+        }[];
+      }[];
+    };
+    paymentMetafield: {
+      value: string;
+    } | null;
+  }[];
+}
+
+export async function fetchOrdersData(
+  ids: string[]
+): Promise<OrderResponse['nodes'] | null> {
+  const query = `#graphql
+      query GetOrdersByIds($ids: [ID!]!) {
+        nodes(ids: $ids) {
+          ... on Order {
+            id
+            name
+            createdAt
+            phone
+            customer {
+              firstName
+              lastName
+            }
+            shippingAddress {
+              phone
+              city
+              address1
+            }
+            lineItems(first: 10) {
+              nodes {
+                title
+                unfulfilledQuantity
+                discountedUnitPriceSet {
+                  shopMoney {
+                    amount
+                  }
+                }
+                variant {
+                  sku
+                  barcode
+                  inventoryItem {
+                    unitCost {
+                      amount
+                    }
+                  }
+                }
+                product {
+                  deltaMetafield: metafield(namespace: "custom", key: "delta") {
+                    value
+                  }
+                }
+                customAttributes {
+                  key
+                  value
+                }
+              }
+            }
+            paymentMetafield: metafield(namespace: "custom", key: "payment_method") {
+              value
+            }
+          }
+        }
+      }`;
+
+  try {
+    const { data, errors } = await makeGraphQLQuery<{
+      nodes: OrderResponse['nodes'];
+    }>(query, { ids });
+
+    if (errors) {
+      console.error('GraphQL errors fetching orders:', errors);
+      return null;
+    }
+
+    return data?.nodes || null;
+  } catch (error) {
+    console.error('Error fetching orders:', error);
+    return null;
+  }
+}

@@ -203,7 +203,7 @@ const transformOrderToShopifyVariables = async (
 
   return {
     order: {
-      name: `${order.id}`,
+      name: `№${order.id}`,
       email: `${order.recipient_phone}@example.com`,
       shippingAddress: {
         address1: order.delivery?.place_number || 'адреса невідома',
@@ -267,7 +267,7 @@ const logAndReturnError = (error: unknown, context: string): null => {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: "0 8-16 * * *" }],
+    scheduler: [{ cron: '0 8-16 * * *' }],
   },
 };
 
