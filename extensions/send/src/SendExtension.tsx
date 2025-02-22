@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import {
   reactExtension,
   useApi,
@@ -6,7 +6,6 @@ import {
   BlockStack,
   Button,
   Text,
-  Divider,
   ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
@@ -26,6 +25,36 @@ function SendExtension() {
   const { data } = useApi(TARGET);
   const selectedOrders = data?.selected || [];
   const selectedIds = selectedOrders.map(({ id }: { id: string }) => id);
+
+  const handleSendFormattedEmail = async (
+    ordersContent: OrderResponse['nodes']
+  ) => {
+    try {
+      const htmlContent = formatOrdersContentToWarrantyHtml(ordersContent);
+      const response = await fetch(
+        'https://novaposhta.gadget.app/sendFormattedEmail',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            subject: 'Order Details',
+            html: htmlContent,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('Email sent successfully:', result);
+    } catch (error) {
+      console.error('Failed to send email:', error);
+    }
+  };
 
   useEffect(() => {
     async function fetchOrdersContent() {
@@ -67,6 +96,14 @@ function SendExtension() {
           disabled={loading || !ordersContent || sent}
         >
           {sent ? 'Sent' : 'Send to Google Sheet'}
+        </Button>
+      }
+      secondaryAction={
+        <Button
+          onPress={() => handleSendFormattedEmail(ordersContent!)}
+          disabled={loading || !ordersContent}
+        >
+          Send Email
         </Button>
       }
     >
@@ -134,13 +171,13 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         );
       })}
       <Text>
-        {order.customer.firstName} {order.customer.lastName}, {phone},{' '}
+        {phone}, {order.customer.firstName} {order.customer.lastName},
         {order.shippingAddress?.city}, {order.shippingAddress?.address1}
       </Text>
       <Text>
         {order.paymentMetafield?.value}: {totalSum.toFixed(0)}
       </Text>
-      {orderIndex < ordersContent.length - 1 && <Divider />}
+      {orderIndex < ordersContent.length - 1 && <Text>_________</Text>}
     </BlockStack>
   );
 }
@@ -225,4 +262,101 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
       ];
     })
   );
+}
+
+function formatOrdersContentToWarrantyHtml(
+  orders: OrderResponse['nodes']
+): string {
+  const rows = orders
+    .map((order) => {
+      const lineItemsHtml = order.lineItems.nodes
+        .map((lineItem) => {
+          const { barcode } = getBarcodeAndCost(lineItem);
+          const title = removeBarcodeFromTitle(
+            lineItem.title,
+            lineItem.variant?.barcode
+          );
+
+          return `
+                <tr>
+                    <td>${title}</td>
+                    <td>${barcode}</td>
+                    <td>${lineItem.unfulfilledQuantity}</td>
+                </tr>
+            `;
+        })
+        .join('');
+
+      return `
+            <div class="warranty-document">
+                <img src="https://cdn.shopify.com/s/files/1/0868/0462/7772/files/informatica-logo-good1.jpg?v=1740226141" alt="Logo" class="logo" />
+                <h3>Warranty Document for Order: ${order.name}</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Title</th>
+                            <th>Barcode</th>
+                            <th>Quantity</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${lineItemsHtml}
+                    </tbody>
+                </table>
+                <p>This document serves as a warranty for the items listed above. Please keep it for your records.</p>
+            </div>
+            <hr />
+        `;
+    })
+    .join('');
+
+  return `
+        <html>
+            <head>
+                <style>
+                    @media print {
+                        @page { margin: 0; }
+                        body { margin: 0; }
+                        .email-header { display: none; }
+                    }
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 0;
+                        padding: 20px;
+                    }
+                    .warranty-document {
+                        page-break-after: always;
+                    }
+                    .logo {
+                        width: 150px;
+                        float: left;
+
+                    }
+                    h3 {
+                        clear: both;
+                    }
+                    table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 20px;
+                    }
+                    table, th, td {
+                        border: 1px solid black;
+                    }
+                    th, td {
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    hr {
+                        border: 0;
+                        border-top: 1px solid #ccc;
+                        margin: 40px 0;
+                    }
+                </style>
+            </head>
+            <body>
+                ${rows}
+            </body>
+        </html>
+    `;
 }
