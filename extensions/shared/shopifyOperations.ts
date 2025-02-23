@@ -403,7 +403,11 @@ export interface OrderResponse {
           };
         };
         product: {
+          id: string;
           deltaMetafield: {
+            value: string;
+          } | null;
+          warrantyMetafield: {
             value: string;
           } | null;
         };
@@ -419,73 +423,136 @@ export interface OrderResponse {
   }[];
 }
 
-export async function fetchOrdersData(
-  ids: string[]
-): Promise<OrderResponse['nodes'] | null> {
-  const query = `#graphql
-      query GetOrdersByIds($ids: [ID!]!) {
-        nodes(ids: $ids) {
-          ... on Order {
-            id
-            name
-            createdAt
-            phone
-            customer {
-              firstName
-              lastName
-            }
-            shippingAddress {
-              phone
-              city
-              address1
-            }
-            lineItems(first: 10) {
-              nodes {
-                title
-                unfulfilledQuantity
-                discountedUnitPriceSet {
-                  shopMoney {
-                    amount
-                  }
-                }
-                variant {
-                  sku
-                  barcode
-                  inventoryItem {
-                    unitCost {
-                      amount
-                    }
-                  }
-                }
-                product {
-                  deltaMetafield: metafield(namespace: "custom", key: "delta") {
-                    value
-                  }
-                }
-                customAttributes {
-                  key
-                  value
+async function fetchVariantDetails(productId: string): Promise<any | null> {
+  const variantQuery = `#graphql
+      query GetVariantByProductId($id: ID!) {
+        product(id: $id) {
+          variants(first: 1) {
+            nodes {
+              sku
+              barcode
+              inventoryItem {
+                unitCost {
+                  amount
                 }
               }
-            }
-            paymentMetafield: metafield(namespace: "custom", key: "payment_method") {
-              value
             }
           }
         }
       }`;
+  try {
+    const { data, errors } = await makeGraphQLQuery<{
+      product: {
+        variants: {
+          nodes: {
+            sku: string;
+            barcode: string;
+            inventoryItem: {
+              unitCost: {
+                amount: string;
+              };
+            };
+          }[];
+        };
+      };
+    }>(variantQuery, {
+      id: productId,
+    });
+    if (errors) {
+      console.error('GraphQL errors fetching variant:', errors);
+      return null;
+    }
+    return data?.product?.variants?.nodes[0] || null;
+  } catch (error) {
+    console.error('Error fetching variant:', error);
+    return null;
+  }
+}
+
+export async function fetchOrdersData(
+  ids: string[]
+): Promise<OrderResponse['nodes'] | null> {
+  const query = `#graphql
+        query GetOrdersByIds($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Order {
+              id
+              name
+              createdAt
+              phone
+              customer {
+                firstName
+                lastName
+              }
+              shippingAddress {
+                phone
+                city
+                address1
+              }
+              lineItems(first: 10) {
+                nodes {
+                  title
+                  unfulfilledQuantity
+                  discountedUnitPriceSet {
+                    shopMoney {
+                      amount
+                    }
+                  }
+                  variant {
+                    sku
+                    barcode
+                    inventoryItem {
+                      unitCost {
+                        amount
+                      }
+                    }
+                  }
+                  product {
+                    id
+                    deltaMetafield: metafield(namespace: "custom", key: "delta") {
+                      value
+                    }
+                    warrantyMetafield: metafield(namespace: "custom", key: "warranty") {
+                      value
+                    }
+                  }
+                  customAttributes {
+                    key
+                    value
+                  }
+                }
+              }
+              paymentMetafield: metafield(namespace: "custom", key: "payment_method") {
+                value
+              }
+            }
+          }
+        }`;
 
   try {
     const { data, errors } = await makeGraphQLQuery<{
       nodes: OrderResponse['nodes'];
     }>(query, { ids });
-
     if (errors) {
       console.error('GraphQL errors fetching orders:', errors);
       return null;
     }
 
-    return data?.nodes || null;
+    const orders = data?.nodes || null;
+    if (!orders) return null;
+
+    // For each order's line item, if variant is null (which is a known quirk), fetch variant details using product id.
+    for (const order of orders) {
+      for (const item of order.lineItems.nodes) {
+        if (!item.variant && item.product?.id) {
+          const variantDetails = await fetchVariantDetails(item.product.id);
+          if (variantDetails) {
+            item.variant = variantDetails;
+          }
+        }
+      }
+    }
+    return orders;
   } catch (error) {
     console.error('Error fetching orders:', error);
     return null;

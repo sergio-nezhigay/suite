@@ -30,9 +30,8 @@ function SendExtension() {
     ordersContent: OrderResponse['nodes']
   ) => {
     try {
-      const htmlContent = formatOrdersContentToWarrantyHtml(ordersContent);
       const response = await fetch(
-        'https://novaposhta.gadget.app/sendFormattedEmail',
+        'https://novaposhta.gadget.app/sendEmailAsPdf',
         {
           method: 'POST',
           headers: {
@@ -40,7 +39,7 @@ function SendExtension() {
           },
           body: JSON.stringify({
             subject: 'Order Details',
-            html: htmlContent,
+            ordersContent,
           }),
         }
       );
@@ -262,101 +261,4 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
       ];
     })
   );
-}
-
-function formatOrdersContentToWarrantyHtml(
-  orders: OrderResponse['nodes']
-): string {
-  const rows = orders
-    .map((order) => {
-      const lineItemsHtml = order.lineItems.nodes
-        .map((lineItem) => {
-          const { barcode } = getBarcodeAndCost(lineItem);
-          const title = removeBarcodeFromTitle(
-            lineItem.title,
-            lineItem.variant?.barcode
-          );
-
-          return `
-                <tr>
-                    <td>${title}</td>
-                    <td>${barcode}</td>
-                    <td>${lineItem.unfulfilledQuantity}</td>
-                </tr>
-            `;
-        })
-        .join('');
-
-      return `
-            <div class="warranty-document">
-                <img src="https://cdn.shopify.com/s/files/1/0868/0462/7772/files/informatica-logo-good1.jpg?v=1740226141" alt="Logo" class="logo" />
-                <h3>Warranty Document for Order: ${order.name}</h3>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Title</th>
-                            <th>Barcode</th>
-                            <th>Quantity</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        ${lineItemsHtml}
-                    </tbody>
-                </table>
-                <p>This document serves as a warranty for the items listed above. Please keep it for your records.</p>
-            </div>
-            <hr />
-        `;
-    })
-    .join('');
-
-  return `
-        <html>
-            <head>
-                <style>
-                    @media print {
-                        @page { margin: 0; }
-                        body { margin: 0; }
-                        .email-header { display: none; }
-                    }
-                    body {
-                        font-family: Arial, sans-serif;
-                        margin: 0;
-                        padding: 20px;
-                    }
-                    .warranty-document {
-                        page-break-after: always;
-                    }
-                    .logo {
-                        width: 150px;
-                        float: left;
-
-                    }
-                    h3 {
-                        clear: both;
-                    }
-                    table {
-                        width: 100%;
-                        border-collapse: collapse;
-                        margin-top: 20px;
-                    }
-                    table, th, td {
-                        border: 1px solid black;
-                    }
-                    th, td {
-                        padding: 8px;
-                        text-align: left;
-                    }
-                    hr {
-                        border: 0;
-                        border-top: 1px solid #ccc;
-                        margin: 40px 0;
-                    }
-                </style>
-            </head>
-            <body>
-                ${rows}
-            </body>
-        </html>
-    `;
 }
