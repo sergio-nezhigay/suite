@@ -26,12 +26,10 @@ function SendExtension() {
   const selectedOrders = data?.selected || [];
   const selectedIds = selectedOrders.map(({ id }: { id: string }) => id);
 
-  const handleSendFormattedEmail = async (
-    ordersContent: OrderResponse['nodes']
-  ) => {
+  const emailWarrantyCards = async (ordersContent: OrderResponse['nodes']) => {
     try {
       const response = await fetch(
-        'https://novaposhta.gadget.app/sendEmailAsPdf',
+        'https://novaposhta.gadget.app/emailWarrantyCards',
         {
           method: 'POST',
           headers: {
@@ -94,15 +92,15 @@ function SendExtension() {
           }}
           disabled={loading || !ordersContent || sent}
         >
-          {sent ? 'Sent' : 'Send to Google Sheet'}
+          {sent ? 'Added' : 'Add to Google Sheet'}
         </Button>
       }
       secondaryAction={
         <Button
-          onPress={() => handleSendFormattedEmail(ordersContent!)}
+          onPress={() => emailWarrantyCards(ordersContent!)}
           disabled={loading || !ordersContent}
         >
-          Send Email
+          Email warranties to cherg
         </Button>
       }
     >
@@ -170,7 +168,7 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         );
       })}
       <Text>
-        {phone}, {order.customer.firstName} {order.customer.lastName},
+        т. {phone}, {order.customer.firstName} {order.customer.lastName},
         {order.shippingAddress?.city}, {order.shippingAddress?.address1}
       </Text>
       <Text>
@@ -182,7 +180,7 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
 }
 
 function getOrderPhone(order: OrderResponse['nodes'][number]): string {
-  return order.shippingAddress.phone || order.phone || 'Not provided';
+  return order.shippingAddress.phone || order.phone || '!!!!! Error';
 }
 
 type LineItem = OrderResponse['nodes'][number]['lineItems']['nodes'][number];
