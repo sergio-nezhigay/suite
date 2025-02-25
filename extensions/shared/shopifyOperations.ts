@@ -541,6 +541,12 @@ export async function fetchOrdersData(
     const orders = data?.nodes || null;
     if (!orders) return null;
 
+    for (const order of orders) {
+      order.lineItems.nodes = order.lineItems.nodes.filter(
+        (item) => item.unfulfilledQuantity > 0
+      );
+    }
+
     // For each order's line item, if variant is null (which is a known quirk), fetch variant details using product id.
     for (const order of orders) {
       for (const item of order.lineItems.nodes) {

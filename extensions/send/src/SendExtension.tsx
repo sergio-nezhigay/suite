@@ -146,7 +146,7 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         const price = parseFloat(
           lineItem.discountedUnitPriceSet.shopMoney.amount
         );
-        const delta = price - cost;
+        const delta = lineItem.unfulfilledQuantity * (price - cost) || 0;
         const title = removeBarcodeFromTitle(
           lineItem.title,
           lineItem.variant?.barcode
@@ -232,31 +232,33 @@ function removeBarcodeFromTitle(
 }
 
 function convertOrdersToRows(orders: OrderResponse['nodes']) {
-  return orders.flatMap((order) =>
-    order.lineItems.nodes.map((lineItem) => {
-      const { barcode, cost } = getBarcodeAndCost(lineItem);
-      const price = parseFloat(
-        lineItem.discountedUnitPriceSet.shopMoney.amount
-      );
-      const delta = price - cost;
-      const currentDate = new Date().toISOString().split('T')[0];
+  return orders
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .flatMap((order) =>
+      order.lineItems.nodes.map((lineItem) => {
+        const { barcode, cost } = getBarcodeAndCost(lineItem);
+        const price = parseFloat(
+          lineItem.discountedUnitPriceSet.shopMoney.amount
+        );
+        const delta = lineItem.unfulfilledQuantity * (price - cost);
+        const currentDate = new Date().toISOString().split('T')[0];
 
-      return [
-        currentDate,
-        order.name,
-        getOrderPhone(order),
-        order.customer.firstName,
-        order.customer.lastName,
-        order.shippingAddress.city,
-        order.shippingAddress.address1,
-        lineItem.title,
-        barcode,
-        lineItem.unfulfilledQuantity,
-        price.toFixed(0),
-        cost.toFixed(0),
-        delta.toFixed(0),
-        order.paymentMetafield?.value || '',
-      ];
-    })
-  );
+        return [
+          currentDate,
+          order.name,
+          getOrderPhone(order),
+          order.customer.firstName,
+          order.customer.lastName,
+          order.shippingAddress.city,
+          order.shippingAddress.address1,
+          lineItem.title,
+          barcode,
+          lineItem.unfulfilledQuantity,
+          price.toFixed(0),
+          cost.toFixed(0),
+          delta.toFixed(0),
+          order.paymentMetafield?.value || '',
+        ];
+      })
+    );
 }
