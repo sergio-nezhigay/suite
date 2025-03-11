@@ -91,7 +91,7 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
       const hasSpecialTitle =
         product.title.includes('Перехідник аудіо-оптика на 3.5 мм') ||
         product.title.includes('232');
-      const priceMultiplier = hasSpecialTitle ? 1.05 : isMemory ? 1.03 : 1.14;
+      const priceMultiplier = hasSpecialTitle ? 1.08 : isMemory ? 1.03 : 1.21;
 
       const price = product.price * priceMultiplier;
 

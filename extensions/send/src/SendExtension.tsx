@@ -234,31 +234,31 @@ function removeBarcodeFromTitle(
 function convertOrdersToRows(orders: OrderResponse['nodes']) {
   return orders
     .sort((a, b) => a.name.localeCompare(b.name))
-    .flatMap((order) =>
-      order.lineItems.nodes.map((lineItem) => {
+    .flatMap((order) => {
+      const currentDate = new Date().toISOString().split('T')[0];
+      return order.lineItems.nodes.map((lineItem, index) => {
         const { barcode, cost } = getBarcodeAndCost(lineItem);
         const price = parseFloat(
           lineItem.discountedUnitPriceSet.shopMoney.amount
         );
         const delta = lineItem.unfulfilledQuantity * (price - cost);
-        const currentDate = new Date().toISOString().split('T')[0];
 
         return [
           currentDate,
           order.name,
-          getOrderPhone(order),
-          order.customer.firstName,
-          order.customer.lastName,
-          order.shippingAddress.city,
-          order.shippingAddress.address1,
+          index === 0 ? getOrderPhone(order) : '',
+          index === 0 ? order.customer.firstName : '',
+          index === 0 ? order.customer.lastName : '',
+          index === 0 ? order.shippingAddress.city : '',
+          index === 0 ? order.shippingAddress.address1 : '',
           lineItem.title,
           barcode,
           lineItem.unfulfilledQuantity,
           price.toFixed(0),
           cost.toFixed(0),
           delta.toFixed(0),
-          order.paymentMetafield?.value || '',
+          index === 0 ? order.paymentMetafield?.value || '' : '',
         ];
-      })
-    );
+      });
+    });
 }
