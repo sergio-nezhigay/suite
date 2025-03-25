@@ -1,4 +1,5 @@
-import { AppConnections } from '.gadget/server/types';
+import { AppConnections } from 'gadget-server';
+
 import { Products, ProductOptions } from 'types/index';
 
 import { createProductQuery, productVariantsBulkUpdateQuery } from './queries';

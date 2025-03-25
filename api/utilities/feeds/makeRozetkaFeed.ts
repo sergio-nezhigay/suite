@@ -1,7 +1,8 @@
 import { GenericProductFeed } from 'api/routes/GET-feeds';
 
 const stopBrands = ['Kingston', 'Samsung', 'Xiaomi'];
-const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];
+const rozetkaSuppliers = ['щу', 'ии', 'че'];
+//const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];
 const DEFAULT_CATEGORY_MAPPING = {
   "Пам'ять оперативна": 'c80081',
   'USB-RS232': 'c80073',

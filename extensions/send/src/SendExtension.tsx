@@ -57,7 +57,7 @@ function SendExtension() {
     async function fetchOrdersContent() {
       try {
         const orders = await fetchOrdersData(selectedIds);
-        console.log('🚀 ~ orders:', orders);
+        console.log('🚀 ~ orders:', JSON.stringify(orders, null, 2));
         setOrdersContent(orders);
       } catch (error) {
         console.error('Failed to fetch orders content:', error);
@@ -168,7 +168,9 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         );
       })}
       <Text>
-        т. {phone}, {order.customer.firstName} {order.customer.lastName},
+        т. {phone},{' '}
+        {order.shippingAddress?.firstName || order.customer.firstName}{' '}
+        {order.shippingAddress?.lastName || order.customer.lastName},
         {order.shippingAddress?.city}, {order.shippingAddress?.address1}
       </Text>
       <Text>
@@ -247,8 +249,12 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
           currentDate,
           order.name,
           index === 0 ? getOrderPhone(order) : '',
-          index === 0 ? order.customer.firstName : '',
-          index === 0 ? order.customer.lastName : '',
+          index === 0
+            ? order.shippingAddress?.firstName || order.customer.firstName
+            : '',
+          index === 0
+            ? order.shippingAddress?.lastName || order.customer.lastName
+            : '',
           index === 0 ? order.shippingAddress.city : '',
           index === 0 ? order.shippingAddress.address1 : '',
           lineItem.title,

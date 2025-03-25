@@ -105,4 +105,7 @@ export interface ShopifyOrder {
   shippingAddress: ShippingAddress;
   transactions: Transaction[];
   lineItems: LineItem[];
+  sourceIdentifier: string;
+  sourceName: string;
+  sourceUrl: string;
 }

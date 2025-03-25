@@ -8,6 +8,11 @@ export interface ProductVariant {
   title: string;
   inventoryQuantity: number;
   barcode: string;
+  inventoryItem: {
+    unitCost: {
+      amount: string;
+    };
+  };
   mediaContentType: 'IMAGE' | 'VIDEO' | 'AUDIO' | 'DOCUMENT';
   image: {
     id: string;
@@ -34,6 +39,7 @@ export interface ShopifyProduct {
 }
 
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
+const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
 
 const IN_STOCK = 'in stock';
 const OUT_OF_STOCK = 'out-of-stock';
@@ -91,6 +97,7 @@ export interface GenericProductFeed {
   link: string;
   collection: string;
   delivery_days: string;
+  cost: string;
 }
 
 function makeGenericFeed(products: any[]): GenericProductFeed[] {
@@ -99,6 +106,7 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
     const firstVariantWithPrice = product.variants.find(
       (variant: { price: any }) => variant.price
     );
+    const cost = firstVariantWithPrice?.inventoryItem?.unitCost?.amount || 0;
 
     const imageURLs = product.variants
       .filter(
@@ -136,6 +144,7 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
       link: basicProductUrl + product.handle,
       collection: collectionName,
       delivery_days: isTodayWeekend() ? '1' : '0',
+      cost,
     };
   });
 
@@ -168,7 +177,12 @@ interface HotlineProductFeed {
 const makeHotlineFeed = (
   products: GenericProductFeed[]
 ): HotlineProductFeed[] => {
-  return products.map((product) => ({
+  const filteredProducts = products.filter(({ sku }) => {
+    const supplier = sku.split('^')[1] || '';
+    return hotlineSuppliers.includes(supplier.toLowerCase());
+  });
+
+  return filteredProducts.map((product) => ({
     'id товару': product.id.replace(/\D/g, ''),
     'Назва товару': product.title,
     description: product.description,
@@ -212,6 +226,10 @@ const makeMerchantFeed = (products: GenericProductFeed[]) => {
       'store code': '101',
       mpn: product.mpn,
       'identifier exists': 'no',
+      cost_of_goods_sold: product.cost
+        ? `${product.cost} UAH`
+        : `${product.price * 0.95} UAH`,
+      auto_pricing_min_price: `${product.price * 0.95} UAH`,
     };
   });
 };

@@ -99,6 +99,11 @@ export const bulkMutation = `
                       sku
                       inventoryQuantity
                       barcode
+                      inventoryItem {
+                        unitCost {
+                          amount
+                        }
+                      }
                     }
                   }
                 }

@@ -228,6 +228,9 @@ const transformOrderToShopifyVariables = async (
         },
       ],
       lineItems,
+      sourceIdentifier: `rozetka-order-${order.id}`,
+      sourceName: 'Rozetka Marketplace',
+      sourceUrl: `https://seller.rozetka.com.ua/main/orders/all/845014259${order.id}`,
     },
   };
 };

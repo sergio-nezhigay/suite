@@ -383,6 +383,8 @@ export interface OrderResponse {
       phone: string;
       city: string;
       address1: string;
+      firstName: string;
+      lastName: string;
     };
     lineItems: {
       nodes: {
@@ -488,6 +490,8 @@ export async function fetchOrdersData(
                 phone
                 city
                 address1
+                firstName
+                lastName
               }
               lineItems(first: 10) {
                 nodes {
