@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import {
   reactExtension,
   useApi,
@@ -13,6 +13,7 @@ import { fetchOrdersData, OrderResponse } from '../../shared/shopifyOperations';
 
 const TARGET = 'admin.order-index.selection-action.render';
 const SPREADSHEET_ID = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
+const GADGET_APP2_URL = 'https://2.gadget.app';
 
 export default reactExtension(TARGET, () => <SendExtension />);
 
@@ -24,23 +25,23 @@ function SendExtension() {
   >(null);
   const { data } = useApi(TARGET);
   const selectedOrders = data?.selected || [];
-  const selectedIds = selectedOrders.map(({ id }: { id: string }) => id);
+  const selectedIds = useMemo(
+    () => selectedOrders.map(({ id }: { id: string }) => id),
+    [selectedOrders]
+  );
 
   const emailWarrantyCards = async (ordersContent: OrderResponse['nodes']) => {
     try {
-      const response = await fetch(
-        'https://novaposhta.gadget.app/emailWarrantyCards',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            subject: 'Order Details',
-            ordersContent,
-          }),
-        }
-      );
+      const response = await fetch(`${GADGET_APP2_URL}/emailWarrantyCards`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          subject: 'Order Details',
+          ordersContent,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
@@ -54,6 +55,7 @@ function SendExtension() {
   };
 
   useEffect(() => {
+    console.log('Fetching orders for:', selectedIds);
     async function fetchOrdersContent() {
       try {
         const orders = await fetchOrdersData(selectedIds);
@@ -76,7 +78,7 @@ function SendExtension() {
             try {
               const rows = convertOrdersToRows(ordersContent!);
               const response = await fetch(
-                'https://novaposhta.gadget.app/appendRowsToSheet',
+                `${GADGET_APP2_URL}/appendRowsToSheet`,
                 {
                   method: 'POST',
                   body: JSON.stringify({ rows, spreadsheetId: SPREADSHEET_ID }),

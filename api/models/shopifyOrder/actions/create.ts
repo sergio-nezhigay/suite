@@ -149,7 +149,7 @@ async function findBestWarehouse({
   shippingAddress: Address;
 }): Promise<FindBestWarehouseResult> {
   try {
-    const response = await fetch('https://novaposhta.gadget.app/find', {
+    const response = await fetch('https://2.gadget.app/find', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

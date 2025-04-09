@@ -270,7 +270,7 @@ const logAndReturnError = (error: unknown, context: string): null => {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '0 8-16 * * *' }],
+    scheduler: [{ cron: "0 6-15 * * *" }],
   },
 };
 
