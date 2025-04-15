@@ -40,6 +40,7 @@ export interface ShopifyProduct {
 
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
+const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
 
 const IN_STOCK = 'in stock';
 const OUT_OF_STOCK = 'out-of-stock';
@@ -177,9 +178,12 @@ interface HotlineProductFeed {
 const makeHotlineFeed = (
   products: GenericProductFeed[]
 ): HotlineProductFeed[] => {
-  const filteredProducts = products.filter(({ sku }) => {
+  const filteredProducts = products.filter(({ sku, mpn }) => {
     const supplier = sku.split('^')[1] || '';
-    return hotlineSuppliers.includes(supplier.toLowerCase());
+    return (
+      hotlineSuppliers.includes(supplier.toLowerCase()) &&
+      !hotlineExcludedProducts.includes(mpn)
+    );
   });
 
   return filteredProducts.map((product) => ({

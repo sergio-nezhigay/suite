@@ -7,11 +7,13 @@ import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
- /* record.disabledWebhooks = {
+  record.disabledWebhooks = {
     shopifyProduct: true,
     shopifyProductVariant: true,
     shopifyProductMedia: true,
-  };*/
+    shopifyProductImage: true,
+    shopifyProductOption: true,
+  };
   await save(record);
 }
 
