@@ -1,8 +1,13 @@
 import { GenericProductFeed } from 'api/routes/GET-feeds';
 
-const stopBrands = ['Kingston', 'Samsung', 'Xiaomi'];
+const stopBrands = [
+  'Kingston',
+  'Samsung',
+  'Xiaomi',
+  'Tefal',
+  'Kingston Fury (ex.HyperX)',
+];
 const rozetkaSuppliers = ['щу', 'ии', 'че'];
-//const rozetkaSuppliers = ['щу', 'ии', 'ри', 'че'];
 const DEFAULT_CATEGORY_MAPPING = {
   "Пам'ять оперативна": 'c80081',
   'USB-RS232': 'c80073',
@@ -18,6 +23,7 @@ const DEFAULT_CATEGORY_MAPPING = {
   'VGA-RCA': 'c80073',
   'Перехідники для зарядки ноутбуків та роутерів': 'c80073',
   'HDMI-SCART': 'c80073',
+  'карти відеозахвату usb': 'c82249',
 };
 
 const ROZETKA_DEFAULT_PARAMS: Record<
@@ -26,12 +32,32 @@ const ROZETKA_DEFAULT_PARAMS: Record<
 > = {
   'перехідники для зарядки ноутбуків та роутерів': [
     {
-      paramName: 'Тип коннектора',
+      paramName: 'Тип коннектора 2',
       paramValue: 'DC connector',
     },
     {
-      paramName: 'Назначение',
+      paramName: 'Призначення',
       paramValue: 'Для блоков питания',
+    },
+    {
+      paramName: 'Призначення',
+      paramValue: 'Ноутбук',
+    },
+    {
+      paramName: 'Призначення',
+      paramValue: 'Для роутерів',
+    },
+    {
+      paramName: 'Призначення',
+      paramValue: 'Мережевий зарядний пристрій',
+    },
+    {
+      paramName: 'Тип',
+      paramValue: 'Кабелі зарядки',
+    },
+    {
+      paramName: 'Гарантія',
+      paramValue: '12 мясяців',
     },
   ],
   'hdmi - vga': [
@@ -42,6 +68,38 @@ const ROZETKA_DEFAULT_PARAMS: Record<
     {
       paramName: 'Тип коннектора 2',
       paramValue: 'HDMI',
+    },
+  ],
+  'hdmi-rca': [
+    {
+      paramName: 'Тип коннектора 2',
+      paramValue: 'Композитний (RCA-jack)',
+    },
+    {
+      paramName: 'Тип коннектора 1',
+      paramValue: 'HDMI',
+    },
+  ],
+  'карти відеозахвату usb': [
+    {
+      paramName: 'Інтерфейс',
+      paramValue: 'USB',
+    },
+    {
+      paramName: 'Тип',
+      paramValue: 'Зовнішній',
+    },
+    {
+      paramName: 'Сумісність',
+      paramValue: 'ПК',
+    },
+    {
+      paramName: 'Аналоговий прийом',
+      paramValue: 'PAL / NTSC',
+    },
+    {
+      paramName: 'Гарантія',
+      paramValue: '12 мясяців',
     },
   ],
 };
@@ -208,7 +266,7 @@ const getDefaultCategoryId = (product: GenericProductFeed) => {
   const lowerCaseCollection = product.collection.toLowerCase();
 
   for (const [key, value] of Object.entries(DEFAULT_CATEGORY_MAPPING)) {
-    if (lowerCaseCollection.includes(key)) {
+    if (lowerCaseCollection.includes(key.toLowerCase())) {
       return value;
     }
   }
@@ -222,7 +280,7 @@ const getRozetkaDefaultParams = (
   const lowerCaseCollection = product.collection.toLowerCase();
 
   for (const [key, defaultParams] of Object.entries(ROZETKA_DEFAULT_PARAMS)) {
-    if (lowerCaseCollection.includes(key)) {
+    if (lowerCaseCollection.includes(key.toLowerCase())) {
       return defaultParams;
     }
   }
