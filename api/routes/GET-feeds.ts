@@ -1,3 +1,4 @@
+import { IN_STOCK, OUT_OF_STOCK } from 'api/utilities/data/stockStatus';
 import { RouteHandler } from 'gadget-server';
 import { getProducts, uploadFile, makeRozetkaFeed } from 'utilities';
 
@@ -41,9 +42,6 @@ export interface ShopifyProduct {
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
-
-const IN_STOCK = 'in stock';
-const OUT_OF_STOCK = 'out-of-stock';
 
 const route: RouteHandler = async ({ reply, connections }) => {
   try {
@@ -151,10 +149,7 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
 
   const filteredProducts = mappedProducts.filter(({ availability, sku }) => {
     const supplier = sku.split('^')[1] || '';
-    return (
-      availability === IN_STOCK &&
-      genericSuppliers.includes(supplier.toLowerCase())
-    );
+    return genericSuppliers.includes(supplier.toLowerCase());
   });
 
   return filteredProducts;
@@ -208,8 +203,9 @@ const makeMerchantFeed = (products: GenericProductFeed[]) => {
   return products.map((product) => {
     const supplier = product.sku?.split('^')[1] ?? '';
     const additionalImageLinks = product.imageURLs.slice(1, 11).length
-      ? `"${product.imageURLs.slice(1, 11).join(',')}"`
-      : '';
+      ? `${product.imageURLs.slice(1, 11).join(',')}`
+      : //  ? `"${product.imageURLs.slice(1, 11).join(',')}"`
+        '';
 
     return {
       id: product.id,
@@ -227,13 +223,13 @@ const makeMerchantFeed = (products: GenericProductFeed[]) => {
       'custom label 1': product.collection,
       'custom label 2': supplier,
       'custom label 3': `${supplier}:${product.collection}`,
-      'store code': '101',
+      store_code: '101',
       mpn: product.mpn,
       'identifier exists': 'no',
       cost_of_goods_sold: product.cost
-        ? `${product.cost} UAH`
-        : `${product.price * 0.95} UAH`,
-      auto_pricing_min_price: `${product.price * 0.95} UAH`,
+        ? `${Math.floor(Number(product.cost))} UAH`
+        : `${Math.floor(product.price * 0.9)} UAH`,
+      auto_pricing_min_price: `${Math.floor(product.price * 0.95)} UAH`,
     };
   });
 };

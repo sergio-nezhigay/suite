@@ -1,4 +1,5 @@
 import { GenericProductFeed } from 'api/routes/GET-feeds';
+import { IN_STOCK } from '../data/stockStatus';
 
 const stopBrands = [
   'Kingston',
@@ -91,11 +92,7 @@ const ROZETKA_DEFAULT_PARAMS: Record<
     },
     {
       paramName: 'Сумісність',
-      paramValue: 'ПК',
-    },
-    {
-      paramName: 'Аналоговий прийом',
-      paramValue: 'PAL / NTSC',
+      paramValue: 'ПК,Mac OS X',
     },
     {
       paramName: 'Гарантія',
@@ -182,7 +179,7 @@ export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
         : product.brand;
 
       return `
-          <offer id="${id}" available="${product.availability === 'in stock'}">
+          <offer id="${id}" available="${product.availability === IN_STOCK}">
             <name>${name}</name>
             <price>${price}</price>
             <price_old>${oldPrice}</price_old>
