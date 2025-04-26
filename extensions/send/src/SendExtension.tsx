@@ -10,10 +10,10 @@ import {
 } from '@shopify/ui-extensions-react/admin';
 
 import { fetchOrdersData, OrderResponse } from '../../shared/shopifyOperations';
+import { SHOPIFY_APP_URL } from '../../shared/data';
 
 const TARGET = 'admin.order-index.selection-action.render';
 const SPREADSHEET_ID = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
-const GADGET_APP2_URL = 'https://2.gadget.app';
 
 export default reactExtension(TARGET, () => <SendExtension />);
 
@@ -32,7 +32,7 @@ function SendExtension() {
 
   const emailWarrantyCards = async (ordersContent: OrderResponse['nodes']) => {
     try {
-      const response = await fetch(`${GADGET_APP2_URL}/emailWarrantyCards`, {
+      const response = await fetch(`${SHOPIFY_APP_URL}/emailWarrantyCards`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,7 +78,7 @@ function SendExtension() {
             try {
               const rows = convertOrdersToRows(ordersContent!);
               const response = await fetch(
-                `${GADGET_APP2_URL}/appendRowsToSheet`,
+                `${SHOPIFY_APP_URL}/appendRowsToSheet`,
                 {
                   method: 'POST',
                   body: JSON.stringify({ rows, spreadsheetId: SPREADSHEET_ID }),

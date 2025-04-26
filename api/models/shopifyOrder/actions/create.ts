@@ -36,6 +36,8 @@ interface FindBestWarehouseResult {
   matchProbability: number;
 }
 
+const GADGET_APP_URL = 'https://novaposhta.gadget.app';
+
 export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
@@ -149,7 +151,7 @@ async function findBestWarehouse({
   shippingAddress: Address;
 }): Promise<FindBestWarehouseResult> {
   try {
-    const response = await fetch('https://2.gadget.app/find', {
+    const response = await fetch(`${GADGET_APP_URL}/find`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -40,7 +40,7 @@ export interface ShopifyProduct {
 }
 
 const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
-const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
+const hotlineSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
 
 const route: RouteHandler = async ({ reply, connections }) => {

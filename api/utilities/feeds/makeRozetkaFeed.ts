@@ -38,19 +38,8 @@ const ROZETKA_DEFAULT_PARAMS: Record<
     },
     {
       paramName: 'Призначення',
-      paramValue: 'Для блоков питания',
-    },
-    {
-      paramName: 'Призначення',
-      paramValue: 'Ноутбук',
-    },
-    {
-      paramName: 'Призначення',
-      paramValue: 'Для роутерів',
-    },
-    {
-      paramName: 'Призначення',
-      paramValue: 'Мережевий зарядний пристрій',
+      paramValue:
+        'Для блоков питания,Ноутбук,Для роутерів,мережевий зарядний пристрій',
     },
     {
       paramName: 'Тип',
