@@ -31,3 +31,5 @@ export * from './http/smsClient';
 export * from './http/npClient';
 export * from './ai/createEmbedding';
 export * from './data/getPaginatedData';
+export * from './pdf/warrantyPdfUtils';
+export * from './email/warrantyEmailUtils';
