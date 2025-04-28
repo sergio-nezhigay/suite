@@ -15,7 +15,7 @@ export async function sendWarrantyEmail(
   emails.setTransport(transporter);
 
   await emails.sendMail({
-    to: 'scherginets1@ukr.net',
+    to: 'scherginets@ukr.net',
     cc: 'nezhihai@gmail.com',
     from: 'info@informatica.com.ua',
     subject: `Гарантійні талони, ${ordersCount}шт.`,

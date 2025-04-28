@@ -6,27 +6,23 @@ interface ShopifyCustomer {
   lastName: string;
 }
 
-interface ShopifyProduct {
-  warrantyMetafield?: {
-    value: string;
-  };
-}
-
 interface ShopifyLineItem {
   title: string;
   unfulfilledQuantity: number;
-  product?: ShopifyProduct;
-}
-
-interface ShopifyLineItems {
-  nodes: ShopifyLineItem[];
+  product?: {
+    warrantyMetafield?: {
+      value: string;
+    };
+  };
 }
 
 interface ShopifyOrder {
   name: string;
   customer: ShopifyCustomer;
   createdAt: string;
-  lineItems: ShopifyLineItems;
+  lineItems: {
+    nodes: ShopifyLineItem[];
+  };
 }
 
 interface WarrantyOrderItem {
