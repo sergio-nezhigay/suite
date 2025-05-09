@@ -70,6 +70,16 @@ const ROZETKA_DEFAULT_PARAMS: Record<
       paramValue: 'HDMI',
     },
   ],
+  'HDMI-DisplayPort': [
+    {
+      paramName: 'Тип коннектора 1',
+      paramValue: 'HDMI',
+    },
+    {
+      paramName: 'Тип коннектора 2',
+      paramValue: 'DisplayPort',
+    },
+  ],
   'карти відеозахвату usb': [
     {
       paramName: 'Інтерфейс',

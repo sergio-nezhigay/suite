@@ -17,6 +17,7 @@ export const onSuccess: ActionOnSuccess = async ({
   api,
   connections,
 }) => {
+  console.log("onSuccess create product start...")
   const shopify = getShopifyClient(connections);
   await updateSKU(api, shopify, record);
   if (!record.descriptionEmbedding && record.body && record.title) {
