@@ -8,11 +8,11 @@ export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
   record.disabledWebhooks = {
-    shopifyProduct: true,
-    shopifyProductVariant: true,
-    shopifyProductMedia: true,
-    shopifyProductImage: true,
-    shopifyProductOption: true,
+    shopifyProduct: false,
+    shopifyProductVariant: false,
+    shopifyProductMedia: false,
+    shopifyProductImage: false,
+    shopifyProductOption: false,
   };
   await save(record);
 }

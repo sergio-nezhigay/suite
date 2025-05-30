@@ -60,6 +60,7 @@ export const schema: GadgetModel = {
       "orders",
       "passwordEnabled",
       "phone",
+      "plan",
       "planDisplayName",
       "planName",
       "preLaunchEnabled",

@@ -274,13 +274,21 @@ const getRozetkaDefaultParams = (
   product: GenericProductFeed
 ): Array<{ paramName: string; paramValue: string }> => {
   const lowerCaseCollection = product.collection.toLowerCase();
+  const lowerCaseTitle = product.title.toLowerCase();
+  let params: Array<{ paramName: string; paramValue: string }> = [];
 
   for (const [key, defaultParams] of Object.entries(ROZETKA_DEFAULT_PARAMS)) {
     if (lowerCaseCollection.includes(key.toLowerCase())) {
-      return defaultParams;
+      params = [...defaultParams];
+      break;
     }
   }
 
-  // Return an empty array if no default parameters match
-  return [];
+  if (lowerCaseTitle.includes('type')) {
+    params.push({
+      paramName: 'Тип коннектора 1',
+      paramValue: 'USB Type-C',
+    });
+  }
+  return params;
 };

@@ -13,7 +13,6 @@ import { fetchOrdersData, OrderResponse } from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
 const TARGET = 'admin.order-index.selection-action.render';
-const SPREADSHEET_ID = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
 
 export default reactExtension(TARGET, () => <SendExtension />);
 
@@ -59,7 +58,7 @@ function SendExtension() {
     async function fetchOrdersContent() {
       try {
         const orders = await fetchOrdersData(selectedIds);
-        console.log('🚀 ~ orders:', JSON.stringify(orders, null, 2));
+        //console.log('🚀 ~ orders:', JSON.stringify(orders, null, 2));
         setOrdersContent(orders);
       } catch (error) {
         console.error('Failed to fetch orders content:', error);
@@ -69,23 +68,61 @@ function SendExtension() {
     }
     fetchOrdersContent();
   }, [selectedIds]);
+  const firstOrderTag = ordersContent?.[0]?.tags?.[0] || '';
+
+  let spreadsheetId = '';
+  let recipientEmail = '';
+  let shouldSendWarrantyEmail = false;
+  if (firstOrderTag.includes('Ии')) {
+    spreadsheetId = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
+    recipientEmail = 'deni-ua@ukr.net';
+  } else if (firstOrderTag.includes('РІ')) {
+    spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
+    recipientEmail = 'asd1134@ukr.net';
+  } else if (firstOrderTag.includes('Че')) {
+    spreadsheetId = '17J3L12ZHz3VoYp2la5dTcCmZg4-zcNZpCUyvifgLZkk';
+    recipientEmail = 'scherginets@ukr.net';
+    shouldSendWarrantyEmail = true;
+  }
+
+  const title = firstOrderTag
+    ? `Send orders, tagged as "${firstOrderTag}"`
+    : 'Send orders';
 
   return (
     <AdminAction
+      title={title}
       primaryAction={
         <Button
           onPress={async () => {
             try {
               const rows = convertOrdersToRows(ordersContent!);
-              const response = await fetch(
+
+              const appendResponse = await fetch(
                 `${SHOPIFY_APP_URL}/appendRowsToSheet`,
                 {
                   method: 'POST',
-                  body: JSON.stringify({ rows, spreadsheetId: SPREADSHEET_ID }),
+                  body: JSON.stringify({ rows, spreadsheetId }),
                   headers: { 'Content-Type': 'application/json' },
                 }
               );
-              if (!response.ok) throw new Error('Failed to send data');
+              if (!appendResponse.ok) throw new Error('Failed to send data');
+
+              const emailResponse = await fetch(
+                `${SHOPIFY_APP_URL}/send-email`,
+                {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    recipientEmail,
+                    cc: 'nezhihai@gmail.com',
+                    subject: 'Замовлення, кількість: ' + ordersContent!.length,
+                    htmlContent: generateOrdersHtmlTable(ordersContent!),
+                  }),
+                }
+              );
+              if (!emailResponse.ok) throw new Error('Failed to send email');
+              if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
 
               setSent(true);
             } catch (error) {
@@ -199,9 +236,11 @@ function getBarcodeAndCost(lineItem: LineItem) {
   const cost =
     customCost ||
     parseFloat(lineItem.variant?.inventoryItem?.unitCost?.amount || '0');
-  const barcode = lineItem.variant?.barcode?.trim()
-    ? lineItem.variant.barcode
-    : customBarcode || '';
+  const barcode = (
+    lineItem.variant?.barcode?.trim()
+      ? lineItem.variant.barcode
+      : customBarcode || ''
+  ).toUpperCase();
 
   return { barcode, cost };
 }
@@ -246,6 +285,7 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
           lineItem.discountedUnitPriceSet.shopMoney.amount
         );
         const delta = lineItem.unfulfilledQuantity * (price - cost);
+        const title = removeBarcodeFromTitle(lineItem.title, barcode);
 
         return [
           currentDate,
@@ -259,7 +299,7 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
             : '',
           index === 0 ? order.shippingAddress.city : '',
           index === 0 ? order.shippingAddress.address1 : '',
-          lineItem.title,
+          title,
           barcode,
           lineItem.unfulfilledQuantity,
           price.toFixed(0),
@@ -269,4 +309,88 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
         ];
       });
     });
+}
+
+function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
+  if (!orders || orders.length === 0) return '<p>No orders.</p>';
+
+  const rows = orders
+    .sort((a, b) => a.name.localeCompare(b.name))
+    .flatMap((order) => {
+      return order.lineItems.nodes.map((lineItem, index) => {
+        const { barcode, cost } = getBarcodeAndCost(lineItem);
+        const price = parseFloat(
+          lineItem.discountedUnitPriceSet.shopMoney.amount
+        );
+        const delta = lineItem.unfulfilledQuantity * (price - cost);
+        return {
+          phone: index === 0 ? getOrderPhone(order) : '',
+          firstName:
+            index === 0
+              ? order.shippingAddress?.firstName || order.customer.firstName
+              : '',
+          lastName:
+            index === 0
+              ? order.shippingAddress?.lastName || order.customer.lastName
+              : '',
+          city: index === 0 ? order.shippingAddress?.city : '',
+          address: index === 0 ? order.shippingAddress?.address1 : '',
+          title: removeBarcodeFromTitle(
+            lineItem.title,
+            lineItem.variant?.barcode
+          ),
+          barcode,
+          quantity: lineItem.unfulfilledQuantity,
+          price: price.toFixed(0),
+          cost: cost.toFixed(0),
+          delta: delta.toFixed(0),
+          payment: index === 0 ? order.paymentMetafield?.value || '' : '',
+        };
+      });
+    });
+
+  const header = [
+    'Phone',
+    'First Name',
+    'Last Name',
+    'City',
+    'Address',
+    'Product',
+    'Barcode',
+    'Qty',
+    'Price',
+    'Cost',
+    'Delta',
+    'Payment',
+  ];
+
+  // Create a mapping from header names to object properties
+  const keyMap: { [key: string]: string } = {
+    Phone: 'phone',
+    'First Name': 'firstName',
+    'Last Name': 'lastName',
+    City: 'city',
+    Address: 'address',
+    Product: 'title',
+    Barcode: 'barcode',
+    Qty: 'quantity',
+    Price: 'price',
+    Cost: 'cost',
+    Delta: 'delta',
+    Payment: 'payment',
+  };
+
+  const thead = `<thead><tr>${header
+    .map((h) => `<th>${h}</th>`)
+    .join('')}</tr></thead>`;
+  const tbody = `<tbody>${rows
+    .map(
+      (row) =>
+        `<tr>${header
+          .map((key) => `<td>${(row as any)[keyMap[key]] ?? ''}</td>`)
+          .join('')}</tr>`
+    )
+    .join('')}</tbody>`;
+
+  return `<table border="1" cellpadding="4" cellspacing="0">${thead}${tbody}</table>`;
 }

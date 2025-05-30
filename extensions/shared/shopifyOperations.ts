@@ -375,6 +375,7 @@ export interface OrderResponse {
     name: string;
     createdAt: string;
     phone: string;
+    tags: string[];
     customer: {
       firstName: string;
       lastName: string;
@@ -482,6 +483,7 @@ export async function fetchOrdersData(
               name
               createdAt
               phone
+              tags
               customer {
                 firstName
                 lastName

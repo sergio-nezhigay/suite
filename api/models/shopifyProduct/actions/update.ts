@@ -25,5 +25,10 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
 
 /** @type { ActionOptions } */
 export const options: ActionOptions = {
-  actionType: 'update',
+  actionType: "update",
+  triggers: {
+    shopify: {
+      shopifyFilter: "vendor:Nike",
+    },
+  },
 };
