@@ -1,10 +1,11 @@
 import { RouteHandler } from 'gadget-server';
 import { google } from 'googleapis';
+import type { sheets_v4 } from 'googleapis';
 
-async function authorize() {
-  const key = (process.env.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+async function authorize(config: any) {
+  const key = (config.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
   return new google.auth.JWT(
-    process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+    config.GOOGLE_SERVICE_ACCOUNT_EMAIL,
     undefined,
     key,
     ['https://www.googleapis.com/auth/spreadsheets']
@@ -13,23 +14,28 @@ async function authorize() {
 
 const range = 'Sheet2!A1';
 
+interface RequestBody {
+  rows: any[][];
+  spreadsheetId: string;
+}
+
 const route: RouteHandler<{
-  Body: { rows: any[][]; spreadsheetId: string };
-}> = async ({ reply, request }) => {
+  Body: RequestBody;
+}> = async ({ reply, request, logger, config }) => {
   const { rows, spreadsheetId } = request.body;
   if (!rows || !Array.isArray(rows) || rows.length === 0 || !spreadsheetId) {
     return reply
-      .status(400)
+      .code(400)
       .send({ error: 'Rows and spreadsheetId are required' });
   }
 
-  console.log('Received rows:', rows);
+  logger.info({ rows }, 'Received rows for Google Sheets append');
 
   try {
-    const auth = await authorize();
+    const auth = await authorize(config);
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const res = await sheets.spreadsheets.values.append({
+    const res: sheets_v4.Schema$AppendValuesResponse = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
       valueInputOption: 'USER_ENTERED',
@@ -37,13 +43,13 @@ const route: RouteHandler<{
       requestBody: { values: rows },
     });
 
-    console.log('Rows appended successfully:', res.data);
+    logger.info({ responseData: res.data }, 'Rows appended successfully to Google Sheets');
     await reply.send({ success: true, addedRows: rows.length });
   } catch (error) {
-    console.error('Error appending rows to Google Sheets:', error);
+    logger.error({ error }, 'Error appending rows to Google Sheets');
     // Don't expose the actual error details in the response
     return reply
-      .status(500)
+      .code(500)
       .send({ error: 'An error occurred while processing your request' });
   }
 };

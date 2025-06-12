@@ -39,8 +39,8 @@ export interface ShopifyProduct {
   variants: ProductVariant[];
 }
 
-const genericSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
-const hotlineSuppliers = ['щу', 'ии', 'ри', 'че', 'ме', 'б'];
+const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
+const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
 
 const route: RouteHandler = async ({ reply, connections }) => {
@@ -147,7 +147,7 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
     };
   });
 
-  const filteredProducts = mappedProducts.filter(({ availability, sku }) => {
+  const filteredProducts = mappedProducts.filter(({ sku }) => {
     const supplier = sku.split('^')[1] || '';
     return genericSuppliers.includes(supplier.toLowerCase());
   });
