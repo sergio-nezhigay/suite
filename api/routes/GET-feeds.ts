@@ -45,7 +45,7 @@ const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
 
 const route: RouteHandler = async ({ reply, connections }) => {
   try {
-    const shopify = connections.shopify.current;
+    const shopify = await connections.shopify.forShopId('86804627772');
     if (!shopify) throw new Error('No Shopify client found');
 
     const products = await getProducts(shopify);
@@ -66,7 +66,7 @@ const route: RouteHandler = async ({ reply, connections }) => {
     const rozetkaFeedContent = makeRozetkaFeed(genericFeed);
     await uploadFile(shopify, rozetkaFeedContent, 'rozetkaFeed.xml');
 
-    return reply.send({ success: true, products });
+    return reply.send({ success: true, productsLength: products.length });
   } catch (error) {
     console.error('Error generating feed:', error);
 
