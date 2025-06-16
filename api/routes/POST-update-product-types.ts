@@ -1,4 +1,6 @@
-import { RouteHandler } from 'gadget-server';
+import { connections, logger, RouteHandler } from 'gadget-server';
+
+import { availableTypes } from 'api/utilities/data/availableTypes';
 
 interface Product {
   id: string;
@@ -20,7 +22,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
   try {
     const { products } = request.body;
 
-    // Validate products array
     if (!Array.isArray(products) || products.length === 0) {
       await reply.code(400).send({
         error:
@@ -29,7 +30,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       return;
     }
 
-    // Validate each product has required fields
     for (const product of products) {
       if (!product.id || !product.title || !product.description) {
         await reply.code(400).send({
@@ -45,7 +45,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       failed: [] as Array<{ id: string; error: string }>,
     };
 
-    // Get current shop ID
     const shopId = connections.shopify.currentShopId?.toString();
 
     if (!shopId) {
@@ -56,16 +55,13 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       return;
     }
 
-    // Process each product
     for (const product of products) {
       try {
-        // Determine product type using simple keyword matching
-        const productType = determineProductType(
+        const productType = await determineProductTypeWithOpenAI(
           product.title,
           product.description
         );
 
-        // Create GraphQL mutation string to update product_type
         const mutation = `
           mutation productUpdate($input: ProductInput!) {
             productUpdate(input: $input) {
@@ -116,7 +112,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       }
     }
 
-    // Return summary
     await reply.send({
       summary: {
         total: products.length,
@@ -133,91 +128,67 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
   }
 };
 
-// Function to determine product type based on keywords
-function determineProductType(title: string, description: string): string {
-  const text = (title + ' ' + description).toLowerCase();
+async function determineProductTypeWithOpenAI(
+  title: string,
+  description: string
+): Promise<string> {
+  try {
+    const response = await connections.openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: `Проаналізуй цей товар і обери ОДИН найбільш точний тип товару з наданого списку.
 
-  // Define keyword mappings
-  const typeKeywords = {
-    Clothing: [
-      'shirt',
-      'pants',
-      'dress',
-      'jacket',
-      'shoes',
-      'clothing',
-      'apparel',
-      'wear',
-      'fashion',
-    ],
-    Books: [
-      'book',
-      'novel',
-      'textbook',
-      'manual',
-      'guide',
-      'literature',
-      'reading',
-    ],
-    Electronics: [
-      'electronics',
-      'computer',
-      'phone',
-      'laptop',
-      'tablet',
-      'headphones',
-      'speaker',
-      'tech',
-      'digital',
-    ],
-    'Home & Garden': [
-      'home',
-      'garden',
-      'furniture',
-      'decor',
-      'kitchen',
-      'bathroom',
-      'tools',
-      'appliance',
-    ],
-    Sports: [
-      'sports',
-      'fitness',
-      'exercise',
-      'gym',
-      'athletic',
-      'outdoor',
-      'recreation',
-    ],
-    Beauty: [
-      'beauty',
-      'cosmetics',
-      'skincare',
-      'makeup',
-      'health',
-      'personal care',
-    ],
-    Toys: ['toy', 'game', 'puzzle', 'children', 'kids', 'play', 'educational'],
-    Food: [
-      'food',
-      'snack',
-      'beverage',
-      'drink',
-      'organic',
-      'nutrition',
-      'supplement',
-    ],
-  };
+ТОВАР:
+Назва: ${title}
+Опис: ${description}
 
-  // Check for keyword matches
-  for (const [type, keywords] of Object.entries(typeKeywords)) {
-    if (keywords.some((keyword) => text.includes(keyword))) {
-      return type;
+МОЖЛИВІ ТИПИ: ${availableTypes.join(', ')}
+
+Інструкції:
+- Обери лише ОДИН тип зі списку
+- Будь максимально точним
+- Враховуй і назву, і опис товару
+`,
+        },
+      ],
+      max_tokens: 50,
+      temperature: 0,
+      response_format: {
+        type: 'json_schema',
+        json_schema: {
+          name: 'ProductTypeOutput',
+          schema: {
+            type: 'object',
+            properties: {
+              product_type: { type: 'string' },
+            },
+            required: ['product_type'],
+            additionalProperties: false,
+          },
+          strict: true,
+        },
+      },
+    });
+
+    const content = response.choices[0].message.content || '{}';
+    const selectedType = JSON.parse(content).product_type as string;
+
+    console.log('selectedType', JSON.stringify(selectedType, null, 2));
+
+    if (availableTypes.includes(selectedType)) {
+      return selectedType;
+    } else {
+      console.log(
+        `OpenAI returned unexpected type "${selectedType}", falling back to first available type`
+      );
+      return availableTypes[0] || 'General';
     }
+  } catch (error) {
+    console.log('Error calling OpenAI API:', error);
+    return 'fallback-type-error';
   }
-
-  // Default product type if no keywords match
-  return 'General';
 }
 
 // Route options with body validation schema
