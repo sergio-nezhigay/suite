@@ -23,6 +23,7 @@ const route: RouteHandler<{
   Body: RequestBody;
 }> = async ({ reply, request, logger, config }) => {
   const { rows, spreadsheetId } = request.body;
+
   if (!rows || !Array.isArray(rows) || rows.length === 0 || !spreadsheetId) {
     return reply
       .code(400)
@@ -35,7 +36,7 @@ const route: RouteHandler<{
     const auth = await authorize(config);
     const sheets = google.sheets({ version: 'v4', auth });
 
-    const res: sheets_v4.Schema$AppendValuesResponse = await sheets.spreadsheets.values.append({
+    const response = await sheets.spreadsheets.values.append({
       spreadsheetId,
       range,
       valueInputOption: 'USER_ENTERED',
@@ -43,8 +44,15 @@ const route: RouteHandler<{
       requestBody: { values: rows },
     });
 
-    logger.info({ responseData: res.data }, 'Rows appended successfully to Google Sheets');
-    await reply.send({ success: true, addedRows: rows.length });
+    const responseData: sheets_v4.Schema$AppendValuesResponse = response.data;
+
+    logger.info({ responseData }, 'Rows appended successfully to Google Sheets');
+
+    await reply.send({ 
+      success: true, 
+      addedRows: rows.length,
+      updates: responseData.updates 
+    });
   } catch (error) {
     logger.error({ error }, 'Error appending rows to Google Sheets');
     // Don't expose the actual error details in the response

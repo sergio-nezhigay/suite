@@ -1,5 +1,4 @@
 import { connections, logger, RouteHandler } from 'gadget-server';
-
 import { availableTypes } from 'api/utilities/data/availableTypes';
 
 interface Product {
@@ -55,62 +54,89 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       return;
     }
 
+    // 1. Determine product types for all products first
+    const productTypeResults: Array<{
+      id: string;
+      productType?: string;
+      error?: string;
+    }> = [];
     for (const product of products) {
       try {
         const productType = await determineProductTypeWithOpenAI(
           product.title,
           product.description
         );
-
-        const mutation = `
-          mutation productUpdate($input: ProductInput!) {
-            productUpdate(input: $input) {
-              product {
-                id
-                productType
-              }
-              userErrors {
-                field
-                message
-              }
-            }
-          }
-        `;
-
-        const variables = {
-          input: {
-            id: product.id,
-            productType: productType,
-          },
-        };
-
-        await api.enqueue(api.writeToShopify, {
-          shopId: shopId,
-          mutation: mutation,
-          variables: variables,
-        });
-
-        results.successful.push({
-          id: product.id,
-          productType: productType,
-        });
-
-        logger.info(
-          `Successfully enqueued product update for ${product.id} with type: ${productType}`
-        );
+        productTypeResults.push({ id: product.id, productType });
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
-        results.failed.push({
-          id: product.id,
-          error: errorMessage,
-        });
-
-        logger.error(
-          `Failed to enqueue product update for ${product.id}: ${errorMessage}`
-        );
+        productTypeResults.push({ id: product.id, error: errorMessage });
       }
     }
+
+    // 2. Prepare batch mutation for products with determined types
+    const successfulProducts = productTypeResults.filter((r) => r.productType);
+    const failedProducts = productTypeResults.filter((r) => r.error);
+
+    // Shopify GraphQL does not support true batch mutations, but we can send multiple mutations in a single request using aliases
+    if (successfulProducts.length > 0) {
+      const mutationParts: string[] = [];
+      const variables: Record<string, any> = {};
+
+      successfulProducts.forEach((prod, idx) => {
+        const alias = `update${idx}`;
+        mutationParts.push(`
+          ${alias}: productUpdate(input: $input${idx}) {
+            product {
+              id
+              productType
+            }
+            userErrors {
+              field
+              message
+            }
+          }
+        `);
+        variables[`input${idx}`] = {
+          id: prod.id,
+          productType: prod.productType,
+        };
+      });
+
+      const mutation = `
+        mutation batchProductUpdate(${successfulProducts
+          .map((_, idx) => `$input${idx}: ProductInput!`)
+          .join(', ')}) {
+          ${mutationParts.join('\n')}
+        }
+      `;
+
+      await api.enqueue(api.writeToShopify, {
+        shopId: shopId,
+        mutation: mutation,
+        variables: variables,
+      });
+
+      successfulProducts.forEach((prod) => {
+        results.successful.push({
+          id: prod.id,
+          productType: prod.productType!,
+        });
+        logger.info(
+          `Successfully enqueued product update for ${prod.id} with type: ${prod.productType}`
+        );
+      });
+    }
+
+    failedProducts.forEach((prod) => {
+      results.failed.push({
+        id: prod.id,
+        error: prod.error!,
+      });
+      logger.error(
+        `Failed to determine product type for ${prod.id}: ${prod.error}`
+      );
+    });
 
     await reply.send({
       summary: {

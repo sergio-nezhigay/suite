@@ -508,12 +508,27 @@
   dependencies:
     "@remote-ui/rpc" "^1.4.5"
 
+"@remote-ui/async-subscription@^2.1.16", "@remote-ui/async-subscription@^2.1.18":
+  version "2.1.18"
+  resolved "https://registry.yarnpkg.com/@remote-ui/async-subscription/-/async-subscription-2.1.18.tgz#54efc0c7a6901bb8993de04130fc74e78b99387d"
+  integrity sha512-O+76qOiTGN6iJZBFncELNIBnhCbHAIYrsrG0n3SjmwXE9Gy6nl4xZoa5FqIcw5VPz7EAdwKBkFsRE5uyQB7FOw==
+  dependencies:
+    "@remote-ui/rpc" "^1.4.7"
+
 "@remote-ui/core@^2.2.4":
   version "2.2.4"
   resolved "https://registry.yarnpkg.com/@remote-ui/core/-/core-2.2.4.tgz#56b174b6f041c57d5950811e6f93cfcffb0fbc1a"
   integrity sha512-7ahrsI5GqYvAGcWTcysbKFKbzbhB/mDgIJr9VurF34gor2IqRCrmrPYemLQuOCQhWqPb3AOEUxWFYNLiB5i6kA==
   dependencies:
     "@remote-ui/rpc" "^1.4.5"
+    "@remote-ui/types" "^1.1.3"
+
+"@remote-ui/core@^2.2.5", "@remote-ui/core@^2.2.7":
+  version "2.2.7"
+  resolved "https://registry.yarnpkg.com/@remote-ui/core/-/core-2.2.7.tgz#de1226cdd7cfa8c8b1b82700b5770bd701656077"
+  integrity sha512-9eiTKy2eNKcT76xS0Dpz06ae2oClGAUUjx+HTDsz6fh7n/SS8Avid5N7GOaRiny/6T/cMJxaCeycMQJsEviGjA==
+  dependencies:
+    "@remote-ui/rpc" "^1.4.7"
     "@remote-ui/types" "^1.1.3"
 
 "@remote-ui/react@^5.0.2":
@@ -527,10 +542,26 @@
     "@types/react" ">=17.0.0 <19.0.0"
     "@types/react-reconciler" ">=0.26.0 <0.30.0"
 
+"@remote-ui/react@^5.0.6":
+  version "5.0.8"
+  resolved "https://registry.yarnpkg.com/@remote-ui/react/-/react-5.0.8.tgz#a4f823de1387465095951b8620447baa106f76ce"
+  integrity sha512-GUwqP0b4m2TQ8THbsjhBvvYXZfvyWbP6HlYtzKw7izW9C49DWrixLuSz41kB4Ae7MI1OUfKy3xHtwXeLWa+nuA==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.18"
+    "@remote-ui/core" "^2.2.7"
+    "@remote-ui/rpc" "^1.4.7"
+    "@types/react" ">=17.0.0 <19.0.0"
+    "@types/react-reconciler" ">=0.26.0 <0.30.0"
+
 "@remote-ui/rpc@^1.4.5":
   version "1.4.5"
   resolved "https://registry.yarnpkg.com/@remote-ui/rpc/-/rpc-1.4.5.tgz#20328970c314374d96fdaae1cf93aca4b47fefee"
   integrity sha512-Cr+06niG/vmE4A9YsmaKngRuuVSWKMY42NMwtZfy+gctRWGu6Wj9BWuMJg5CEp+JTkRBPToqT5rqnrg1G/Wvow==
+
+"@remote-ui/rpc@^1.4.7":
+  version "1.4.7"
+  resolved "https://registry.yarnpkg.com/@remote-ui/rpc/-/rpc-1.4.7.tgz#0b353b2fcc95db17a23b4f90d1a587d7e906c77f"
+  integrity sha512-ORiaKsbVBSEi3Z4YWOj5Ucrp70NrkNktI1hdqqfBW7Z3o0YoxTX9MIqtLmsc6721IbjmExvLrLip5I5Y7uAbng==
 
 "@remote-ui/types@^1.1.3":
   version "1.1.3"
@@ -709,6 +740,15 @@
     "@remote-ui/react" "^5.0.2"
     "@types/react" ">=18.2.67"
 
+"@shopify/ui-extensions-react@2025.4.x":
+  version "2025.4.0"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.4.0.tgz#5351169b7c612b0437936ce57748a99c6b6d725c"
+  integrity sha512-sFmoMHGgnKrok6wr8Db1xTyZUispON0J13HsGpkCWxneLVhBf0vH5mxHyFxBpnjR335DYqwlZph985SWh/Xyaw==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.16"
+    "@remote-ui/react" "^5.0.6"
+    "@types/react" ">=18.2.67"
+
 "@shopify/ui-extensions@2024.10.x":
   version "2024.10.2"
   resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2024.10.2.tgz#839a8fd139698afe1f140c3c80de77d43c53c9df"
@@ -732,6 +772,14 @@
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
+
+"@shopify/ui-extensions@2025.4.x":
+  version "2025.4.0"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2025.4.0.tgz#8d967017ac6467aecea5c89291124cd926caed7f"
+  integrity sha512-i8LxM3EnEwLBjB7bXAWBYLKYnngYfY+PKg8a2s/ll5/hvgWr8XOHNLsXe2aej69tyXVei5QtO4McNiFDU8jBKw==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.16"
+    "@remote-ui/core" "^2.2.5"
 
 "@sinclair/typebox@^0.31.0":
   version "0.31.28"

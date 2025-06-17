@@ -41,8 +41,8 @@ export async function createProducts({
           vendor: product.vendor,
           descriptionHtml: html || null,
           handle,
-
           metafields: mapObjectToMetafields(product?.options),
+          published: true,
         },
         media,
       };
