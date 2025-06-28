@@ -4,7 +4,7 @@ import { useState } from 'react';
 
 export default function Feeds() {
   const navigate = useNavigate();
-  const [feedResponse, setFeedResponse] = useState(null);
+  const [feedResponse, setFeedResponse] = useState('');
   const [loading, setLoading] = useState(false);
 
   const gadgetEnv = process.env.GADGET_ENV;
@@ -24,7 +24,7 @@ export default function Feeds() {
       setFeedResponse(data);
     } catch (error) {
       console.error('Feed generation failed:', error);
-      setFeedResponse({ error: 'Failed to generate feed' });
+      setFeedResponse('Failed to generate feed');
     } finally {
       setLoading(false);
     }

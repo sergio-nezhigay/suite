@@ -160,7 +160,7 @@ async function determineProductTypeWithOpenAI(
 ): Promise<string> {
   try {
     const response = await connections.openai.chat.completions.create({
-      model: 'gpt-4o',
+      model: 'gpt-4.1-mini',
       messages: [
         {
           role: 'user',

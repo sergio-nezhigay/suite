@@ -46,6 +46,7 @@ export type OrderDetails = {
   address: string | null;
   zip: string | null;
   paymentMethod: string | null;
+  lineItems?: { title: string; unfulfilledQuantity: number }[];
 } | null;
 
 export type OrderInfo =
@@ -85,17 +86,23 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
           city
           zip
         }
-        paymentMethod: metafield(namespace: "custom", key: "payment_method") {
+        paymentMethod: metafield(namespace: \"custom\", key: \"payment_method\") {
             value
         }
-        novaposhtaRecepientWarehouse: metafield(namespace: "nova_poshta", key: "recepient_warehouse") {
+        novaposhtaRecepientWarehouse: metafield(namespace: \"nova_poshta\", key: \"recepient_warehouse\") {
             value
         }
-        novaposhtaDeclarationNumber: metafield(namespace: "nova_poshta", key: "declaration_number") {
+        novaposhtaDeclarationNumber: metafield(namespace: \"nova_poshta\", key: \"declaration_number\") {
             value
         }
-        novaposhtaDeclarationRef: metafield(namespace: "nova_poshta", key: "declaration_ref") {
+        novaposhtaDeclarationRef: metafield(namespace: \"nova_poshta\", key: \"declaration_ref\") {
             value
+        }
+        lineItems(first: 10) {
+          nodes {
+            title
+            unfulfilledQuantity
+          }
         }
       }
     }`;
@@ -122,6 +129,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       novaposhtaRecepientWarehouse: { value: string };
       novaposhtaDeclarationNumber: { value: string };
       novaposhtaDeclarationRef: { value: string };
+      lineItems: { nodes: { title: string; unfulfilledQuantity: number }[] };
     };
   }>(query, { id: orderId });
 
@@ -139,6 +147,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       novaposhtaRecepientWarehouse,
       novaposhtaDeclarationNumber,
       novaposhtaDeclarationRef,
+      lineItems,
     } = data?.order;
 
     const zip =
@@ -159,6 +168,7 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         address: shippingAddress?.address1,
         zip,
         paymentMethod: paymentMethod?.value,
+        lineItems: lineItems?.nodes || [],
       };
       return {
         orderDetails,

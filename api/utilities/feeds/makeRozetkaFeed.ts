@@ -1,249 +1,421 @@
 import { GenericProductFeed } from 'api/routes/GET-feeds';
-import { IN_STOCK } from '../data/stockStatus';
 
-const stopBrands = [
-  'Kingston',
-  'Samsung',
-  'Xiaomi',
-  'Tefal',
-  'Kingston Fury (ex.HyperX)',
-];
-const rozetkaSuppliers = ['щу', 'ии', 'че'];
-const DEFAULT_CATEGORY_MAPPING = {
-  "Пам'ять оперативна": 'c80081',
-  'USB-RS232': 'c80073',
-  'Аудіо перехідники оптика - тюльпани': 'c80073',
-  'HDMI - VGA': 'c80073',
-  'HDMI-RCA': 'c80073',
-  'Світлодіодні стрічки': 'c234721',
-  'USB Type C': 'c80073',
-  'RCA-3.5mm': 'c80073',
-  'HDMI-DisplayPort': 'c80073',
-  'USB кабелі': 'c80073',
-  'Зарядні пристрої': 'c146341',
-  'VGA-RCA': 'c80073',
-  'Перехідники для зарядки ноутбуків та роутерів': 'c80073',
-  'HDMI-SCART': 'c80073',
-  'карти відеозахвату usb': 'c82249',
-};
+interface RozetkaParam {
+  paramName: string;
+  paramValue: string;
+}
 
-const ROZETKA_DEFAULT_PARAMS: Record<
-  string,
-  Array<{ paramName: string; paramValue: string }>
-> = {
-  'перехідники для зарядки ноутбуків та роутерів': [
-    {
-      paramName: 'Тип коннектора 2',
-      paramValue: 'DC connector',
-    },
-    {
-      paramName: 'Призначення',
-      paramValue:
-        'Для блоков питания,Ноутбук,Для роутерів,мережевий зарядний пристрій',
-    },
-    {
-      paramName: 'Тип',
-      paramValue: 'Кабелі зарядки',
-    },
-    {
-      paramName: 'Гарантія',
-      paramValue: '12 мясяців',
-    },
-  ],
-  'hdmi - vga': [
-    {
-      paramName: 'Тип коннектора 1',
-      paramValue: 'VGA',
-    },
-    {
-      paramName: 'Тип коннектора 2',
-      paramValue: 'HDMI',
-    },
-  ],
-  'hdmi-rca': [
-    {
-      paramName: 'Тип коннектора 2',
-      paramValue: 'Композитний (RCA-jack)',
-    },
-    {
-      paramName: 'Тип коннектора 1',
-      paramValue: 'HDMI',
-    },
-  ],
-  'HDMI-DisplayPort': [
-    {
-      paramName: 'Тип коннектора 1',
-      paramValue: 'HDMI',
-    },
-    {
-      paramName: 'Тип коннектора 2',
-      paramValue: 'DisplayPort',
-    },
-  ],
-  'карти відеозахвату usb': [
-    {
-      paramName: 'Інтерфейс',
-      paramValue: 'USB',
-    },
-    {
-      paramName: 'Тип',
-      paramValue: 'Зовнішній',
-    },
-    {
-      paramName: 'Сумісність',
-      paramValue: 'ПК,Mac OS X',
-    },
-    {
-      paramName: 'Гарантія',
-      paramValue: '12 мясяців',
-    },
-  ],
-};
+interface RozetkaProductConfig {
+  categoryId: string;
+  params: RozetkaParam[];
+}
 
-export const makeRozetkaFeed = (products: GenericProductFeed[]) => {
-  const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
+interface CategoryRule {
+  keywords: string[];
+  categoryId: string;
+  defaultParams?: RozetkaParam[];
+}
 
-  const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>\n`;
+interface PriceRule {
+  condition: (product: GenericProductFeed) => boolean;
+  multiplier: number;
+}
 
-  const filteredProducts = products.filter((product) => {
+interface TitleRule {
+  condition: (product: GenericProductFeed) => boolean;
+  transform: (product: GenericProductFeed) => string;
+}
+
+interface StateRule {
+  condition: (product: GenericProductFeed) => boolean;
+  state: 'new' | 'used';
+}
+
+const ROZETKA_CONFIG = {
+  suppliers: {
+    allowed: ['щу', 'ии', 'че'] as string[],
+    blocked: [
+      'Kingston',
+      'Samsung',
+      'Xiaomi',
+      'Tefal',
+      'Kingston Fury (ex.HyperX)',
+    ] as string[],
+  },
+
+  // Category mapping with enhanced structure
+  categories: {
+    rules: [
+      {
+        keywords: ["пам'ять оперативна"],
+        categoryId: 'c80081',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: "Оперативна пам'ять" },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: ['usb-rs232', 'rs485', 'оптичні аудіо перехідники'],
+        categoryId: 'c80073',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: 'Перехідник' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: [
+          'hdmi - vga',
+          'hdmi-rca',
+          'usb type c',
+          'rca-3.5mm',
+          'hdmi-displayport',
+          'usb аксесуари',
+          'vga-rca',
+          'hdmi-scart',
+        ],
+        categoryId: 'c80073',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: 'Кабель/Перехідник' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: ['перехідники для зарядки ноутбуків та роутерів'],
+        categoryId: 'c80073',
+        defaultParams: [
+          { paramName: 'Тип коннектора 2', paramValue: 'DC connector' },
+          {
+            paramName: 'Призначення',
+            paramValue:
+              'Для блоков питания,Ноутбук,Для роутерів,мережевий зарядний пристрій',
+          },
+          { paramName: 'Тип', paramValue: 'Кабелі зарядки' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: ['світлодіодні стрічки'],
+        categoryId: 'c234721',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: 'LED стрічка' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: ['зарядні пристрої'],
+        categoryId: 'c146341',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: 'Зарядний пристрій' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+      {
+        keywords: ['карти відеозахвату usb'],
+        categoryId: 'c82249',
+        defaultParams: [
+          { paramName: 'Інтерфейс', paramValue: 'USB' },
+          { paramName: 'Тип', paramValue: 'Зовнішній' },
+          { paramName: 'Сумісність', paramValue: 'ПК,Mac OS X' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+      },
+    ] as CategoryRule[],
+    fallback: {
+      categoryId: 'c4670691',
+      defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
+    },
+  },
+
+  // Connector type mapping for dynamic parameter generation
+  connectorTypes: {
+    patterns: [
+      {
+        keywords: ['type c', 'type-c'],
+        paramName: 'Тип коннектора 1',
+        paramValue: 'USB Type-C',
+      },
+      { keywords: ['usb'], paramName: 'Тип коннектора 1', paramValue: 'USB' },
+      {
+        keywords: ['metal'],
+        paramName: 'Тип коннектора 1',
+        paramValue: 'Metal',
+      },
+      {
+        keywords: ['rs232'],
+        paramName: 'Тип коннектора 2',
+        paramValue: 'COM-порт',
+      },
+      { keywords: ['hdmi'], paramName: 'Тип коннектора 1', paramValue: 'HDMI' },
+      { keywords: ['vga'], paramName: 'Тип коннектора 2', paramValue: 'VGA' },
+      {
+        keywords: ['rca'],
+        paramName: 'Тип коннектора 2',
+        paramValue: 'Композитний (RCA-jack)',
+      },
+      {
+        keywords: ['displayport'],
+        paramName: 'Тип коннектора 2',
+        paramValue: 'DisplayPort',
+      },
+    ],
+  },
+
+  // Price calculation rules
+  pricing: {
+    rules: [
+      {
+        condition: (product: GenericProductFeed) =>
+          product.title.includes('Перехідник аудіо-оптика на 3.5 мм') ||
+          product.title.includes('232'),
+        multiplier: 1.08,
+      },
+      {
+        condition: (product: GenericProductFeed) =>
+          product.collection.toLowerCase().includes("пам'ять"),
+        multiplier: 1.03,
+      },
+    ] as PriceRule[],
+    default: 1.21,
+    oldPriceMultiplier: 1.1,
+  },
+
+  // Product state rules
+  productState: {
+    rules: [
+      {
+        condition: (product: GenericProductFeed) =>
+          product.collection.toLowerCase().includes("пам'ять"),
+        state: 'used' as const,
+      },
+    ] as StateRule[],
+    default: 'new' as const,
+  },
+
+  // Title transformation rules
+  titleTransform: {
+    rules: [
+      {
+        condition: (product: GenericProductFeed) =>
+          product.collection.toLowerCase().includes("пам'ять"),
+        transform: (product: GenericProductFeed) =>
+          `Оперативна пам'ять ${product.title} б/в`,
+      },
+    ] as TitleRule[],
+    default: (product: GenericProductFeed) => product.title,
+  },
+
+  // Brand override rules
+  brandOverride: {
+    rules: [
+      {
+        condition: (product: GenericProductFeed) =>
+          product.title.toLowerCase().includes('easycap'),
+        brand: 'Easycap',
+      },
+    ],
+  },
+
+  // Stock status handling
+  stockStatus: {
+    getAvailability: (product: GenericProductFeed) => {
+      const quantity = product.inventoryQuantity || 0;
+      return quantity > 0 ? 'true' : 'false';
+    },
+    getStockQuantity: (product: GenericProductFeed) => {
+      return Math.max(0, product.inventoryQuantity || 0);
+    },
+  },
+
+  // XML generation settings
+  xml: {
+    maxAdditionalImages: 10,
+    currency: 'UAH',
+    shopInfo: {
+      name: 'INTERRA',
+      company: 'INTERRA',
+      url: 'https://informatica.com.ua/',
+    },
+  },
+} as const;
+
+// Helper classes for better organization
+class RozetkaProductProcessor {
+  static isProductAllowed(product: GenericProductFeed): boolean {
     const supplier = product.sku.split('^')[1] || '';
+
     return (
-      !stopBrands.includes(product.brand) &&
-      rozetkaSuppliers.includes(supplier.toLowerCase())
+      !ROZETKA_CONFIG.suppliers.blocked.includes(product.brand) &&
+      ROZETKA_CONFIG.suppliers.allowed.includes(supplier.toLowerCase())
     );
-  });
-
-  const categoryIds = [
-    ...new Set(filteredProducts.map((product) => parseCategoryId(product))),
-  ];
-
-  const categoriesSection = categoryIds
-    .map(
-      (categoryId) => `<category id="${categoryId}">Category Name</category>`
-    )
-    .join('\n');
-
-  const shopInfo = `
-        <yml_catalog date="${date}">
-          <shop>
-            <name>INTERRA</name>
-            <company>INTERRA</company>
-            <url>https://informatica.com.ua/</url>
-            <currencies>
-              <currency id="UAH" rate="1"/>
-            </currencies>
-            <categories>
-              ${categoriesSection}
-            </categories>
-            <offers>
-      `;
-
-  const offers = filteredProducts
-    .map((product) => {
-      const { categoryId, params } = parseRozetkaFilter(product);
-
-      const isMemory = product.collection.toLowerCase().includes("пам'ять");
-      const hasSpecialTitle =
-        product.title.includes('Перехідник аудіо-оптика на 3.5 мм') ||
-        product.title.includes('232');
-      const priceMultiplier = hasSpecialTitle ? 1.08 : isMemory ? 1.03 : 1.21;
-
-      const price = product.price * priceMultiplier;
-
-      const oldPrice = (price * 1.1).toFixed(2);
-      const state = isMemory ? 'used' : 'new';
-      const name = isMemory
-        ? "Оперативна пам'ять " + product.title + ' б/в'
-        : product.title;
-
-      const additionalImages = product.imageURLs
-        .slice(1, 11)
-        .map((url) => `<picture>${url}</picture>`)
-        .join('');
-
-      const paramsSection = params
-        .map(
-          ({ paramName, paramValue }) =>
-            `<param name="${paramName}">${paramValue}</param>`
-        )
-        .join('');
-
-      const oldRozetkaMemoryId =
-        isMemory && product.id_woocommerce
-          ? product.id_woocommerce + '-1'
-          : product.id_woocommerce;
-      const id = oldRozetkaMemoryId || product.id;
-      const brand = name.toLowerCase().includes('easycap')
-        ? 'Easycap'
-        : product.brand;
-
-      return `
-          <offer id="${id}" available="${product.availability === IN_STOCK}">
-            <name>${name}</name>
-            <price>${price}</price>
-            <price_old>${oldPrice}</price_old>
-            <url>${product.link}</url>
-            <stock_quantity>${product.inventoryQuantity || 0}</stock_quantity>
-            <currencyId>UAH</currencyId>
-            <categoryId>${categoryId}</categoryId>
-            <vendor>${brand}</vendor>
-            <state>${state}</state>
-            <picture>${product.imageURLs[0]}</picture>
-            ${additionalImages}
-            ${paramsSection}
-            <description><![CDATA[${product.description}]]></description>
-          </offer>
-        `;
-    })
-    .join('');
-
-  const shopClose = `
-            </offers>
-          </shop>
-        </yml_catalog>
-      `;
-
-  return xmlHeader + shopInfo + offers + shopClose;
-};
-
-const parseCategoryId = (product: GenericProductFeed) => {
-  const rozetka_filter = product.rozetka_filter;
-  if (typeof rozetka_filter !== 'string' || !rozetka_filter.trim()) {
-    return getDefaultCategoryId(product);
   }
 
-  const match = rozetka_filter.match(/^c\d+/);
-  return match ? match[0] : getDefaultCategoryId(product);
-};
+  static getCategoryConfig(product: GenericProductFeed): {
+    categoryId: string;
+    params: RozetkaParam[];
+  } {
+    const lowerCaseCollection = product.collection.toLowerCase();
 
-const parseRozetkaFilter = (product: GenericProductFeed) => {
-  const rozetka_filter = product.rozetka_filter;
-  if (
-    !rozetka_filter ||
-    typeof rozetka_filter !== 'string' ||
-    !rozetka_filter.trim()
-  ) {
-    const fallbackCategoryId = getDefaultCategoryId(product);
+    // Find matching category rule
+    const matchingRule = ROZETKA_CONFIG.categories.rules.find((rule) =>
+      rule.keywords.some((keyword) =>
+        lowerCaseCollection.includes(keyword.toLowerCase())
+      )
+    );
+
+    if (matchingRule) {
+      return {
+        categoryId: matchingRule.categoryId,
+        params: [...(matchingRule.defaultParams || [])],
+      };
+    }
+
+    // Fallback to default category
     return {
-      categoryId: fallbackCategoryId,
-      params: getRozetkaDefaultParams(product),
+      categoryId: ROZETKA_CONFIG.categories.fallback.categoryId,
+      params: [...ROZETKA_CONFIG.categories.fallback.defaultParams],
     };
   }
 
-  const [categoryId, paramsString] = rozetka_filter
-    .split(':')
-    .map((item) => item.trim());
+  static generateDynamicParams(product: GenericProductFeed): RozetkaParam[] {
+    const lowerCaseTitle = product.title.toLowerCase();
+    const dynamicParams: RozetkaParam[] = [];
 
-  let params: string | any[] = [];
-  if (paramsString) {
-    params = paramsString
+    // Sort patterns by longest keyword first
+    const sortedPatterns = [...ROZETKA_CONFIG.connectorTypes.patterns].sort(
+      (a, b) => {
+        const maxA = Math.max(...a.keywords.map((k) => k.length));
+        const maxB = Math.max(...b.keywords.map((k) => k.length));
+        return maxB - maxA;
+      }
+    );
+
+    sortedPatterns.forEach((pattern) => {
+      if (
+        pattern.keywords.some((keyword) =>
+          lowerCaseTitle.includes(keyword.toLowerCase())
+        )
+      ) {
+        // Only add if paramName not already present (from a more specific match)
+        if (!dynamicParams.some((p) => p.paramName === pattern.paramName)) {
+          dynamicParams.push({
+            paramName: pattern.paramName,
+            paramValue: pattern.paramValue,
+          });
+        }
+      }
+    });
+
+    return dynamicParams;
+  }
+
+  static calculatePrice(product: GenericProductFeed): {
+    price: number;
+    oldPrice: string;
+  } {
+    const matchingRule = ROZETKA_CONFIG.pricing.rules.find((rule) =>
+      rule.condition(product)
+    );
+    const multiplier =
+      matchingRule?.multiplier || ROZETKA_CONFIG.pricing.default;
+
+    const price = product.price * multiplier;
+    const oldPrice = (
+      price * ROZETKA_CONFIG.pricing.oldPriceMultiplier
+    ).toFixed(2);
+
+    return { price, oldPrice };
+  }
+
+  static getProductState(product: GenericProductFeed): 'new' | 'used' {
+    const matchingRule = ROZETKA_CONFIG.productState.rules.find((rule) =>
+      rule.condition(product)
+    );
+    return matchingRule?.state || ROZETKA_CONFIG.productState.default;
+  }
+
+  static transformTitle(product: GenericProductFeed): string {
+    const matchingRule = ROZETKA_CONFIG.titleTransform.rules.find((rule) =>
+      rule.condition(product)
+    );
+    return (
+      matchingRule?.transform(product) ||
+      ROZETKA_CONFIG.titleTransform.default(product)
+    );
+  }
+
+  static getBrand(product: GenericProductFeed): string {
+    const matchingRule = ROZETKA_CONFIG.brandOverride.rules.find((rule) =>
+      rule.condition(product)
+    );
+    return matchingRule?.brand || product.brand;
+  }
+
+  static getProductId(product: GenericProductFeed): string {
+    const isMemory = product.collection.toLowerCase().includes("пам'ять");
+    const oldRozetkaMemoryId =
+      isMemory && product.id_woocommerce
+        ? product.id_woocommerce + '-1'
+        : product.id_woocommerce;
+    return oldRozetkaMemoryId || product.id;
+  }
+}
+
+class RozetkaFilterParser {
+  static parseRozetkaFilter(product: GenericProductFeed): RozetkaProductConfig {
+    const rozetka_filter = product.rozetka_filter;
+
+    if (
+      !rozetka_filter ||
+      typeof rozetka_filter !== 'string' ||
+      !rozetka_filter.trim()
+    ) {
+      return this.getFallbackConfig(product);
+    }
+
+    const [categoryId, paramsString] = rozetka_filter
+      .split(':')
+      .map((item) => item.trim());
+
+    if (!categoryId.match(/^c\d+/)) {
+      return this.getFallbackConfig(product);
+    }
+
+    let params: RozetkaParam[] = [];
+    if (paramsString) {
+      params = this.parseParamsString(paramsString);
+    }
+
+    // If no params found, use default params
+    if (params.length === 0) {
+      const categoryConfig = RozetkaProductProcessor.getCategoryConfig(product);
+      params = categoryConfig.params;
+    }
+
+    // Add dynamic params
+    const dynamicParams =
+      RozetkaProductProcessor.generateDynamicParams(product);
+
+    params = [
+      ...params.filter((param) =>
+        dynamicParams.every(
+          (dynamicParam) => dynamicParam.paramName !== param.paramName
+        )
+      ),
+      ...dynamicParams,
+    ];
+
+    return { categoryId, params };
+  }
+
+  private static parseParamsString(paramsString: string): RozetkaParam[] {
+    return paramsString
       .split(';')
       .map((param) => param.trim())
       .filter(Boolean)
       .map((param) => {
         const [paramName, paramValue] = param
           .split(/[=~]/)
-          .map((item) => item && item.trim());
+          .map((item) => item?.trim());
         return {
           paramName: paramName || 'unknown',
           paramValue: paramValue || 'unknown',
@@ -251,44 +423,113 @@ const parseRozetkaFilter = (product: GenericProductFeed) => {
       });
   }
 
-  if (params.length === 0) {
-    params = getRozetkaDefaultParams(product);
+  private static getFallbackConfig(
+    product: GenericProductFeed
+  ): RozetkaProductConfig {
+    const categoryConfig = RozetkaProductProcessor.getCategoryConfig(product);
+    const dynamicParams =
+      RozetkaProductProcessor.generateDynamicParams(product);
+
+    return {
+      categoryId: categoryConfig.categoryId,
+      params: [...categoryConfig.params, ...dynamicParams],
+    };
+  }
+}
+
+class RozetkaXMLGenerator {
+  static generateXML(products: GenericProductFeed[]): string {
+    const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
+    const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>\n<yml_catalog date="${date}">\n`;
+
+    const filteredProducts = products.filter(
+      RozetkaProductProcessor.isProductAllowed
+    );
+    const categoryIds = [
+      ...new Set(
+        filteredProducts.map((product) => {
+          const config = RozetkaFilterParser.parseRozetkaFilter(product);
+          return config.categoryId;
+        })
+      ),
+    ];
+
+    const categoriesSection = categoryIds
+      .map(
+        (categoryId) => `<category id="${categoryId}">Category Name</category>`
+      )
+      .join('\n');
+
+    const shopInfo = this.generateShopInfo(categoriesSection);
+    const offers = this.generateOffers(filteredProducts);
+    const shopClose = `\n        </offers>\n      </shop>\n    </yml_catalog>`;
+
+    return xmlHeader + shopInfo + offers + shopClose;
   }
 
-  return { categoryId, params };
-};
-
-const getDefaultCategoryId = (product: GenericProductFeed) => {
-  const lowerCaseCollection = product.collection.toLowerCase();
-
-  for (const [key, value] of Object.entries(DEFAULT_CATEGORY_MAPPING)) {
-    if (lowerCaseCollection.includes(key.toLowerCase())) {
-      return value;
-    }
+  private static generateShopInfo(categoriesSection: string): string {
+    const config = ROZETKA_CONFIG.xml.shopInfo;
+    return `
+    <shop>
+      <name>${config.name}</name>
+      <company>${config.company}</company>
+      <url>${config.url}</url>
+      <currencies>
+        <currency id="${ROZETKA_CONFIG.xml.currency}" rate="1"/>
+      </currencies>
+      <categories>
+        ${categoriesSection}
+      </categories>
+      <offers>`;
   }
 
-  return 'c4670691';
-};
+  private static generateOffers(products: GenericProductFeed[]): string {
+    return products
+      .map((product) => {
+        const config = RozetkaFilterParser.parseRozetkaFilter(product);
+        const { price, oldPrice } =
+          RozetkaProductProcessor.calculatePrice(product);
+        const state = RozetkaProductProcessor.getProductState(product);
+        const name = RozetkaProductProcessor.transformTitle(product);
+        const brand = RozetkaProductProcessor.getBrand(product);
+        const id = RozetkaProductProcessor.getProductId(product);
 
-const getRozetkaDefaultParams = (
-  product: GenericProductFeed
-): Array<{ paramName: string; paramValue: string }> => {
-  const lowerCaseCollection = product.collection.toLowerCase();
-  const lowerCaseTitle = product.title.toLowerCase();
-  let params: Array<{ paramName: string; paramValue: string }> = [];
+        const additionalImages = product.imageURLs
+          .slice(1, ROZETKA_CONFIG.xml.maxAdditionalImages + 1)
+          .map((url) => `<picture>${url}</picture>`)
+          .join('');
 
-  for (const [key, defaultParams] of Object.entries(ROZETKA_DEFAULT_PARAMS)) {
-    if (lowerCaseCollection.includes(key.toLowerCase())) {
-      params = [...defaultParams];
-      break;
-    }
+        const paramsSection = config.params
+          .map(
+            ({ paramName, paramValue }) =>
+              `<param name="${paramName}">${paramValue}</param>`
+          )
+          .join('');
+
+        return `
+        <offer id="${id}" available="${ROZETKA_CONFIG.stockStatus.getAvailability(
+          product
+        )}">
+          <name>${name}</name>
+          <price>${price}</price>
+          <price_old>${oldPrice}</price_old>
+          <url>${product.link}</url>
+          <stock_quantity>${product.inventoryQuantity || 0}</stock_quantity>
+          <currencyId>${ROZETKA_CONFIG.xml.currency}</currencyId>
+          <categoryId>${config.categoryId}</categoryId>
+          <vendor>${brand}</vendor>
+          <state>${state}</state>
+          <picture>${product.imageURLs[0]}</picture>
+          ${additionalImages}
+          ${paramsSection}
+          <description><![CDATA[${product.description}]]></description>
+        </offer>`;
+      })
+      .join('');
   }
+}
 
-  if (lowerCaseTitle.includes('type')) {
-    params.push({
-      paramName: 'Тип коннектора 1',
-      paramValue: 'USB Type-C',
-    });
-  }
-  return params;
+// Main export function - simplified and clean
+export const makeRozetkaFeed = (products: GenericProductFeed[]): string => {
+  return RozetkaXMLGenerator.generateXML(products);
 };

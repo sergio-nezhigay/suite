@@ -8,6 +8,7 @@ import {
   fetchBrainProducts,
   flagExistingShopifyProducts,
   getUrlParams,
+  fetchRizhska,
 } from 'utilities';
 
 const route: RouteHandler<{
@@ -49,6 +50,13 @@ const route: RouteHandler<{
         break;
       case 'cherg':
         ({ products, count } = await fetchCherg({
+          query,
+          limit,
+          page,
+        }));
+        break;
+      case 'rizhska':
+        ({ products, count } = await fetchRizhska({
           query,
           limit,
           page,

@@ -23,7 +23,7 @@ type ProductsRowData = {
   'EBJ81UG8BBU0-GN-F': string;
 };
 
-export async function fetchCherg({ query, limit, page }: FetchingFunc) {
+export async function fetchRizhska({ query, limit, page }: FetchingFunc) {
   await doc.loadInfo();
   const sheet = doc.sheetsById[35957627];
 

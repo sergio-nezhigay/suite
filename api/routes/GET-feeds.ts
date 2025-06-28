@@ -41,7 +41,7 @@ export interface ShopifyProduct {
 
 const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
 const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
-const hotlineExcludedProducts = ['kf432s20ibk2/64/1'];
+const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
 const route: RouteHandler = async ({ reply, connections }) => {
   try {
@@ -70,9 +70,10 @@ const route: RouteHandler = async ({ reply, connections }) => {
   } catch (error) {
     console.error('Error generating feed:', error);
 
-    return reply
-      .code(500)
-      .send({ success: false, message: 'Failed to make feed' });
+    return reply.code(500).send({
+      success: false,
+      message: 'Failed to make feed:' + JSON.stringify(error),
+    });
   }
 };
 

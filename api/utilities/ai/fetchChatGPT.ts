@@ -15,10 +15,6 @@ export async function fetchChatGPT({
       response_format: { type: 'json_object' },
     });
 
-    console.log(
-      '===== LOG START =====',
-      new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-    );
     console.log('response:', JSON.stringify(response, null, 4));
     return response.choices[0].message.content;
   } catch (error) {

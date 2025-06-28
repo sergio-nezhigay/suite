@@ -8,6 +8,7 @@ import {
   ProgressIndicator,
   useApi,
   Text,
+  Link,
 } from '@shopify/ui-extensions-react/admin';
 
 import { getOrderInfo, addOrderNote } from '../../shared/shopifyOperations';
@@ -26,6 +27,7 @@ function App() {
   const [smsTemplates, setSmsTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [customerPhone, setCustomerPhone] = useState<string>('');
+  const [orderDetails, setOrderDetails] = useState<any>(null);
   const orderId = data?.selected[0]?.id;
 
   useEffect(() => {
@@ -42,6 +44,7 @@ function App() {
           }),
         }));
         setSmsTemplates(resultsProcessed);
+        setOrderDetails(orderDetails);
 
         if (!orderDetails?.shippingPhone) {
           setStatus('Phone not found');
@@ -54,7 +57,7 @@ function App() {
       }
     };
     loadSmsTemplates();
-  }, []);
+  }, [orderId]);
 
   const handleSendSms = async (smsText: string) => {
     setLoading(true);
@@ -78,6 +81,15 @@ function App() {
     }
   };
 
+  const generateContextMessage = () => {
+    if (!orderDetails) return '';
+
+    const productName = orderDetails.lineItems?.[0]?.title || '';
+    const orderNumber = orderDetails.orderNumber || '';
+
+    return `Доброго дня! Це магазин informatica.com.ua щодо вашого замовлення ${`${orderNumber} `}на товар "${productName}"`;
+  };
+
   return (
     <BlockStack gap='large'>
       <Text>
@@ -85,6 +97,22 @@ function App() {
           ? `Телефон клієнта: ${customerPhone}`
           : 'Телефон клієнта не знайдено'}
       </Text>
+
+      {customerPhone && (
+        <BlockStack gap='base'>
+          <InlineStack gap='base'>
+            <Link
+              href={`https://msng.link/o/?${customerPhone}=vi`}
+              target='_blank'
+              tone='default'
+            >
+              Viber
+            </Link>
+          </InlineStack>
+          <Text>Текст: "{generateContextMessage()}"</Text>
+        </BlockStack>
+      )}
+
       <InlineStack inlineAlignment='center' blockAlignment='center' gap='large'>
         {smsTemplates.map((template) => (
           <Button
