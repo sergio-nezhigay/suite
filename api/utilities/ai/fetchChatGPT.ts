@@ -9,7 +9,7 @@ export async function fetchChatGPT({
 }) {
   try {
     const response = await connections.openai.chat.completions.create({
-      model: 'gpt-4o-mini',
+      model: 'gpt-4.1-mini',
       temperature: 0.2,
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },

@@ -68,7 +68,7 @@ const route: RouteHandler<{
   // send prompt and similar products to OpenAI to generate a response
   // using GPT-4 Turbo model
   const chatResponse = await connections.openai.chat.completions.create({
-    model: 'gpt-4o-mini',
+    model: 'gpt-4.1-mini',
     messages: [
       {
         role: 'system',

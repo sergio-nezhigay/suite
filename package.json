@@ -15,7 +15,7 @@
   },
   "dependencies": {
     "@gadget-client/admin-action-block": "link:.gadget/client",
-    "@gadgetinc/react": "^0.18.5",
+    "@gadgetinc/react": "^0.21.2",
     "xml2js": "^0.6.2",
     "@gadgetinc/react-shopify-app-bridge": "^0.16.3",
     "@shopify/app-bridge-react": "4.0.0",
@@ -32,12 +32,13 @@
     "google-auth-library": "^9.15.0",
     "axios": "^1.7.9",
     "request": "^2.88.2",
-    "fastify": "^5.2.1",
+    "fastify": "^4.24.2",
     "@fastify/type-provider-typebox": "^3.0.0",
     "@sinclair/typebox": "^0.31.0",
     "googleapis": "^148.0.0",
     "pdf-lib": "^1.17.1",
-    "@pdf-lib/fontkit": "^1.1.1"
+    "@pdf-lib/fontkit": "^1.1.1",
+    "cheerio": "^1.1.0"
   },
   "devDependencies": {
     "@shopify/app-bridge-types": "^0.0.15",
@@ -50,12 +51,14 @@
     "typescript": "^5.7.2",
     "iconv-lite": "^0.6.3",
     "csv-parse": "^5.6.0",
-    "vite": "^5.3.5"
+    "vite": "^5.3.5",
+    "@types/cheerio": "^1.0.0"
   },
   "workspaces": [
     "extensions/*"
   ],
   "trustedDependencies": [
     "@shopify/plugin-cloudflare"
-  ]
+  ],
+  "packageManager": "yarn@1.22.22+sha512.a6b2f7906b721bba3d67d4aff083df04dad64c399707841b7acf00f6b133b7ac24255f2652fa22ae3534329dc6180534e98d17432037ff6fd140556e2bb3137e"
 }
