@@ -1,4 +1,5 @@
 import { AppConnections } from 'gadget-server';
+import axios from 'axios';
 
 import { Products, ProductOptions } from 'types/index';
 
@@ -11,6 +12,34 @@ import {
   preparePrompt,
   parseGeneratedDescription,
 } from 'utilities';
+
+async function getDefaultImageUrl(title: string): Promise<string> {
+  try {
+    const response = await axios.get(
+      'https://www.googleapis.com/customsearch/v1',
+      {
+        params: {
+          key: process.env.GOOGLE_API_KEY,
+          cx: process.env.GOOGLE_CX,
+          q: title,
+          searchType: 'image',
+          num: 1,
+          safe: 'active',
+        },
+      }
+    );
+
+    const items = response.data.items;
+    if (items && items.length > 0) {
+      return items[0].link;
+    }
+
+    return 'https://www.zip.ua/wp-content/uploads/woocommerce-placeholder.png';
+  } catch (error) {
+    console.error(error);
+    return 'https://www.zip.ua/wp-content/uploads/woocommerce-placeholder.png';
+  }
+}
 
 export async function createProducts({
   products,
@@ -28,12 +57,21 @@ export async function createProducts({
       const response = (await fetchChatGPT({ prompt, connections })) || '';
       const { title, html } = parseGeneratedDescription(response);
 
-      const media = Array.isArray(product.pictures)
-        ? product.pictures.map((picture) => ({
+      let media;
+      if (Array.isArray(product.pictures) && product.pictures.length > 0) {
+        media = product.pictures.map((picture) => ({
+          mediaContentType: 'IMAGE',
+          originalSource: picture,
+        }));
+      } else {
+        const imageUrl = await getDefaultImageUrl(product.title);
+        media = [
+          {
             mediaContentType: 'IMAGE',
-            originalSource: picture,
-          }))
-        : [];
+            originalSource: imageUrl,
+          },
+        ];
+      }
 
       const createProductVariables = {
         input: {

@@ -13,17 +13,16 @@ type SupplierProduct = {
 async function fetchHtmlWithBrowserless(
   url: string
 ): Promise<SupplierProduct[]> {
-  const token = '2Sa6bXRln9OigEmb6617a62ff24639a0e60d979afc2595f06';
   const baseUrl = 'https://production-sfo.browserless.io';
 
-  if (!token) throw new Error('BROWSERLESS_TOKEN is not set');
-
   try {
-    const response = await fetch(`${baseUrl}/function?token=${token}`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        code: `
+    const response = await fetch(
+      `${baseUrl}/function?token=${process.env.BROWSERLESS_TOKEN}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: `
           export default async ({ page }) => {
             await page.setUserAgent('Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36');
 
@@ -97,8 +96,9 @@ async function fetchHtmlWithBrowserless(
             return { products, success: true, url: '${url}' };
           }
         `,
-      }),
-    });
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -108,6 +108,7 @@ async function fetchHtmlWithBrowserless(
     }
 
     const result = await response.json();
+    console.log('result', JSON.stringify(result, null, 2));
 
     if (!result.success) {
       throw new Error('Browserless function execution failed');
@@ -146,10 +147,6 @@ async function fetchRizhskaProducts(): Promise<SupplierProduct[]> {
       console.error(`⚠️ Failed to fetch from ${url}:`, error);
       // Continue with other URLs even if one fails
     }
-  }
-
-  if (allProducts.length < 1) {
-    throw new Error('Less than 1 products found from Rizhska');
   }
 
   console.log(`📈 Total products collected: ${allProducts.length}`);
@@ -193,7 +190,15 @@ export async function fetchRizhska({ query, limit, page }: FetchingFunc) {
         part_number
     )
     .map((prod) => ({
-      name: 'dimm/sodimm ' + prod.part_number,
+      name: prod.name
+        .replace(/\d+\s*(грн|uah|₴)/gi, '')
+        .replace(
+          /(есть|в наличии|наличие|пары|новые|новий|нові|нове|радиаторная|б\/у|бу)/gi,
+          ''
+        )
+        .replace(/\d+\s*(шт|штук?)\b/gi, '')
+        .replace(/\s{2,}/g, ' ')
+        .trim(),
       part_number: prod.part_number.toLowerCase(),
       price: prod.priceOpt,
       instock: prod.instock,
