@@ -1,4 +1,5 @@
-import { connections, logger, RouteHandler } from 'gadget-server';
+import { connections, RouteHandler } from 'gadget-server';
+// all products have strictly one of this available types.
 import { availableTypes } from 'api/utilities/data/availableTypes';
 
 interface Product {
@@ -10,6 +11,41 @@ interface Product {
 interface RequestBody {
   products: Product[];
 }
+
+interface FilterResult {
+  namespace: string;
+  key: string;
+  value: string;
+}
+
+interface OpenAIAnalysisResult {
+  product_type: string;
+  filters: FilterResult[];
+}
+
+const availableFilters = [
+  {
+    // every options refers to product metafield
+    // some products may not have this metafield
+    namespace: 'specifications',
+    key: 'type',
+    possibleValues: ['Кабель', 'Перехідник'],
+    type: 'single_line_text_field',
+  },
+  // Add more filters as needed
+  // {
+  //   namespace: 'specifications',
+  //   key: 'material',
+  //   possibleValues: ['cotton', 'polyester', 'silk', 'wool'],
+  //   type: 'single_line_text_field',
+  // },
+  // {
+  //   namespace: 'specifications',
+  //   key: 'weight',
+  //   possibleValues: ['100g', '200g', '500g', '1kg'],
+  //   type: 'number_integer',
+  // },
+];
 
 const route: RouteHandler<{ Body: RequestBody }> = async ({
   request,
@@ -40,7 +76,11 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
     }
 
     const results = {
-      successful: [] as Array<{ id: string; productType: string }>,
+      successful: [] as Array<{
+        id: string;
+        productType: string;
+        filters: FilterResult[];
+      }>,
       failed: [] as Array<{ id: string; error: string }>,
     };
 
@@ -54,42 +94,73 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       return;
     }
 
-    // 1. Determine product types for all products first
-    const productTypeResults: Array<{
+    // 1. Determine product types and filters for all products first
+    const analysisResults: Array<{
       id: string;
       productType?: string;
+      filters?: FilterResult[];
       error?: string;
     }> = [];
+
     for (const product of products) {
       try {
-        const productType = await determineProductTypeWithOpenAI(
+        const analysis = await analyzeProductWithOpenAI(
           product.title,
           product.description
         );
-        productTypeResults.push({ id: product.id, productType });
+        analysisResults.push({
+          id: product.id,
+          productType: analysis.product_type,
+          filters: analysis.filters,
+        });
       } catch (error) {
         const errorMessage =
           error instanceof Error ? error.message : 'Unknown error';
-        productTypeResults.push({ id: product.id, error: errorMessage });
+        analysisResults.push({ id: product.id, error: errorMessage });
       }
     }
 
-    // 2. Prepare batch mutation for products with determined types
-    const successfulProducts = productTypeResults.filter((r) => r.productType);
-    const failedProducts = productTypeResults.filter((r) => r.error);
+    // 2. Prepare batch mutation for products with successful analysis
+    const successfulProducts = analysisResults.filter((r) => r.productType);
+    const failedProducts = analysisResults.filter((r) => r.error);
 
-    // Shopify GraphQL does not support true batch mutations, but we can send multiple mutations in a single request using aliases
+    // Process successful products
     if (successfulProducts.length > 0) {
       const mutationParts: string[] = [];
       const variables: Record<string, any> = {};
 
       successfulProducts.forEach((prod, idx) => {
         const alias = `update${idx}`;
+
+        // Prepare metafields for this product
+        const metafields =
+          prod.filters?.map((filter) => {
+            const filterConfig = availableFilters.find(
+              (af) => af.namespace === filter.namespace && af.key === filter.key
+            );
+            return {
+              namespace: filter.namespace,
+              key: filter.key,
+              value: filter.value,
+              type: filterConfig?.type || 'single_line_text_field',
+            };
+          }) || [];
+
         mutationParts.push(`
           ${alias}: productUpdate(input: $input${idx}) {
             product {
               id
               productType
+              metafields(first: 20) {
+                edges {
+                  node {
+                    id
+                    namespace
+                    key
+                    value
+                  }
+                }
+              }
             }
             userErrors {
               field
@@ -97,9 +168,11 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
             }
           }
         `);
+
         variables[`input${idx}`] = {
           id: prod.id,
           productType: prod.productType,
+          ...(metafields.length > 0 && { metafields }),
         };
       });
 
@@ -121,9 +194,12 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
         results.successful.push({
           id: prod.id,
           productType: prod.productType!,
+          filters: prod.filters || [],
         });
         logger.info(
-          `Successfully enqueued product update for ${prod.id} with type: ${prod.productType}`
+          `Successfully enqueued product update for ${prod.id} with type: ${
+            prod.productType
+          } and ${prod.filters?.length || 0} filters`
         );
       });
     }
@@ -133,9 +209,7 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
         id: prod.id,
         error: prod.error!,
       });
-      logger.error(
-        `Failed to determine product type for ${prod.id}: ${prod.error}`
-      );
+      logger.error(`Failed to analyze product ${prod.id}: ${prod.error}`);
     });
 
     await reply.send({
@@ -147,50 +221,80 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       results: results,
     });
   } catch (error) {
-    logger.error('Error processing product types update:', error);
+    logger.error('Error processing product types and filters update:', error);
     await reply.code(500).send({
-      error: 'Internal server error while processing product types',
+      error: 'Internal server error while processing product analysis',
     });
   }
 };
 
-async function determineProductTypeWithOpenAI(
+async function analyzeProductWithOpenAI(
   title: string,
   description: string
-): Promise<string> {
+): Promise<OpenAIAnalysisResult> {
   try {
+    // Prepare filter descriptions for the prompt
+    const filterDescriptions = availableFilters
+      .map(
+        (filter) =>
+          `- ${filter.namespace}.${
+            filter.key
+          }: possible values [${filter.possibleValues.join(', ')}]`
+      )
+      .join('\n');
+
     const response = await connections.openai.chat.completions.create({
-      model: 'gpt-4.1-mini',
+      model: 'gpt-4o-mini',
       messages: [
         {
           role: 'user',
-          content: `Проаналізуй цей товар і обери ОДИН найбільш точний тип товару з наданого списку.
+          content: `Проаналізуй цей товар і визнач:
+1. ОДИН найбільш точний тип товару з наданого списку
+2. Підходящі значення фільтрів (якщо є відповідна інформація)
 
 ТОВАР:
 Назва: ${title}
 Опис: ${description}
 
-МОЖЛИВІ ТИПИ: ${availableTypes.join(', ')}
+МОЖЛИВІ ТИПИ ТОВАРІВ: ${availableTypes.join(', ')}
+
+ДОСТУПНІ ФІЛЬТРИ:
+${filterDescriptions}
 
 Інструкції:
-- Обери лише ОДИН тип зі списку
-- Будь максимально точним
-- Враховуй і назву, і опис товару
-`,
+- Обери лише ОДИН тип зі списку типів товарів
+- Для фільтрів: включай лише ті, для яких є чітка інформація в назві/описі товару
+- Використовуй точно ті значення, що вказані в possibleValues
+- Якщо інформації для фільтра немає - не включай його
+- Будь максимально точним`,
         },
       ],
-      max_tokens: 50,
+      max_tokens: 150,
       temperature: 0,
       response_format: {
         type: 'json_schema',
         json_schema: {
-          name: 'ProductTypeOutput',
+          name: 'ProductAnalysisOutput',
           schema: {
             type: 'object',
             properties: {
               product_type: { type: 'string' },
+              filters: {
+                type: ['array', 'null'],
+                items: {
+                  type: 'object',
+                  properties: {
+                    namespace: { type: 'string' },
+                    key: { type: 'string' },
+                    value: { type: 'string' },
+                    type: { type: 'string', default: 'single_line_text_field' },
+                  },
+                  required: ['namespace', 'key', 'value', 'type'],
+                  additionalProperties: false,
+                },
+              },
             },
-            required: ['product_type'],
+            required: ['product_type', 'filters'],
             additionalProperties: false,
           },
           strict: true,
@@ -199,21 +303,55 @@ async function determineProductTypeWithOpenAI(
     });
 
     const content = response.choices[0].message.content || '{}';
-    const selectedType = JSON.parse(content).product_type as string;
+    const analysis = JSON.parse(content) as OpenAIAnalysisResult;
 
-    console.log('selectedType', JSON.stringify(selectedType, null, 2));
+    console.log('OpenAI Analysis Result:', JSON.stringify(analysis, null, 2));
 
-    if (availableTypes.includes(selectedType)) {
-      return selectedType;
-    } else {
+    // Validate product type
+    if (!availableTypes.includes(analysis.product_type)) {
       console.log(
-        `OpenAI returned unexpected type "${selectedType}", falling back to first available type`
+        `OpenAI returned unexpected type "${analysis.product_type}", falling back to first available type`
       );
-      return availableTypes[0] || 'General';
+      analysis.product_type = availableTypes[0] || 'General';
     }
+
+    // Validate filters
+    const validatedFilters: FilterResult[] = [];
+    if (analysis.filters && Array.isArray(analysis.filters)) {
+      for (const filter of analysis.filters) {
+        if (filter.namespace.includes('.')) {
+          const [namespace, key] = filter.namespace.split('.', 2);
+          filter.namespace = namespace;
+          filter.key = key;
+        }
+
+        const availableFilter = availableFilters.find(
+          (af) => af.namespace === filter.namespace && af.key === filter.key
+        );
+
+        if (
+          availableFilter &&
+          availableFilter.possibleValues.includes(filter.value)
+        ) {
+          validatedFilters.push(filter);
+        } else {
+          console.log(
+            `Invalid filter: ${filter.namespace}.${filter.key} = ${filter.value}`
+          );
+        }
+      }
+    }
+
+    return {
+      product_type: analysis.product_type,
+      filters: validatedFilters,
+    };
   } catch (error) {
     console.log('Error calling OpenAI API:', error);
-    return 'fallback-type-error';
+    return {
+      product_type: 'fallback-type-error',
+      filters: [],
+    };
   }
 }
 
