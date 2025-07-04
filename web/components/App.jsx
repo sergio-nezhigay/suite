@@ -108,7 +108,7 @@ function EmbeddedApp() {
         <Link to='/supplier/easy'>Easy</Link>
         <Link to='/supplier/cherg'>Cherg</Link>
         <Link to='/supplier/schusev'>Schusev</Link>
-        <Link to='/supplier/rizhska'>Rizhska</Link>
+        <Link to='/supplier/universal'>Universal</Link>
         <Link to='/feeds'>Feeds</Link>
       </NavMenu>
     </>

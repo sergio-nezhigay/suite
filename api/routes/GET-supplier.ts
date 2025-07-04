@@ -3,12 +3,11 @@ import { RouteHandler } from 'gadget-server';
 import {
   getShopifyClient,
   fetchEasy,
-  fetchCherg,
   fetchSchusev,
   fetchBrainProducts,
   flagExistingShopifyProducts,
   getUrlParams,
-  fetchRizhska,
+  fetchFromSheet,
 } from 'utilities';
 
 const route: RouteHandler<{
@@ -49,17 +48,21 @@ const route: RouteHandler<{
         }));
         break;
       case 'cherg':
-        ({ products, count } = await fetchCherg({
+        ({ products, count } = await fetchFromSheet({
           query,
           limit,
           page,
+          sheetId: process.env.CHERG_PRICE_ID || '',
+          tabId: 35957627,
         }));
         break;
-      case 'rizhska':
-        ({ products, count } = await fetchRizhska({
+      case 'universal':
+        ({ products, count } = await fetchFromSheet({
           query,
           limit,
           page,
+          sheetId: '1FIRJvHmopU_5C5oRx78ZrxUqZiYlPjbXY4dz0aumOjM',
+          tabId: 0,
         }));
         break;
       case 'schusev':

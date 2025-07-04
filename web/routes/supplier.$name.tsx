@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { useParams, useSearchParams } from 'react-router-dom';
 import {
   ResourceList,
@@ -9,8 +10,8 @@ import {
   InlineGrid,
   Thumbnail,
 } from '@shopify/polaris';
+import { useAppBridge } from '@shopify/app-bridge-react';
 
-import { useState, useEffect } from 'react';
 import CategorySelector from '../components/CategorySelector';
 
 interface Product {
@@ -32,6 +33,7 @@ const itemsPerPage = 50;
 
 function Supplier() {
   const { supplierId } = useParams();
+  const shopify = useAppBridge();
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
@@ -64,10 +66,13 @@ function Supplier() {
       console.log('🚀 ~ fetchUrl:', fetchUrl);
       const response = await fetch(fetchUrl, { signal });
       if (!response.ok) {
-        shopify.toast.show('Failed to fetch products. ' + response, {
-          duration: 5000,
-          isError: true,
-        });
+        shopify.toast.show(
+          'Failed to fetch products. ' + JSON.stringify(response),
+          {
+            duration: 5000,
+            isError: true,
+          }
+        );
       }
       const result: FetchResponse = await response.json();
 
@@ -75,10 +80,13 @@ function Supplier() {
       setTotalItems(result.count);
     } catch (error) {
       if ((error as any)?.name !== 'AbortError') {
-        shopify.toast.show('Failed to fetch products. ' + error, {
-          duration: 5000,
-          isError: true,
-        });
+        shopify.toast.show(
+          'Failed to fetch products: ' + JSON.stringify(error),
+          {
+            duration: 10000,
+            isError: true,
+          }
+        );
       }
     } finally {
       setLoading(false);
@@ -146,7 +154,7 @@ function Supplier() {
       );
     } catch (error) {
       console.log(error);
-      shopify.toast.show('Error creating products' + error, {
+      shopify.toast.show('Error creating products' + JSON.stringify(error), {
         duration: 30000,
         isError: true,
       });

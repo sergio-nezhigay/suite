@@ -10,11 +10,6 @@ const serviceAccountAuth = new JWT({
   scopes: ['https://www.googleapis.com/auth/spreadsheets'],
 });
 
-const doc = new GoogleSpreadsheet(
-  process.env.CHERG_PRICE_ID || '',
-  serviceAccountAuth
-);
-
 type ProductsRowData = {
   Параметры: string;
   Модель: string;
@@ -23,14 +18,21 @@ type ProductsRowData = {
   'EBJ81UG8BBU0-GN-F': string;
 };
 
-export async function fetchCherg({ query, limit, page }: FetchingFunc) {
-  await doc.loadInfo();
-  const sheet = doc.sheetsById[35957627];
+export async function fetchFromSheet({
+  query,
+  limit,
+  page,
+  sheetId,
+  tabId,
+}: FetchingFunc & { sheetId: string; tabId: number }) {
+  try {
+    const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
+    await doc.loadInfo();
+    const sheet = doc.sheetsById[tabId];
 
-  const rows = await sheet.getRows<ProductsRowData>();
+    const rows = await sheet.getRows<ProductsRowData>();
 
-  const mappedRows = rows.map((row) => {
-    return {
+    const mappedRows = rows.map((row) => ({
       name: `${row.get('EBJ81UG8BBU0-GN-F')} ${row.get('Параметры')} ${row.get(
         'Модель'
       )}`,
@@ -39,22 +41,21 @@ export async function fetchCherg({ query, limit, page }: FetchingFunc) {
       instock: row.get('Остаток'),
       id: row.get('Модель'),
       warranty: 36,
+    }));
+
+    const words = query.toLowerCase().split(' ').filter(Boolean);
+
+    const products = mappedRows.filter(
+      ({ instock, part_number, name }) =>
+        words.every((word) => name.includes(word)) && instock && part_number
+    );
+
+    return {
+      products: getPaginatedData(products, Number(limit), Number(page)),
+      count: products.length,
     };
-  });
-
-  const words = query
-    .toLowerCase()
-    .split(' ')
-    .filter((word) => word);
-
-  const products = mappedRows.filter(
-    ({ instock, part_number, name }) =>
-      words.every((word) => name.includes(word)) && instock && part_number
-  );
-  console.log('🚀 ~ products:', products);
-
-  return {
-    products: getPaginatedData(products, Number(limit), Number(page)),
-    count: products.length,
-  };
+  } catch (error) {
+    console.error('Error fetching from sheet:', error);
+    throw error;
+  }
 }

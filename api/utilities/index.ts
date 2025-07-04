@@ -1,4 +1,3 @@
-export * from './suppliers/cherg/fetchCherg';
 export * from './suppliers/easy/fetchEasy';
 export * from './suppliers/schusev/fetchSchusev';
 export * from './suppliers/brain/api/fetchBrainBrands';
@@ -23,10 +22,8 @@ export * from './shopify/client/getShopifyClient';
 export * from './shopify/client/getShopifyConnection';
 export * from './shopify/utils/offerId2Barcode';
 export * from './suppliers/brain/api/fetchBrainProducts';
-export * from './suppliers/cherg/fetchCherg';
 export * from './suppliers/easy/fetchEasy';
-export * from './suppliers/schusev/fetchSchusev';
-export * from './suppliers/rizhska/fetchRizhska';
+export * from './suppliers/fetchFromSheet';
 export * from './http/getUrlParams';
 export * from './http/smsClient';
 export * from './http/npClient';

@@ -180,6 +180,9 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
 
   return (
     <BlockStack gap='base'>
+      <Text>
+        {order.paymentMetafield?.value}: {totalSum.toFixed(0)}
+      </Text>
       {order.lineItems.nodes.map((lineItem, index) => {
         const { barcode, cost } = getBarcodeAndCost(lineItem);
         const price = parseFloat(
@@ -212,9 +215,7 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         {order.shippingAddress?.lastName || order.customer.lastName},
         {order.shippingAddress?.city}, {order.shippingAddress?.address1}
       </Text>
-      <Text>
-        {order.paymentMetafield?.value}: {totalSum.toFixed(0)}
-      </Text>
+
       {orderIndex < ordersContent.length - 1 && <Text>_________</Text>}
     </BlockStack>
   );
@@ -255,9 +256,12 @@ function formatOrderDetails(
 ) {
   return `${title} ${
     barcode ? `(${barcode.toUpperCase()})` : ''
-  } | ${quantity}шт | ${price.toFixed(0)} | ${cost.toFixed(
-    0
-  )} | ${delta.toFixed(0)}`;
+  } | ${quantity}шт | ${price.toFixed(0)} `;
+  //  return `${title} ${
+  //    barcode ? `(${barcode.toUpperCase()})` : ''
+  //  } | ${quantity}шт | ${price.toFixed(0)} | ${cost.toFixed(
+  //    0
+  //  )} | ${delta.toFixed(0)}`;
 }
 
 function removeBarcodeFromTitle(
