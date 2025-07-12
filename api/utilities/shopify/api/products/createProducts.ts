@@ -52,6 +52,7 @@ export async function createProducts({
   try {
     const shopify = getShopifyClient(connections);
     for (const product of products) {
+      console.log('product', JSON.stringify(product, null, 2));
       const handle = transliterate(product.title);
       const prompt = preparePrompt(product.title, product.description);
       const response = (await fetchChatGPT({ prompt, connections })) || '';
@@ -84,7 +85,10 @@ export async function createProducts({
         },
         media,
       };
-
+      console.log(
+        'createProductVariables',
+        JSON.stringify(createProductVariables, null, 2)
+      );
       const { productCreate } = await shopify.graphql(
         createProductQuery,
         createProductVariables

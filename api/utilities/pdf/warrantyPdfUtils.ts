@@ -15,6 +15,40 @@ interface WarrantyOrder {
   items: WarrantyOrderItem[];
 }
 
+function wrapText(
+  text: string,
+  maxWidth: number,
+  font: PDFFont,
+  fontSize: number
+): string[] {
+  const words = text.split(' ');
+  const lines: string[] = [];
+  let currentLine = '';
+
+  for (const word of words) {
+    const testLine = currentLine ? `${currentLine} ${word}` : word;
+    const textWidth = font.widthOfTextAtSize(testLine, fontSize);
+
+    if (textWidth <= maxWidth) {
+      currentLine = testLine;
+    } else {
+      if (currentLine) {
+        lines.push(currentLine);
+        currentLine = word;
+      } else {
+        // Single word is too long, force break
+        lines.push(word);
+      }
+    }
+  }
+
+  if (currentLine) {
+    lines.push(currentLine);
+  }
+
+  return lines;
+}
+
 function drawTable(
   page: PDFPage,
   tableData: string[][],
@@ -25,47 +59,87 @@ function drawTable(
   font: PDFFont,
   boldFont: PDFFont
 ): void {
-  const rows = tableData.length;
-  const cols = tableData[0].length;
+  // Calculate required rows considering text wrapping
+  const processedRows: string[][][] = [];
+  let maxRowHeight = 1;
 
-  // Draw horizontal lines
-  for (let i = 0; i <= rows; i++) {
-    const y = startY - i * cellHeight;
+  tableData.forEach((row, rowIndex) => {
+    const processedRow: string[][] = [];
+    let currentRowHeight = 1;
+
+    row.forEach((cellText, colIndex) => {
+      const maxWidth = colWidths[colIndex] - 10; // 5px padding on each side
+      const fontSize = cellText.length > 50 ? 9 : 10;
+      const currentFont = rowIndex === 0 ? boldFont : font;
+
+      const wrappedLines = wrapText(cellText, maxWidth, currentFont, fontSize);
+      processedRow.push(wrappedLines);
+      currentRowHeight = Math.max(currentRowHeight, wrappedLines.length);
+    });
+
+    processedRows.push(processedRow);
+    maxRowHeight = Math.max(maxRowHeight, currentRowHeight);
+  });
+
+  // Calculate dynamic row heights
+  const rowHeights = processedRows.map((row) => {
+    const maxLines = Math.max(...row.map((cell) => cell.length));
+    return Math.max(cellHeight, maxLines * 15); // 15px per line
+  });
+
+  const totalHeight = rowHeights.reduce((sum, height) => sum + height, 0);
+
+  // Draw horizontal lines with dynamic spacing
+  let currentY = startY;
+  for (let i = 0; i <= processedRows.length; i++) {
     page.drawLine({
-      start: { x: startX, y },
-      end: { x: startX + colWidths.reduce((a, b) => a + b, 0), y },
+      start: { x: startX, y: currentY },
+      end: { x: startX + colWidths.reduce((a, b) => a + b, 0), y: currentY },
       color: rgb(0, 0, 0),
       thickness: 0.5,
     });
+    if (i < rowHeights.length) {
+      currentY -= rowHeights[i];
+    }
   }
 
   // Draw vertical lines
   let xPos = startX;
-  for (let j = 0; j <= cols; j++) {
+  for (let j = 0; j <= colWidths.length; j++) {
     page.drawLine({
       start: { x: xPos, y: startY },
-      end: { x: xPos, y: startY - rows * cellHeight },
+      end: { x: xPos, y: startY - totalHeight },
       color: rgb(0, 0, 0),
       thickness: 0.5,
     });
-    if (j < cols) {
+    if (j < colWidths.length) {
       xPos += colWidths[j];
     }
   }
 
-  // Place cell text
-  tableData.forEach((row, rowIndex) => {
+  // Place wrapped text
+  currentY = startY;
+  processedRows.forEach((row, rowIndex) => {
     let cellX = startX;
-    row.forEach((cellText, colIndex) => {
-      page.drawText(cellText, {
-        x: cellX + 5,
-        y: startY - rowIndex * cellHeight - cellHeight + 10,
-        size: cellText.length > 50 ? 9 : 10,
-        font: rowIndex === 0 ? boldFont : font,
-        color: rgb(0, 0, 0),
+
+    row.forEach((cellLines, colIndex) => {
+      const fontSize = tableData[rowIndex][colIndex].length > 50 ? 9 : 10;
+      const currentFont = rowIndex === 0 ? boldFont : font;
+
+      cellLines.forEach((line, lineIndex) => {
+        page.drawText(line, {
+          x: cellX + 5,
+          y: currentY - 15 - lineIndex * 15,
+          size: fontSize,
+          font: currentFont,
+          color: rgb(0, 0, 0),
+        });
       });
+
       cellX += colWidths[colIndex];
     });
+
+    currentY -= rowHeights[rowIndex];
   });
 }
 

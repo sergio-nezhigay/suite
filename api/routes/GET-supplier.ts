@@ -82,9 +82,7 @@ const route: RouteHandler<{
         break;
       default:
         console.warn(`Unknown supplier: ${supplierId}`);
-        return reply
-          .status(400)
-          .send({ error: `Unknown supplier: ${supplierId}` });
+        ({ products, count } = { products: [], count: 0 });
     }
     productsWithExistingFlag = await flagExistingShopifyProducts(
       shopify,
