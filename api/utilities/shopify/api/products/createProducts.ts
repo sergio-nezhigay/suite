@@ -56,7 +56,7 @@ export async function createProducts({
       const handle = transliterate(product.title);
       const prompt = preparePrompt(product.title, product.description);
       const response = (await fetchChatGPT({ prompt, connections })) || '';
-      const { title, html } = parseGeneratedDescription(response);
+      const { title, html, vendor } = parseGeneratedDescription(response);
 
       let media;
       if (Array.isArray(product.pictures) && product.pictures.length > 0) {
@@ -65,7 +65,7 @@ export async function createProducts({
           originalSource: picture,
         }));
       } else {
-        const imageUrl = await getDefaultImageUrl(product.title);
+        const imageUrl = await getDefaultImageUrl(product.part_number);
         media = [
           {
             mediaContentType: 'IMAGE',
@@ -77,7 +77,7 @@ export async function createProducts({
       const createProductVariables = {
         input: {
           title: title,
-          vendor: product.vendor,
+          vendor: product.vendor || vendor || '',
           descriptionHtml: html || null,
           handle,
           metafields: mapObjectToMetafields(product?.options),

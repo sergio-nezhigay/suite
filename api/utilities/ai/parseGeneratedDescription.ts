@@ -9,8 +9,10 @@ export function parseGeneratedDescription(jsonResponse: string) {
 
     const parsed = JSON.parse(jsonResponse);
 
-    if (!parsed.html || !parsed.title) {
-      throw new Error('JSON is missing required fields: `html` or `title`');
+    if (!parsed.html || !parsed.title || !parsed.vendor) {
+      throw new Error(
+        'JSON is missing required fields: `html` or `title` or `vendor`'
+      );
     }
 
     return parsed;
