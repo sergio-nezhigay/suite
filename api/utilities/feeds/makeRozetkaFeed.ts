@@ -14,11 +14,7 @@ interface CategoryRule {
   keywords: string[];
   categoryId: string;
   defaultParams?: RozetkaParam[];
-}
-
-interface PriceRule {
-  condition: (product: GenericProductFeed) => boolean;
-  multiplier: number;
+  multiplier?: number;
 }
 
 interface TitleRule {
@@ -43,7 +39,6 @@ const ROZETKA_CONFIG = {
     ] as string[],
   },
 
-  // Category mapping with enhanced structure
   categories: {
     rules: [
       {
@@ -53,6 +48,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: "Оперативна пам'ять" },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1,
       },
       {
         keywords: ['usb-rs232', 'rs485', 'оптичні аудіо перехідники'],
@@ -61,6 +57,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.12,
       },
       {
         keywords: [
@@ -78,6 +75,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабель/Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.15,
       },
       {
         keywords: ['перехідники для зарядки ноутбуків та роутерів'],
@@ -92,6 +90,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабелі зарядки' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.18,
       },
       {
         keywords: ['світлодіодні стрічки'],
@@ -100,6 +99,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'LED стрічка' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.2,
       },
       {
         keywords: ['зарядні пристрої'],
@@ -108,6 +108,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Зарядний пристрій' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.16,
       },
       {
         keywords: ['карти відеозахвату usb'],
@@ -118,15 +119,16 @@ const ROZETKA_CONFIG = {
           { paramName: 'Сумісність', paramValue: 'ПК,Mac OS X' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
+        multiplier: 1.17,
       },
     ] as CategoryRule[],
     fallback: {
       categoryId: 'c4670691',
       defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
+      multiplier: 1.21,
     },
   },
 
-  // Connector type mapping for dynamic parameter generation
   connectorTypes: {
     patterns: [
       {
@@ -160,26 +162,8 @@ const ROZETKA_CONFIG = {
     ],
   },
 
-  // Price calculation rules
-  pricing: {
-    rules: [
-      {
-        condition: (product: GenericProductFeed) =>
-          product.title.includes('Перехідник аудіо-оптика на 3.5 мм') ||
-          product.title.includes('232'),
-        multiplier: 1.08,
-      },
-      {
-        condition: (product: GenericProductFeed) =>
-          product.collection.toLowerCase().includes("пам'ять"),
-        multiplier: 1.03,
-      },
-    ] as PriceRule[],
-    default: 1.21,
-    oldPriceMultiplier: 1.1,
-  },
+  oldPriceMultiplier: 1.1,
 
-  // Product state rules
   productState: {
     rules: [
       {
@@ -252,6 +236,7 @@ class RozetkaProductProcessor {
   static getCategoryConfig(product: GenericProductFeed): {
     categoryId: string;
     params: RozetkaParam[];
+    multiplier?: number;
   } {
     const lowerCaseCollection = product.collection.toLowerCase();
 
@@ -266,6 +251,7 @@ class RozetkaProductProcessor {
       return {
         categoryId: matchingRule.categoryId,
         params: [...(matchingRule.defaultParams || [])],
+        multiplier: matchingRule.multiplier,
       };
     }
 
@@ -273,6 +259,7 @@ class RozetkaProductProcessor {
     return {
       categoryId: ROZETKA_CONFIG.categories.fallback.categoryId,
       params: [...ROZETKA_CONFIG.categories.fallback.defaultParams],
+      multiplier: ROZETKA_CONFIG.categories.fallback.multiplier,
     };
   }
 
@@ -312,16 +299,21 @@ class RozetkaProductProcessor {
     price: number;
     oldPrice: string;
   } {
-    const matchingRule = ROZETKA_CONFIG.pricing.rules.find((rule) =>
-      rule.condition(product)
+    const titleExclusion = ['Перехідник аудіо-оптика на 3.5 мм'];
+    const title = product.title.toLowerCase();
+    const isExcluded = titleExclusion.some((ex) =>
+      title.includes(ex.toLowerCase())
     );
-    const multiplier =
-      matchingRule?.multiplier || ROZETKA_CONFIG.pricing.default;
+
+    const categoryConfig = RozetkaProductProcessor.getCategoryConfig(product);
+    const categoryMultiplier = categoryConfig.categoryId
+      ? categoryConfig.multiplier
+      : undefined;
+
+    const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.21;
 
     const price = product.price * multiplier;
-    const oldPrice = (
-      price * ROZETKA_CONFIG.pricing.oldPriceMultiplier
-    ).toFixed(2);
+    const oldPrice = (price * ROZETKA_CONFIG.oldPriceMultiplier).toFixed(2);
 
     return { price, oldPrice };
   }
