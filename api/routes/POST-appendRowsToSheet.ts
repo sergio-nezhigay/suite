@@ -1,16 +1,17 @@
+import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
 import { RouteHandler } from 'gadget-server';
 import { google } from 'googleapis';
 import type { sheets_v4 } from 'googleapis';
 
-async function authorize(config: any) {
-  const key = (config.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
-  return new google.auth.JWT(
-    config.GOOGLE_SERVICE_ACCOUNT_EMAIL,
-    undefined,
-    key,
-    ['https://www.googleapis.com/auth/spreadsheets']
-  );
-}
+//async function authorize(config: any) {
+//  const key = (config.GOOGLE_PRIVATE_KEY || '').replace(/\\n/g, '\n');
+//  return new google.auth.JWT(
+//    config.GOOGLE_SERVICE_ACCOUNT_EMAIL,
+//    undefined,
+//    key,
+//    ['https://www.googleapis.com/auth/spreadsheets']
+//  );
+//}
 
 const range = 'Sheet2!A1';
 
@@ -46,12 +47,15 @@ const route: RouteHandler<{
 
     const responseData: sheets_v4.Schema$AppendValuesResponse = response.data;
 
-    logger.info({ responseData }, 'Rows appended successfully to Google Sheets');
+    logger.info(
+      { responseData },
+      'Rows appended successfully to Google Sheets'
+    );
 
-    await reply.send({ 
-      success: true, 
+    await reply.send({
+      success: true,
       addedRows: rows.length,
-      updates: responseData.updates 
+      updates: responseData.updates,
     });
   } catch (error) {
     logger.error({ error }, 'Error appending rows to Google Sheets');
