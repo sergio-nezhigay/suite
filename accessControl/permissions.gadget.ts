@@ -113,6 +113,39 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyFulfillment: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyFulfillment.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyFulfillmentEvent: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyFulfillmentEvent.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyFulfillmentLineItem: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyFulfillmentLineItem.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyGdprRequest: {
           read: {
             filter:
@@ -133,6 +166,28 @@ export const permissions: GadgetPermissions = {
           read: {
             filter:
               "accessControl/filters/shopify/shopifyOrder.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyOrderLineItem: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyOrderLineItem.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyOrderTransaction: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyOrderTransaction.gelly",
           },
           actions: {
             create: true,
@@ -254,7 +309,9 @@ export const permissions: GadgetPermissions = {
       storageKey: "unauthenticated",
       models: {
         shopifyFile: {
-          read: true,
+          read: {
+            filter: "accessControl/filters/shopify/shopifyFile.gelly",
+          },
           actions: {
             create: true,
             delete: true,
