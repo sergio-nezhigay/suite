@@ -17,6 +17,10 @@ export const onSuccess = async ({
   connections,
 }) => {
   // Your logic goes here
+  if (trigger.type === "shopify_sync") {
+    logger.info(`Blocking product variant from sync: ${record.id}`);
+    throw new Error("product variant sync blocked by custom logic");
+  }
 };
 
 /** @type { ActionOptions } */

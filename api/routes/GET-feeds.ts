@@ -230,7 +230,7 @@ const makeMerchantFeed = (products: GenericProductFeed[]) => {
       cost_of_goods_sold: product.cost
         ? `${Math.floor(Number(product.cost))} UAH`
         : `${Math.floor(product.price * 0.9)} UAH`,
-      auto_pricing_min_price: `${Math.floor(product.price * 0.95)} UAH`,
+      auto_pricing_min_price: `${Math.floor(product.price * 0.945)} UAH`,
     };
   });
 };

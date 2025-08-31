@@ -1,5 +1,6 @@
 .gadget/
-.env*
+.env
+.env.development
 .env.production
 node_modules/
 npm-cache/

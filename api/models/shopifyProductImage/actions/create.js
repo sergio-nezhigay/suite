@@ -11,6 +11,11 @@ export const run = async ({ params, record, logger, api, connections }) => {
 /** @type { ActionOnSuccess } */
 export const onSuccess = async ({ params, record, logger, api, connections }) => {
   // Your logic goes here
+    // Your logic goes here
+  if (trigger.type === "shopify_sync") {
+    logger.info(`Blocking shopifyProductImage from sync: ${record.title}`);
+    throw new Error("shopifyProductImage sync blocked by custom logic");
+  }
 };
 
 /** @type { ActionOptions } */

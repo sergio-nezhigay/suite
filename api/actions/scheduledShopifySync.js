@@ -15,7 +15,12 @@ export async function run({ params, logger, api, connections }) {
   await globalShopifySync({
     apiKeys: connections.shopify.apiKeys,
     syncSince,
-    models: syncOnlyModels,
+    //models: syncOnlyModels,
+    models: [
+      'shopifyFulfillment',
+      'shopifyFulfillmentEvent',
+      'shopifyFulfillmentLineItem',
+    ],
   });
 }
 

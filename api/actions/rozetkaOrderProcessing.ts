@@ -9,6 +9,9 @@ import {
 } from '../utilities/shopify/api/orders/createCustomer';
 import { RozetkaOrder, ShopifyOrder } from 'types/*';
 
+import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
+import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
+
 const ORDER_STATUS_CODES = {
   ALL: '1',
   PROCESSING: '2',
@@ -16,8 +19,6 @@ const ORDER_STATUS_CODES = {
   NEW: '4',
   SHIPPING: '5',
 };
-
-const ROZETKA_API_BASE_URL = 'https://api-seller.rozetka.com.ua';
 
 let accessToken: string | null = null;
 
@@ -93,33 +94,6 @@ async function findOrCreateShopifyCustomer(
     throw new Error(`Failed to get/create customer: ${error}`);
   }
 }
-
-const changeRozetkaOrderStatus = async (
-  orderId: number,
-  status: number,
-  accessToken: string
-): Promise<void> => {
-  try {
-    const response = await axios.put(
-      `${ROZETKA_API_BASE_URL}/orders/${orderId}`,
-      { status },
-      {
-        headers: {
-          Authorization: `Bearer ${accessToken}`,
-          'Content-Type': 'application/json',
-        },
-      }
-    );
-
-    if (response.data.success) {
-      console.log(`Status updated to ${status} for Rozetka order ${orderId}`);
-    } else {
-      console.error(`Failed to update status for order ${orderId}`);
-    }
-  } catch (error) {
-    console.error(`Error updating status for order ${orderId}:`, error);
-  }
-};
 
 export const getNewOrders = async (
   accessToken: string

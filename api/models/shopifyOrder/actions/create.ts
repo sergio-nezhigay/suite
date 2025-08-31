@@ -44,67 +44,71 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, connections }) => {
-  try {
-    const shopify = getShopifyClient(connections);
-    const orderId = `gid://shopify/Order/${record.id}`;
-
-    const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
-      shopify,
-      orderId,
-    }).catch((err) => {
-      console.error('Error fetching order gateway and address:', err);
-      throw err;
-    });
-
-    const paymentMethod =
-      gateway === 'Накладений платіж'
-        ? 'Накладений платіж'
-        : 'Передплата безготівка';
-
-    const { bestWarehouse, matchProbability } = await findBestWarehouse({
-      shippingAddress,
-    }).catch((err) => {
-      console.error('Error finding best warehouse:', err);
-      throw err;
-    });
-
-    const variables = {
-      metafields: [
-        {
-          ownerId: orderId,
-          namespace: 'custom',
-          key: 'payment_method',
-          value: paymentMethod,
-          type: 'single_line_text_field',
-        },
-        {
-          ownerId: orderId,
-          namespace: 'nova_poshta',
-          key: 'recepient_warehouse',
-          value: JSON.stringify({
-            warehouseDescription: bestWarehouse.description,
-            cityDescription: bestWarehouse.cityDescription,
-            warehouseRef: bestWarehouse.ref,
-            cityRef: bestWarehouse.cityRef,
-            settlementAreaDescription:
-              bestWarehouse.settlementAreaDescription || '',
-            matchProbability,
-          }),
-          type: 'json',
-        },
-      ],
-    };
-
-    await updateMetafield({ shopify, variables }).catch((err) => {
-      console.error('Error updating metafield:', err);
-      throw err;
-    });
-
-    console.log('onSuccess completed successfully for Order ID:', orderId);
-  } catch (err) {
-    console.error('Error in onSuccess function:', err);
+export const onSuccess: ActionOnSuccess = async ({ record, connections, trigger, logger }) => {
+    if (trigger.type === "shopify_sync") {
+    logger.info(`Blocking order from sync: ${record.id}`);
+    throw new Error("order sync blocked by custom logic");
   }
+  // try {
+  //   const shopify = getShopifyClient(connections);
+  //   const orderId = `gid://shopify/Order/${record.id}`;
+
+  //   const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
+  //     shopify,
+  //     orderId,
+  //   }).catch((err) => {
+  //     console.error('Error fetching order gateway and address:', err);
+  //     throw err;
+  //   });
+
+  //   const paymentMethod =
+  //     gateway === 'Накладений платіж'
+  //       ? 'Накладений платіж'
+  //       : 'Передплата безготівка';
+
+  //   const { bestWarehouse, matchProbability } = await findBestWarehouse({
+  //     shippingAddress,
+  //   }).catch((err) => {
+  //     console.error('Error finding best warehouse:', err);
+  //     throw err;
+  //   });
+
+  //   const variables = {
+  //     metafields: [
+  //       {
+  //         ownerId: orderId,
+  //         namespace: 'custom',
+  //         key: 'payment_method',
+  //         value: paymentMethod,
+  //         type: 'single_line_text_field',
+  //       },
+  //       {
+  //         ownerId: orderId,
+  //         namespace: 'nova_poshta',
+  //         key: 'recepient_warehouse',
+  //         value: JSON.stringify({
+  //           warehouseDescription: bestWarehouse.description,
+  //           cityDescription: bestWarehouse.cityDescription,
+  //           warehouseRef: bestWarehouse.ref,
+  //           cityRef: bestWarehouse.cityRef,
+  //           settlementAreaDescription:
+  //             bestWarehouse.settlementAreaDescription || '',
+  //           matchProbability,
+  //         }),
+  //         type: 'json',
+  //       },
+  //     ],
+  //   };
+
+  //   await updateMetafield({ shopify, variables }).catch((err) => {
+  //     console.error('Error updating metafield:', err);
+  //     throw err;
+  //   });
+
+  //   console.log('onSuccess completed successfully for Order ID:', orderId);
+  // } catch (err) {
+  //   console.error('Error in onSuccess function:', err);
+  // }
 };
 
 export const options: ActionOptions = {

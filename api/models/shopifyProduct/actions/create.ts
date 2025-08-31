@@ -15,13 +15,18 @@ export const run: ActionRun = async ({ params, record }) => {
 export const onSuccess: ActionOnSuccess = async ({
   record,
   api,
-  connections,
+  connections, trigger
 }) => {
   console.log("onSuccess create product start...")
-  const shopify = getShopifyClient(connections);
-  await updateSKU(api, shopify, record);
-  if (!record.descriptionEmbedding && record.body && record.title) {
-    await api.enqueue(api.shopifyProduct.createEmbedding, { id: record.id });
+  // const shopify = getShopifyClient(connections);
+  // await updateSKU(api, shopify, record);
+  // if (!record.descriptionEmbedding && record.body && record.title) {
+  //   await api.enqueue(api.shopifyProduct.createEmbedding, { id: record.id });
+  // }
+    if (trigger.type === "shopify_sync") {
+    // Prevent this product from being saved
+    console.log(`Blocked product from sync: ${record.title}`);
+    throw new Error("Product sync blocked by custom logic");
   }
 };
 

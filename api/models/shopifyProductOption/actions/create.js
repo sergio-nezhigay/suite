@@ -11,6 +11,10 @@ export const run = async ({ params, record, logger, api, connections }) => {
 /** @type { ActionOnSuccess } */
 export const onSuccess = async ({ params, record, logger, api, connections }) => {
   // Your logic goes here
+  if (trigger.type === "shopify_sync") {
+    logger.info(`Blocking shopifyProductOption from sync: ${record.title}`);
+    throw new Error("shopifyProductOption sync blocked by custom logic");
+  }
 };
 
 /** @type { ActionOptions } */
