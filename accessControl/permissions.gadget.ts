@@ -146,6 +146,28 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        shopifyFulfillmentOrder: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyFulfillmentOrder.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+        shopifyFulfillmentOrderLineItem: {
+          read: {
+            filter:
+              "accessControl/filters/shopify/shopifyFulfillmentOrderLineItem.gelly",
+          },
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyGdprRequest: {
           read: {
             filter:

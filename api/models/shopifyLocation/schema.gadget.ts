@@ -15,6 +15,7 @@ export const schema: GadgetModel = {
       "city",
       "country",
       "countryCode",
+      "fulfillmentOrders",
       "fulfillments",
       "legacy",
       "localizedCountryName",

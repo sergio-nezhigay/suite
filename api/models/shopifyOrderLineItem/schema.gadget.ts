@@ -14,6 +14,7 @@ export const schema: GadgetModel = {
       "discountAllocations",
       "fulfillableQuantity",
       "fulfillmentLineItems",
+      "fulfillmentOrderLineItems",
       "fulfillmentService",
       "fulfillmentStatus",
       "giftCard",

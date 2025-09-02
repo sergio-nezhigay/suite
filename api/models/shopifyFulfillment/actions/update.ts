@@ -65,74 +65,74 @@ export const onSuccess: ActionOnSuccess = async ({
 
   logWithOrder(
     orderName,
-    '✅ onSuccess - Record updated successfully:',
+    '✅ onSuccess - Record shopifyfullfillment s updated successfully:',
     JSON.stringify(record, null, 2)
   );
 
-  const trackingNumbers = record.trackingNumbers as string[] | undefined;
-  const currentTrackingNumber = trackingNumbers?.[0] ?? '';
+  //  const trackingNumbers = record.trackingNumbers as string[] | undefined;
+  //  const currentTrackingNumber = trackingNumbers?.[0] ?? '';
 
-  if (currentTrackingNumber) {
-    logWithOrder(
-      orderName,
-      '⚠️ Tracking number already exists, skipping update'
-    );
-    return;
-  }
+  //  if (currentTrackingNumber) {
+  //    logWithOrder(
+  //      orderName,
+  //      '⚠️ Tracking number already exists, skipping update'
+  //    );
+  //    return;
+  //  }
 
-  const fulfillmentId = `gid://shopify/Fulfillment/${record.id}`;
-  logWithOrder(orderName, 'Fulfillment ID:', fulfillmentId);
+  //  const fulfillmentId = `gid://shopify/Fulfillment/${record.id}`;
+  //  logWithOrder(orderName, 'Fulfillment ID:', fulfillmentId);
 
-  const shopifyOrderId = record.orderId || '';
-  logWithOrder(orderName, 'Shopify Order ID:', shopifyOrderId);
+  //  const shopifyOrderId = record.orderId || '';
+  //  logWithOrder(orderName, 'Shopify Order ID:', shopifyOrderId);
 
-  logWithOrder(orderName, 'Order name:', orderName);
+  //  logWithOrder(orderName, 'Order name:', orderName);
 
-  const auth = await authorize(config);
-  const sheets = google.sheets({ version: 'v4', auth });
+  //  const auth = await authorize(config);
+  //  const sheets = google.sheets({ version: 'v4', auth });
 
-  const range = `${SHEET_NAME}!A${START_ROW}:O`;
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: SPREADSHEET_ID,
-    range,
-  });
-  const data = response.data.values ?? [];
-  if (!data.length) {
-    logWithOrder(orderName, '⚠️ No data found in the specified range');
-    return;
-  }
+  //  const range = `${SHEET_NAME}!A${START_ROW}:O`;
+  //  const response = await sheets.spreadsheets.values.get({
+  //    spreadsheetId: SPREADSHEET_ID,
+  //    range,
+  //  });
+  //  const data = response.data.values ?? [];
+  //  if (!data.length) {
+  //    logWithOrder(orderName, '⚠️ No data found in the specified range');
+  //    return;
+  //  }
 
-  const matchingRow = findOrderRow(data, orderName);
-  if (!matchingRow) {
-    logWithOrder(
-      orderName,
-      `⚠️ Order name ${orderName} not found in rows starting from ${START_ROW}`
-    );
-    return;
-  }
+  //  const matchingRow = findOrderRow(data, orderName);
+  //  if (!matchingRow) {
+  //    logWithOrder(
+  //      orderName,
+  //      `⚠️ Order name ${orderName} not found in rows starting from ${START_ROW}`
+  //    );
+  //    return;
+  //  }
 
-  const novaPoshtaDeclaration = matchingRow[14];
-  logWithOrder(orderName, 'Nova Poshta declaration:', novaPoshtaDeclaration);
+  //  const novaPoshtaDeclaration = matchingRow[14];
+  //  logWithOrder(orderName, 'Nova Poshta declaration:', novaPoshtaDeclaration);
 
-  const updateResult = await updateTracking(
-    fulfillmentId,
-    novaPoshtaDeclaration,
-    connections
-  );
-  logWithOrder(
-    orderName,
-    '✅ Tracking info updated:',
-    JSON.stringify(updateResult, null, 2)
-  );
-  const rozetkaOrderNumber = orderName.match(/\d{9}/);
-  if (!rozetkaOrderNumber) return;
+  //  const updateResult = await updateTracking(
+  //    fulfillmentId,
+  //    novaPoshtaDeclaration,
+  //    connections
+  //  );
+  //  logWithOrder(
+  //    orderName,
+  //    '✅ Tracking info updated:',
+  //    JSON.stringify(updateResult, null, 2)
+  //  );
+  //  const rozetkaOrderNumber = orderName.match(/\d{9}/);
+  //  if (!rozetkaOrderNumber) return;
 
-  const accessToken = await getRozetkaAccessToken();
-  if (!accessToken) {
-    logWithOrder(orderName, 'Failed to fetch Rozetka access token');
-    return;
-  }
-  changeRozetkaOrderStatus(Number(rozetkaOrderNumber[0]), 61, accessToken);
+  //  const accessToken = await getRozetkaAccessToken();
+  //  if (!accessToken) {
+  //    logWithOrder(orderName, 'Failed to fetch Rozetka access token');
+  //    return;
+  //  }
+  //  changeRozetkaOrderStatus(Number(rozetkaOrderNumber[0]), 61, accessToken);
 };
 
 export const options: ActionOptions = { actionType: 'update' };

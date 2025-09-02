@@ -20,6 +20,7 @@ export async function run({ params, logger, api, connections }) {
       'shopifyFulfillment',
       'shopifyFulfillmentEvent',
       'shopifyFulfillmentLineItem',
+      'shopifyOrder',
     ],
   });
 }

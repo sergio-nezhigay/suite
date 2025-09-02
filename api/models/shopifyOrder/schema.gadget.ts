@@ -39,6 +39,7 @@ export const schema: GadgetModel = {
       "estimatedTaxes",
       "financialStatus",
       "fulfillmentEvents",
+      "fulfillmentOrders",
       "fulfillmentStatus",
       "fulfillments",
       "fulfillmentsCount",

@@ -44,71 +44,94 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, connections, trigger, logger }) => {
-    if (trigger.type === "shopify_sync") {
-    logger.info(`Blocking order from sync: ${record.id}`);
-    throw new Error("order sync blocked by custom logic");
+export const onSuccess: ActionOnSuccess = async ({
+  record,
+  connections,
+  trigger,
+  logger,
+}) => {
+  console.log('onSuccess triggered for record:', record.id);
+
+  if (trigger.type === 'shopify_sync') {
+    console.log(`Blocking order from sync: ${record.id}`);
+    throw new Error('order sync blocked by custom logic');
   }
-  // try {
-  //   const shopify = getShopifyClient(connections);
-  //   const orderId = `gid://shopify/Order/${record.id}`;
 
-  //   const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
-  //     shopify,
-  //     orderId,
-  //   }).catch((err) => {
-  //     console.error('Error fetching order gateway and address:', err);
-  //     throw err;
-  //   });
+  try {
+    console.log('Getting Shopify client...');
+    const shopify = getShopifyClient(connections);
+    const orderId = `gid://shopify/Order/${record.id}`;
+    console.log('Order ID:', orderId);
 
-  //   const paymentMethod =
-  //     gateway === 'Накладений платіж'
-  //       ? 'Накладений платіж'
-  //       : 'Передплата безготівка';
+    console.log('Fetching order gateway and address...');
+    const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
+      shopify,
+      orderId,
+    }).catch((err) => {
+      logger.error('Error fetching order gateway and address:', err);
+      throw err;
+    });
+    console.log('Order gateway:', gateway);
+    console.log('Shipping address:', shippingAddress);
 
-  //   const { bestWarehouse, matchProbability } = await findBestWarehouse({
-  //     shippingAddress,
-  //   }).catch((err) => {
-  //     console.error('Error finding best warehouse:', err);
-  //     throw err;
-  //   });
+    const paymentMethod =
+      gateway === 'Накладений платіж'
+        ? 'Накладений платіж'
+        : 'Передплата безготівка';
+    console.log('Payment method:', paymentMethod);
 
-  //   const variables = {
-  //     metafields: [
-  //       {
-  //         ownerId: orderId,
-  //         namespace: 'custom',
-  //         key: 'payment_method',
-  //         value: paymentMethod,
-  //         type: 'single_line_text_field',
-  //       },
-  //       {
-  //         ownerId: orderId,
-  //         namespace: 'nova_poshta',
-  //         key: 'recepient_warehouse',
-  //         value: JSON.stringify({
-  //           warehouseDescription: bestWarehouse.description,
-  //           cityDescription: bestWarehouse.cityDescription,
-  //           warehouseRef: bestWarehouse.ref,
-  //           cityRef: bestWarehouse.cityRef,
-  //           settlementAreaDescription:
-  //             bestWarehouse.settlementAreaDescription || '',
-  //           matchProbability,
-  //         }),
-  //         type: 'json',
-  //       },
-  //     ],
-  //   };
+    console.log('Finding best warehouse...');
+    const { bestWarehouse, matchProbability } = await findBestWarehouse({
+      shippingAddress,
+    }).catch((err) => {
+      logger.error('Error finding best warehouse:', err);
+      throw err;
+    });
+    console.log('Best warehouse:', bestWarehouse);
+    console.log('Match probability:', matchProbability);
 
-  //   await updateMetafield({ shopify, variables }).catch((err) => {
-  //     console.error('Error updating metafield:', err);
-  //     throw err;
-  //   });
+    const variables = {
+      metafields: [
+        {
+          ownerId: orderId,
+          namespace: 'custom',
+          key: 'payment_method',
+          value: paymentMethod,
+          type: 'single_line_text_field',
+        },
+        {
+          ownerId: orderId,
+          namespace: 'nova_poshta',
+          key: 'recepient_warehouse',
+          value: JSON.stringify({
+            warehouseDescription: bestWarehouse.description,
+            cityDescription: bestWarehouse.cityDescription,
+            warehouseRef: bestWarehouse.ref,
+            cityRef: bestWarehouse.cityRef,
+            settlementAreaDescription:
+              bestWarehouse.settlementAreaDescription || '',
+            matchProbability,
+          }),
+          type: 'json',
+        },
+      ],
+    };
+    console.log('Prepared metafield variables:', variables);
 
-  //   console.log('onSuccess completed successfully for Order ID:', orderId);
-  // } catch (err) {
-  //   console.error('Error in onSuccess function:', err);
-  // }
+    console.log('Updating metafield...');
+    await updateMetafield({ shopify, variables })
+      .then((result) => {
+        console.log('Metafield update result:', result);
+      })
+      .catch((err) => {
+        logger.error('Error updating metafield:', err);
+        throw err;
+      });
+
+    console.log('onSuccess completed successfully for Order ID:', orderId);
+  } catch (err) {
+    logger.error('Error in onSuccess function:', err);
+  }
 };
 
 export const options: ActionOptions = {

@@ -41,6 +41,8 @@ export const schema: GadgetModel = {
       "forceSsl",
       "fulfillmentEvents",
       "fulfillmentLineItems",
+      "fulfillmentOrderLineItems",
+      "fulfillmentOrders",
       "fulfillments",
       "gdprRequests",
       "googleAppsDomain",

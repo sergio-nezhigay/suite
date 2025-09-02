@@ -38,13 +38,7 @@ async function updateTracking(
   });
 }
 
-export const run: ActionRun = async ({
-  params,
-  record,
-  logger,
-  api,
-  connections,
-}) => {
+export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
   await save(record);
