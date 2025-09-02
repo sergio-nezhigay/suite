@@ -25,7 +25,4 @@ api_version = "2024-10"
 [pos]
 embedded = false
 
-[app_proxy]
-url = "https://admin-action-block--development.gadget.app/api/graphql"
-subpath = "admin-action-block-development-api"
-prefix = "apps"
+

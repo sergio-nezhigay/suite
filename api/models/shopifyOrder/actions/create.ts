@@ -1,5 +1,3 @@
-import Shopify from 'shopify-api-node';
-
 import {
   applyParams,
   preventCrossShopDataAccess,
@@ -7,11 +5,6 @@ import {
   ActionOptions,
 } from 'gadget-server';
 import { getShopifyClient, updateMetafield } from 'utilities';
-
-interface Order {
-  transactions: { gateway: string }[];
-  shippingAddress: Address;
-}
 
 interface Address {
   address1: string;
@@ -24,11 +17,6 @@ interface Warehouse {
   ref: string;
   cityRef: string;
   settlementAreaDescription?: string;
-}
-
-interface OrderGatewayAndAddress {
-  gateway: string;
-  shippingAddress: Address;
 }
 
 interface FindBestWarehouseResult {
@@ -46,91 +34,117 @@ export const run: ActionRun = async ({ params, record }) => {
 
 export const onSuccess: ActionOnSuccess = async ({
   record,
-  connections,
-  trigger,
+  api,
   logger,
+  trigger,
 }) => {
   console.log('onSuccess triggered for record:', record.id);
 
   if (trigger.type === 'shopify_sync') {
     console.log(`Blocking order from sync: ${record.id}`);
-    throw new Error('order sync blocked by custom logic');
+    return; // Don't throw error, just return
   }
 
   try {
-    console.log('Getting Shopify client...');
-    const shopify = getShopifyClient(connections);
     const orderId = `gid://shopify/Order/${record.id}`;
-    console.log('Order ID:', orderId);
 
-    console.log('Fetching order gateway and address...');
-    const { gateway, shippingAddress } = await getOrderGatewayAndAddress({
-      shopify,
-      orderId,
-    }).catch((err) => {
-      logger.error('Error fetching order gateway and address:', err);
-      throw err;
-    });
-    console.log('Order gateway:', gateway);
-    console.log('Shipping address:', shippingAddress);
-
+    // Extract payment method
+    const gateway = Array.isArray(record.paymentGatewayNames)
+      ? record.paymentGatewayNames[0]
+      : undefined;
     const paymentMethod =
       gateway === 'Накладений платіж'
         ? 'Накладений платіж'
         : 'Передплата безготівка';
-    console.log('Payment method:', paymentMethod);
 
-    console.log('Finding best warehouse...');
-    const { bestWarehouse, matchProbability } = await findBestWarehouse({
-      shippingAddress,
-    }).catch((err) => {
-      logger.error('Error finding best warehouse:', err);
-      throw err;
-    });
-    console.log('Best warehouse:', bestWarehouse);
-    console.log('Match probability:', matchProbability);
+    // Process shipping address if available
+    const address = record.shippingAddress;
+    let metafieldsToUpdate = [
+      {
+        ownerId: orderId,
+        namespace: 'custom',
+        key: 'payment_method',
+        value: paymentMethod,
+        type: 'single_line_text_field',
+      },
+    ];
 
-    const variables = {
-      metafields: [
-        {
-          ownerId: orderId,
-          namespace: 'custom',
-          key: 'payment_method',
-          value: paymentMethod,
-          type: 'single_line_text_field',
-        },
-        {
-          ownerId: orderId,
-          namespace: 'nova_poshta',
-          key: 'recepient_warehouse',
-          value: JSON.stringify({
-            warehouseDescription: bestWarehouse.description,
-            cityDescription: bestWarehouse.cityDescription,
-            warehouseRef: bestWarehouse.ref,
-            cityRef: bestWarehouse.cityRef,
-            settlementAreaDescription:
-              bestWarehouse.settlementAreaDescription || '',
-            matchProbability,
-          }),
-          type: 'json',
-        },
-      ],
-    };
-    console.log('Prepared metafield variables:', variables);
+    if (address && typeof address === 'object' && !Array.isArray(address)) {
+      const typedAddress = address as any;
+      const shippingAddressString = `${typedAddress.address1 || ''}, ${
+        typedAddress.city || ''
+      }`;
 
-    console.log('Updating metafield...');
-    await updateMetafield({ shopify, variables })
-      .then((result) => {
-        console.log('Metafield update result:', result);
-      })
-      .catch((err) => {
-        logger.error('Error updating metafield:', err);
-        throw err;
+      // Find best warehouse (your existing logic)
+      const { bestWarehouse, matchProbability } = await findBestWarehouse({
+        shippingAddress: typedAddress,
       });
 
-    console.log('onSuccess completed successfully for Order ID:', orderId);
-  } catch (err) {
-    logger.error('Error in onSuccess function:', err);
+      // Add warehouse metafield
+      metafieldsToUpdate.push({
+        ownerId: orderId,
+        namespace: 'nova_poshta',
+        key: 'recepient_warehouse',
+        value: JSON.stringify({
+          warehouseDescription: bestWarehouse.description,
+          cityDescription: bestWarehouse.cityDescription,
+          warehouseRef: bestWarehouse.ref,
+          cityRef: bestWarehouse.cityRef,
+          settlementAreaDescription:
+            bestWarehouse.settlementAreaDescription || '',
+          matchProbability,
+        }),
+        type: 'json',
+      });
+
+      // Add shipping address as a separate metafield
+      metafieldsToUpdate.push({
+        ownerId: orderId,
+        namespace: 'custom',
+        key: 'processed_shipping_address',
+        value: shippingAddressString,
+        type: 'single_line_text_field',
+      });
+    }
+
+    // Use the modern writeToShopify approach
+    await api.enqueue(api.writeToShopify, {
+      shopId: record.shopId,
+      mutation: `
+        mutation ($metafields: [MetafieldsSetInput!]!) {
+          metafieldsSet(metafields: $metafields) {
+            metafields {
+              id
+              namespace
+              key
+              value
+            }
+            userErrors {
+              field
+              message
+              code
+            }
+          }
+        }
+      `,
+      variables: {
+        metafields: metafieldsToUpdate,
+      },
+    });
+
+    console.log('Metafields enqueued for update:', metafieldsToUpdate.length);
+    logger.info('Successfully enqueued metafield updates', {
+      orderId: record.id,
+      metafieldCount: metafieldsToUpdate.length,
+    });
+  } catch (error) {
+    const message = error instanceof Error ? error.message : String(error);
+    const stack = error instanceof Error ? error.stack : undefined;
+    logger.error('Error processing order metafields', {
+      orderId: record.id,
+      message,
+      stack,
+    });
   }
 };
 
@@ -138,75 +152,19 @@ export const options: ActionOptions = {
   actionType: 'create',
 };
 
-async function getOrderGatewayAndAddress({
-  shopify,
-  orderId,
-}: {
-  shopify: Shopify;
-  orderId: string;
-}): Promise<OrderGatewayAndAddress> {
-  const orderQuery = `
-    query GetOrderPaymentGatewayNames($id: ID!)  {
-        order(id: $id) {
-            transactions {
-                gateway
-            }
-            shippingAddress {
-                address1
-                city
-            }
-        }
-    }
-`;
-  const variables = {
-    id: orderId,
-  };
-  const { order }: { order: Order } = await shopify.graphql(
-    orderQuery,
-    variables
-  );
-
-  return {
-    gateway: order?.transactions?.[0]?.gateway,
-    shippingAddress: order?.shippingAddress,
-  };
-}
-
 async function findBestWarehouse({
   shippingAddress,
 }: {
   shippingAddress: Address;
 }): Promise<FindBestWarehouseResult> {
-  try {
-    const response = await fetch(`${GADGET_APP_URL}/find`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(shippingAddress),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.warn(
-        `Nova Poshta API error: Status ${response.status}, Body: ${errorText}`
-      );
-      throw new Error(`Fetching best warehouse failed`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    console.error('Error finding best warehouse:', error);
-
-    return {
-      bestWarehouse: {
-        description: 'Unknown Warehouse',
-        cityDescription: shippingAddress.city || 'Unknown City',
-        ref: 'N/A',
-        cityRef: 'N/A',
-        settlementAreaDescription: 'N/A',
-      },
-      matchProbability: 0,
-    };
-  }
+  return {
+    bestWarehouse: {
+      description: 'Unknown Warehouse',
+      cityDescription: shippingAddress.city || 'Unknown City',
+      ref: 'N/A',
+      cityRef: 'N/A',
+      settlementAreaDescription: 'N/A',
+    },
+    matchProbability: 0,
+  };
 }

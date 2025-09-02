@@ -10,6 +10,7 @@ import { RozetkaOrder, ShopifyOrder } from 'types/*';
 
 import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
+import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
 
 const ORDER_STATUS_CODES = {
   ALL: '1',
@@ -25,8 +26,7 @@ export const run: ActionRun = async ({ connections }) => {
   console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) return;
-
-  accessToken = await getRozetkaAccessToken();
+  const accessToken = await rozetkaTokenManager.getValidToken();
   if (!accessToken) {
     return logAndReturnError(new Error('Failed to fetch access token'), 'run');
   }
