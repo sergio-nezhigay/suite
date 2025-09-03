@@ -26,6 +26,7 @@ export const run: ActionRun = async ({ connections }) => {
   console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) return;
+
   const accessToken = await rozetkaTokenManager.getValidToken();
   if (!accessToken) {
     return logAndReturnError(new Error('Failed to fetch access token'), 'run');
@@ -45,28 +46,69 @@ export const run: ActionRun = async ({ connections }) => {
     );
   }
 
-  for (const order of rozOrders) {
-    try {
-      const customer = await findOrCreateShopifyCustomer(shopify, order);
-      console.log(`Customer ready for order ${order.id}`, customer);
-      const orderVariables = await transformOrderToShopifyVariables(
-        order,
-        shopify
-      );
-      const shopifyOrder = await createOrder({
-        shopify,
-        variables: orderVariables,
-      });
-
-      console.log(`Order ${order.id} created successfully`, shopifyOrder);
-
-      await changeRozetkaOrderStatus(order.id, 26, accessToken);
-    } catch (error) {
-      logAndReturnError(error, `run - Order ${order.id}`);
-    }
-  }
+  // Process orders concurrently instead of sequentially
+  await processOrdersConcurrently(rozOrders, shopify, accessToken);
 };
 
+// New helper functions for concurrent processing
+const CONCURRENCY_LIMIT = 3; // Process 3 orders simultaneously
+
+async function processOrdersConcurrently(
+  orders: RozetkaOrder[],
+  shopify: Shopify,
+  accessToken: string
+) {
+  // Split orders into chunks to control concurrency
+  const chunks = [];
+  for (let i = 0; i < orders.length; i += CONCURRENCY_LIMIT) {
+    chunks.push(orders.slice(i, i + CONCURRENCY_LIMIT));
+  }
+
+  // Process each chunk concurrently
+  for (const chunk of chunks) {
+    const results = await Promise.allSettled(
+      chunk.map((order) => processOrder(order, shopify, accessToken))
+    );
+
+    // Log results for each chunk
+    results.forEach((result, index) => {
+      const order = chunk[index];
+      if (result.status === 'fulfilled') {
+        console.log(`Order ${order.id} processed successfully`);
+      } else {
+        console.error(`Order ${order.id} failed:`, result.reason);
+      }
+    });
+  }
+}
+
+async function processOrder(
+  order: RozetkaOrder,
+  shopify: Shopify,
+  accessToken: string
+) {
+  try {
+    const customer = await findOrCreateShopifyCustomer(shopify, order);
+    console.log(`Customer ready for order ${order.id}`, customer);
+
+    const orderVariables = await transformOrderToShopifyVariables(
+      order,
+      shopify
+    );
+    const shopifyOrder = await createOrder({
+      shopify,
+      variables: orderVariables,
+    });
+
+    console.log(`Order ${order.id} created successfully`, shopifyOrder);
+    await changeRozetkaOrderStatus(order.id, 26, accessToken);
+
+    return { success: true, orderId: order.id };
+  } catch (error) {
+    // Don't use logAndReturnError here since we want to throw for Promise.allSettled
+    throw new Error(`Order ${order.id} processing failed: ${error}`);
+  }
+}
 async function findOrCreateShopifyCustomer(
   shopify: Shopify,
   order: RozetkaOrder

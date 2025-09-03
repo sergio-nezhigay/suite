@@ -32,18 +32,8 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({
-  record,
-  api,
-  logger,
-  trigger,
-}) => {
+export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
   console.log('onSuccess triggered for record:', record.id);
-
-  if (trigger.type === 'shopify_sync') {
-    console.log(`Blocking order from sync: ${record.id}`);
-    return; // Don't throw error, just return
-  }
 
   try {
     const orderId = `gid://shopify/Order/${record.id}`;
@@ -107,7 +97,6 @@ export const onSuccess: ActionOnSuccess = async ({
       });
     }
 
-    // Use the modern writeToShopify approach
     await api.enqueue(api.writeToShopify, {
       shopId: record.shopId,
       mutation: `

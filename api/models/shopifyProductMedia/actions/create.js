@@ -1,21 +1,31 @@
-import { applyParams, save, ActionOptions } from "gadget-server";
-import { preventCrossShopDataAccess } from "gadget-server/shopify";
+import { applyParams, save, ActionOptions } from 'gadget-server';
+import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 
 /** @type { ActionRun } */
-export const run = async ({ params, record, logger, api, connections }) => {
+export const run = async ({
+  params,
+  record,
+  logger,
+  api,
+  connections,
+  trigger,
+}) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
+  if (trigger.type === 'shopify_sync') {
+    return;
+  }
   await save(record);
 };
 
 /** @type { ActionOnSuccess } */
-export const onSuccess = async ({ params, record, logger, api, connections }) => {
-  // Your logic goes here
-    if (trigger.type === "shopify_sync") {
-    logger.info(`Blocking shopifyProductMedia from sync: ${record.title}`);
-    throw new Error("shopifyProductMedia sync blocked by custom logic");
-  }
-};
+export const onSuccess = async ({
+  params,
+  record,
+  logger,
+  api,
+  connections,
+}) => {};
 
 /** @type { ActionOptions } */
-export const options = { actionType: "create" };
+export const options = { actionType: 'create' };
