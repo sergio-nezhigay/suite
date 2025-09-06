@@ -75,7 +75,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабель/Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.15,
+        multiplier: 1.17,
       },
       {
         keywords: ['перехідники для зарядки ноутбуків та роутерів'],
@@ -90,7 +90,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабелі зарядки' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.18,
+        multiplier: 1.22,
       },
       {
         keywords: ['світлодіодні стрічки'],
@@ -99,7 +99,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'LED стрічка' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.2,
+        multiplier: 1.22,
       },
       {
         keywords: ['зарядні пристрої'],
@@ -108,7 +108,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Зарядний пристрій' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.16,
+        multiplier: 1.18,
       },
       {
         keywords: ['карти відеозахвату usb'],
@@ -119,13 +119,13 @@ const ROZETKA_CONFIG = {
           { paramName: 'Сумісність', paramValue: 'ПК,Mac OS X' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.17,
+        multiplier: 1.19,
       },
     ] as CategoryRule[],
     fallback: {
       categoryId: 'c4670691',
       defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
-      multiplier: 1.21,
+      multiplier: 1.23,
     },
   },
 
@@ -161,8 +161,6 @@ const ROZETKA_CONFIG = {
       },
     ],
   },
-
-  oldPriceMultiplier: 1.1,
 
   productState: {
     rules: [
@@ -310,10 +308,10 @@ class RozetkaProductProcessor {
       ? categoryConfig.multiplier
       : undefined;
 
-    const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.21;
+    const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.23;
 
     const price = product.price * multiplier;
-    const oldPrice = (price * ROZETKA_CONFIG.oldPriceMultiplier).toFixed(2);
+    const oldPrice = (price * 1.11).toFixed(2);
 
     return { price, oldPrice };
   }
