@@ -43,28 +43,31 @@ const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
 const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
-const route: RouteHandler = async ({ reply, connections }) => {
+const route: RouteHandler = async ({ reply, connections, logger }) => {
   try {
-    const shopify = await connections.shopify.forShopId('86804627772');
+    const shopify = connections.shopify.current;
     if (!shopify) throw new Error('No Shopify client found');
 
-    const products = await getProducts(shopify);
+    const products = await getProducts(shopify, logger);
     const genericFeed = makeGenericFeed(products);
 
     const hotlineFeed = makeHotlineFeed(genericFeed);
     const hotlineFileContent = products2CSV(hotlineFeed);
-    await uploadFile(shopify, hotlineFileContent, 'hotline.csv');
 
     const merchantFeed = makeMerchantFeed(genericFeed);
     const merchantFileContent = products2CSV(merchantFeed);
-    await uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv');
 
     const remarketingFeed = makeRemarketingFeed(genericFeed);
     const remarketingFileContent = products2CSV(remarketingFeed);
-    await uploadFile(shopify, remarketingFileContent, 'remarketing.csv');
 
     const rozetkaFeedContent = makeRozetkaFeed(genericFeed);
-    await uploadFile(shopify, rozetkaFeedContent, 'rozetkaFeed.xml');
+
+    await Promise.all([
+      uploadFile(shopify, hotlineFileContent, 'hotline.csv'),
+      uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv'),
+      uploadFile(shopify, remarketingFileContent, 'remarketing.csv'),
+      uploadFile(shopify, rozetkaFeedContent, 'rozetkaFeed.xml'),
+    ]);
 
     return reply.send({ success: true, productsLength: products.length });
   } catch (error) {

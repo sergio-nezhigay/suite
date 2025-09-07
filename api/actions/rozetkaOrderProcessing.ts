@@ -20,38 +20,102 @@ const ORDER_STATUS_CODES = {
   SHIPPING: '5',
 };
 
-let accessToken: string | null = null;
+export const run: ActionRun = async ({ connections, logger }) => {
+  // Add logger to the context parameters
+  logger.info('Starting Rozetka order processing', {
+    environment: process.env.NODE_ENV,
+    timestamp: new Date().toISOString(),
+  });
 
-export const run: ActionRun = async ({ connections }) => {
-  console.log('rozetka order processing');
   const isProduction = process.env.NODE_ENV === 'production';
-  if (!isProduction) return;
-
-  const accessToken = await rozetkaTokenManager.getValidToken();
-  if (!accessToken) {
-    return logAndReturnError(new Error('Failed to fetch access token'), 'run');
-  }
-
-  const rozOrders = await getNewOrders(accessToken);
-  if (!rozOrders || !rozOrders.length) {
-    console.log('No new orders. run finished');
+  if (!isProduction) {
+    logger.warn(
+      'Skipping Rozetka order processing - not in production environment'
+    );
     return;
   }
 
-  const shopify = await getShopifyConnection(connections);
-  if (!shopify) {
-    return logAndReturnError(
-      new Error('No Shopify connection available'),
-      'run'
-    );
-  }
+  const startTime = Date.now();
 
-  // Process orders concurrently instead of sequentially
-  await processOrdersConcurrently(rozOrders, shopify, accessToken);
+  // Stage 1: Fetch Rozetka access token
+  const tokenStart = Date.now();
+  try {
+    const accessTokenRozetka = await rozetkaTokenManager.getValidToken();
+    const tokenEnd = Date.now();
+
+    logger.info('Stage 1: Fetch Rozetka access token completed', {
+      stage: 'token_fetch',
+      duration_ms: tokenEnd - tokenStart,
+      success: !!accessTokenRozetka,
+    });
+
+    if (!accessTokenRozetka) {
+      const error = new Error('Failed to fetch access token');
+      logger.error('Token fetch failed', {
+        stage: 'token_fetch',
+        error: error.message,
+      });
+      return;
+    }
+
+    // Stage 2: Fetch new orders
+    const ordersStart = Date.now();
+    const rozOrders = await getNewOrders(accessTokenRozetka);
+    const ordersEnd = Date.now();
+
+    logger.info('Stage 2: Fetch new orders completed', {
+      stage: 'fetch_orders',
+      duration_ms: ordersEnd - ordersStart,
+      orders_count: rozOrders?.length || 0,
+    });
+
+    if (!rozOrders || !rozOrders.length) {
+      logger.info('No new orders to process', { stage: 'fetch_orders' });
+      return;
+    }
+
+    // Stage 3: Process orders
+    const processStart = Date.now();
+    const shopify = await getShopifyConnection(connections);
+    if (!shopify) {
+      const error = new Error('No Shopify connection available');
+      logger.error('Shopify connection failed', {
+        stage: 'shopify_connection',
+        error: error.message,
+      });
+      return;
+    }
+
+    await processOrdersConcurrently(rozOrders, shopify, accessTokenRozetka);
+    const processEnd = Date.now();
+
+    logger.info('Stage 3: Process orders completed', {
+      stage: 'process_orders',
+      duration_ms: processEnd - processStart,
+      total_orders: rozOrders.length,
+    });
+
+    const endTime = Date.now();
+    const logData = {
+      total_duration_ms: endTime - startTime,
+      orders_processed: rozOrders.length,
+      stages_completed: 3,
+    };
+    logger.info('Rozetka order processing completed successfully', logData);
+    logger.info('Additional debug info:', {
+      debugData: JSON.stringify(logData),
+    });
+  } catch (error: any) {
+    logger.error('Rozetka order processing failed', {
+      error: error.message,
+      stack: error.stack,
+      duration_ms: Date.now() - startTime,
+    });
+    throw error;
+  }
 };
 
-// New helper functions for concurrent processing
-const CONCURRENCY_LIMIT = 3; // Process 3 orders simultaneously
+const CONCURRENCY_LIMIT = 3;
 
 async function processOrdersConcurrently(
   orders: RozetkaOrder[],
