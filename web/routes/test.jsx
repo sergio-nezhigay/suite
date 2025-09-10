@@ -6,7 +6,10 @@ function ChatFormExample() {
   const [titles, setTitles] = useState([]);
 
   const handleSubmit = useCallback(async () => {
-    console.log('Sending message:', message);
+    console.log('[test.jsx] Sending message', {
+      message,
+      timestamp: new Date().toISOString(),
+    });
     try {
       const response = await fetch('/test-similar', {
         method: 'POST',
@@ -16,13 +19,19 @@ function ChatFormExample() {
         body: JSON.stringify({ message }),
       });
       const data = await response.json();
-      console.log('Response from server:', data);
+      console.log('[test.jsx] Response from server', {
+        data,
+        timestamp: new Date().toISOString(),
+      });
 
       // Extract titles from the response data
       const extractedTitles = data.map((item) => item.title);
       setTitles(extractedTitles);
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('[test.jsx] Error sending message', {
+        error,
+        timestamp: new Date().toISOString(),
+      });
     }
 
     // Clear the input field after submission

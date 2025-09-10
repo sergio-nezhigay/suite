@@ -1,6 +1,11 @@
 import { IN_STOCK, OUT_OF_STOCK } from 'api/utilities/data/stockStatus';
 import { RouteHandler } from 'gadget-server';
-import { getProducts, uploadFile, makeRozetkaFeed } from 'utilities';
+import {
+  getProducts,
+  uploadFile,
+  makeRozetkaFeed,
+  getShopifyConnection,
+} from 'utilities';
 
 export interface ProductVariant {
   id: string;
@@ -45,7 +50,7 @@ const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
 const route: RouteHandler = async ({ reply, connections, logger }) => {
   try {
-    const shopify = connections.shopify.current;
+    const shopify = await getShopifyConnection(connections);
     if (!shopify) throw new Error('No Shopify client found');
 
     const products = await getProducts(shopify, logger);

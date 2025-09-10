@@ -12,7 +12,7 @@ class RozetkaTokenManager {
   private tokenData: TokenData | null = null;
   private refreshPromise: Promise<string> | null = null;
   private readonly REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes before expiry
-  private readonly TOKEN_LIFETIME_MS = 55 * 60 * 1000; // 55 minutes (tokens typically last 1 hour)
+  private readonly TOKEN_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24 hours
 
   private constructor() {}
 

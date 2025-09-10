@@ -10,7 +10,7 @@
 //   clearScreen: false,
 // });
 import react from '@vitejs/plugin-react-swc';
-import { gadget } from "gadget-server/vite";
+import { gadget } from 'gadget-server/vite';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -20,4 +20,3 @@ export default defineConfig({
     target: 'esnext',
   },
 });
-

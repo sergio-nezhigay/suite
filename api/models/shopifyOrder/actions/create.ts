@@ -27,11 +27,9 @@ interface FindBestWarehouseResult {
 const GADGET_APP_URL = 'https://novaposhta.gadget.app';
 
 function logWithOrderId({
-  logger,
   message,
   orderId,
 }: {
-  logger: any;
   message: string | object;
   orderId: string;
 }) {
@@ -41,14 +39,14 @@ function logWithOrderId({
   if (typeof message === 'object' && message !== null) {
     const typeName = message.constructor?.name || 'Object';
     const fieldNames = Object.keys(message).join(', ');
-    logger.info({
+    console.log('[shopifyOrder/create] Info', {
       ...logData,
       typeName,
       fieldNames,
       ...message,
     });
   } else {
-    logger.info(message, logData);
+    console.log('[shopifyOrder/create] Info', { message, ...logData });
   }
 }
 
@@ -58,14 +56,12 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
+export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
   logWithOrderId({
-    logger,
     message: record,
     orderId: record.id,
   });
   logWithOrderId({
-    logger,
     message: 'onSuccess triggered for record',
     orderId: record.id,
   });
@@ -75,7 +71,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
 
     // Step 1: Log before extracting payment method
     logWithOrderId({
-      logger,
       message: 'Extracting payment method',
       orderId: record.id,
     });
@@ -85,11 +80,10 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
       ? record.paymentGatewayNames[0]
       : undefined;
     const paymentMethod =
-      gateway === 'Накладений платіж'
-        ? 'Накладений платіж'
-        : 'Передплата безготівка';
+      gateway === 'Передплата безготівка'
+        ? 'Передплата безготівка'
+        : 'Накладений платіж';
     logWithOrderId({
-      logger,
       message: paymentMethod,
       orderId: record.id,
     });
@@ -146,14 +140,12 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
 
     // Step 2: Log after preparing metafields
     logWithOrderId({
-      logger,
       message: 'Prepared metafields for update',
       orderId: record.id,
     });
 
     // Step 3: Log before enqueuing metafields update
     logWithOrderId({
-      logger,
       message: 'Enqueuing metafields update',
       orderId: record.id,
     });
@@ -183,17 +175,17 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
     });
 
     logWithOrderId({
-      logger,
       message: 'Metafields enqueued for update',
       orderId: record.id,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
-    logger.error('Error processing order metafields', {
+    console.error('[shopifyOrder/create] Error processing order metafields', {
       orderId: record.id,
       message,
       stack,
+      timestamp: new Date().toISOString(),
     });
   }
 };
