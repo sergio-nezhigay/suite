@@ -89,8 +89,8 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
   await api.enqueue(api.writeToShopify, {
     shopId: record.shopId,
     mutation: `
-      mutation fulfillmentTrackingInfoUpdate($fulfillmentId: ID!, $trackingInfos: [FulfillmentTrackingInput!]!) {
-        fulfillmentTrackingInfoUpdate(id: $fulfillmentId, trackingInfos: $trackingInfos) {
+      mutation fulfillmentTrackingInfoUpdate($fulfillmentId: ID!, $trackingInfoInput: FulfillmentTrackingInput!) {
+        fulfillmentTrackingInfoUpdate(fulfillmentId: $fulfillmentId, trackingInfoInput: $trackingInfoInput, notifyCustomer: false) {
           fulfillment { id }
           userErrors { field message }
         }
@@ -98,23 +98,13 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
     `,
     variables: {
       fulfillmentId: `gid://shopify/Fulfillment/${record.id}`,
-      trackingInfos: [
-        {
-          number: novaPoshtaDeclaration,
-          company: 'Other',
-          url: `https://novaposhta.ua/tracking/${novaPoshtaDeclaration}`,
-        },
-      ],
+      trackingInfoInput: {
+        number: novaPoshtaDeclaration,
+        company: 'Other',
+        url: `https://novaposhta.ua/tracking/${novaPoshtaDeclaration}`,
+      },
     },
   });
-
-  //  const rozetkaOrderNumber = orderName.match(/\d{9}/);
-  //  if (rozetkaOrderNumber) {
-  //    await api.enqueue(api.updateRozetkaOrderStatus, {
-  //      orderNumber: Number(rozetkaOrderNumber[0]),
-  //      status: 61,
-  //    });
-  //  }
 
   logWithOrder(orderName, '✅ Background actions enqueued successfully');
 };
