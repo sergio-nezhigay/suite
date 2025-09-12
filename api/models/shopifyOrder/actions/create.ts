@@ -80,7 +80,7 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
       ? record.paymentGatewayNames[0]
       : undefined;
     const paymentMethod =
-      gateway === 'Передплата безготівка'
+      gateway !== 'Накладений платіж'
         ? 'Передплата безготівка'
         : 'Накладений платіж';
     logWithOrderId({

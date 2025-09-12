@@ -30,10 +30,26 @@ class RozetkaTokenManager {
    * Get a valid access token, refreshing if necessary
    */
   public async getValidToken(): Promise<string> {
+    const now = Date.now();
+    logger.debug('getValidToken called', {
+      hasToken: !!this.tokenData,
+      currentTime: new Date(now).toISOString(),
+      tokenInfo: this.getTokenInfo(),
+    });
+
     // If we have a valid token, return it
     if (this.isTokenValid()) {
+      logger.debug('Returning existing valid token', {
+        expiresInMs: this.getTimeUntilExpiry(),
+        refreshBuffer: this.tokenData?.refreshBuffer,
+      });
       return this.tokenData!.token;
     }
+
+    logger.debug('Token is invalid or expired, needs refresh', {
+      hasToken: !!this.tokenData,
+      isRefreshInProgress: this.isRefreshInProgress(),
+    });
 
     // If a refresh is already in progress, wait for it
     if (this.refreshPromise) {
@@ -42,6 +58,7 @@ class RozetkaTokenManager {
     }
 
     // Start a new token refresh
+    logger.debug('Starting new token refresh');
     return await this.refreshToken();
   }
 
@@ -50,18 +67,32 @@ class RozetkaTokenManager {
    */
   public isTokenValid(): boolean {
     if (!this.tokenData) {
+      logger.debug('Token validation: No token data available');
       return false;
     }
 
     const now = Date.now();
-    const isNotExpired =
-      now < this.tokenData.expiresAt - this.tokenData.refreshBuffer;
+    const timeUntilExpiry = this.tokenData.expiresAt - now;
+    const timeUntilRefreshNeeded =
+      this.tokenData.expiresAt - this.tokenData.refreshBuffer - now;
+    const isNotExpired = timeUntilRefreshNeeded > 0;
+
+    logger.debug('Token validation check', {
+      now: new Date(now).toISOString(),
+      expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
+      refreshBuffer: this.tokenData.refreshBuffer,
+      timeUntilExpiry,
+      timeUntilRefreshNeeded,
+      isValid: isNotExpired,
+    });
 
     if (!isNotExpired) {
       logger.info('Token is expired or will expire soon', {
         expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
         now: new Date(now).toISOString(),
         bufferTime: this.tokenData.refreshBuffer,
+        timeUntilExpiry,
+        timeUntilRefreshNeeded,
       });
     }
 
@@ -133,14 +164,27 @@ class RozetkaTokenManager {
 
       // Store the new token with expiration info
       const now = Date.now();
+      const expiresAt = now + this.TOKEN_LIFETIME_MS;
+
+      logger.debug('Creating new token data', {
+        tokenLifetimeMs: this.TOKEN_LIFETIME_MS,
+        refreshBufferMs: this.REFRESH_BUFFER_MS,
+        now: new Date(now).toISOString(),
+        expiresAt: new Date(expiresAt).toISOString(),
+        actualLifetimeHours: this.TOKEN_LIFETIME_MS / (1000 * 60 * 60),
+        refreshBufferMinutes: this.REFRESH_BUFFER_MS / (1000 * 60),
+      });
+
       this.tokenData = {
         token: newToken,
-        expiresAt: now + this.TOKEN_LIFETIME_MS,
+        expiresAt,
         refreshBuffer: this.REFRESH_BUFFER_MS,
       };
 
       logger.info('Successfully refreshed Rozetka access token', {
         expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
+        timeUntilExpiry: this.getTimeUntilExpiry(),
+        refreshBuffer: this.tokenData.refreshBuffer,
       });
 
       return newToken;
@@ -198,6 +242,8 @@ class RozetkaTokenManager {
       throw new Error('Refresh buffer must be non-negative');
     }
 
+    const oldBuffer = this.tokenData?.refreshBuffer;
+
     if (this.tokenData) {
       this.tokenData.refreshBuffer = bufferMs;
     }
@@ -205,7 +251,43 @@ class RozetkaTokenManager {
     // Update default for future tokens
     (this as any).REFRESH_BUFFER_MS = bufferMs;
 
-    logger.info('Updated token refresh buffer', { bufferMs });
+    logger.info('Updated token refresh buffer', {
+      oldBuffer,
+      newBuffer: bufferMs,
+      bufferMinutes: bufferMs / (1000 * 60),
+    });
+  }
+
+  /**
+   * Log current token state for debugging purposes
+   */
+  public debugTokenState(): void {
+    const now = Date.now();
+    logger.info('Token Manager Debug State', {
+      hasToken: !!this.tokenData,
+      isRefreshInProgress: this.isRefreshInProgress(),
+      currentTime: new Date(now).toISOString(),
+      tokenLifetimeMs: this.TOKEN_LIFETIME_MS,
+      defaultRefreshBufferMs: this.REFRESH_BUFFER_MS,
+      tokenInfo: this.getTokenInfo(),
+      ...(this.tokenData && {
+        tokenDetails: {
+          expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
+          actualRefreshBuffer: this.tokenData.refreshBuffer,
+          timeUntilExpiry: this.getTimeUntilExpiry(),
+          timeUntilRefreshNeeded: Math.max(
+            0,
+            this.tokenData.expiresAt - this.tokenData.refreshBuffer - now
+          ),
+          isCurrentlyValid: this.isTokenValid(),
+          tokenAge: now - (this.tokenData.expiresAt - this.TOKEN_LIFETIME_MS),
+          percentLifetimeUsed:
+            ((now - (this.tokenData.expiresAt - this.TOKEN_LIFETIME_MS)) /
+              this.TOKEN_LIFETIME_MS) *
+            100,
+        },
+      }),
+    });
   }
 }
 
