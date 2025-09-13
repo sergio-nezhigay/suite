@@ -19,6 +19,7 @@ export default reactExtension(TARGET, () => <SendExtension />);
 function SendExtension() {
   const [loading, setLoading] = useState<boolean>(true);
   const [sent, setSent] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [ordersContent, setOrdersContent] = useState<
     OrderResponse['nodes'] | null
   >(null);
@@ -58,10 +59,14 @@ function SendExtension() {
     async function fetchOrdersContent() {
       try {
         const orders = await fetchOrdersData(selectedIds);
-        //console.log('🚀 ~ orders:', JSON.stringify(orders, null, 2));
+
         setOrdersContent(orders);
+        setError(null);
       } catch (error) {
         console.error('Failed to fetch orders content:', error);
+        const errorMessage =
+          error instanceof Error ? error.message : 'Failed to fetch orders';
+        setError(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -85,16 +90,25 @@ function SendExtension() {
     shouldSendWarrantyEmail = true;
   }
 
-  const title = firstOrderTag
-    ? `Send orders, tagged as "${firstOrderTag}"`
-    : 'Send orders';
+  const getTitle = () => {
+    if (error) return error;
+    if (loading) return 'Loading orders...';
+    if (sent) return `Orders sent (${selectedIds.length} processed)`;
+
+    const baseTitle = firstOrderTag
+      ? `Send "${firstOrderTag}" orders`
+      : 'Send orders';
+
+    return `${baseTitle} (${selectedIds.length} selected)`;
+  };
 
   return (
     <AdminAction
-      title={title}
+      title={getTitle()}
       primaryAction={
         <Button
           onPress={async () => {
+            setError(null);
             try {
               const rows = convertOrdersToRows(ordersContent!);
 
@@ -127,19 +141,16 @@ function SendExtension() {
               setSent(true);
             } catch (error) {
               console.error('Error sending orders:', error);
+              const errorMessage =
+                error instanceof Error
+                  ? error.message
+                  : 'Failed to send orders';
+              setError(errorMessage);
             }
           }}
           disabled={loading || !ordersContent || sent}
         >
           {sent ? 'Added' : 'Add to Google Sheet'}
-        </Button>
-      }
-      secondaryAction={
-        <Button
-          onPress={() => emailWarrantyCards(ordersContent!)}
-          disabled={loading || !ordersContent}
-        >
-          Email warranties to cherg
         </Button>
       }
     >
