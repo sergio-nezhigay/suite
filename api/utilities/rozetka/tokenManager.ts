@@ -13,6 +13,22 @@ export class RozetkaTokenManager {
    * Get a valid access token, refreshing if necessary
    */
   async getValidToken(): Promise<string> {
+    try {
+      // Try to use database-cached token
+      return await this.getTokenFromDatabase();
+    } catch (error) {
+      console.warn('Database unavailable, getting fresh token from API', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      // Fallback: get fresh token directly from API
+      return await this.getFreshToken();
+    }
+  }
+
+  /**
+   * Get token from database with refresh logic
+   */
+  private async getTokenFromDatabase(): Promise<string> {
     const now = new Date();
 
     // Get existing token from database
@@ -20,26 +36,59 @@ export class RozetkaTokenManager {
       filter: { provider: { equals: PROVIDER } },
     });
 
-    // Check if token exists and is still valid
+    // If token exists and is valid, return it
     if (existingToken && this.isTokenValid(existingToken, now)) {
-      console.log('Returning existing valid token', {
-        expiresAt: existingToken.expiresAt,
-        expiresInMs: existingToken.expiresAt
-          ? existingToken.expiresAt.getTime() - now.getTime()
-          : 0,
-      });
+      console.log('Using cached token from database');
       return existingToken.token;
     }
 
-    console.log('Token needs refresh', {
-      hasToken: !!existingToken,
-      reasonForRefresh: existingToken
-        ? this.getTokenInvalidReason(existingToken, now)
-        : 'no_token',
-    });
+    console.log('Database token invalid or missing, getting fresh token');
 
-    // Refresh the token
-    return await this.refreshToken(existingToken?.id);
+    // Get fresh token from API
+    const newToken = await this.getFreshToken();
+
+    // Try to save it to database
+    await this.saveTokenToDatabase(newToken, existingToken?.id);
+
+    return newToken;
+  }
+
+  /**
+   * Save token to database
+   */
+  private async saveTokenToDatabase(token: string, existingId?: string): Promise<void> {
+    const now = new Date();
+    const expiresAt = new Date(now.getTime() + TOKEN_LIFETIME_MS);
+
+    const tokenData = {
+      provider: PROVIDER,
+      token,
+      expiresAt,
+      refreshBuffer: DEFAULT_REFRESH_BUFFER,
+      metadata: {
+        createdAt: now.toISOString(),
+        tokenLifetimeMs: TOKEN_LIFETIME_MS,
+      },
+    };
+
+    if (existingId) {
+      await api.newApiToken.update(existingId, tokenData);
+    } else {
+      await api.newApiToken.create(tokenData);
+    }
+
+    console.log('Token saved to database successfully');
+  }
+
+  /**
+   * Get fresh token directly from API
+   */
+  private async getFreshToken(): Promise<string> {
+    const token = await getRozetkaAccessToken();
+    if (!token) {
+      throw new Error('Failed to obtain access token from Rozetka API');
+    }
+    return token;
   }
 
   /**
@@ -57,96 +106,24 @@ export class RozetkaTokenManager {
   }
 
   /**
-   * Get detailed reason why token is invalid
-   */
-  private getTokenInvalidReason(tokenRecord: any, now: Date): string {
-    if (!tokenRecord || !tokenRecord.expiresAt) return 'no_token_data';
-
-    const expiresAt = new Date(tokenRecord.expiresAt);
-    const refreshBuffer = tokenRecord.refreshBuffer || DEFAULT_REFRESH_BUFFER;
-    const timeUntilExpiry = expiresAt.getTime() - now.getTime();
-    const timeUntilRefreshNeeded =
-      expiresAt.getTime() - refreshBuffer * 1000 - now.getTime();
-
-    if (timeUntilExpiry <= 0) return 'token_expired';
-    if (timeUntilRefreshNeeded <= 0) return 'refresh_buffer_reached';
-    return 'unknown';
-  }
-
-  /**
-   * Refresh the access token
-   */
-  private async refreshToken(existingTokenId?: string): Promise<string> {
-    console.info('Refreshing Rozetka access token');
-
-    try {
-      // Get new token from API
-      const newToken = await getRozetkaAccessToken();
-
-      if (!newToken) {
-        throw new Error(
-          'Failed to obtain new access token - received null/undefined'
-        );
-      }
-
-      const now = new Date();
-      const expiresAt = new Date(now.getTime() + TOKEN_LIFETIME_MS);
-
-      console.log('Creating new token data', {
-        tokenLifetimeMs: TOKEN_LIFETIME_MS,
-        refreshBufferSeconds: DEFAULT_REFRESH_BUFFER,
-        expiresAt: expiresAt.toISOString(),
-        actualLifetimeHours: TOKEN_LIFETIME_MS / (1000 * 60 * 60),
-      });
-
-      // Create or update token in database
-      const tokenData = {
-        provider: PROVIDER,
-        token: newToken,
-        expiresAt,
-        refreshBuffer: DEFAULT_REFRESH_BUFFER,
-        metadata: {
-          createdAt: now.toISOString(),
-          tokenLifetimeMs: TOKEN_LIFETIME_MS,
-        },
-      };
-
-      if (existingTokenId) {
-        // Update existing token
-        await api.newApiToken.update(existingTokenId, tokenData);
-      } else {
-        // Create new token
-        await api.newApiToken.create(tokenData);
-      }
-
-      console.info('Successfully refreshed Rozetka access token', {
-        expiresAt: expiresAt.toISOString(),
-        timeUntilExpiry: TOKEN_LIFETIME_MS,
-      });
-
-      return newToken;
-    } catch (error) {
-      console.error('Failed to refresh Rozetka access token', { error });
-      throw new Error(
-        `Token refresh failed: ${
-          error instanceof Error ? error.message : 'Unknown error'
-        }`
-      );
-    }
-  }
-
-  /**
    * Force invalidate the current token by deleting it from database
    */
   async invalidateToken(): Promise<void> {
-    console.info('Manually invalidating Rozetka token');
+    try {
+      const existingToken = await api.newApiToken.findFirst({
+        filter: { provider: { equals: PROVIDER } },
+      });
 
-    const existingToken = await api.newApiToken.findFirst({
-      filter: { provider: { equals: PROVIDER } },
-    });
-
-    if (existingToken) {
-      await api.newApiToken.delete(existingToken.id);
+      if (existingToken) {
+        await api.newApiToken.delete(existingToken.id);
+        console.log('Token invalidated successfully');
+      } else {
+        console.log('No token found to invalidate');
+      }
+    } catch (error) {
+      console.warn('Failed to invalidate token from database', {
+        error: error instanceof Error ? error.message : String(error)
+      });
     }
   }
 
@@ -159,36 +136,29 @@ export class RozetkaTokenManager {
     isValid: boolean;
     expiresInMs?: number;
   }> {
-    const existingToken = await api.newApiToken.findFirst({
-      filter: { provider: { equals: PROVIDER } },
-    });
-
-    if (!existingToken) {
-      return { hasToken: false, isValid: false };
-    }
-
-    const now = new Date();
-    const expiresAt = existingToken.expiresAt
-      ? new Date(existingToken.expiresAt)
-      : null;
-    return {
-      hasToken: true,
-      expiresAt: expiresAt?.toISOString(),
-      isValid: this.isTokenValid(existingToken, now),
-      expiresInMs: expiresAt ? expiresAt.getTime() - now.getTime() : 0,
-    };
-  }
-
-  /**
-   * Pre-warm the token cache (useful for startup)
-   */
-  async preWarmToken(): Promise<void> {
     try {
-      console.info('Pre-warming Rozetka token cache');
-      await this.getValidToken();
-      console.info('Token cache pre-warmed successfully');
+      const existingToken = await api.newApiToken.findFirst({
+        filter: { provider: { equals: PROVIDER } },
+      });
+
+      if (!existingToken) {
+        return { hasToken: false, isValid: false };
+      }
+
+      const now = new Date();
+      const expiresAt = existingToken.expiresAt ? new Date(existingToken.expiresAt) : null;
+
+      return {
+        hasToken: true,
+        expiresAt: expiresAt?.toISOString(),
+        isValid: this.isTokenValid(existingToken, now),
+        expiresInMs: expiresAt ? expiresAt.getTime() - now.getTime() : 0,
+      };
     } catch (error) {
-      console.error('Failed to pre-warm token cache', { error });
+      console.warn('Database not accessible for token info', {
+        error: error instanceof Error ? error.message : String(error)
+      });
+      return { hasToken: false, isValid: false };
     }
   }
 }
