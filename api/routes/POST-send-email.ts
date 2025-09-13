@@ -14,7 +14,7 @@ interface SendEmailRequest {
 }
 
 const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
-  const { logger, config, request, reply } = context;
+  const { config, request, reply } = context;
 
   try {
     const { recipientEmail, subject, htmlContent, cc, attachments } =
@@ -55,22 +55,19 @@ const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
     // Send the email
     await emails.sendMail(emailOptions);
 
-    logger.info(
-      {
+    console.log('Email sent successfully', {
         recipientEmail,
         subject,
         cc: cc || null,
         attachmentCount: attachments?.length || 0,
-      },
-      'Email sent successfully'
-    );
+      });
 
     await reply.code(200).send({
       success: true,
       message: 'Email sent successfully',
     });
   } catch (error) {
-    logger.error({ error }, 'Failed to send email');
+    console.error('Failed to send email', { error });
 
     await reply.code(500).send({
       success: false,

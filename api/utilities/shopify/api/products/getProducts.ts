@@ -6,12 +6,11 @@ import { ShopifyProduct } from '.gadget/client/types';
 import { ProductVariant } from 'api/routes/GET-feeds';
 
 export async function getProducts(
-  shopifyConnection: Shopify,
-  logger: any
+  shopifyConnection: Shopify
 ): Promise<ShopifyProduct[]> {
   const startTime = Date.now();
 
-  logger.info('Stage 1: Initiating bulk product query', {
+  console.log('Stage 1: Initiating bulk product query', {
     stage: 'bulk_query_start',
     timestamp: startTime,
   });
@@ -23,7 +22,7 @@ export async function getProducts(
 
   if (userErrors.length > 0) {
     const errorMsg = userErrors.map((e: UserError) => e.message).join(', ');
-    logger.info('Stage 2: Bulk query user errors', {
+    console.log('Stage 2: Bulk query user errors', {
       stage: 'bulk_query_error',
       duration_ms: Date.now() - startTime,
       success: false,
@@ -32,7 +31,7 @@ export async function getProducts(
     throw new Error(`Error: ${errorMsg}`);
   }
 
-  logger.info('Stage 2: Bulk query submitted successfully', {
+  console.log('Stage 2: Bulk query submitted successfully', {
     stage: 'bulk_query_submitted',
     duration_ms: Date.now() - startTime,
     success: true,
@@ -44,14 +43,14 @@ export async function getProducts(
   );
 
   if (bulkOperationStatus.url) {
-    logger.info('Stage 3: Bulk operation completed, fetching results', {
+    console.log('Stage 3: Bulk operation completed, fetching results', {
       stage: 'bulk_query_completed',
       duration_ms: Date.now() - startTime,
       success: true,
       url: bulkOperationStatus.url,
     });
     const products = await fetchBulkOperationResults(bulkOperationStatus.url);
-    logger.info('Stage 4: Products fetched and parsed', {
+    console.log('Stage 4: Products fetched and parsed', {
       stage: 'products_fetched',
       duration_ms: Date.now() - startTime,
       success: true,
@@ -60,7 +59,7 @@ export async function getProducts(
     return products;
   }
 
-  logger.info('Stage 3: No bulk result URL found', {
+  console.log('Stage 3: No bulk result URL found', {
     stage: 'bulk_query_no_url',
     duration_ms: Date.now() - startTime,
     success: false,

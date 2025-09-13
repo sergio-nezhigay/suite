@@ -29,14 +29,14 @@ export const onSuccess: ActionOnSuccess = async ({
     const embedding = response.data[0].embedding;
 
     // write to the Gadget Logs
-    logger.info({ id: record.id }, "got product embedding");
+    console.log("got product embedding", { id: record.id });
 
     // use the internal API to store vector embedding in Gadget database, on shopifyProduct model
     await api.internal.shopifyProduct.update(record.id, {
       shopifyProduct: { descriptionEmbedding: embedding },
     });
   } catch (error) {
-    logger.error({ error }, "error creating embedding");
+    console.error("error creating embedding", { error });
   }
 };
 

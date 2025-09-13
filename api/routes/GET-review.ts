@@ -1,6 +1,6 @@
 import { RouteHandler } from 'gadget-server';
 
-const route: RouteHandler = async ({ request, reply, logger }) => {
+const route: RouteHandler = async ({ request, reply }) => {
   try {
     const { email, product_id, name, review_rating, review_body } =
       request.query as {
@@ -14,16 +14,13 @@ const route: RouteHandler = async ({ request, reply, logger }) => {
     const rating = parseInt(review_rating, 10);
     const body = review_body;
 
-    logger.info(
-      {
+    console.log('Received GET request from email form', {
         email,
         product_id,
         name,
         rating,
         body,
-      },
-      'Received GET request from email form'
-    );
+      });
 
     const payload = {
       id: product_id,
@@ -37,12 +34,12 @@ const route: RouteHandler = async ({ request, reply, logger }) => {
       verified_buyer: true,
     };
 
-    logger.info({ payload }, 'Judge.me API request payload');
+    console.log('Judge.me API request payload', { payload });
 
     const apiToken = process.env.JUDGEME_API_TOKEN;
     const shopDomain = 'c2da09-15.myshopify.com';
     const apiUrl = `https://judge.me/api/v1/reviews?api_token=${apiToken}&shop_domain=${shopDomain}`;
-    logger.info({ apiUrl }, 'Judge.me API request URL');
+    console.log('Judge.me API request URL', { apiUrl });
 
     const response = await fetch(apiUrl, {
       method: 'POST',
@@ -55,15 +52,12 @@ const route: RouteHandler = async ({ request, reply, logger }) => {
     const responseData = await response.json();
 
     if (!response.ok) {
-      logger.info(
-        {
+      console.log('Judge.me API request failed', {
           status: response.status,
           statusText: response.statusText,
           response: responseData,
           payload,
-        },
-        'Judge.me API request failed'
-      );
+        });
 
       return reply.code(500).send({
         error: 'Failed to send review request',
@@ -71,14 +65,11 @@ const route: RouteHandler = async ({ request, reply, logger }) => {
       });
     }
 
-    logger.info(
-      {
+    console.log('Successfully sent manual review request', {
         reviewer_email: email,
         shopify_product_id: product_id,
         response: responseData,
-      },
-      'Successfully sent manual review request'
-    );
+      });
 
     return reply.code(200).send({
       message: 'Ваш відгук надіслано, дякуємо!',
@@ -90,14 +81,11 @@ const route: RouteHandler = async ({ request, reply, logger }) => {
       errorMessage = error.message;
       errorStack = error.stack;
     }
-    logger.info(
-      {
+    console.log('Error processing review request', {
         error: errorMessage,
         stack: errorStack,
         query: request.query,
-      },
-      'Error processing review request'
-    );
+      });
 
     return reply.code(500).send({
       error: 'Internal server error while processing review request',

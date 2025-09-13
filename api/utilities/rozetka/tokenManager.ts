@@ -1,4 +1,3 @@
-import { logger } from 'gadget-server';
 import { getRozetkaAccessToken } from './getRozetkaAccessToken';
 
 interface TokenData {
@@ -31,7 +30,7 @@ class RozetkaTokenManager {
    */
   public async getValidToken(): Promise<string> {
     const now = Date.now();
-    logger.debug('getValidToken called', {
+    console.log('getValidToken called', {
       hasToken: !!this.tokenData,
       currentTime: new Date(now).toISOString(),
       tokenInfo: this.getTokenInfo(),
@@ -39,26 +38,26 @@ class RozetkaTokenManager {
 
     // If we have a valid token, return it
     if (this.isTokenValid()) {
-      logger.debug('Returning existing valid token', {
+      console.log('Returning existing valid token', {
         expiresInMs: this.getTimeUntilExpiry(),
         refreshBuffer: this.tokenData?.refreshBuffer,
       });
       return this.tokenData!.token;
     }
 
-    logger.debug('Token is invalid or expired, needs refresh', {
+    console.log('Token is invalid or expired, needs refresh', {
       hasToken: !!this.tokenData,
       isRefreshInProgress: this.isRefreshInProgress(),
     });
 
     // If a refresh is already in progress, wait for it
     if (this.refreshPromise) {
-      logger.info('Token refresh already in progress, waiting...');
+      console.info('Token refresh already in progress, waiting...');
       return await this.refreshPromise;
     }
 
     // Start a new token refresh
-    logger.debug('Starting new token refresh');
+    console.log('Starting new token refresh');
     return await this.refreshToken();
   }
 
@@ -67,7 +66,7 @@ class RozetkaTokenManager {
    */
   public isTokenValid(): boolean {
     if (!this.tokenData) {
-      logger.debug('Token validation: No token data available');
+      console.log('Token validation: No token data available');
       return false;
     }
 
@@ -77,7 +76,7 @@ class RozetkaTokenManager {
       this.tokenData.expiresAt - this.tokenData.refreshBuffer - now;
     const isNotExpired = timeUntilRefreshNeeded > 0;
 
-    logger.debug('Token validation check', {
+    console.log('Token validation check', {
       now: new Date(now).toISOString(),
       expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
       refreshBuffer: this.tokenData.refreshBuffer,
@@ -87,7 +86,7 @@ class RozetkaTokenManager {
     });
 
     if (!isNotExpired) {
-      logger.info('Token is expired or will expire soon', {
+      console.info('Token is expired or will expire soon', {
         expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
         now: new Date(now).toISOString(),
         bufferTime: this.tokenData.refreshBuffer,
@@ -103,7 +102,7 @@ class RozetkaTokenManager {
    * Force invalidate the current token, causing a refresh on next request
    */
   public invalidateToken(): void {
-    logger.info('Manually invalidating Rozetka token');
+    console.info('Manually invalidating Rozetka token');
     this.tokenData = null;
     this.refreshPromise = null;
   }
@@ -150,7 +149,7 @@ class RozetkaTokenManager {
    * Perform the actual token refresh
    */
   private async performTokenRefresh(): Promise<string> {
-    logger.info('Refreshing Rozetka access token');
+    console.info('Refreshing Rozetka access token');
 
     try {
       // Use your existing getRozetkaAccessToken function
@@ -166,7 +165,7 @@ class RozetkaTokenManager {
       const now = Date.now();
       const expiresAt = now + this.TOKEN_LIFETIME_MS;
 
-      logger.debug('Creating new token data', {
+      console.log('Creating new token data', {
         tokenLifetimeMs: this.TOKEN_LIFETIME_MS,
         refreshBufferMs: this.REFRESH_BUFFER_MS,
         now: new Date(now).toISOString(),
@@ -181,7 +180,7 @@ class RozetkaTokenManager {
         refreshBuffer: this.REFRESH_BUFFER_MS,
       };
 
-      logger.info('Successfully refreshed Rozetka access token', {
+      console.info('Successfully refreshed Rozetka access token', {
         expiresAt: new Date(this.tokenData.expiresAt).toISOString(),
         timeUntilExpiry: this.getTimeUntilExpiry(),
         refreshBuffer: this.tokenData.refreshBuffer,
@@ -189,7 +188,7 @@ class RozetkaTokenManager {
 
       return newToken;
     } catch (error) {
-      logger.error('Failed to refresh Rozetka access token', { error });
+      console.error('Failed to refresh Rozetka access token', { error });
 
       // Clear any potentially corrupted token data
       this.tokenData = null;
@@ -208,11 +207,11 @@ class RozetkaTokenManager {
    */
   public async preWarmToken(): Promise<void> {
     try {
-      logger.info('Pre-warming Rozetka token cache');
+      console.info('Pre-warming Rozetka token cache');
       await this.getValidToken();
-      logger.info('Token cache pre-warmed successfully');
+      console.info('Token cache pre-warmed successfully');
     } catch (error) {
-      logger.error('Failed to pre-warm token cache', { error });
+      console.error('Failed to pre-warm token cache', { error });
       // Don't throw - this is just an optimization
     }
   }
@@ -251,7 +250,7 @@ class RozetkaTokenManager {
     // Update default for future tokens
     (this as any).REFRESH_BUFFER_MS = bufferMs;
 
-    logger.info('Updated token refresh buffer', {
+    console.info('Updated token refresh buffer', {
       oldBuffer,
       newBuffer: bufferMs,
       bufferMinutes: bufferMs / (1000 * 60),
@@ -263,7 +262,7 @@ class RozetkaTokenManager {
    */
   public debugTokenState(): void {
     const now = Date.now();
-    logger.info('Token Manager Debug State', {
+    console.info('Token Manager Debug State', {
       hasToken: !!this.tokenData,
       isRefreshInProgress: this.isRefreshInProgress(),
       currentTime: new Date(now).toISOString(),

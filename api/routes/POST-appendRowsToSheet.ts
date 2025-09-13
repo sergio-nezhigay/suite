@@ -22,7 +22,7 @@ interface RequestBody {
 
 const route: RouteHandler<{
   Body: RequestBody;
-}> = async ({ reply, request, logger, config }) => {
+}> = async ({ reply, request, config }) => {
   const { rows, spreadsheetId } = request.body;
 
   if (!rows || !Array.isArray(rows) || rows.length === 0 || !spreadsheetId) {
@@ -31,7 +31,7 @@ const route: RouteHandler<{
       .send({ error: 'Rows and spreadsheetId are required' });
   }
 
-  logger.info({ rows }, 'Received rows for Google Sheets append');
+  console.log('Received rows for Google Sheets append', { rows });
 
   try {
     const auth = await authorize(config);
@@ -47,10 +47,7 @@ const route: RouteHandler<{
 
     const responseData: sheets_v4.Schema$AppendValuesResponse = response.data;
 
-    logger.info(
-      { responseData },
-      'Rows appended successfully to Google Sheets'
-    );
+    console.log('Rows appended successfully to Google Sheets', { responseData });
 
     await reply.send({
       success: true,
@@ -58,7 +55,7 @@ const route: RouteHandler<{
       updates: responseData.updates,
     });
   } catch (error) {
-    logger.error({ error }, 'Error appending rows to Google Sheets');
+    console.error('Error appending rows to Google Sheets', { error });
     // Don't expose the actual error details in the response
     return reply
       .code(500)
