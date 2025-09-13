@@ -84,3 +84,10 @@ TypeScript path aliases are configured in `tsconfig.json`:
 - All Shopify models are auto-synced via Gadget framework
 - Environment-specific configurations via Shopify app TOML files
 - Token management includes comprehensive debugging utilities for troubleshooting API integrations
+
+## Code Quality Requirements
+
+**IMPORTANT**: After making any code changes, ALWAYS run TypeScript checks to ensure no type errors:
+- Run: `npx tsc --noEmit` for full project typecheck
+- Run: `npx tsc --noEmit [filename].ts` for specific file typecheck
+- Fix all TypeScript errors before considering the task complete
