@@ -13,13 +13,6 @@ import {
 } from '../../shared/shopifyOperations';
 import { stages } from '../../shared/stages';
 
-//import { stages } from 'extensions/shared/stages';
-//import {
-//  addOrderNote,
-//  getOrdersTags,
-//  updateOrdersTags,
-//} from 'shared/shopifyOperations';
-
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
