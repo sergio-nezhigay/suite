@@ -36,11 +36,9 @@ function App() {
 
   const onSelect = useCallback(async (newValue: string) => {
     setLoading(true);
-    setValue(newValue);
     await updateOrdersTags({ value: newValue, orderIds: [orderId] });
-
+    setValue(newValue);
     const note = `Stage updated to "${newValue}. "`;
-
     await addOrderNote({ orderId, note });
     setLoading(false);
   }, []);
