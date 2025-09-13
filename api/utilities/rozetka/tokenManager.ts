@@ -11,7 +11,7 @@ class RozetkaTokenManager {
   private tokenData: TokenData | null = null;
   private refreshPromise: Promise<string> | null = null;
   private readonly REFRESH_BUFFER_MS = 5 * 60 * 1000; // 5 minutes before expiry
-  private readonly TOKEN_LIFETIME_MS = 24 * 60 * 60 * 1000; // 24 hours
+  private readonly TOKEN_LIFETIME_MS = 72 * 60 * 60 * 1000; // 72 hours (updated from 24h)
 
   private constructor() {}
 
@@ -30,10 +30,13 @@ class RozetkaTokenManager {
    */
   public async getValidToken(): Promise<string> {
     const now = Date.now();
+    const callStack = new Error().stack?.split('\n').slice(1, 4).join(' <- ') || 'unknown';
     console.log('getValidToken called', {
       hasToken: !!this.tokenData,
       currentTime: new Date(now).toISOString(),
       tokenInfo: this.getTokenInfo(),
+      calledFrom: callStack,
+      sessionId: this.getSessionId(),
     });
 
     // If we have a valid token, return it
@@ -41,6 +44,8 @@ class RozetkaTokenManager {
       console.log('Returning existing valid token', {
         expiresInMs: this.getTimeUntilExpiry(),
         refreshBuffer: this.tokenData?.refreshBuffer,
+        tokenAge: this.getTokenAge(),
+        percentLifetimeUsed: this.getTokenLifetimeUsedPercent(),
       });
       return this.tokenData!.token;
     }
@@ -48,6 +53,9 @@ class RozetkaTokenManager {
     console.log('Token is invalid or expired, needs refresh', {
       hasToken: !!this.tokenData,
       isRefreshInProgress: this.isRefreshInProgress(),
+      tokenAge: this.getTokenAge(),
+      reasonForRefresh: this.getTokenInvalidReason(),
+      lastTokenCreated: this.tokenData ? new Date(this.tokenData.expiresAt - this.TOKEN_LIFETIME_MS).toISOString() : 'never',
     });
 
     // If a refresh is already in progress, wait for it
@@ -172,6 +180,10 @@ class RozetkaTokenManager {
         expiresAt: new Date(expiresAt).toISOString(),
         actualLifetimeHours: this.TOKEN_LIFETIME_MS / (1000 * 60 * 60),
         refreshBufferMinutes: this.REFRESH_BUFFER_MS / (1000 * 60),
+        previousTokenAge: this.getTokenAge(),
+        timeSinceLastRefresh: this.getTimeSinceLastRefresh(),
+        sessionId: this.getSessionId(),
+        creationTrace: new Error().stack?.split('\n').slice(1, 5).join(' <- ') || 'unknown',
       });
 
       this.tokenData = {
@@ -255,6 +267,59 @@ class RozetkaTokenManager {
       newBuffer: bufferMs,
       bufferMinutes: bufferMs / (1000 * 60),
     });
+  }
+
+  /**
+   * Get unique session identifier for debugging
+   */
+  private getSessionId(): string {
+    if (!this._sessionId) {
+      this._sessionId = Math.random().toString(36).substring(2, 8);
+    }
+    return this._sessionId;
+  }
+  private _sessionId?: string;
+
+  /**
+   * Get token age in milliseconds
+   */
+  private getTokenAge(): number | null {
+    if (!this.tokenData) return null;
+    const creationTime = this.tokenData.expiresAt - this.TOKEN_LIFETIME_MS;
+    return Date.now() - creationTime;
+  }
+
+  /**
+   * Get percentage of token lifetime used
+   */
+  private getTokenLifetimeUsedPercent(): number | null {
+    const age = this.getTokenAge();
+    if (age === null) return null;
+    return (age / this.TOKEN_LIFETIME_MS) * 100;
+  }
+
+  /**
+   * Get time since last token refresh
+   */
+  private getTimeSinceLastRefresh(): number | null {
+    if (!this.tokenData) return null;
+    const creationTime = this.tokenData.expiresAt - this.TOKEN_LIFETIME_MS;
+    return Date.now() - creationTime;
+  }
+
+  /**
+   * Get detailed reason why token is invalid
+   */
+  private getTokenInvalidReason(): string {
+    if (!this.tokenData) return 'no_token_data';
+
+    const now = Date.now();
+    const timeUntilExpiry = this.tokenData.expiresAt - now;
+    const timeUntilRefreshNeeded = this.tokenData.expiresAt - this.tokenData.refreshBuffer - now;
+
+    if (timeUntilExpiry <= 0) return 'token_expired';
+    if (timeUntilRefreshNeeded <= 0) return 'refresh_buffer_reached';
+    return 'unknown';
   }
 
   /**
