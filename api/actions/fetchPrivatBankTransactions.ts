@@ -1,5 +1,4 @@
 import { ActionOptions } from 'gadget-server';
-import { console } from 'gadget-server';
 import axios from 'axios';
 
 export const run = async ({ connections, config, params }: any) => {
@@ -57,11 +56,8 @@ export const run = async ({ connections, config, params }: any) => {
 
     // Debug logging for response
     console.info(`PrivatBank API Response Status: ${response.status}`);
-    console.info(`PrivatBank API Response Headers:`, response.headers);
-    console.info(`PrivatBank API Response Data Type: ${typeof response.data}`);
     console.info(
-      `PrivatBank API Response Data (first 500 chars):`,
-      JSON.stringify(response.data).substring(0, 500)
+      `Response status: ${response.data.status}, type: ${response.data.type}`
     );
 
     if (!response.data) {
@@ -69,87 +65,79 @@ export const run = async ({ connections, config, params }: any) => {
     }
 
     console.info(
-      `Received ${response.data.length || 0} transactions from PrivatBank API`
+      `API Response contains ${
+        response.data.transactions?.length || 0
+      } transactions`
     );
 
-    // Filter and process transactions
-    const rawTransactions = Array.isArray(response.data) ? response.data : [];
+    // Parse the API response correctly
+    const apiResponse = response.data;
+    const rawTransactions = Array.isArray(apiResponse?.transactions)
+      ? apiResponse.transactions
+      : [];
+
     console.info(`Raw transactions count: ${rawTransactions.length}`);
 
-    // Log a sample transaction structure for debugging
-    if (rawTransactions.length > 0) {
-      console.info(`Sample transaction structure:`, {
-        keys: Object.keys(rawTransactions[0]),
-        sampleData: rawTransactions[0],
-      });
+    // Simple transaction processing - basic info only
+    interface PrivatBankRawTransaction {
+      ID?: string;
+      REF?: string;
+      DAT_OD?: string;
+      TIM_P?: string;
+      SUM?: string;
+      CCY?: string;
+      TRANTYPE?: string;
+      OSND?: string;
+      [key: string]: any;
     }
 
-    // Filter only processed transactions (PR_PR: "r")
-    const processedTransactions = rawTransactions.filter(
-      (tx) => tx.PR_PR === 'r'
-    );
-    console.info(
-      `Processed transactions count after filtering (PR_PR === "r"): ${processedTransactions.length}`
-    );
+    interface PrivatBankTransaction {
+      id: string | undefined;
+      date: string | undefined;
+      time: string | undefined;
+      amount: number;
+      currency: string;
+      type: 'income' | 'expense';
+      description: string;
+      reference: string | undefined;
+    }
 
-    // Transform transactions to clean format
-    const cleanTransactions = processedTransactions.map((tx) => {
+    const transactions: PrivatBankTransaction[] = (
+      rawTransactions as PrivatBankRawTransaction[]
+    ).map((tx) => {
       const isIncome = tx.TRANTYPE === 'C';
-      const amount = Math.abs(parseFloat(tx.SUM) || 0);
+      const amount = Math.abs(parseFloat(tx.SUM ?? '0') || 0);
 
       return {
+        id: tx.ID ?? tx.REF,
+        date: tx.DAT_OD,
+        time: tx.TIM_P,
         amount: amount,
-        currency: tx.CCY || 'UAH',
+        currency: tx.CCY ?? 'UAH',
         type: isIncome ? 'income' : 'expense',
-        counterpart: tx.OSND || '',
-        purpose: tx.DETAILS || '',
-        date: tx.DAT_OD || '',
-        time: tx.TIME_OD || '',
-        reference: tx.REF || tx.AUT_MY || '',
+        description: tx.OSND ?? '',
+        reference: tx.REF,
       };
     });
 
-    // Calculate summary
-    let totalIncome = 0;
-    let totalExpenses = 0;
+    console.info(`Processed ${transactions.length} transactions`);
 
-    cleanTransactions.forEach((tx) => {
-      if (tx.type === 'income') {
-        totalIncome += tx.amount;
-      } else {
-        totalExpenses += tx.amount;
-      }
-    });
-
-    const netBalance = totalIncome - totalExpenses;
-
-    const result = {
-      transactions: cleanTransactions,
-      summary: {
-        totalIncome: Math.round(totalIncome * 100) / 100, // Round to 2 decimal places
-        totalExpenses: Math.round(totalExpenses * 100) / 100,
-        netBalance: Math.round(netBalance * 100) / 100,
-        period: {
-          startDate: startDateFormatted,
-          endDate: endDateFormatted,
-        },
-        transactionCount: cleanTransactions.length,
-      },
+    return {
       success: true,
+      transactions,
+      count: transactions.length,
+      period: {
+        startDate: startDateFormatted,
+        endDate: endDateFormatted,
+      },
     };
-
-    console.info(
-      `Processed ${cleanTransactions.length} transactions. Income: ${totalIncome}, Expenses: ${totalExpenses}, Net: ${netBalance}`
-    );
-
-    return result;
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
 
     console.error('Error fetching PrivatBank transactions:', {
-      error: errorMessage,
-      stack: errorStack,
+      errorMessage: errorMessage,
+      errorStack: errorStack,
       params: JSON.stringify(params),
     });
 
@@ -161,15 +149,19 @@ export const run = async ({ connections, config, params }: any) => {
       const data = axiosError.response?.data;
 
       // Debug logging for API errors
-      console.error(`PrivatBank API Error Response:`, {
-        status,
-        statusText: axiosError.response?.statusText,
-        headers: axiosError.response?.headers,
-        data: data,
-        url: axiosError.config?.url,
-        method: axiosError.config?.method,
-        requestParams: axiosError.config?.params,
-      });
+      try {
+        console.error('PrivatBank API Error Response:', {
+          status,
+          statusText: axiosError.response?.statusText,
+          headers: axiosError.response?.headers,
+          data: data,
+          url: axiosError.config?.url,
+          method: axiosError.config?.method,
+          requestParams: axiosError.config?.params,
+        });
+      } catch (logError) {
+        console.error('Failed to log API error details:', String(logError));
+      }
 
       if (status === 401 || status === 403) {
         return {
