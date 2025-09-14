@@ -57,7 +57,7 @@ export class RozetkaTokenManager {
     });
 
     // Get existing token from database
-    const existingToken = (await api.newApiToken.findFirst({
+    const existingToken = (await api.newApiToken.maybeFindFirst({
       filter: { provider: { equals: PROVIDER } },
     })) as TokenRecord | null;
 
