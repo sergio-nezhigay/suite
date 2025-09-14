@@ -1,5 +1,5 @@
 import { ActionOptions } from 'gadget-server';
-import crypto from 'crypto';
+import * as crypto from 'crypto';
 
 // Define the interface to match what fetchPrivatBankTransactions returns
 interface PrivatBankTransaction {
@@ -13,9 +13,39 @@ interface PrivatBankTransaction {
   reference: string | undefined;
 }
 
-export const run: ActionRun = async ({ params, logger, api, connections }) => {
+export const run = async ({ params, logger, api, connections, config }: any) => {
+  // Only run in production environment
+  if (config.NODE_ENV !== 'production') {
+    logger.info('syncBankTransactions skipped - only runs in production environment', {
+      currentEnvironment: config.NODE_ENV
+    });
+    
+    return {
+      success: true,
+      message: 'Action skipped - only runs in production environment',
+      summary: {
+        processed: 0,
+        created: 0,
+        duplicates: 0,
+        skipped: 0,
+        errors: 0,
+        warnings: 0,
+        environment: config.NODE_ENV,
+        skipped_reason: 'non_production_environment'
+      }
+    };
+  }
+
   const syncStartTime = new Date();
   logger.info('Starting bank transaction sync process');
+  
+  // Diagnostic logging for API availability
+  logger.info('API diagnostic info', {
+    apiAvailable: !!api,
+    bankTransactionAvailable: !!api?.bankTransaction,
+    bankTransactionMethods: api?.bankTransaction ? Object.keys(api.bankTransaction) : [],
+    apiKeys: api ? Object.keys(api).filter(key => key.includes('bank')) : []
+  });
 
   let totalProcessed = 0;
   let totalCreated = 0;
@@ -103,10 +133,47 @@ export const run: ActionRun = async ({ params, logger, api, connections }) => {
           continue;
         }
 
-        // 2. Check for duplicates
-        const existingTransaction = await api.bankTransaction.findFirst({
-          filter: { externalId: { equals: externalId.trim() } }
-        });
+        // 2. Check for duplicates with proper handling of "no data" response
+        let existingTransaction = null;
+        let shouldSkipTransaction = false;
+
+        try {
+          // Verify the API method exists before calling
+          if (!api.bankTransaction || typeof api.bankTransaction.findFirst !== 'function') {
+            throw new Error('bankTransaction.findFirst method not available in API');
+          }
+
+          existingTransaction = await api.bankTransaction.findFirst({
+            filter: { externalId: { equals: externalId.trim() } }
+          });
+
+          logger.debug(`Duplicate check completed for externalId: ${externalId} - found: ${!!existingTransaction}`);
+
+        } catch (duplicateCheckError) {
+          const errorMessage = duplicateCheckError instanceof Error ? duplicateCheckError.message : String(duplicateCheckError);
+
+          // Handle the specific "no data" case - this means no duplicates found, which is good!
+          if (errorMessage.includes('Gadget API returned no data') ||
+              errorMessage.includes('Record Not Found Error')) {
+            logger.debug(`No existing transaction found for externalId: ${externalId} - proceeding with creation`);
+            existingTransaction = null; // Explicitly set to null to proceed
+          } else {
+            // This is a real error that we should handle
+            const errorMsg = `Failed to check for duplicate transaction ${externalId}: ${errorMessage}`;
+            logger.error(errorMsg, {
+              externalId,
+              apiAvailable: !!api.bankTransaction,
+              findFirstAvailable: !!(api.bankTransaction && typeof api.bankTransaction.findFirst === 'function')
+            });
+            errors.push(errorMsg);
+            totalErrors++;
+            shouldSkipTransaction = true;
+          }
+        }
+
+        if (shouldSkipTransaction) {
+          continue; // Skip this transaction due to real error
+        }
 
         if (existingTransaction) {
           logger.debug(`Skipping duplicate transaction: ${externalId}`);
@@ -119,10 +186,14 @@ export const run: ActionRun = async ({ params, logger, api, connections }) => {
         
         if (transaction.date) {
           try {
-            // Handle DD-MM-YYYY format from PrivatBank
-            const datePattern = /^(\d{2})-(\d{2})-(\d{4})$/;
-            const dateMatch = transaction.date.match(datePattern);
-            
+            // Handle both DD.MM.YYYY and DD-MM-YYYY formats from PrivatBank
+            const dotPattern = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+            const dashPattern = /^(\d{2})-(\d{2})-(\d{4})$/;
+
+            const dotMatch = transaction.date.match(dotPattern);
+            const dashMatch = transaction.date.match(dashPattern);
+            const dateMatch = dotMatch || dashMatch;
+
             if (!dateMatch) {
               throw new Error(`Invalid date format: ${transaction.date}`);
             }
@@ -169,7 +240,8 @@ export const run: ActionRun = async ({ params, logger, api, connections }) => {
             }
             
           } catch (dateError) {
-            const errorMsg = `Failed to parse date/time for transaction ${externalId}: ${transaction.date} ${transaction.time}. Error: ${dateError.message}`;
+            const errorMessage = dateError instanceof Error ? dateError.message : String(dateError);
+            const errorMsg = `Failed to parse date/time for transaction ${externalId}: ${transaction.date} ${transaction.time}. Error: ${errorMessage}`;
             logger.error(errorMsg);
             errors.push(errorMsg);
             totalErrors++;
@@ -217,22 +289,49 @@ export const run: ActionRun = async ({ params, logger, api, connections }) => {
         const description = (transaction.description || '').substring(0, 1000); // Prevent overly long descriptions
         const reference = transaction.reference ? transaction.reference.substring(0, 100) : ''; // Limit reference length
 
-        // 7. Create the bank transaction record
-        const newTransaction = await api.bankTransaction.create({
-          externalId: externalId.trim(),
-          transactionDateTime: transactionDateTime,
-          amount: amount,
-          currency: currency,
-          type: transaction.type,
-          description: description,
-          reference: reference,
-          rawData: transaction, // Store the complete original transaction data
-          status: 'processed',
-          syncedAt: syncStartTime
-        });
+        // 7. Create the bank transaction record with proper error handling
+        try {
+          // Verify the API create method exists
+          if (!api.bankTransaction || typeof api.bankTransaction.create !== 'function') {
+            throw new Error('bankTransaction.create method not available in API');
+          }
 
-        logger.debug(`Created transaction record: ${newTransaction.id} (${externalId})`);
-        totalCreated++;
+          const newTransaction = await api.bankTransaction.create({
+            externalId: externalId.trim(),
+            transactionDateTime: transactionDateTime,
+            amount: amount,
+            currency: currency,
+            type: transaction.type,
+            description: description,
+            reference: reference,
+            rawData: transaction, // Store the complete original transaction data
+            status: 'processed',
+            syncedAt: syncStartTime
+          });
+
+          logger.debug(`Created transaction record: ${newTransaction.id} (${externalId})`);
+          totalCreated++;
+
+        } catch (createError) {
+          const errorMsg = `Failed to create transaction record for ${externalId}: ${createError instanceof Error ? createError.message : String(createError)}`;
+          logger.error(errorMsg, {
+            externalId,
+            transactionData: {
+              externalId: externalId.trim(),
+              transactionDateTime: transactionDateTime.toISOString(),
+              amount,
+              currency,
+              type: transaction.type,
+              description: description.substring(0, 100), // Truncate for logging
+              reference
+            },
+            apiAvailable: !!api.bankTransaction,
+            createAvailable: !!(api.bankTransaction && typeof api.bankTransaction.create === 'function')
+          });
+          errors.push(errorMsg);
+          totalErrors++;
+          continue; // Continue processing other transactions
+        }
 
       } catch (transactionError) {
         const errorMsg = `Error processing transaction ${transaction.id || transaction.reference || 'unknown'}: ${transactionError instanceof Error ? transactionError.message : String(transactionError)}`;
@@ -297,8 +396,8 @@ export const run: ActionRun = async ({ params, logger, api, connections }) => {
 export const params = {
   daysBack: { 
     type: 'number', 
-    default: 7,
-    description: 'Number of days back to sync transactions (default: 7 days)' 
+    default: 3,
+    description: 'Number of days back to sync transactions (default: 3 days)' 
   }
 };
 

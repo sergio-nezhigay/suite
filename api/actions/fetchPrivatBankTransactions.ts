@@ -48,7 +48,7 @@ export const run = async ({ connections, config, params }: any) => {
         params: {
           startDate: startDateFormatted,
           endDate: endDateFormatted,
-          limit: 3,
+          limit: 10,
         },
         timeout: 30000, // 30 second timeout
       }
