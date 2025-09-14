@@ -6,9 +6,17 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-ProductVariant",
-  fields: {},
+  fields: {
+    productImage: {
+      type: "belongsTo",
+      parent: { model: "shopifyProductImage" },
+      storageKey:
+        "ModelField-Shopify-ProductVariant-ProductImage::FieldStorageEpoch-DataModel-Shopify-ProductVariant-image_id-initial",
+    },
+  },
   shopify: {
     fields: [
+      "availableForSale",
       "barcode",
       "compareAtPrice",
       "fulfillmentOrderLineItem",
@@ -23,7 +31,6 @@ export const schema: GadgetModel = {
       "presentmentPrices",
       "price",
       "product",
-      "productImage",
       "selectedOptions",
       "shop",
       "shopifyCreatedAt",

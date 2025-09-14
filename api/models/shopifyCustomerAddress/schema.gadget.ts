@@ -6,24 +6,37 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-CustomerAddress",
-  fields: {},
+  fields: {
+    countryCodeBackup: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-CustomerAddress-country_code::FieldStorageEpoch-DataModel-Shopify-CustomerAddress-country_code-initial",
+    },
+  },
   shopify: {
     fields: [
       "address1",
       "address2",
       "city",
       "company",
+      "coordinatesValidated",
       "country",
       "countryCode",
       "countryName",
       "firstName",
+      "formatted",
+      "formattedArea",
       "lastName",
+      "latitude",
+      "longitude",
       "name",
       "phone",
       "province",
       "provinceCode",
       "shop",
       "shopifyCustomer",
+      "timezone",
+      "validationResultSummary",
       "zipCode",
     ],
   },

@@ -6,27 +6,50 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Fulfillment",
-  fields: {},
+  fields: {
+    notifyCustomer: {
+      type: "boolean",
+      storageKey:
+        "ModelField-DataModel-Shopify-Fulfillment-notify_customer::FieldStorageEpoch-DataModel-Shopify-Fulfillment-notify_customer-initial",
+    },
+    statusBackup: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-Fulfillment-status::FieldStorageEpoch-DataModel-Shopify-Fulfillment-status-initial",
+    },
+    variantInventoryManagement: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-Fulfillment-variant_inventory_management::FieldStorageEpoch-DataModel-Shopify-Fulfillment-variant_inventory_management-initial",
+    },
+  },
   shopify: {
     fields: [
+      "deliveredAt",
+      "displayStatus",
+      "estimatedDeliveryAt",
       "fulfillmentEvents",
       "fulfillmentLineItems",
+      "inTransitAt",
       "location",
       "name",
-      "notifyCustomer",
       "order",
       "originAddress",
       "receipt",
+      "requiresShipping",
       "service",
       "shipmentStatus",
       "shop",
       "shopifyCreatedAt",
       "shopifyUpdatedAt",
       "status",
+      "totalQuantity",
       "trackingCompany",
+      "trackingInfo",
+      "trackingNumber",
       "trackingNumbers",
+      "trackingUrl",
       "trackingUrls",
-      "variantInventoryManagement",
     ],
   },
 };

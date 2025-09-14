@@ -24,6 +24,15 @@ export const schema: GadgetModel = {
       type: "vector",
       storageKey: "yg3yaf_ICtKa",
     },
+    images: {
+      type: "hasMany",
+      children: {
+        model: "shopifyProductImage",
+        belongsToField: "product",
+      },
+      storageKey:
+        "ModelField-DataModel-Shopify-Product-images::FieldStorageEpoch-DataModel-Shopify-Product-images-initial",
+    },
     specificationsFrequency: {
       type: "string",
       shopifyMetafield: {
@@ -66,7 +75,6 @@ export const schema: GadgetModel = {
       "featuredMedia",
       "handle",
       "hasVariantsThatRequiresComponents",
-      "images",
       "media",
       "options",
       "orderLineItems",

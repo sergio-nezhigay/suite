@@ -6,7 +6,13 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-FulfillmentEvent",
-  fields: {},
+  fields: {
+    statusBackup: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-FulfillmentEvent-status::FieldStorageEpoch-DataModel-Shopify-FulfillmentEvent-status-initial",
+    },
+  },
   shopify: {
     fields: [
       "address1",

@@ -14,4 +14,20 @@ export const onSuccess = async ({ params, record, logger, api, connections }) =>
 };
 
 /** @type { ActionOptions } */
-export const options = { actionType: "update" };
+
+/** @type { ActionOptions } */
+export const options: ActionOptions = {
+  actionType: "update",
+  triggers: {
+    api: true,
+  },
+    shopify: {
+      // Only sync records that match specific criteria
+      webhooks: ["products/update"], // Specify which webhooks to listen to
+      filter: {
+        vendor: "Nike",
+      },
+      syncSince: "1d", // Only sync records updated in last 1 day
+      hasSync: false, // This prevents bulk sync operations
+    }
+};

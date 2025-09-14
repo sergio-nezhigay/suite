@@ -6,31 +6,58 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Customer",
-  fields: {},
+  fields: {
+    metafield: {
+      type: "json",
+      storageKey:
+        "ModelField-DataModel-Shopify-Customer-metafield::FieldStorageEpoch-DataModel-Shopify-Customer-metafield-initial",
+    },
+    ordersCount: {
+      type: "number",
+      storageKey:
+        "ModelField-DataModel-Shopify-Customer-orders_count::FieldStorageEpoch-DataModel-Shopify-Customer-orders_count-initial",
+    },
+    taxExemptionsBackup: {
+      type: "json",
+      storageKey:
+        "ModelField-DataModel-Shopify-Customer-tax_exemptions::FieldStorageEpoch-DataModel-Shopify-Customer-tax_exemptions-initial",
+    },
+    totalSpent: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-Customer-total_spent::FieldStorageEpoch-DataModel-Shopify-Customer-total_spent-initial",
+    },
+  },
   shopify: {
     fields: [
       "acceptsMarketing",
       "acceptsMarketingUpdatedAt",
       "addresses",
+      "amountSpent",
+      "canDelete",
       "companyContacts",
       "currency",
       "dataSaleOptOut",
       "defaultAddress",
+      "displayName",
       "email",
       "emailMarketingConsent",
       "firstName",
+      "hasTimelineComment",
       "lastName",
       "lastOrder",
       "lastOrderName",
+      "legacyResourceId",
+      "lifetimeDuration",
       "locale",
       "marketingOptInLevel",
       "mergeable",
-      "metafield",
       "multipassIdentifier",
       "note",
+      "numberOfOrders",
       "orders",
-      "ordersCount",
       "phone",
+      "productSubscriberStatus",
       "shop",
       "shopifyCreatedAt",
       "shopifyState",
@@ -40,7 +67,8 @@ export const schema: GadgetModel = {
       "tags",
       "taxExempt",
       "taxExemptions",
-      "totalSpent",
+      "unsubscribeUrl",
+      "validEmailAddress",
       "verifiedEmail",
     ],
   },

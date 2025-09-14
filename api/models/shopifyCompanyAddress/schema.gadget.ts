@@ -6,24 +6,15 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-CompanyAddress",
-  fields: {
-    companyBillingLocation: {
-      type: "belongsTo",
-      parent: { model: "shopifyCompanyLocation" },
-      storageKey: "kjsCpL1qUuTi",
-    },
-    companyShippingLocation: {
-      type: "belongsTo",
-      parent: { model: "shopifyCompanyLocation" },
-      storageKey: "yeAJolimz0n_",
-    },
-  },
+  fields: {},
   shopify: {
     fields: [
       "address1",
       "address2",
       "city",
+      "companyBillingLocation",
       "companyName",
+      "companyShippingLocation",
       "country",
       "countryCode",
       "formattedAddress",

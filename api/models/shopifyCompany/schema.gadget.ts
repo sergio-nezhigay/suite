@@ -29,11 +29,17 @@ export const schema: GadgetModel = {
   shopify: {
     fields: [
       "contactCount",
+      "contactRoleAssignments",
+      "contactRoles",
+      "contacts",
       "contactsCount",
       "customerSince",
+      "defaultRole",
       "externalId",
       "lifetimeDuration",
+      "locations",
       "locationsCount",
+      "mainContact",
       "name",
       "note",
       "orders",

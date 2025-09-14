@@ -9,12 +9,21 @@ export const schema: GadgetModel = {
   fields: {},
   shopify: {
     fields: [
+      "financialSummaries",
       "fulfillmentOrder",
+      "image",
       "orderLineItem",
+      "productTitle",
       "quantity",
       "remainingQuantity",
+      "requiresShipping",
       "shop",
+      "sku",
       "variant",
+      "variantTitle",
+      "vendor",
+      "warnings",
+      "weight",
     ],
   },
 };

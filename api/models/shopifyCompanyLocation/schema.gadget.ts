@@ -28,6 +28,8 @@ export const schema: GadgetModel = {
       "orders",
       "ordersCount",
       "phone",
+      "roleAssignments",
+      "shippingAddress",
       "shop",
       "shopifyCreatedAt",
       "shopifyUpdatedAt",
