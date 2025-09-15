@@ -90,7 +90,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабелі зарядки' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.22,
+        multiplier: 1.5,
       },
       {
         keywords: ['світлодіодні стрічки'],
@@ -512,7 +512,7 @@ class RozetkaXMLGenerator {
           <picture>${product.imageURLs[0]}</picture>
           ${additionalImages}
           ${paramsSection}
-          <description><![CDATA[${product.description}]]></description>
+          <description><![CDATA[${product.description}.]]></description>
         </offer>`;
       })
       .join('');
