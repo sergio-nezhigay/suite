@@ -47,72 +47,7 @@ export const onSuccess = async ({
   const tags = record.tags || [];
   console.log('[ShopifyOrder] Order tags:', tags);
 
-  // Check multiple possible locations for line items
-  try {
-    console.log('[ShopifyOrder] Checking all possible line item locations...');
-
-    // Check params.line_items (most common)
-    if (params?.line_items) {
-      console.log('[ShopifyOrder] Found line_items in params');
-      console.log(
-        '[ShopifyOrder] Line items data:',
-        JSON.stringify(params.line_items, null, 2)
-      );
-    }
-
-    // Check params.lineItems (camelCase)
-    if (params?.lineItems) {
-      console.log('[ShopifyOrder] Found lineItems in params');
-      console.log(
-        '[ShopifyOrder] Line items data:',
-        JSON.stringify(params.lineItems, null, 2)
-      );
-    }
-
-    // Check record.lineItems
-    if (record?.lineItems) {
-      console.log('[ShopifyOrder] Found lineItems in record');
-      console.log(
-        '[ShopifyOrder] Line items data:',
-        JSON.stringify(record.lineItems, null, 2)
-      );
-    }
-
-    // Check if it's nested deeper in params
-    if (params?.order?.line_items) {
-      console.log('[ShopifyOrder] Found line_items in params.order');
-      console.log(
-        '[ShopifyOrder] Line items data:',
-        JSON.stringify(params.order.line_items, null, 2)
-      );
-    }
-
-    // Search for any property containing "line" in the name
-    const paramsKeys = Object.keys(params || {});
-    const lineKeys = paramsKeys.filter((key) =>
-      key.toLowerCase().includes('line')
-    );
-    if (lineKeys.length > 0) {
-      console.log('[ShopifyOrder] Found keys containing "line":', lineKeys);
-      lineKeys.forEach((key) => {
-        console.log(`[ShopifyOrder] ${key}:`, params[key]);
-      });
-    }
-
-    // If still nothing found, log a sample of all params properties
-    console.log('[ShopifyOrder] First 5 params properties for debugging:');
-    const sampleKeys = Object.keys(params || {}).slice(0, 5);
-    sampleKeys.forEach((key) => {
-      console.log(
-        `[ShopifyOrder] ${key}:`,
-        typeof params[key],
-        Array.isArray(params[key])
-          ? `Array(${params[key].length})`
-          : params[key]
-      );
-    });
-  } catch (error) {
-    console.log('[ShopifyOrder] Error processing line items:', error);
-  }
+  // Fetch and log orderLineItems
+  //  api.shopifyOrderLineItem.findMany
 };
 export const options: ActionOptions = { actionType: 'update' };
