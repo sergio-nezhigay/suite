@@ -12,6 +12,11 @@ export const schema: GadgetModel = {
       validations: { numberRange: { min: 0, max: 1000000 } },
       storageKey: "N-3nvM-qGU_R",
     },
+    counterpartyAccount: {
+      type: "string",
+      storageKey: "zKicsG4beJ7o",
+    },
+    counterpartyName: { type: "string", storageKey: "qk8SCUJ-8zMu" },
     currency: {
       type: "string",
       default: "UAH",

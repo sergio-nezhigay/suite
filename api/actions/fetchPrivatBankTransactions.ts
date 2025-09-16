@@ -88,6 +88,8 @@ export const run = async ({ connections, config, params }: any) => {
       CCY?: string;
       TRANTYPE?: string;
       OSND?: string;
+      AUT_CNTR_ACC?: string;  
+      AUT_CNTR_NAM?: string;  
       [key: string]: any;
     }
 
@@ -100,6 +102,8 @@ export const run = async ({ connections, config, params }: any) => {
       type: 'income' | 'expense';
       description: string;
       reference: string | undefined;
+      counterpartyAccount: string | undefined; 
+      counterpartyName: string | undefined;    
     }
 
     const transactions: PrivatBankTransaction[] = (
@@ -117,6 +121,8 @@ export const run = async ({ connections, config, params }: any) => {
         type: isIncome ? 'income' : 'expense',
         description: tx.OSND ?? '',
         reference: tx.REF,
+        counterpartyAccount: tx.AUT_CNTR_ACC,   
+        counterpartyName: tx.AUT_CNTR_NAM,        
       };
     });
 

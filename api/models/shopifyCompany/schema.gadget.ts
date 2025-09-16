@@ -7,19 +7,6 @@ export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-Company",
   fields: {
-    contactRoleAssignments: {
-      type: "hasMany",
-      children: {
-        model: "shopifyCompanyContactRoleAssignment",
-        belongsToField: "company",
-      },
-      storageKey: "iHrNIa339euL",
-    },
-    defaultRole: {
-      type: "belongsTo",
-      parent: { model: "shopifyCompanyContactRole" },
-      storageKey: "BL5L5-a_Jj5L",
-    },
     shopifyCompany: {
       type: "belongsTo",
       parent: { model: "shopifyCompanyContact" },

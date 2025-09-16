@@ -11,10 +11,12 @@ interface PrivatBankTransaction {
   type: 'income' | 'expense';
   description: string;
   reference: string | undefined;
+  counterpartyAccount: string | undefined;  // NEW
+  counterpartyName: string | undefined;     // NEW
 }
 
 export const run = async ({ params, logger, api, connections, config }: any) => {
-  // Only run in production environment
+  // Only run in production environment.
   if (config.NODE_ENV !== 'production') {
     logger.info('syncBankTransactions skipped - only runs in production environment', {
       currentEnvironment: config.NODE_ENV
@@ -288,7 +290,11 @@ export const run = async ({ params, logger, api, connections, config }: any) => 
         const currency = (transaction.currency || 'UAH').toUpperCase().trim();
         const description = (transaction.description || '').substring(0, 1000); // Prevent overly long descriptions
         const reference = transaction.reference ? transaction.reference.substring(0, 100) : ''; // Limit reference length
-
+const counterpartyAccount = transaction.counterpartyAccount ? 
+  transaction.counterpartyAccount.trim().substring(0, 100) : '';
+const counterpartyName = transaction.counterpartyName ? 
+  transaction.counterpartyName.trim().substring(0, 255) : '';
+        
         // 7. Create the bank transaction record with proper error handling
         try {
           // Verify the API create method exists
@@ -296,18 +302,20 @@ export const run = async ({ params, logger, api, connections, config }: any) => 
             throw new Error('bankTransaction.create method not available in API');
           }
 
-          const newTransaction = await api.bankTransaction.create({
-            externalId: externalId.trim(),
-            transactionDateTime: transactionDateTime,
-            amount: amount,
-            currency: currency,
-            type: transaction.type,
-            description: description,
-            reference: reference,
-            rawData: transaction, // Store the complete original transaction data
-            status: 'processed',
-            syncedAt: syncStartTime
-          });
+const newTransaction = await api.bankTransaction.create({
+  externalId: externalId.trim(),
+  transactionDateTime: transactionDateTime,
+  amount: amount,
+  currency: currency,
+  type: transaction.type,
+  description: description,
+  reference: reference,
+  counterpartyAccount: counterpartyAccount,  // NEW
+  counterpartyName: counterpartyName,        // NEW
+  rawData: transaction, // Store the complete original transaction data
+  status: 'processed',
+  syncedAt: syncStartTime
+});
 
           logger.debug(`Created transaction record: ${newTransaction.id} (${externalId})`);
           totalCreated++;
