@@ -14,9 +14,14 @@ export async function getProducts(
     stage: 'bulk_query_start',
     timestamp: startTime,
   });
-
+  console.log('bulkMutation', JSON.stringify(bulkMutation, null, 2));
   const { bulkOperationRunQuery } = await shopifyConnection.graphql(
     bulkMutation
+  );
+
+  console.log(
+    'bulkOperationRunQuery',
+    JSON.stringify(bulkOperationRunQuery, null, 2)
   );
   const { bulkOperation, userErrors } = bulkOperationRunQuery;
 

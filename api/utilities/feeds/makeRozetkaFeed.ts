@@ -512,7 +512,7 @@ class RozetkaXMLGenerator {
           <picture>${product.imageURLs[0]}</picture>
           ${additionalImages}
           ${paramsSection}
-          <description><![CDATA[${product.description}.]]></description>
+          <description><![CDATA[${product.description}...]]></description>
         </offer>`;
       })
       .join('');
