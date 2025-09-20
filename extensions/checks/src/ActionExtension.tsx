@@ -4,11 +4,14 @@ import {
   useApi,
   AdminAction,
   BlockStack,
+  InlineStack,
   Button,
   Text,
   Box,
   Section,
   Divider,
+  Badge,
+  Heading,
 } from '@shopify/ui-extensions-react/admin';
 
 // The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
@@ -123,18 +126,13 @@ function App() {
     })();
   }, [selectedIds.join(',')]);
 
-  const formatPrice = (amount: string) => parseFloat(amount).toFixed(2);
+  const formatPrice = (amount: string, currencyCode: string) => {
+    return `${parseFloat(amount).toFixed(2)} ${currencyCode}`;
+  };
 
   const formatLineItemsWithPrices = (lineItems: Order['lineItems']) => {
     if (!lineItems?.nodes?.length) return [];
-
-    return lineItems.nodes.slice(0, 5).map(item => {
-      const variantInfo = item.variant?.title && item.variant.title !== 'Default Title'
-        ? ` (${item.variant.title})`
-        : '';
-      const price = formatPrice(item.originalUnitPriceSet.shopMoney.amount);
-      return `${item.quantity}x ${item.title}${variantInfo} ---- ${price}`;
-    });
+    return lineItems.nodes.slice(0, 5);
   };
 
   const getPaymentMethod = (metafields: Order['metafields']) => {
@@ -165,28 +163,95 @@ function App() {
         ) : (
           <BlockStack>
             {orders.map((order, index) => (
-              <BlockStack key={order.id}>
-                <Section padding="base">
-                  <Box padding="base">
-                    <BlockStack>
-                      <Text fontWeight="bold">{order.name}</Text>
-                      <Text>{order.customer?.displayName || 'Guest'}</Text>
-                      <Text>Payment: {getPaymentMethod(order.metafields)}</Text>
-                    </BlockStack>
+              <Section key={order.id} heading={order.name}>
+                <BlockStack>
+                  {/* Order Summary Table */}
+                  <Box>
+                    <InlineStack>
+                      <Box minInlineSize="25%">
+                        <Text fontWeight="bold">Customer</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Text fontWeight="bold">Payment Method</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Text fontWeight="bold">Total Items</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Text fontWeight="bold">Status</Text>
+                      </Box>
+                    </InlineStack>
                   </Box>
-                  <Box padding="base">
-                    <BlockStack>
-                      {formatLineItemsWithPrices(order.lineItems).map((item, itemIndex) => (
-                        <Text key={itemIndex}>{item}</Text>
-                      ))}
-                      {order.lineItems.nodes.length > 5 && (
-                        <Text>...and {order.lineItems.nodes.length - 5} more items</Text>
-                      )}
-                    </BlockStack>
+                  <Box>
+                    <InlineStack>
+                      <Box minInlineSize="25%">
+                        <Text>{order.customer?.displayName || 'Guest'}</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Badge>{getPaymentMethod(order.metafields)}</Badge>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Text>{order.lineItems.nodes.length} items</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Badge>Ready for Check</Badge>
+                      </Box>
+                    </InlineStack>
                   </Box>
-                </Section>
-                {index < orders.length - 1 && <Divider />}
-              </BlockStack>
+
+                  <Divider />
+
+                  {/* Line Items Table */}
+                  <Box>
+                    <Heading>Line Items</Heading>
+                  </Box>
+                  <Box>
+                    <InlineStack>
+                      <Box minInlineSize="10%">
+                        <Text fontWeight="bold">Qty</Text>
+                      </Box>
+                      <Box minInlineSize="40%">
+                        <Text fontWeight="bold">Product</Text>
+                      </Box>
+                      <Box minInlineSize="25%">
+                        <Text fontWeight="bold">Variant</Text>
+                      </Box>
+                      <Box minInlineSize="15%">
+                        <Text fontWeight="bold">Unit Price</Text>
+                      </Box>
+                      <Box minInlineSize="10%">
+                        <Text fontWeight="bold">SKU</Text>
+                      </Box>
+                    </InlineStack>
+                  </Box>
+                  {formatLineItemsWithPrices(order.lineItems).map((item, itemIndex) => (
+                    <Box key={itemIndex}>
+                      <InlineStack>
+                        <Box minInlineSize="10%">
+                          <Badge>{item.quantity}</Badge>
+                        </Box>
+                        <Box minInlineSize="40%">
+                          <Text>{item.title}</Text>
+                        </Box>
+                        <Box minInlineSize="25%">
+                          <Text>{item.variant?.title && item.variant.title !== 'Default Title' ? item.variant.title : '-'}</Text>
+                        </Box>
+                        <Box minInlineSize="15%">
+                          <Text>{formatPrice(item.originalUnitPriceSet.shopMoney.amount, item.originalUnitPriceSet.shopMoney.currencyCode)}</Text>
+                        </Box>
+                        <Box minInlineSize="10%">
+                          <Text>{item.variant?.sku || '-'}</Text>
+                        </Box>
+                      </InlineStack>
+                    </Box>
+                  ))}
+                  {order.lineItems.nodes.length > 5 && (
+                    <Box>
+                      <Text>...and {order.lineItems.nodes.length - 5} more items</Text>
+                    </Box>
+                  )}
+                </BlockStack>
+              </Section>
             ))}
           </BlockStack>
         )}
