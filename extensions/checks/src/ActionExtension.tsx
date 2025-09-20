@@ -42,6 +42,12 @@ interface Order {
       };
     }>;
   };
+  fulfillments: Array<{
+    id: string;
+    trackingInfo: Array<{
+      number?: string;
+    }>;
+  }>;
   metafields: {
     nodes: Array<{
       id: string;
@@ -91,6 +97,12 @@ function App() {
                   }
                 }
               }
+              fulfillments(first: 5) {
+                id
+                trackingInfo(first: 10) {
+                  number
+                }
+              }
               metafields(first: 10) {
                 nodes {
                   id
@@ -117,9 +129,18 @@ function App() {
         }
 
         const ordersData = await res.json();
+
+        // Log for debugging
+        console.log('GraphQL Response:', ordersData);
+
+        if (ordersData.errors) {
+          console.error('GraphQL Errors:', ordersData.errors);
+        }
+
         setOrders(ordersData.data?.nodes || []);
       } catch (error) {
         console.error('Error fetching orders:', error);
+        setOrders([]);
       } finally {
         setLoading(false);
       }
@@ -141,12 +162,76 @@ function App() {
       : name;
   };
 
+  // Product variants list
+  const productVariants = [
+    'Кабель USB консольний',
+    'Перехідник HDMI-RCA',
+    'Кабель SCART',
+    'Перехідник SCART',
+    'Перехідник USB-RS232',
+    'Кабель USB-RS232 1.5m',
+    'Кабель USB-RS232 3 метри',
+    'Перехідник HDMI-DP',
+    'Кабель USB Type C',
+    'Перехідник HDMI-VGA',
+    'Термопаста, 2 гр.',
+  ];
+
+  // Simple string similarity function using Levenshtein distance
+  const calculateSimilarity = (str1: string, str2: string): number => {
+    const s1 = str1.toLowerCase();
+    const s2 = str2.toLowerCase();
+
+    const matrix = Array(s2.length + 1)
+      .fill(null)
+      .map(() => Array(s1.length + 1).fill(null));
+
+    for (let i = 0; i <= s1.length; i++) matrix[0][i] = i;
+    for (let j = 0; j <= s2.length; j++) matrix[j][0] = j;
+
+    for (let j = 1; j <= s2.length; j++) {
+      for (let i = 1; i <= s1.length; i++) {
+        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
+        matrix[j][i] = Math.min(
+          matrix[j][i - 1] + 1,
+          matrix[j - 1][i] + 1,
+          matrix[j - 1][i - 1] + indicator
+        );
+      }
+    }
+
+    const maxLen = Math.max(s1.length, s2.length);
+    return maxLen === 0 ? 1 : (maxLen - matrix[s2.length][s1.length]) / maxLen;
+  };
+
+  // Find most similar product variant
+  const findBestVariant = (productTitle: string): string => {
+    let bestMatch = productVariants[0];
+    let bestScore = 0;
+
+    for (const variant of productVariants) {
+      const score = calculateSimilarity(productTitle, variant);
+      if (score > bestScore) {
+        bestScore = score;
+        bestMatch = variant;
+      }
+    }
+
+    return bestMatch;
+  };
+
   const getPaymentMethod = (metafields: Order['metafields']) => {
     const paymentMethodField = metafields?.nodes?.find(
       (field) => field.namespace === 'custom' && field.key === 'payment_method'
     );
     const fullPaymentMethod = paymentMethodField?.value || 'Not specified';
     return fullPaymentMethod.split(' ')[0];
+  };
+
+  const getTrackingNumber = (fulfillments: Order['fulfillments']) => {
+    // Get the first tracking number from the first fulfillment
+    const trackingNumber = fulfillments?.[0]?.trackingInfo?.[0]?.number;
+    return trackingNumber || null;
   };
 
   return (
@@ -176,11 +261,16 @@ function App() {
                     {/* Order Summary */}
                     <Box>
                       <InlineStack>
-                        <Box minInlineSize='50%'>
+                        <Box minInlineSize='35%'>
                           <Text>{order.customer?.displayName || 'Guest'}</Text>
                         </Box>
-                        <Box minInlineSize='50%'>
+                        <Box minInlineSize='25%'>
                           <Badge>{getPaymentMethod(order.metafields)}</Badge>
+                        </Box>
+                        <Box minInlineSize='40%'>
+                          {getTrackingNumber(order.fulfillments) && (
+                            <Text>{getTrackingNumber(order.fulfillments)}</Text>
+                          )}
                         </Box>
                       </InlineStack>
                     </Box>
@@ -190,13 +280,16 @@ function App() {
                       (item, itemIndex) => (
                         <Box key={itemIndex}>
                           <InlineStack>
-                            <Box minInlineSize='65%'>
+                            <Box minInlineSize='45%'>
                               <Text>{truncateProductName(item.title)}</Text>
+                            </Box>
+                            <Box minInlineSize='15%'>
+                              <Text>{findBestVariant(item.title)}</Text>
                             </Box>
                             <Box minInlineSize='15%'>
                               <Badge>{item.quantity}</Badge>
                             </Box>
-                            <Box minInlineSize='20%'>
+                            <Box minInlineSize='25%'>
                               <Text>
                                 {formatPrice(
                                   item.originalUnitPriceSet.shopMoney.amount
