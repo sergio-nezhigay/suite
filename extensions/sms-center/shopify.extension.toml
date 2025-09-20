@@ -4,6 +4,7 @@ api_version = "2024-07"
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
 handle = "sms-center"
+uid = "25871a34-fe7b-a61a-a7a4-4818c6fbe2a588c7a892"
 type = "ui_extension"
 
 

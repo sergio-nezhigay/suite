@@ -4,6 +4,7 @@ api_version = "2024-10"
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
 handle = "nova"
+uid = "437d81d3-0648-2373-9744-bdc61baf3a4a57fdaf95"
 type = "ui_extension"
 
 

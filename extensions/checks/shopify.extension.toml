@@ -1,17 +1,15 @@
-api_version = "2024-10"
 
+api_version = "2025-04"
 [[extensions]]
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
-handle = "send"
-uid = "8cfe8c51-a4e6-60d8-6e09-eb5fbca847ac1ee1bfeb"
+handle = "Checks"
 type = "ui_extension"
-
+uid = "ac484b72-c0f6-1523-d893-b8d3e3bed5719b4beb14"
 
 # Only 1 target can be specified for each Admin action extension
 [[extensions.targeting]]
-module = "./src/SendExtension.tsx"
-# The target used here must match the target used in the module file (./src/ActionExtension.tsx)
+module = "./src/ActionExtension.tsx"
 target = "admin.order-index.selection-action.render"
 
 

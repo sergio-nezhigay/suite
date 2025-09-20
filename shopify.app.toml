@@ -1,28 +1,25 @@
-# Learn bit more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
+# Learn more about configuring your app at https://shopify.dev/docs/apps/tools/cli/configuration
 
 client_id = "2a63484c3b50c064c9d0e0a0d10b00d6"
 name = "admin"
-handle = "admin-64"
 application_url = "https://admin-action-block.gadget.app/api/shopify/install-or-render"
 embedded = true
+handle = "admin-64"
 
 [build]
 dev_store_url = "c2da09-15.myshopify.com"
-include_config_on_deploy = true
+
+[webhooks]
+api_version = "2025-07"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes
-scopes = "read_customers,read_files,read_fulfillments,read_locations,read_orders,read_payment_customizations,read_products,unauthenticated_read_customers,unauthenticated_write_customers,write_assigned_fulfillment_orders,write_customers,write_files,write_orders,write_payment_customizations,write_pixels,write_products,write_merchant_managed_fulfillment_orders,write_third_party_fulfillment_orders,write_fulfillments,read_merchant_managed_fulfillment_orders,read_assigned_fulfillment_orders,read_third_party_fulfillment_orders"
+scopes = "read_assigned_fulfillment_orders,read_customers,read_files,read_fulfillments,read_locations,read_merchant_managed_fulfillment_orders,read_orders,read_payment_customizations,read_products,read_third_party_fulfillment_orders,unauthenticated_read_customers,unauthenticated_write_customers,write_assigned_fulfillment_orders,write_customers,write_files,write_fulfillments,write_merchant_managed_fulfillment_orders,write_orders,write_payment_customizations,write_pixels,write_products,write_third_party_fulfillment_orders"
 
 [auth]
 redirect_urls = [
   "https://admin-action-block.gadget.app/api/connections/auth/shopify/callback"
 ]
 
-[webhooks]
-api_version = "2025-07"
-
 [pos]
 embedded = false
-
-

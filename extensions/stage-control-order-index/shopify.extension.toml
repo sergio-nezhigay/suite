@@ -4,6 +4,7 @@ api_version = "2024-07"
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
 handle = "stage-control-order-index"
+uid = "dab2022b-8996-6a47-5f17-c538510599459f855440"
 type = "ui_extension"
 
 
