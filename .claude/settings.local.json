@@ -12,7 +12,10 @@
       "mcp__shopify-dev__learn_shopify_api",
       "Bash(npm run build:*)",
       "Bash(npm run:*)",
-      "mcp__shopify-dev__validate_graphql_codeblocks"
+      "mcp__shopify-dev__validate_graphql_codeblocks",
+      "Bash(git add:*)",
+      "Bash(git push:*)",
+      "Read(//c/Users/user/Downloads/**)"
     ],
     "deny": [],
     "ask": []
