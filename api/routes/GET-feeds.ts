@@ -44,8 +44,8 @@ export interface ShopifyProduct {
   variants: ProductVariant[];
 }
 
-const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри'];
-const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б'];
+const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри', 'бо'];
+const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'бо'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
 const route: RouteHandler = async ({ reply, connections }) => {

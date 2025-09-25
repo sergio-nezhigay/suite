@@ -1,15 +1,150 @@
 import { fetchNovaPoshtaDeclaration } from '../utilities/fetchDeclarationFromSheet';
 
-export const run = async ({ api, connections, config }: any) => {
-  // Only run in production environment
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(
-      'Skipping declaration orders processing - not in production environment'
-    );
+interface Order {
+  id: string;
+  name: string;
+  fulfillmentStatus: string;
+  tags: string;
+  shopId: string;
+}
+
+interface FulfillmentOrderEdge {
+  node: {
+    id: string;
+    status: string;
+  };
+}
+
+// Validate order before processing
+const validateOrder = (order: Order): boolean => {
+  return !!order.name;
+};
+
+// Get fulfillment orders for a given order
+const getFulfillmentOrders = async (
+  shopifyClient: any,
+  orderId: string
+): Promise<FulfillmentOrderEdge[]> => {
+  const fulfillmentOrdersResponse = await shopifyClient.graphql(`
+    query GetOrderFulfillmentOrders($orderId: ID!) {
+      order(id: $orderId) {
+        id
+        name
+        fulfillmentOrders(first: 10) {
+          edges {
+            node {
+              id
+              status
+            }
+          }
+        }
+      }
+    }
+  `, {
+    orderId: `gid://shopify/Order/${orderId}`
+  });
+
+  return fulfillmentOrdersResponse.order?.fulfillmentOrders?.edges || [];
+};
+
+// Create fulfillment for a fulfillment order
+const createFulfillment = async (
+  shopifyClient: any,
+  fulfillmentOrderId: string,
+  trackingNumber: string,
+  orderName: string
+): Promise<void> => {
+  const fulfillmentResponse = await shopifyClient.graphql(`
+    mutation FulfillOrder($fulfillment: FulfillmentInput!, $message: String) {
+      fulfillmentCreate(
+        fulfillment: $fulfillment
+        message: $message
+      ) {
+        fulfillment {
+          id
+          status
+          createdAt
+          totalQuantity
+          trackingInfo {
+            number
+            url
+          }
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `, {
+    fulfillment: {
+      trackingInfo: {
+        number: trackingNumber,
+        url: `https://novaposhta.ua/tracking/?cargo_number=${trackingNumber}`,
+        company: "Nova Poshta"
+      },
+      lineItemsByFulfillmentOrder: [
+        {
+          fulfillmentOrderId: fulfillmentOrderId
+        }
+      ]
+    },
+    message: "Order fulfilled via Nova Poshta declaration processing"
+  });
+
+  if (fulfillmentResponse.fulfillmentCreate.userErrors?.length > 0) {
+    console.error(`Fulfillment creation errors for order ${orderName}:`, fulfillmentResponse.fulfillmentCreate.userErrors);
+  }
+};
+
+// Process fulfillment for an order with declaration
+const processFulfillment = async (
+  connections: any,
+  order: Order,
+  declaration: string
+): Promise<void> => {
+  const shopifyClient = await connections.shopify.forShopId(order.shopId);
+  const fulfillmentOrders = await getFulfillmentOrders(shopifyClient, order.id);
+
+  if (fulfillmentOrders.length === 0) {
     return;
   }
 
-  console.log('Starting declaration orders processing');
+  for (const fulfillmentOrderEdge of fulfillmentOrders) {
+    await createFulfillment(
+      shopifyClient,
+      fulfillmentOrderEdge.node.id,
+      declaration,
+      order.name
+    );
+  }
+};
+
+// Process a single order
+const processOrder = async (
+  order: Order,
+  connections: any,
+  config: any
+): Promise<void> => {
+  if (!validateOrder(order)) {
+    return;
+  }
+
+  const novaPoshtaDeclaration = await fetchNovaPoshtaDeclaration(
+    order.name,
+    config
+  );
+
+  if (novaPoshtaDeclaration) {
+    await processFulfillment(connections, order, novaPoshtaDeclaration);
+  }
+};
+
+export const run = async ({ api, connections, config }: any) => {
+  // Only run in production environment
+  if (process.env.NODE_ENV !== 'production') {
+    return;
+  }
 
   try {
     // Find unfulfilled orders with "Декларації" tag
@@ -27,113 +162,10 @@ export const run = async ({ api, connections, config }: any) => {
       },
     });
 
-    console.log(`Found ${orders.length} declaration orders`);
-
     // Process each order
     for (const order of orders) {
-      console.log(`Processing order: ${order.name} (${order.id})`);
-
       try {
-        if (!order.name) {
-          console.warn(`Order ${order.id} has no name, skipping`);
-          continue;
-        }
-
-        const novaPoshtaDeclaration = await fetchNovaPoshtaDeclaration(
-          order.name,
-          config
-        );
-        console.log(
-          'novaPoshtaDeclaration',
-          JSON.stringify(novaPoshtaDeclaration, null, 2)
-        );
-
-if (novaPoshtaDeclaration) {
-  console.log(`Found declaration for order ${order.name}: ${novaPoshtaDeclaration}`);
-  
-  try {
-    // Step 1: Get fulfillment orders
-    const shopifyClient = await connections.shopify.forShopId(order.shopId);
-    const fulfillmentOrdersResponse = await shopifyClient.graphql(`
-      query GetOrderFulfillmentOrders($orderId: ID!) {
-        order(id: $orderId) {
-          id
-          name
-          fulfillmentOrders(first: 10) {
-            edges {
-              node {
-                id
-                status
-              }
-            }
-          }
-        }
-      }
-    `, {
-      orderId: `gid://shopify/Order/${order.id}`
-    });
-
-    const fulfillmentOrders = fulfillmentOrdersResponse.order?.fulfillmentOrders?.edges || [];
-    
-    if (fulfillmentOrders.length === 0) {
-      console.warn(`No fulfillment orders found for order ${order.name}`);
-      continue;
-    }
-
-    // Step 2: Create fulfillment for each fulfillment order
-    for (const fulfillmentOrderEdge of fulfillmentOrders) {
-      const fulfillmentOrderId = fulfillmentOrderEdge.node.id;
-      
-      const fulfillmentResponse = await shopifyClient.graphql(`
-        mutation FulfillOrder($fulfillment: FulfillmentInput!, $message: String) {
-          fulfillmentCreate(
-            fulfillment: $fulfillment
-            message: $message
-          ) {
-            fulfillment {
-              id
-              status
-              createdAt
-              totalQuantity
-              trackingInfo {
-                number
-                url
-              }
-            }
-            userErrors {
-              field
-              message
-            }
-          }
-        }
-      `, {
-        fulfillment: {
-          trackingInfo: {
-            number: novaPoshtaDeclaration,
-            url: `https://novaposhta.ua/tracking/?cargo_number=${novaPoshtaDeclaration}`,
-            company: "Nova Poshta"
-          },
-          lineItemsByFulfillmentOrder: [
-            {
-              fulfillmentOrderId: fulfillmentOrderId
-            }
-          ]
-        },
-        message: "Order fulfilled via Nova Poshta declaration processing"
-      });
-
-      if (fulfillmentResponse.fulfillmentCreate.userErrors?.length > 0) {
-        console.error(`Fulfillment creation errors for order ${order.name}:`, fulfillmentResponse.fulfillmentCreate.userErrors);
-      } else {
-        console.log(`Successfully created fulfillment for order ${order.name} with tracking ${novaPoshtaDeclaration}`);
-      }
-    }
-  } catch (fulfillmentError) {
-    console.error(`Error creating fulfillment for order ${order.name}:`, fulfillmentError);
-  }
-} else {
-  console.warn(`No declaration found for order ${order.name}`);
-}
+        await processOrder(order, connections, config);
       } catch (error) {
         console.error(`Error processing order ${order.name}:`, error);
       }
