@@ -15,7 +15,8 @@
       "mcp__shopify-dev__validate_graphql_codeblocks",
       "Bash(git add:*)",
       "Bash(git push:*)",
-      "Read(//c/Users/user/Downloads/**)"
+      "Read(//c/Users/user/Downloads/**)",
+      "mcp__shopify-dev__introspect_graphql_schema"
     ],
     "deny": [],
     "ask": []
