@@ -101,6 +101,64 @@ export class OrderToReceiptTransformer {
   }
 
   private static findBestVariant(productTitle: string): string {
+    const title = productTitle.toLowerCase();
+
+    // Keyword-based semantic matching
+    const semanticMatches = [
+      {
+        keywords: ['rca', 'тюльпан', 'av', 'композитний'],
+        connectors: ['hdmi'],
+        match: 'Перехідник HDMI-RCA'
+      },
+      {
+        keywords: ['vga', 'монітор', 'дисплей'],
+        connectors: ['hdmi'],
+        match: 'Перехідник HDMI-VGA'
+      },
+      {
+        keywords: ['displayport', 'dp'],
+        connectors: ['hdmi'],
+        match: 'Перехідник HDMI-DP'
+      },
+      {
+        keywords: ['scart', 'скарт'],
+        connectors: [],
+        match: 'Перехідник SCART'
+      },
+      {
+        keywords: ['usb', 'rs232', 'rs-232', 'com', 'serial', 'послідовний'],
+        connectors: [],
+        match: title.includes('3') || title.includes('три') ? 'Кабель USB-RS232 3 метри' : 'Кабель USB-RS232 1.5m'
+      },
+      {
+        keywords: ['консоль', 'console', 'налагодження'],
+        connectors: ['usb'],
+        match: 'Кабель USB консольний'
+      },
+      {
+        keywords: ['type-c', 'type c', 'usb-c'],
+        connectors: [],
+        match: 'Кабель USB Type C'
+      },
+      {
+        keywords: ['термопаста', 'thermal', 'paste'],
+        connectors: [],
+        match: 'Термопаста, 2 гр.'
+      }
+    ];
+
+    // Check for semantic matches first
+    for (const semantic of semanticMatches) {
+      const hasKeywords = semantic.keywords.some(keyword => title.includes(keyword));
+      const hasConnectors = semantic.connectors.length === 0 || semantic.connectors.some(conn => title.includes(conn));
+
+      if (hasKeywords && hasConnectors) {
+        console.log(`Semantic match: "${productTitle}" -> "${semantic.match}"`);
+        return semantic.match;
+      }
+    }
+
+    // Fallback to similarity matching
     let bestMatch = this.productVariants[0];
     let bestScore = 0;
 
@@ -112,6 +170,7 @@ export class OrderToReceiptTransformer {
       }
     }
 
+    console.log(`Similarity fallback: "${productTitle}" -> "${bestMatch}" (score: ${bestScore})`);
     return bestMatch;
   }
 
