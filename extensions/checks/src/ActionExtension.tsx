@@ -58,10 +58,22 @@ interface Order {
   };
 }
 
+interface ReceiptResult {
+  orderId: string;
+  orderName?: string;
+  success?: boolean;
+  receiptId?: string;
+  fiscalCode?: string;
+  ettnNumber?: string;
+  error?: string;
+}
+
 function App() {
   const { close, data } = useApi(TARGET);
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
+  const [processing, setProcessing] = useState(false);
+  const [receiptResults, setReceiptResults] = useState<ReceiptResult[]>([]);
 
   const selectedIds = data?.selected?.map(({ id }) => id) || [];
   useEffect(() => {
@@ -234,6 +246,53 @@ function App() {
     return trackingNumber || null;
   };
 
+  const handleProcessChecks = async () => {
+    setProcessing(true);
+    setReceiptResults([]);
+
+    try {
+      console.log('Creating Checkbox receipts for orders:', selectedIds);
+
+      // Prepare order data with tracking numbers and product variants
+      const orderData = orders.map(order => ({
+        orderId: order.id,
+        trackingNumber: getTrackingNumber(order.fulfillments),
+        customer: order.customer?.displayName,
+        lineItems: order.lineItems.nodes.map(item => ({
+          title: item.title,
+          variant: findBestVariant(item.title), // Use product variant instead of main title
+          quantity: item.quantity,
+          price: formatPrice(item.originalUnitPriceSet.shopMoney.amount)
+        }))
+      }));
+
+      const response = await fetch('/createCheckboxReceipts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orders: orderData }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      setReceiptResults(data.results);
+
+      console.log('Checkbox receipts results:', data.results);
+    } catch (error) {
+      console.error('Error creating receipts:', error);
+      setReceiptResults([
+        {
+          orderId: 'error',
+          error: error instanceof Error ? error.message : 'Unknown error',
+        },
+      ]);
+    } finally {
+      setProcessing(false);
+    }
+  };
+
   return (
     <AdminAction
       title={`Checks for ${selectedIds.length} selected order${
@@ -241,8 +300,11 @@ function App() {
       }`}
       loading={loading}
       primaryAction={
-        <Button onPress={close} disabled={loading || orders.length === 0}>
-          Process Checks
+        <Button
+          onPress={handleProcessChecks}
+          disabled={loading || orders.length === 0 || processing}
+        >
+          {processing ? 'Processing...' : 'Process Checks'}
         </Button>
       }
       secondaryAction={<Button onPress={close}>Close</Button>}
@@ -313,6 +375,37 @@ function App() {
               </BlockStack>
             ))}
           </BlockStack>
+        )}
+
+        {receiptResults.length > 0 && (
+          <Section heading='Receipt Results'>
+            <BlockStack>
+              {receiptResults.map((result, index) => (
+                <Box key={index}>
+                  <InlineStack>
+                    <Box minInlineSize='40%'>
+                      <Text>{result.orderName || result.orderId}</Text>
+                    </Box>
+                    <Box minInlineSize='60%'>
+                      {result.success ? (
+                        <BlockStack>
+                          <Badge tone='success'>✓ Receipt Created</Badge>
+                          {result.fiscalCode && (
+                            <Text>Fiscal: {result.fiscalCode}</Text>
+                          )}
+                          {result.ettnNumber && (
+                            <Text>ETTN: {result.ettnNumber}</Text>
+                          )}
+                        </BlockStack>
+                      ) : (
+                        <Badge tone='critical'>✗ {result.error}</Badge>
+                      )}
+                    </Box>
+                  </InlineStack>
+                </Box>
+              ))}
+            </BlockStack>
+          </Section>
         )}
       </BlockStack>
     </AdminAction>
