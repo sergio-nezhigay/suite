@@ -70,3 +70,53 @@ query searchCustomers($query: String!) {
   }
 }
 `;
+
+export const orderUpdateMutation = `
+mutation orderUpdate($input: OrderInput!) {
+  orderUpdate(input: $input) {
+    order {
+      id
+      name
+      tags
+      note
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;
+
+export const orderTransactionCreateMutation = `
+mutation orderTransactionCreate($orderId: ID!, $transaction: OrderTransactionInput!) {
+  orderTransactionCreate(orderId: $orderId, transaction: $transaction) {
+    transaction {
+      id
+      status
+      kind
+      amount
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;
+
+export const orderPayMutation = `
+mutation orderCapture($input: OrderCaptureInput!) {
+  orderCapture(input: $input) {
+    transaction {
+      id
+      status
+      kind
+    }
+    userErrors {
+      field
+      message
+    }
+  }
+}
+`;

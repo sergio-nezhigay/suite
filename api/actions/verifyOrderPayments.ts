@@ -1,6 +1,7 @@
 import { ActionOptions } from 'gadget-server';
+import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
 
-export const run = async ({ params, api }: any) => {
+export const run = async ({ params, api, connections }: any) => {
   console.log('verifyOrderPayments called with params:', params);
 
   try {
@@ -60,6 +61,7 @@ export const run = async ({ params, api }: any) => {
         totalPriceSet: true,
         createdAt: true,
         financialStatus: true,
+        shopId: true,
       },
     });
 
@@ -255,6 +257,38 @@ export const run = async ({ params, api }: any) => {
               saveError
             );
           }
+        }
+
+        // Update Shopify order after successful matches
+        try {
+          console.log(
+            `  Updating Shopify order ${order.name} payment status...`
+          );
+
+          const matchDetails = matches
+            .map(
+              (match: any, index: number) =>
+                `${index + 1}. $${match.amount} on ${new Date(
+                  match.transactionDateTime
+                ).toLocaleDateString()}`
+            )
+            .join('\n');
+
+          await updateOrderPaymentStatus(connections, order.id, order.shopId, {
+            note: `🔍 Payment Verification Complete\n${
+              matches.length
+            } matching transaction(s) found:\n${matchDetails}\n\nVerified at: ${currentTime.toISOString()}`,
+            markAsPaid: true,
+            paidAmount: orderAmount
+          });
+
+          console.log(`  ✅ Successfully updated Shopify order ${order.name}`);
+        } catch (shopifyError) {
+          console.error(
+            `  ❌ Failed to update Shopify order ${order.id}:`,
+            shopifyError
+          );
+          // Don't throw - we want verification to continue even if Shopify update fails
         }
       }
 
