@@ -17,7 +17,8 @@
       "Bash(git push:*)",
       "Read(//c/Users/user/Downloads/**)",
       "mcp__shopify-dev__introspect_graphql_schema",
-      "Bash(git commit:*)"
+      "Bash(git commit:*)",
+      "Bash(node:*)"
     ],
     "deny": [],
     "ask": []
