@@ -25,7 +25,8 @@ const getFulfillmentOrders = async (
   shopifyClient: any,
   orderId: string
 ): Promise<FulfillmentOrderEdge[]> => {
-  const fulfillmentOrdersResponse = await shopifyClient.graphql(`
+  const fulfillmentOrdersResponse = await shopifyClient.graphql(
+    `
     query GetOrderFulfillmentOrders($orderId: ID!) {
       order(id: $orderId) {
         id
@@ -40,9 +41,11 @@ const getFulfillmentOrders = async (
         }
       }
     }
-  `, {
-    orderId: `gid://shopify/Order/${orderId}`
-  });
+  `,
+    {
+      orderId: `gid://shopify/Order/${orderId}`,
+    }
+  );
 
   return fulfillmentOrdersResponse.order?.fulfillmentOrders?.edges || [];
 };
@@ -54,7 +57,8 @@ const createFulfillment = async (
   trackingNumber: string,
   orderName: string
 ): Promise<void> => {
-  const fulfillmentResponse = await shopifyClient.graphql(`
+  const fulfillmentResponse = await shopifyClient.graphql(
+    `
     mutation FulfillOrder($fulfillment: FulfillmentInput!, $message: String) {
       fulfillmentCreate(
         fulfillment: $fulfillment
@@ -76,24 +80,29 @@ const createFulfillment = async (
         }
       }
     }
-  `, {
-    fulfillment: {
-      trackingInfo: {
-        number: trackingNumber,
-        url: `https://novaposhta.ua/tracking/?cargo_number=${trackingNumber}`,
-        company: "Nova Poshta"
+  `,
+    {
+      fulfillment: {
+        trackingInfo: {
+          number: trackingNumber,
+          url: `https://novaposhta.ua/tracking/${trackingNumber}`,
+          company: 'Nova Poshta',
+        },
+        lineItemsByFulfillmentOrder: [
+          {
+            fulfillmentOrderId: fulfillmentOrderId,
+          },
+        ],
       },
-      lineItemsByFulfillmentOrder: [
-        {
-          fulfillmentOrderId: fulfillmentOrderId
-        }
-      ]
-    },
-    message: "Order fulfilled via Nova Poshta declaration processing"
-  });
+      message: 'Order fulfilled via Nova Poshta declaration processing',
+    }
+  );
 
   if (fulfillmentResponse.fulfillmentCreate.userErrors?.length > 0) {
-    console.error(`Fulfillment creation errors for order ${orderName}:`, fulfillmentResponse.fulfillmentCreate.userErrors);
+    console.error(
+      `Fulfillment creation errors for order ${orderName}:`,
+      fulfillmentResponse.fulfillmentCreate.userErrors
+    );
   }
 };
 
