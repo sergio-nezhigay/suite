@@ -4,5 +4,6 @@
 .env.production
 node_modules/
 npm-cache/
+*.map
 **/.DS_Store
 .shopify

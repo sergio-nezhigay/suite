@@ -21,6 +21,9 @@ interface VerificationResult {
   orderDate: string;
   financialStatus: string;
   matchCount: number;
+  alreadyVerified?: boolean;
+  verifiedAt?: string;
+  matchConfidence?: number;
   matches: Array<{
     transactionId: string;
     amount: number;
@@ -65,7 +68,7 @@ function App() {
       console.log('Verifying payments for orders:', selectedOrderIds);
 
       // Call the Gadget action directly via fetch
-      const response = await fetch('/api/verifyOrderPayments', {
+      const response = await fetch('/verifyOrderPayments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -96,12 +99,34 @@ function App() {
   };
 
   const getPaymentStatusBadge = (result: VerificationResult) => {
-    if (result.matchCount > 0) {
+    if (result.alreadyVerified) {
+      return (
+        <Badge tone='info'>
+          🔒 Previously Verified ({result.matchConfidence}%)
+        </Badge>
+      );
+    } else if (result.matchCount > 0) {
       return (
         <Badge tone='success'>✅ Payment Found ({result.matchCount})</Badge>
       );
     } else {
       return <Badge tone='critical'>❌ No Payment</Badge>;
+    }
+  };
+
+  const formatVerificationTime = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+    const diffDays = Math.floor(diffHours / 24);
+
+    if (diffDays > 0) {
+      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
+    } else if (diffHours > 0) {
+      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
+    } else {
+      return 'Just now';
     }
   };
 
@@ -156,9 +181,23 @@ function App() {
                     {result.financialStatus}
                   </Text>
 
+                  {result.verifiedAt && (
+                    <Text>
+                      🕒{' '}
+                      {result.alreadyVerified
+                        ? 'Previously verified'
+                        : 'Just verified'}
+                      : {formatVerificationTime(result.verifiedAt)}
+                    </Text>
+                  )}
+
                   {result.matches.length > 0 && (
                     <BlockStack>
-                      <Text fontWeight='bold'>✅ Matching Transactions:</Text>
+                      <Text fontWeight='bold'>
+                        {result.alreadyVerified
+                          ? '🔒 Previously Matched Transactions:'
+                          : '✅ Matching Transactions:'}
+                      </Text>
                       {result.matches.map((match) => (
                         <BlockStack key={match.transactionId}>
                           <Text>
@@ -168,6 +207,11 @@ function App() {
                           <Text>
                             📝 {match.description.substring(0, 50)}...
                           </Text>
+                          {result.alreadyVerified && (
+                            <Text>
+                              📊 Confidence: {result.matchConfidence}%
+                            </Text>
+                          )}
                         </BlockStack>
                       ))}
                     </BlockStack>

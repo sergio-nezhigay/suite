@@ -22,6 +22,35 @@ export const run = async ({ params, api }: any) => {
     console.log('Original orderIds:', orderIds);
     console.log('Converted numericOrderIds:', numericOrderIds);
 
+    // Check for existing verifications first
+    const existingMatches = await api.orderPaymentMatch.findMany({
+      filter: { orderId: { in: numericOrderIds } },
+      select: {
+        id: true,
+        orderId: true,
+        bankTransactionId: true,
+        verifiedAt: true,
+        matchConfidence: true,
+        notes: true,
+      },
+    });
+
+    console.log(
+      `Found ${existingMatches.length} existing payment verifications`
+    );
+
+    // Create a map of already verified orders
+    const verifiedOrderIds = new Set(
+      existingMatches.map((match: { orderId: any }) => match.orderId)
+    );
+    const unverifiedOrderIds = numericOrderIds.filter(
+      (id) => !verifiedOrderIds.has(id)
+    );
+
+    console.log(
+      `${verifiedOrderIds.size} orders already verified, ${unverifiedOrderIds.length} need verification`
+    );
+
     // Fetch selected orders
     const orders = await api.shopifyOrder.findMany({
       filter: { id: { in: numericOrderIds } },
@@ -39,13 +68,13 @@ export const run = async ({ params, api }: any) => {
     // Debug: Log order details
     orders.forEach((order: any, index: number) => {
       const orderAmount = parseFloat(
-        order.totalPriceSet?.shopMoney?.amount || '0'
+        order.totalPriceSet?.shop_money?.amount || '0'
       );
       console.log(`DEBUG - Order ${index + 1}:`, {
         id: order.id,
         name: order.name,
         amount: orderAmount,
-        currency: order.totalPriceSet?.shopMoney?.currencyCode,
+        currency: order.totalPriceSet?.shop_money?.currencyCode,
         createdAt: order.createdAt,
         financialStatus: order.financialStatus,
         totalPriceSet: order.totalPriceSet,
@@ -92,12 +121,47 @@ export const run = async ({ params, api }: any) => {
     }
 
     // Simple matching logic: exact amount + within 7 days
-    const results = orders.map((order: any) => {
+    const results = [];
+    const currentTime = new Date();
+
+    for (const order of orders) {
       console.log('order', JSON.stringify(order, null, 2));
       const orderAmount = parseFloat(
         order.totalPriceSet?.shop_money?.amount || '0'
       );
       const orderDate = new Date(order.createdAt);
+
+      // Check if this order is already verified
+      const existingMatch = existingMatches.find(
+        (match: any) => match.orderId === order.id
+      );
+
+      if (existingMatch) {
+        console.log(`\nDEBUG - Order ${order.name} already verified:`);
+        console.log(`  Verified at: ${existingMatch.verifiedAt}`);
+        console.log(`  Confidence: ${existingMatch.matchConfidence}%`);
+
+        results.push({
+          orderId: order.id,
+          orderName: order.name || '',
+          orderAmount: orderAmount,
+          orderDate: order.createdAt,
+          financialStatus: order.financialStatus || '',
+          matchCount: 1,
+          alreadyVerified: true,
+          verifiedAt: existingMatch.verifiedAt,
+          matchConfidence: existingMatch.matchConfidence,
+          matches: [
+            {
+              transactionId: existingMatch.bankTransactionId,
+              amount: orderAmount, // We'll use order amount as placeholder
+              date: existingMatch.verifiedAt,
+              description: 'Previously verified payment',
+            },
+          ],
+        });
+        continue;
+      }
 
       console.log(`\nDEBUG - Matching for Order ${order.name}:`);
       console.log(`  Order Amount: ${orderAmount}`);
@@ -146,21 +210,71 @@ export const run = async ({ params, api }: any) => {
         `  Found ${matches.length} matching transactions for order ${order.name}`
       );
 
-      return {
+      // Save new matches to database
+      if (matches.length > 0) {
+        for (const match of matches) {
+          try {
+            const txAmount = (match as any).amount || 0;
+            const amountDiff = Math.abs(txAmount - orderAmount);
+            const txDateTime = (match as any).transactionDateTime
+              ? new Date((match as any).transactionDateTime)
+              : new Date();
+            const daysDiff =
+              Math.abs(txDateTime.getTime() - orderDate.getTime()) /
+              (24 * 60 * 60 * 1000);
+
+            // Calculate confidence score (100% for exact match, lower for differences)
+            let confidence = 100;
+            if (amountDiff > 0) confidence -= (amountDiff / orderAmount) * 10; // Reduce by amount difference
+            if (daysDiff > 1) confidence -= daysDiff * 2; // Reduce by days difference
+            confidence = Math.max(50, Math.min(100, confidence)); // Keep between 50-100
+
+            const savedMatch = await api.orderPaymentMatch.create({
+              orderId: order.id,
+              bankTransactionId: (match as any).id,
+              matchConfidence: Math.round(confidence),
+              verifiedAt: currentTime,
+              matchedBy: 'manual',
+              notes: `Amount diff: ${amountDiff.toFixed(
+                4
+              )}, Days diff: ${daysDiff.toFixed(2)}`,
+              orderAmount: orderAmount,
+              transactionAmount: txAmount,
+              amountDifference: amountDiff,
+              daysDifference: daysDiff,
+            });
+
+            console.log(
+              `  Saved payment match ${savedMatch.id} with ${confidence.toFixed(
+                1
+              )}% confidence`
+            );
+          } catch (saveError) {
+            console.error(
+              `  Failed to save match for order ${order.id}:`,
+              saveError
+            );
+          }
+        }
+      }
+
+      results.push({
         orderId: order.id,
         orderName: order.name || '',
         orderAmount: orderAmount,
         orderDate: order.createdAt,
         financialStatus: order.financialStatus || '',
         matchCount: matches.length,
+        alreadyVerified: false,
+        verifiedAt: matches.length > 0 ? currentTime : null,
         matches: matches.map((tx: any) => ({
           transactionId: tx.id,
           amount: tx.amount || 0,
           date: tx.transactionDateTime || '',
           description: tx.description || '',
         })),
-      };
-    });
+      });
+    }
 
     console.log('Verification results:', results);
 
