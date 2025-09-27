@@ -1,11 +1,10 @@
 import { AppConnections } from 'gadget-server';
-import { orderUpdateMutation, orderTransactionCreateMutation } from './queries';
+import { orderUpdateMutation, orderMarkAsPaidMutation } from './queries';
 
 interface OrderUpdateOptions {
   addTags?: string[];
   note?: string;
   markAsPaid?: boolean;
-  paidAmount?: number;
 }
 
 export async function updateOrderPaymentStatus(
@@ -104,29 +103,25 @@ export async function updateOrderPaymentStatus(
       }
     }
 
-    // Create payment transaction if requested
-    if (options.markAsPaid && options.paidAmount) {
-      console.log(`💰 Creating payment transaction for $${options.paidAmount}...`);
+    // Mark order as paid if requested
+    if (options.markAsPaid) {
+      console.log('💰 Marking order as paid...');
 
-      const transactionResponse = await shopify.graphql(orderTransactionCreateMutation, {
-        orderId: shopifyOrderId,
-        transaction: {
-          kind: 'SALE',
-          status: 'SUCCESS',
-          amount: options.paidAmount.toString(),
-          gateway: 'manual',
-          message: 'Payment verified via bank transaction matching'
+      const markAsPaidResponse = await shopify.graphql(orderMarkAsPaidMutation, {
+        input: {
+          id: shopifyOrderId
         }
       });
 
-      console.log('💳 Transaction response:', JSON.stringify(transactionResponse, null, 2));
+      console.log('💳 Mark as paid response:', JSON.stringify(markAsPaidResponse, null, 2));
 
-      if (transactionResponse.orderTransactionCreate?.userErrors?.length > 0) {
-        console.error('❌ Transaction creation errors:', transactionResponse.orderTransactionCreate.userErrors);
-        // Don't throw - order update was successful, just transaction failed
-        console.log('⚠️ Transaction creation failed, but order update was successful');
+      if (markAsPaidResponse.orderMarkAsPaid?.userErrors?.length > 0) {
+        console.error('❌ Mark as paid errors:', markAsPaidResponse.orderMarkAsPaid.userErrors);
+        // Don't throw - order update was successful, just marking as paid failed
+        console.log('⚠️ Failed to mark order as paid, but note update was successful');
       } else {
-        console.log('✅ Payment transaction created successfully');
+        console.log('✅ Order marked as paid successfully');
+        console.log(`💳 New financial status: ${markAsPaidResponse.orderMarkAsPaid?.order?.displayFinancialStatus}`);
       }
     }
 

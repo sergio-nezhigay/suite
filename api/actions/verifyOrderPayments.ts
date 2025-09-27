@@ -278,8 +278,7 @@ export const run = async ({ params, api, connections }: any) => {
             note: `🔍 Payment Verification Complete\n${
               matches.length
             } matching transaction(s) found:\n${matchDetails}\n\nVerified at: ${currentTime.toISOString()}`,
-            markAsPaid: true,
-            paidAmount: orderAmount
+            markAsPaid: true
           });
 
           console.log(`  ✅ Successfully updated Shopify order ${order.name}`);

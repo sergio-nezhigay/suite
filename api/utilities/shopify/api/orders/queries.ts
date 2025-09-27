@@ -88,30 +88,14 @@ mutation orderUpdate($input: OrderInput!) {
 }
 `;
 
-export const orderTransactionCreateMutation = `
-mutation orderTransactionCreate($orderId: ID!, $transaction: OrderTransactionInput!) {
-  orderTransactionCreate(orderId: $orderId, transaction: $transaction) {
-    transaction {
+export const orderMarkAsPaidMutation = `
+mutation orderMarkAsPaid($input: OrderMarkAsPaidInput!) {
+  orderMarkAsPaid(input: $input) {
+    order {
       id
-      status
-      kind
-      amount
-    }
-    userErrors {
-      field
-      message
-    }
-  }
-}
-`;
-
-export const orderPayMutation = `
-mutation orderCapture($input: OrderCaptureInput!) {
-  orderCapture(input: $input) {
-    transaction {
-      id
-      status
-      kind
+      name
+      displayFinancialStatus
+      fullyPaid
     }
     userErrors {
       field
