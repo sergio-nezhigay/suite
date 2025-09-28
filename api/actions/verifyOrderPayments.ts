@@ -3,6 +3,19 @@ import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/update
 import { CheckboxService } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
 
+// Helper function to extract payment code from counterparty account
+function extractPaymentCodeFromAccount(account: string): string | null {
+  if (!account) return null;
+
+  // Extract the 4-digit payment code from positions 15-19 of the account
+  // Example: UA293052990000029023866100110 -> account.substring(15, 19) -> "2902"
+  if (account.length >= 19) {
+    return account.substring(15, 19);
+  }
+
+  return null;
+}
+
 // Helper function to create automatic check for verified payment
 async function createAutomaticCheck(
   order: any,
@@ -14,6 +27,110 @@ async function createAutomaticCheck(
     console.log(
       `🧾 Creating automatic check for verified order ${order.name}...`
     );
+
+    // Get the bank transaction that was matched to this order
+    const paymentMatch = await api.orderPaymentMatch.findFirst({
+      filter: { orderId: { equals: order.id } },
+      select: { bankTransactionId: true }
+    });
+
+    if (!paymentMatch) {
+      console.log(`⚠️ No payment match found for order ${order.name}, skipping check creation`);
+      return {
+        success: false,
+        skipped: true,
+        reason: 'No payment match found'
+      };
+    }
+
+    // Fetch the bank transaction details
+    const bankTransaction = await api.bankTransaction.findFirst({
+      filter: { id: { equals: paymentMatch.bankTransactionId } },
+      select: {
+        counterpartyAccount: true,
+        counterpartyName: true
+      }
+    });
+
+    if (!bankTransaction) {
+      console.log(`⚠️ Bank transaction not found for order ${order.name}, skipping check creation`);
+      return {
+        success: false,
+        skipped: true,
+        reason: 'Bank transaction not found'
+      };
+    }
+
+    // Extract and validate payment code
+    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount);
+    const restrictedCodes = ['2600', '2902', '2909', '2920'];
+    const novaPoshtraAccount = 'UA813005280000026548000000014';
+
+    // Check payment code restrictions
+    if (paymentCode && restrictedCodes.includes(paymentCode)) {
+      console.log(`🚫 Skipping check creation for order ${order.name} - restricted payment code: ${paymentCode}`);
+
+      // Add note to order explaining why check wasn't created
+      const restrictionNote = `🧾 Automatic Check Creation Skipped
+Reason: Payment code ${paymentCode} is restricted from automatic check creation
+Counterparty: ${bankTransaction.counterpartyName || 'Unknown'}
+Account: ${bankTransaction.counterpartyAccount || 'Unknown'}
+Date: ${new Date().toISOString()}
+Note: Manual check creation may be required`;
+
+      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
+        note: restrictionNote,
+      });
+
+      return {
+        success: false,
+        skipped: true,
+        reason: `Restricted payment code: ${paymentCode}`
+      };
+    }
+
+    // Check Nova Poshta account restriction
+    if (bankTransaction.counterpartyAccount === novaPoshtraAccount) {
+      console.log(`🚫 Skipping check creation for order ${order.name} - Nova Poshta account restriction`);
+
+      const restrictionNote = `🧾 Automatic Check Creation Skipped
+Reason: Nova Poshta account restriction
+Counterparty: ${bankTransaction.counterpartyName || 'Nova Poshta'}
+Account: ${bankTransaction.counterpartyAccount}
+Date: ${new Date().toISOString()}
+Note: Nova Poshta payments are excluded from automatic check creation`;
+
+      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
+        note: restrictionNote,
+      });
+
+      return {
+        success: false,
+        skipped: true,
+        reason: 'Nova Poshta account restriction'
+      };
+    }
+
+    // Check for existing receipts in order notes to prevent duplicates
+    const existingOrder = await api.shopifyOrder.findFirst({
+      filter: { id: { equals: order.id } },
+      select: { note: true }
+    });
+
+    if (existingOrder?.note &&
+        (existingOrder.note.includes('Receipt ID:') ||
+         existingOrder.note.includes('Fiscal Code:') ||
+         existingOrder.note.includes('🧾 Automatic Check Created'))) {
+      console.log(`🚫 Check already exists for order ${order.name} - found existing receipt in notes`);
+      return {
+        success: false,
+        skipped: true,
+        reason: 'Receipt already exists in order notes'
+      };
+    }
+
+    console.log(`✅ Payment validation passed for order ${order.name} - proceeding with check creation`);
+    console.log(`   Payment code: ${paymentCode}, Counterparty: ${bankTransaction.counterpartyName}`);
 
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
@@ -475,6 +592,10 @@ export const run = async ({ params, api, connections }: any) => {
                 );
                 console.log(`   Receipt ID: ${checkResult.receiptId}`);
                 console.log(`   Fiscal Code: ${checkResult.fiscalCode}`);
+              } else if (checkResult?.skipped) {
+                console.log(
+                  `⚠️ Automatic check skipped for order ${order.name}: ${checkResult.reason}`
+                );
               } else {
                 console.log(
                   `⚠️ Automatic check creation failed for order ${
