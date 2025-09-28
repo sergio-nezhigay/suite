@@ -6,6 +6,7 @@ export * from './data/getPaginatedData';
 export * from './data/complimentaryProductsDesktops';
 export * from './data/transliterate';
 export * from './data/stripText';
+export * from './data/findBestVariant';
 export * from './ai/fetchChatGPT';
 export * from './ai/parseGeneratedDescription';
 export * from './ai/prompts/preparePrompt';
