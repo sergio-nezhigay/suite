@@ -1,6 +1,38 @@
 import { ActionOptions } from 'gadget-server';
 import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
 
+// Helper function to refresh bank data since last sync
+async function refreshBankDataSinceLastSync(api: any) {
+  try {
+    // Get most recent sync timestamp
+    const lastSyncedTransaction = await api.bankTransaction.findFirst({
+      sort: { syncedAt: 'Descending' },
+      select: { syncedAt: true }
+    });
+
+    const lastSyncTime = lastSyncedTransaction?.syncedAt || new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const now = new Date();
+    const daysSinceSync = Math.ceil((now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60 * 24));
+    const daysToFetch = Math.max(1, Math.min(daysSinceSync, 10));
+
+    console.log(`Refreshing bank data: last sync ${lastSyncTime.toISOString()}, fetching ${daysToFetch} days`);
+
+    // Trigger sync for the gap period
+    const syncResult = await api.syncBankTransactions({ daysBack: daysToFetch });
+
+    if (syncResult.success) {
+      console.log(`Bank refresh completed: ${syncResult.summary.created} new, ${syncResult.summary.duplicates} duplicates`);
+    } else {
+      console.warn(`Bank refresh failed: ${syncResult.error}`);
+    }
+
+    return syncResult;
+  } catch (error) {
+    console.error('Error in refreshBankDataSinceLastSync:', error);
+    throw error;
+  }
+}
+
 export const run = async ({ params, api, connections }: any) => {
   console.log('verifyOrderPayments called with params:', params);
 
@@ -82,6 +114,14 @@ export const run = async ({ params, api, connections }: any) => {
         totalPriceSet: order.totalPriceSet,
       });
     });
+
+    // Refresh bank data since last sync, then fetch recent transactions
+    try {
+      console.log('Ensuring fresh bank data...');
+      await refreshBankDataSinceLastSync(api);
+    } catch (refreshError) {
+      console.warn('Bank data refresh failed, proceeding with existing data:', refreshError);
+    }
 
     // Fetch recent bank transactions (last 30 days)
     const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
