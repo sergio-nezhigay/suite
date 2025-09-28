@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   reactExtension,
   useApi,
@@ -43,16 +43,86 @@ interface VerificationResponse {
   error?: string;
 }
 
+interface LineItem {
+  id: string;
+  title: string;
+  quantity: number;
+  variant?: {
+    title: string;
+  };
+}
+
+interface OrderDetails {
+  id: string;
+  name: string;
+  lineItems: {
+    nodes: LineItem[];
+  };
+}
+
 function App() {
   const { close, data, query } = useApi(TARGET);
   const [isVerifying, setIsVerifying] = useState(false);
   const [verificationResults, setVerificationResults] =
     useState<VerificationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [orderDetails, setOrderDetails] = useState<OrderDetails[]>([]);
+  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
 
   console.log('Selected orders data:', data);
 
-  const selectedOrderIds = data?.selected?.map((item: any) => item.id) || [];
+  const selectedOrderIds = useMemo(() =>
+    data?.selected?.map((item: any) => item.id) || [],
+    [data?.selected]
+  );
+
+  const fetchOrderDetails = useCallback(async (orderIds: string[]) => {
+    if (orderIds.length === 0) {
+      setOrderDetails([]);
+      return;
+    }
+
+    setIsLoadingDetails(true);
+    try {
+      const getOrdersQuery = {
+        query: `query GetOrders($ids: [ID!]!) {
+          nodes(ids: $ids) {
+            ... on Order {
+              id
+              name
+              lineItems(first: 10) {
+                nodes {
+                  id
+                  title
+                  quantity
+                  variant {
+                    title
+                  }
+                }
+              }
+            }
+          }
+        }`,
+        variables: { ids: orderIds },
+      };
+
+      console.log('Fetching orders with query:', getOrdersQuery);
+      const result = await query(getOrdersQuery.query, { variables: getOrdersQuery.variables });
+      console.log('Query result:', result);
+
+      const orders = (result as any)?.data?.nodes?.filter((node: any) => node?.id) || [];
+      setOrderDetails(orders);
+    } catch (err) {
+      console.error('Error fetching order details:', err);
+      setError('Failed to load order details');
+    } finally {
+      setIsLoadingDetails(false);
+    }
+  }, [query]);
+
+  useEffect(() => {
+    fetchOrderDetails(selectedOrderIds);
+  }, [selectedOrderIds, fetchOrderDetails]);
 
   const handleVerifyPayments = async () => {
     if (selectedOrderIds.length === 0) {
@@ -146,6 +216,24 @@ function App() {
         <Text fontWeight='bold'>💰 Payment Verification</Text>
 
         <Text>Selected Orders: {selectedOrderIds.length}</Text>
+
+        {isLoadingDetails && <Text>🔄 Loading order details...</Text>}
+
+        {!isLoadingDetails && orderDetails.length > 0 && (
+          <BlockStack>
+            <Text fontWeight='bold'>📋 Order Line Items:</Text>
+            {orderDetails.map((order) => (
+              <BlockStack key={order.id}>
+                <Text fontWeight='bold'>{order.name}</Text>
+                {order.lineItems.nodes.map((item) => (
+                  <Text key={item.id}>
+                    • {item.title} {item.variant?.title ? `(${item.variant.title})` : ''} - Qty: {item.quantity}
+                  </Text>
+                ))}
+              </BlockStack>
+            ))}
+          </BlockStack>
+        )}
 
         {error && <Text>❌ Error: {error}</Text>}
 
