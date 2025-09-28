@@ -74,7 +74,7 @@ export const findBestVariant = (productTitle: string): string => {
       keywords: ['usb', 'rs232', 'rs-232', 'com', 'serial', 'послідовний'],
       connectors: [],
       match:
-        title.includes('3') || title.includes('три')
+        title.includes('3 м') || title.includes('3м') || title.includes('три м') || title.includes('3 метр')
           ? 'Кабель USB-RS232 3 метри'
           : 'Кабель USB-RS232, 1.5 м',
     },
