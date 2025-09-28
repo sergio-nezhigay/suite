@@ -5,7 +5,7 @@ const productVariants = [
   'Кабель SCART',
   'Перехідник SCART',
   'Перехідник USB-RS232',
-  'Кабель USB-RS232 1.5m',
+  'Кабель USB-RS232, 1.5 м',
   'Кабель USB-RS232 3 метри',
   'Перехідник HDMI-DP',
   'Кабель USB Type C',
@@ -53,49 +53,56 @@ export const findBestVariant = (productTitle: string): string => {
     {
       keywords: ['rca', 'тюльпан', 'av', 'композитний'],
       connectors: ['hdmi'],
-      match: 'Перехідник HDMI-RCA'
+      match: 'Перехідник HDMI-RCA',
     },
     {
       keywords: ['vga', 'монітор', 'дисплей'],
       connectors: ['hdmi'],
-      match: 'Перехідник HDMI-VGA'
+      match: 'Перехідник HDMI-VGA',
     },
     {
       keywords: ['displayport', 'dp'],
       connectors: ['hdmi'],
-      match: 'Перехідник HDMI-DP'
+      match: 'Перехідник HDMI-DP',
     },
     {
       keywords: ['scart', 'скарт'],
       connectors: [],
-      match: 'Перехідник SCART'
+      match: 'Перехідник SCART',
     },
     {
       keywords: ['usb', 'rs232', 'rs-232', 'com', 'serial', 'послідовний'],
       connectors: [],
-      match: title.includes('3') || title.includes('три') ? 'Кабель USB-RS232 3 метри' : 'Кабель USB-RS232 1.5m'
+      match:
+        title.includes('3') || title.includes('три')
+          ? 'Кабель USB-RS232 3 метри'
+          : 'Кабель USB-RS232, 1.5 м',
     },
     {
       keywords: ['консоль', 'console', 'налагодження'],
       connectors: ['usb'],
-      match: 'Кабель USB консольний'
+      match: 'Кабель USB консольний',
     },
     {
       keywords: ['type-c', 'type c', 'usb-c'],
       connectors: [],
-      match: 'Кабель USB Type C'
+      match: 'Кабель USB Type C',
     },
     {
       keywords: ['термопаста', 'thermal', 'paste'],
       connectors: [],
-      match: 'Термопаста, 2 гр.'
-    }
+      match: 'Термопаста, 2 гр.',
+    },
   ];
 
   // Check for semantic matches first
   for (const semantic of semanticMatches) {
-    const hasKeywords = semantic.keywords.some(keyword => title.includes(keyword));
-    const hasConnectors = semantic.connectors.length === 0 || semantic.connectors.some(conn => title.includes(conn));
+    const hasKeywords = semantic.keywords.some((keyword) =>
+      title.includes(keyword)
+    );
+    const hasConnectors =
+      semantic.connectors.length === 0 ||
+      semantic.connectors.some((conn) => title.includes(conn));
 
     if (hasKeywords && hasConnectors) {
       console.log(`Semantic match: "${productTitle}" -> "${semantic.match}"`);
@@ -115,6 +122,8 @@ export const findBestVariant = (productTitle: string): string => {
     }
   }
 
-  console.log(`Similarity fallback: "${productTitle}" -> "${bestMatch}" (score: ${bestScore})`);
+  console.log(
+    `Similarity fallback: "${productTitle}" -> "${bestMatch}" (score: ${bestScore})`
+  );
   return bestMatch;
 };

@@ -149,7 +149,7 @@ export class CheckboxService {
     const receipt = await response.json();
 
     // Check if receipt was actually created successfully
-    if (receipt.status && receipt.status !== 'CREATED') {
+    if (receipt.status && receipt.status !== 'Created') {
       throw new Error(
         `Sell receipt creation failed with status: ${receipt.status}`
       );

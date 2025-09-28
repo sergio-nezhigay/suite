@@ -1,12 +1,12 @@
 import { RouteHandler } from 'gadget-server';
 
-const route: RouteHandler<{ Body: { orderIds: string[] } }> = async ({
+const route: RouteHandler<{ Body: { orderIds: string[]; autoCreateChecks?: boolean } }> = async ({
   request,
   reply,
   api,
 }) => {
   try {
-    const { orderIds } = request.body;
+    const { orderIds, autoCreateChecks = true } = request.body;
 
     if (!orderIds || !Array.isArray(orderIds)) {
       await reply.code(400).send({
@@ -17,9 +17,11 @@ const route: RouteHandler<{ Body: { orderIds: string[] } }> = async ({
     }
 
     console.log('Backend route received orderIds:', orderIds);
+    console.log('Auto create checks enabled:', autoCreateChecks);
 
     const result = await api.verifyOrderPayments({
       orderIds: orderIds,
+      autoCreateChecks: autoCreateChecks,
     });
 
     await reply.send(result);
