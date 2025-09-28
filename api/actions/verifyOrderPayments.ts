@@ -4,9 +4,16 @@ import { CheckboxService } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
 
 // Helper function to create automatic check for verified payment
-async function createAutomaticCheck(order: any, connections: any, api: any) {
+async function createAutomaticCheck(
+  order: any,
+  connections: any,
+  api: any,
+  orderData?: any
+) {
   try {
-    console.log(`🧾 Creating automatic check for verified order ${order.name}...`);
+    console.log(
+      `🧾 Creating automatic check for verified order ${order.name}...`
+    );
 
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
@@ -26,25 +33,39 @@ async function createAutomaticCheck(order: any, connections: any, api: any) {
             quantity: true,
             priceSet: true,
             price: true,
-          }
-        }
-      }
+          },
+        },
+      },
     });
 
-    if (!fullOrder || !fullOrder.lineItems || fullOrder.lineItems.length === 0) {
-      console.log(`⚠️ No line items found for order ${order.name}, skipping check creation`);
+    if (
+      !fullOrder ||
+      !fullOrder.lineItems ||
+      fullOrder.lineItems.length === 0
+    ) {
+      console.log(
+        `⚠️ No line items found for order ${order.name}, skipping check creation`
+      );
       return null;
     }
 
-    console.log(`📋 Found ${fullOrder.lineItems.length} line items for order ${fullOrder.name}`);
+    console.log(
+      `📋 Found ${fullOrder.lineItems.length} line items for order ${fullOrder.name}`
+    );
 
-    // Transform order to sell receipt format (CASHLESS payment for verified bank transfer)
-    const receiptBody = OrderToReceiptTransformer.transformOrderForSell(fullOrder);
+    const receiptBody = orderData
+      ? OrderToReceiptTransformer.transformOrderFromDataForSell(
+          orderData,
+          fullOrder
+        )
+      : OrderToReceiptTransformer.transformOrderForSell(fullOrder);
 
     // Create the sell receipt
     const receipt = await checkboxService.createSellReceipt(receiptBody);
 
-    console.log(`✅ Created check/receipt ${receipt.id} for order ${order.name}`);
+    console.log(
+      `✅ Created check/receipt ${receipt.id} for order ${order.name}`
+    );
 
     // Add receipt info to order notes
     const checkNote = `🧾 Automatic Check Created
@@ -54,14 +75,9 @@ Receipt URL: ${receipt.receipt_url || 'N/A'}
 Created: ${new Date().toISOString()}
 Reason: Payment verified and order marked as paid`;
 
-    await updateOrderPaymentStatus(
-      connections,
-      order.id,
-      order.shopId,
-      {
-        note: checkNote,
-      }
-    );
+    await updateOrderPaymentStatus(connections, order.id, order.shopId, {
+      note: checkNote,
+    });
 
     console.log(`📝 Added check details to order ${order.name} notes`);
 
@@ -71,9 +87,11 @@ Reason: Payment verified and order marked as paid`;
       fiscalCode: receipt.fiscal_code,
       receiptUrl: receipt.receipt_url,
     };
-
   } catch (error) {
-    console.error(`❌ Failed to create automatic check for order ${order.name}:`, error);
+    console.error(
+      `❌ Failed to create automatic check for order ${order.name}:`,
+      error
+    );
 
     // Add error note to order but don't fail the payment verification
     try {
@@ -82,16 +100,14 @@ Error: ${error instanceof Error ? error.message : 'Unknown error'}
 Attempted: ${new Date().toISOString()}
 Note: Payment verification was successful, check creation can be done manually`;
 
-      await updateOrderPaymentStatus(
-        connections,
-        order.id,
-        order.shopId,
-        {
-          note: errorNote,
-        }
-      );
+      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
+        note: errorNote,
+      });
     } catch (noteError) {
-      console.error(`Failed to add error note to order ${order.name}:`, noteError);
+      console.error(
+        `Failed to add error note to order ${order.name}:`,
+        noteError
+      );
     }
 
     return {
@@ -107,21 +123,31 @@ async function refreshBankDataSinceLastSync(api: any) {
     // Get most recent sync timestamp
     const lastSyncedTransaction = await api.bankTransaction.findFirst({
       sort: { syncedAt: 'Descending' },
-      select: { syncedAt: true }
+      select: { syncedAt: true },
     });
 
-    const lastSyncTime = lastSyncedTransaction?.syncedAt || new Date(Date.now() - 24 * 60 * 60 * 1000);
+    const lastSyncTime =
+      lastSyncedTransaction?.syncedAt ||
+      new Date(Date.now() - 24 * 60 * 60 * 1000);
     const now = new Date();
-    const daysSinceSync = Math.ceil((now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60 * 24));
+    const daysSinceSync = Math.ceil(
+      (now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60 * 24)
+    );
     const daysToFetch = Math.max(1, Math.min(daysSinceSync, 10));
 
-    console.log(`Refreshing bank data: last sync ${lastSyncTime.toISOString()}, fetching ${daysToFetch} days`);
+    console.log(
+      `Refreshing bank data: last sync ${lastSyncTime.toISOString()}, fetching ${daysToFetch} days`
+    );
 
     // Trigger sync for the gap period
-    const syncResult = await api.syncBankTransactions({ daysBack: daysToFetch });
+    const syncResult = await api.syncBankTransactions({
+      daysBack: daysToFetch,
+    });
 
     if (syncResult.success) {
-      console.log(`Bank refresh completed: ${syncResult.summary.created} new, ${syncResult.summary.duplicates} duplicates`);
+      console.log(
+        `Bank refresh completed: ${syncResult.summary.created} new, ${syncResult.summary.duplicates} duplicates`
+      );
     } else {
       console.warn(`Bank refresh failed: ${syncResult.error}`);
     }
@@ -137,7 +163,7 @@ export const run = async ({ params, api, connections }: any) => {
   console.log('verifyOrderPayments called with params:', params);
 
   try {
-    const { orderIds, autoCreateChecks = true } = params;
+    const { orderIds, autoCreateChecks = true, orderData } = params;
 
     if (!orderIds || !Array.isArray(orderIds)) {
       throw new Error('orderIds parameter is required and must be an array');
@@ -220,7 +246,10 @@ export const run = async ({ params, api, connections }: any) => {
       console.log('Ensuring fresh bank data...');
       await refreshBankDataSinceLastSync(api);
     } catch (refreshError) {
-      console.warn('Bank data refresh failed, proceeding with existing data:', refreshError);
+      console.warn(
+        'Bank data refresh failed, proceeding with existing data:',
+        refreshError
+      );
     }
 
     // Fetch recent bank transactions (last 30 days)
@@ -418,7 +447,7 @@ export const run = async ({ params, api, connections }: any) => {
             note: `🔍 Payment Verification Complete\n${
               matches.length
             } matching transaction(s) found:\n${matchDetails}\n\nVerified at: ${currentTime.toISOString()}`,
-            markAsPaid: true
+            markAsPaid: true,
           });
 
           console.log(`  ✅ Successfully updated Shopify order ${order.name}`);
@@ -426,24 +455,45 @@ export const run = async ({ params, api, connections }: any) => {
           // Create automatic check for verified payment (if enabled)
           if (autoCreateChecks) {
             try {
-              console.log(`🧾 Attempting automatic check creation for order ${order.name}...`);
-              const checkResult = await createAutomaticCheck(order, connections, api);
+              console.log(
+                `🧾 Attempting automatic check creation for order ${order.name}...`
+              );
+              // Find the corresponding orderData for this specific order
+              const currentOrderData = orderData?.find(
+                (od: any) => od.id === order.id
+              );
+              const checkResult = await createAutomaticCheck(
+                order,
+                connections,
+                api,
+                currentOrderData
+              );
 
               if (checkResult?.success) {
-                console.log(`✅ Automatic check created successfully for order ${order.name}`);
+                console.log(
+                  `✅ Automatic check created successfully for order ${order.name}`
+                );
                 console.log(`   Receipt ID: ${checkResult.receiptId}`);
                 console.log(`   Fiscal Code: ${checkResult.fiscalCode}`);
               } else {
-                console.log(`⚠️ Automatic check creation failed for order ${order.name}: ${checkResult?.error || 'Unknown error'}`);
+                console.log(
+                  `⚠️ Automatic check creation failed for order ${
+                    order.name
+                  }: ${checkResult?.error || 'Unknown error'}`
+                );
               }
             } catch (checkError) {
-              console.error(`❌ Error during automatic check creation for order ${order.name}:`, checkError);
+              console.error(
+                `❌ Error during automatic check creation for order ${order.name}:`,
+                checkError
+              );
               // Don't throw - payment verification was successful, check creation is secondary
             }
           } else {
-            console.log(`⚙️ Automatic check creation disabled for order ${order.name}`);
+            console.log(
+              `⚙️ Automatic check creation disabled for order ${order.name}`
+            );
           }
-
         } catch (shopifyError) {
           console.error(
             `  ❌ Failed to update Shopify order ${order.id}:`,
@@ -494,6 +544,30 @@ export const run = async ({ params, api, connections }: any) => {
 export const params = {
   orderIds: { type: 'array', items: { type: 'string' }, required: true },
   autoCreateChecks: { type: 'boolean', default: true, required: false },
+  orderData: {
+    type: 'array',
+    items: {
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+        name: { type: 'string' },
+        lineItems: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              id: { type: 'string' },
+              title: { type: 'string' },
+              quantity: { type: 'number' },
+              price: { type: 'string' },
+              variant: { type: 'string' },
+            },
+          },
+        },
+      },
+    },
+    required: false,
+  },
 };
 
 export const options: ActionOptions = {

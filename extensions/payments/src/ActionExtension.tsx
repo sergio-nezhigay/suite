@@ -47,6 +47,10 @@ interface LineItem {
   id: string;
   title: string;
   quantity: number;
+  price: {
+    amount: string;
+    currencyCode: string;
+  };
   variant?: {
     title: string;
   };
@@ -96,6 +100,10 @@ function App() {
                   id
                   title
                   quantity
+                  price {
+                    amount
+                    currencyCode
+                  }
                   variant {
                     title
                   }
@@ -165,6 +173,21 @@ function App() {
     try {
       console.log('Verifying payments for orders:', selectedOrderIds);
 
+      // Prepare order data with pre-calculated variants
+      const orderData = orderDetails.map(order => ({
+        id: order.id,
+        name: order.name,
+        lineItems: order.lineItems.nodes.map(item => ({
+          id: item.id,
+          title: item.title,
+          quantity: item.quantity,
+          price: item.price.amount, // Send just the amount as string
+          variant: bestVariants[item.id] || item.title // Use pre-calculated variant or fallback to original title
+        }))
+      }));
+
+      console.log('Sending order data with variants:', orderData);
+
       // Call the Gadget action directly via fetch
       const response = await fetch('/verifyOrderPayments', {
         method: 'POST',
@@ -173,6 +196,7 @@ function App() {
         },
         body: JSON.stringify({
           orderIds: selectedOrderIds,
+          orderData: orderData // Include the pre-calculated order data
         }),
       });
 
