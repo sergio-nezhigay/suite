@@ -1,4 +1,4 @@
-import { CheckboxAuthResponse, CheckboxShift, CheckboxReceiptBody, CheckboxReceiptResponse } from './checkboxTypes';
+import { CheckboxAuthResponse, CheckboxShift, CheckboxReceiptBody, CheckboxReceiptResponse, CheckboxSellReceiptBody } from './checkboxTypes';
 
 export class CheckboxService {
   private baseUrl = 'https://api.checkbox.ua/api/v1';
@@ -93,6 +93,12 @@ export class CheckboxService {
     }
 
     const receipt = await response.json();
+
+    // Check if receipt was actually created successfully
+    if (receipt.status && receipt.status !== 'CREATED') {
+      throw new Error(`Receipt creation failed with status: ${receipt.status}`);
+    }
+
     console.log('Receipt created successfully:', receipt.id);
     return receipt;
   }
@@ -106,5 +112,34 @@ export class CheckboxService {
       console.log('No active shift, opening new one...');
       return await this.openShift();
     }
+  }
+
+  async createSellReceipt(receiptBody: CheckboxSellReceiptBody): Promise<CheckboxReceiptResponse> {
+    console.log('Creating sell receipt without TTN...');
+
+    const response = await fetch(`${this.baseUrl}/receipts/sell`, {
+      method: 'POST',
+      headers: {
+        'X-License-Key': this.licenseKey,
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${this.token}`
+      },
+      body: JSON.stringify(receiptBody)
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`Failed to create sell receipt: ${response.status} - ${errorText}`);
+    }
+
+    const receipt = await response.json();
+
+    // Check if receipt was actually created successfully
+    if (receipt.status && receipt.status !== 'CREATED') {
+      throw new Error(`Sell receipt creation failed with status: ${receipt.status}`);
+    }
+
+    console.log('Sell receipt created successfully:', receipt.id);
+    return receipt;
   }
 }

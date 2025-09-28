@@ -1,4 +1,4 @@
-import { CheckboxReceiptBody, CheckboxGood } from './checkboxTypes';
+import { CheckboxReceiptBody, CheckboxGood, CheckboxSellReceiptBody, CheckboxCashlessPayment } from './checkboxTypes';
 
 export class OrderToReceiptTransformer {
   // Ukrainian product variants mapping (from your extension)
@@ -198,5 +198,77 @@ export class OrderToReceiptTransformer {
 
     const maxLen = Math.max(s1.length, s2.length);
     return maxLen === 0 ? 1 : (maxLen - matrix[s2.length][s1.length]) / maxLen;
+  }
+
+  static transformOrderForSell(order: any): CheckboxSellReceiptBody {
+    const lineItems = order.lineItems || [];
+    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
+      // Handle different possible price structures
+      let unitPriceUAH = 0;
+      if (item.priceSet?.shopMoney?.amount) {
+        unitPriceUAH = parseFloat(item.priceSet.shopMoney.amount);
+      } else if (item.price) {
+        unitPriceUAH = parseFloat(item.price);
+      }
+
+      const priceKopecks = Math.round(unitPriceUAH * 100);
+
+      return {
+        good: {
+          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
+          name: this.mapProductVariant(item.title || item.name || 'Unknown Product'),
+          price: priceKopecks
+        },
+        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
+        is_return: false,
+        discounts: []
+      };
+    });
+
+    const totalAmount = goods.reduce((sum, good) =>
+      sum + (good.good.price * good.quantity / 1000), 0
+    );
+
+    console.log(`Transforming order ${order.name} for sell receipt: ${goods.length} items, total: ${totalAmount} kopecks`);
+
+    return {
+      goods,
+      payments: [{
+        type: "CASHLESS",
+        value: totalAmount
+      }]
+    };
+  }
+
+  static transformOrderFromDataForSell(orderData: any, order: any): CheckboxSellReceiptBody {
+    const lineItems = orderData.lineItems || [];
+    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
+      const priceKopecks = Math.round(parseFloat(item.price) * 100);
+
+      return {
+        good: {
+          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
+          name: item.variant, // Use pre-calculated variant from frontend
+          price: priceKopecks
+        },
+        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
+        is_return: false,
+        discounts: []
+      };
+    });
+
+    const totalAmount = goods.reduce((sum, good) =>
+      sum + (good.good.price * good.quantity / 1000), 0
+    );
+
+    console.log(`Transforming order ${order.name} for sell receipt: ${goods.length} items, total: ${totalAmount} kopecks`);
+
+    return {
+      goods,
+      payments: [{
+        type: "CASHLESS",
+        value: totalAmount
+      }]
+    };
   }
 }

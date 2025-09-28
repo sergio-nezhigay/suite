@@ -27,15 +27,34 @@ export interface CheckboxETTNPayment {
   ettn: string; // Nova Poshta TTN
 }
 
+export interface CheckboxCashlessPayment {
+  type: "CASHLESS";
+  value: number; // kopecks
+}
+
+export interface CheckboxCashPayment {
+  type: "CASH";
+  value: number; // kopecks
+}
+
+export type CheckboxPayment = CheckboxETTNPayment | CheckboxCashlessPayment | CheckboxCashPayment;
+
 export interface CheckboxReceiptBody {
   goods: CheckboxGood[];
-  payments: CheckboxETTNPayment[];
+  payments: CheckboxPayment[];
   discounts: any[];
   deliveries: any[];
 }
 
+export interface CheckboxSellReceiptBody {
+  goods: CheckboxGood[];
+  payments: (CheckboxCashlessPayment | CheckboxCashPayment)[];
+  discounts?: any[];
+}
+
 export interface CheckboxReceiptResponse {
   id: string;
+  status?: string; // Should be "CREATED" for successful receipts
   fiscal_code?: string;
   fiscal_date?: string;
   receipt_url?: string;
