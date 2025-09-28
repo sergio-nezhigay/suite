@@ -1,4 +1,10 @@
-import { CheckboxAuthResponse, CheckboxShift, CheckboxReceiptBody, CheckboxReceiptResponse, CheckboxSellReceiptBody } from './checkboxTypes';
+import {
+  CheckboxAuthResponse,
+  CheckboxShift,
+  CheckboxReceiptBody,
+  CheckboxReceiptResponse,
+  CheckboxSellReceiptBody,
+} from './checkboxTypes';
 
 export class CheckboxService {
   private baseUrl = 'https://api.checkbox.ua/api/v1';
@@ -21,8 +27,8 @@ export class CheckboxService {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         login: this.login,
-        password: this.password
-      })
+        password: this.password,
+      }),
     });
 
     if (!response.ok) {
@@ -44,9 +50,9 @@ export class CheckboxService {
       headers: {
         'X-License-Key': this.licenseKey,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: JSON.stringify({ id: shiftId })
+      body: JSON.stringify({ id: shiftId }),
     });
 
     if (!response.ok) {
@@ -63,8 +69,8 @@ export class CheckboxService {
       method: 'GET',
       headers: {
         'Content-Type': 'application/x-www-form-urlencoded',
-        'Authorization': `Bearer ${this.token}`
-      }
+        Authorization: `Bearer ${this.token}`,
+      },
     });
 
     if (!response.ok) {
@@ -74,7 +80,9 @@ export class CheckboxService {
     return response.json();
   }
 
-  async createETTNReceipt(receiptBody: CheckboxReceiptBody): Promise<CheckboxReceiptResponse> {
+  async createETTNReceipt(
+    receiptBody: CheckboxReceiptBody
+  ): Promise<CheckboxReceiptResponse> {
     console.log('Creating ETTN receipt...');
 
     const response = await fetch(`${this.baseUrl}/np/ettn`, {
@@ -82,14 +90,16 @@ export class CheckboxService {
       headers: {
         'X-License-Key': this.licenseKey,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: JSON.stringify({ receipt_body: receiptBody })
+      body: JSON.stringify({ receipt_body: receiptBody }),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to create receipt: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Failed to create receipt: ${response.status} - ${errorText}`
+      );
     }
 
     const receipt = await response.json();
@@ -114,7 +124,9 @@ export class CheckboxService {
     }
   }
 
-  async createSellReceipt(receiptBody: CheckboxSellReceiptBody): Promise<CheckboxReceiptResponse> {
+  async createSellReceipt(
+    receiptBody: CheckboxSellReceiptBody
+  ): Promise<CheckboxReceiptResponse> {
     console.log('Creating sell receipt without TTN...');
 
     const response = await fetch(`${this.baseUrl}/receipts/sell`, {
@@ -122,21 +134,25 @@ export class CheckboxService {
       headers: {
         'X-License-Key': this.licenseKey,
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${this.token}`
+        Authorization: `Bearer ${this.token}`,
       },
-      body: JSON.stringify(receiptBody)
+      body: JSON.stringify(receiptBody),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
-      throw new Error(`Failed to create sell receipt: ${response.status} - ${errorText}`);
+      throw new Error(
+        `Failed to create sell receipt: ${response.status} - ${errorText}`
+      );
     }
 
     const receipt = await response.json();
 
     // Check if receipt was actually created successfully
     if (receipt.status && receipt.status !== 'CREATED') {
-      throw new Error(`Sell receipt creation failed with status: ${receipt.status}`);
+      throw new Error(
+        `Sell receipt creation failed with status: ${receipt.status}`
+      );
     }
 
     console.log('Sell receipt created successfully:', receipt.id);
