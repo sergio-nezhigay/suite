@@ -74,6 +74,7 @@ function App() {
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
   const [receiptResults, setReceiptResults] = useState<ReceiptResult[]>([]);
+  const [productVariantsCache, setProductVariantsCache] = useState<Record<string, string>>({});
 
   const selectedIds = data?.selected?.map(({ id }) => id) || [];
   useEffect(() => {
@@ -159,6 +160,22 @@ function App() {
     })();
   }, [selectedIds.join(',')]);
 
+  // Fetch variants when orders change
+  useEffect(() => {
+    if (orders.length > 0) {
+      const allProductTitles = new Set<string>();
+      orders.forEach(order => {
+        order.lineItems.nodes.forEach(item => {
+          allProductTitles.add(item.title);
+        });
+      });
+
+      if (allProductTitles.size > 0) {
+        fetchBestVariants(Array.from(allProductTitles)).then(setProductVariantsCache);
+      }
+    }
+  }, [orders]);
+
   const formatPrice = (amount: string) => {
     return Math.round(parseFloat(amount)).toString();
   };
@@ -174,122 +191,36 @@ function App() {
       : name;
   };
 
-  // Product variants list
-  const productVariants = [
-    'Кабель USB консольний',
-    'Перехідник HDMI-RCA',
-    'Кабель SCART',
-    'Перехідник SCART',
-    'Перехідник USB-RS232',
-    'Кабель USB-RS232 1.5m',
-    'Кабель USB-RS232 3 метри',
-    'Перехідник HDMI-DP',
-    'Кабель USB Type C',
-    'Перехідник HDMI-VGA',
-    'Термопаста, 2 гр.',
-  ];
-
-  // Simple string similarity function using Levenshtein distance
-  const calculateSimilarity = (str1: string, str2: string): number => {
-    const s1 = str1.toLowerCase();
-    const s2 = str2.toLowerCase();
-
-    const matrix = Array(s2.length + 1)
-      .fill(null)
-      .map(() => Array(s1.length + 1).fill(null));
-
-    for (let i = 0; i <= s1.length; i++) matrix[0][i] = i;
-    for (let j = 0; j <= s2.length; j++) matrix[j][0] = j;
-
-    for (let j = 1; j <= s2.length; j++) {
-      for (let i = 1; i <= s1.length; i++) {
-        const indicator = s1[i - 1] === s2[j - 1] ? 0 : 1;
-        matrix[j][i] = Math.min(
-          matrix[j][i - 1] + 1,
-          matrix[j - 1][i] + 1,
-          matrix[j - 1][i - 1] + indicator
-        );
+  // Helper functions for fetching variants from backend
+  const fetchBestVariant = async (productTitle: string): Promise<string> => {
+    try {
+      const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(productTitle)}`);
+      if (!response.ok) {
+        console.log('Failed to fetch variant for:', productTitle);
+        return productTitle; // Fallback to original title
       }
+      const data = await response.json();
+      return data.bestVariant;
+    } catch (error) {
+      console.log('Error fetching variant for:', productTitle, error);
+      return productTitle; // Fallback to original title
     }
-
-    const maxLen = Math.max(s1.length, s2.length);
-    return maxLen === 0 ? 1 : (maxLen - matrix[s2.length][s1.length]) / maxLen;
   };
 
-  // Find most similar product variant with semantic understanding
-  const findBestVariant = (productTitle: string): string => {
-    const title = productTitle.toLowerCase();
+  // For batch processing multiple titles at once
+  const fetchBestVariants = async (productTitles: string[]): Promise<Record<string, string>> => {
+    const variants: Record<string, string> = {};
 
-    // Keyword-based semantic matching
-    const semanticMatches = [
-      {
-        keywords: ['rca', 'тюльпан', 'av', 'композитний'],
-        connectors: ['hdmi'],
-        match: 'Перехідник HDMI-RCA'
-      },
-      {
-        keywords: ['vga', 'монітор', 'дисплей'],
-        connectors: ['hdmi'],
-        match: 'Перехідник HDMI-VGA'
-      },
-      {
-        keywords: ['displayport', 'dp'],
-        connectors: ['hdmi'],
-        match: 'Перехідник HDMI-DP'
-      },
-      {
-        keywords: ['scart', 'скарт'],
-        connectors: [],
-        match: 'Перехідник SCART'
-      },
-      {
-        keywords: ['usb', 'rs232', 'rs-232', 'com', 'serial', 'послідовний'],
-        connectors: [],
-        match: title.includes('3') || title.includes('три') ? 'Кабель USB-RS232 3 метри' : 'Кабель USB-RS232 1.5m'
-      },
-      {
-        keywords: ['консоль', 'console', 'налагодження'],
-        connectors: ['usb'],
-        match: 'Кабель USB консольний'
-      },
-      {
-        keywords: ['type-c', 'type c', 'usb-c'],
-        connectors: [],
-        match: 'Кабель USB Type C'
-      },
-      {
-        keywords: ['термопаста', 'thermal', 'paste'],
-        connectors: [],
-        match: 'Термопаста, 2 гр.'
-      }
-    ];
+    // Process in parallel for better performance
+    const promises = productTitles.map(async (title) => {
+      const variant = await fetchBestVariant(title);
+      variants[title] = variant;
+    });
 
-    // Check for semantic matches first
-    for (const semantic of semanticMatches) {
-      const hasKeywords = semantic.keywords.some(keyword => title.includes(keyword));
-      const hasConnectors = semantic.connectors.length === 0 || semantic.connectors.some(conn => title.includes(conn));
-
-      if (hasKeywords && hasConnectors) {
-        console.log(`Semantic match: "${productTitle}" -> "${semantic.match}"`);
-        return semantic.match;
-      }
-    }
-
-    // Fallback to similarity matching
-    let bestMatch = productVariants[0];
-    let bestScore = 0;
-
-    for (const variant of productVariants) {
-      const score = calculateSimilarity(productTitle, variant);
-      if (score > bestScore) {
-        bestScore = score;
-        bestMatch = variant;
-      }
-    }
-
-    console.log(`Similarity fallback: "${productTitle}" -> "${bestMatch}" (score: ${bestScore})`);
-    return bestMatch;
+    await Promise.all(promises);
+    return variants;
   };
+
 
   const getPaymentMethod = (metafields: Order['metafields']) => {
     const paymentMethodField = metafields?.nodes?.find(
@@ -319,7 +250,7 @@ function App() {
         customer: order.customer?.displayName,
         lineItems: order.lineItems.nodes.map(item => ({
           title: item.title,
-          variant: findBestVariant(item.title), // Use product variant instead of main title
+          variant: productVariantsCache[item.title] || item.title, // Use cached variant or fallback
           quantity: item.quantity,
           price: formatPrice(item.originalUnitPriceSet.shopMoney.amount)
         }))
@@ -405,7 +336,7 @@ function App() {
                               <Text>{truncateProductName(item.title)}</Text>
                             </Box>
                             <Box minInlineSize='15%'>
-                              <Text>{findBestVariant(item.title)}</Text>
+                              <Text>{productVariantsCache[item.title] || item.title}</Text>
                             </Box>
                             <Box minInlineSize='15%'>
                               <Badge>{item.quantity}</Badge>
