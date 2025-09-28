@@ -68,6 +68,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [orderDetails, setOrderDetails] = useState<OrderDetails[]>([]);
   const [isLoadingDetails, setIsLoadingDetails] = useState(false);
+  const [bestVariants, setBestVariants] = useState<{ [key: string]: string }>({});
 
   console.log('Selected orders data:', data);
 
@@ -120,9 +121,36 @@ function App() {
     }
   }, [query]);
 
+  const fetchBestVariants = useCallback(async (orders: OrderDetails[]) => {
+    const variants: { [key: string]: string } = {};
+
+    try {
+      for (const order of orders) {
+        for (const item of order.lineItems.nodes) {
+          if (!variants[item.id] && item.title) {
+            const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(item.title)}`);
+            if (response.ok) {
+              const result = await response.json();
+              variants[item.id] = result.bestVariant;
+            }
+          }
+        }
+      }
+      setBestVariants(variants);
+    } catch (err) {
+      console.error('Error fetching best variants:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchOrderDetails(selectedOrderIds);
   }, [selectedOrderIds, fetchOrderDetails]);
+
+  useEffect(() => {
+    if (orderDetails.length > 0) {
+      fetchBestVariants(orderDetails);
+    }
+  }, [orderDetails, fetchBestVariants]);
 
   const handleVerifyPayments = async () => {
     if (selectedOrderIds.length === 0) {
@@ -226,9 +254,16 @@ function App() {
               <BlockStack key={order.id}>
                 <Text fontWeight='bold'>{order.name}</Text>
                 {order.lineItems.nodes.map((item) => (
-                  <Text key={item.id}>
-                    • {item.title} {item.variant?.title ? `(${item.variant.title})` : ''} - Qty: {item.quantity}
-                  </Text>
+                  <BlockStack key={item.id}>
+                    <InlineStack>
+                      <Text>• {item.title} {item.variant?.title ? `(${item.variant.title})` : ''} - Qty: {item.quantity}</Text>
+                    </InlineStack>
+                    {bestVariants[item.id] && bestVariants[item.id] !== item.title && (
+                      <Text>
+                        ↳ Best Match: {bestVariants[item.id]}
+                      </Text>
+                    )}
+                  </BlockStack>
                 ))}
               </BlockStack>
             ))}
