@@ -5,7 +5,7 @@ const route: RouteHandler<{
   Querystring: {
     productTitle: string;
   };
-}> = async ({ request, reply }) => {
+}> = async ({ request, reply, connections }) => {
   try {
     const { productTitle } = request.query;
 
@@ -15,7 +15,7 @@ const route: RouteHandler<{
       });
     }
 
-    const bestVariant = findBestVariant(productTitle);
+    const bestVariant = await findBestVariant(productTitle, connections);
 
     return reply.send({
       productTitle,

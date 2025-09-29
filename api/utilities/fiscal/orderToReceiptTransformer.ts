@@ -100,6 +100,8 @@ export class OrderToReceiptTransformer {
     return bestMatch;
   }
 
+  // TODO: Update callers to pass AppConnections and use the new AI-based findBestVariant
+  // For now, keeping the old logic as fallback for static usage
   private static findBestVariant(productTitle: string): string {
     const title = productTitle.toLowerCase();
 
