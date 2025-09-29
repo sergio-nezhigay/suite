@@ -3,7 +3,6 @@ export * from './suppliers/schusev/fetchSchusev';
 export * from './suppliers/brain/api/fetchBrainBrands';
 export * from './suppliers/brain/utils/rateLimitedRequest';
 export * from './data/getPaginatedData';
-export * from './data/complimentaryProductsDesktops';
 export * from './data/transliterate';
 export * from './data/stripText';
 export * from './data/findBestVariant';
