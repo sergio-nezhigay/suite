@@ -76,15 +76,25 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
     });
 
     // Extract payment method
-    const gateway = Array.isArray(record.paymentGatewayNames)
-      ? record.paymentGatewayNames[0]
-      : undefined;
-    const paymentMethod =
-      gateway !== 'Накладений платіж'
-        ? 'Передплата безготівка'
-        : 'Накладений платіж';
+    const gateways = Array.isArray(record.paymentGatewayNames)
+      ? record.paymentGatewayNames
+      : [];
+
+    // Check if any gateway contains prepayment indicators
+    const isPrepaid = gateways.some(
+      (gateway) =>
+        gateway &&
+        typeof gateway === 'string' &&
+        (gateway.toLowerCase().includes('передплат') ||
+          gateway.toLowerCase().includes('prepay'))
+    );
+
+    const paymentMethod = isPrepaid
+      ? 'Передплата безготівка'
+      : 'Накладений платіж';
+
     logWithOrderId({
-      message: paymentMethod,
+      message: { paymentMethod, gateways },
       orderId: record.id,
     });
 

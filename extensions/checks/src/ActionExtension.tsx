@@ -40,6 +40,12 @@ interface Order {
           currencyCode: string;
         };
       };
+      discountedUnitPriceSet: {
+        shopMoney: {
+          amount: string;
+          currencyCode: string;
+        };
+      };
     }>;
   };
   fulfillments: Array<{
@@ -103,6 +109,12 @@ function App() {
                     sku
                   }
                   originalUnitPriceSet {
+                    shopMoney {
+                      amount
+                      currencyCode
+                    }
+                  }
+                  discountedUnitPriceSet {
                     shopMoney {
                       amount
                       currencyCode
@@ -252,7 +264,11 @@ function App() {
           title: item.title,
           variant: productVariantsCache[item.title] || item.title, // Use cached variant or fallback
           quantity: item.quantity,
-          price: formatPrice(item.originalUnitPriceSet.shopMoney.amount)
+          // Use discounted price if available, fallback to original
+          price: formatPrice(
+            item.discountedUnitPriceSet.shopMoney.amount ||
+            item.originalUnitPriceSet.shopMoney.amount
+          )
         }))
       }));
 
@@ -329,28 +345,39 @@ function App() {
 
                     {/* Line Items */}
                     {formatLineItemsWithPrices(order.lineItems).map(
-                      (item, itemIndex) => (
-                        <Box key={itemIndex}>
-                          <InlineStack>
-                            <Box minInlineSize='45%'>
-                              <Text>{truncateProductName(item.title)}</Text>
-                            </Box>
-                            <Box minInlineSize='15%'>
-                              <Text>{productVariantsCache[item.title] || item.title}</Text>
-                            </Box>
-                            <Box minInlineSize='15%'>
-                              <Badge>{item.quantity}</Badge>
-                            </Box>
-                            <Box minInlineSize='25%'>
-                              <Text>
-                                {formatPrice(
-                                  item.originalUnitPriceSet.shopMoney.amount
+                      (item, itemIndex) => {
+                        const originalPrice = formatPrice(item.originalUnitPriceSet.shopMoney.amount);
+                        const discountedPrice = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
+                        const hasDiscount = originalPrice !== discountedPrice;
+
+                        return (
+                          <Box key={itemIndex}>
+                            <InlineStack>
+                              <Box minInlineSize='45%'>
+                                <Text>{truncateProductName(item.title)}</Text>
+                              </Box>
+                              <Box minInlineSize='15%'>
+                                <Text>{productVariantsCache[item.title] || item.title}</Text>
+                              </Box>
+                              <Box minInlineSize='15%'>
+                                <Badge>{item.quantity}</Badge>
+                              </Box>
+                              <Box minInlineSize='25%'>
+                                {hasDiscount ? (
+                                  <BlockStack>
+                                    <Text>
+                                      <s>{originalPrice}</s>
+                                    </Text>
+                                    <Badge tone="success">{discountedPrice}</Badge>
+                                  </BlockStack>
+                                ) : (
+                                  <Text>{originalPrice}</Text>
                                 )}
-                              </Text>
-                            </Box>
-                          </InlineStack>
-                        </Box>
-                      )
+                              </Box>
+                            </InlineStack>
+                          </Box>
+                        );
+                      }
                     )}
                     {order.lineItems.nodes.length > 5 && (
                       <Box>

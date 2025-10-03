@@ -19,6 +19,40 @@ export class CheckboxService {
     this.password = process.env.CHECKBOX_PASSWORD!;
   }
 
+  private async delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+  private async retryWithBackoff<T>(
+    fn: () => Promise<T>,
+    maxRetries: number = 3,
+    baseDelay: number = 1000
+  ): Promise<T> {
+    let lastError: Error;
+
+    for (let attempt = 0; attempt < maxRetries; attempt++) {
+      try {
+        return await fn();
+      } catch (error) {
+        lastError = error as Error;
+
+        // Check if it's a rate limit error
+        const isRateLimitError = error instanceof Error &&
+          (error.message.includes('429') || error.message.includes('Too Many Requests'));
+
+        if (!isRateLimitError || attempt === maxRetries - 1) {
+          throw error;
+        }
+
+        const delayMs = baseDelay * Math.pow(2, attempt);
+        console.log(`Rate limit hit, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
+        await this.delay(delayMs);
+      }
+    }
+
+    throw lastError!;
+  }
+
   async signIn(): Promise<string> {
     console.log('Signing in to Checkbox API...');
 
@@ -85,32 +119,34 @@ export class CheckboxService {
   ): Promise<CheckboxReceiptResponse> {
     console.log('Creating ETTN receipt...');
 
-    const response = await fetch(`${this.baseUrl}/np/ettn`, {
-      method: 'POST',
-      headers: {
-        'X-License-Key': this.licenseKey,
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
-      },
-      body: JSON.stringify({ receipt_body: receiptBody }),
+    return this.retryWithBackoff(async () => {
+      const response = await fetch(`${this.baseUrl}/np/ettn`, {
+        method: 'POST',
+        headers: {
+          'X-License-Key': this.licenseKey,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify({ receipt_body: receiptBody }),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to create receipt: ${response.status} - ${errorText}`
+        );
+      }
+
+      const receipt = await response.json();
+
+      // Check if receipt was actually created successfully
+      if (receipt.status && receipt.status !== 'created') {
+        throw new Error(`Receipt creation failed with status: ${receipt.status}`);
+      }
+
+      console.log('Receipt created successfully:', receipt.id);
+      return receipt;
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to create receipt: ${response.status} - ${errorText}`
-      );
-    }
-
-    const receipt = await response.json();
-
-    // Check if receipt was actually created successfully
-    if (receipt.status && receipt.status !== 'created') {
-      throw new Error(`Receipt creation failed with status: ${receipt.status}`);
-    }
-
-    console.log('Receipt created successfully:', receipt.id);
-    return receipt;
   }
 
   async ensureShiftOpen(): Promise<CheckboxShift> {
@@ -129,33 +165,35 @@ export class CheckboxService {
   ): Promise<CheckboxReceiptResponse> {
     console.log('Creating sell receipt without TTN...');
 
-    const response = await fetch(`${this.baseUrl}/receipts/sell`, {
-      method: 'POST',
-      headers: {
-        'X-License-Key': this.licenseKey,
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.token}`,
-      },
-      body: JSON.stringify(receiptBody),
+    return this.retryWithBackoff(async () => {
+      const response = await fetch(`${this.baseUrl}/receipts/sell`, {
+        method: 'POST',
+        headers: {
+          'X-License-Key': this.licenseKey,
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${this.token}`,
+        },
+        body: JSON.stringify(receiptBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(
+          `Failed to create sell receipt: ${response.status} - ${errorText}`
+        );
+      }
+
+      const receipt = await response.json();
+
+      // Check if receipt was actually created successfully
+      if (receipt.status && receipt.status !== 'Created') {
+        throw new Error(
+          `Sell receipt creation failed with status: ${receipt.status}`
+        );
+      }
+
+      console.log('Sell receipt created successfully:', receipt.id);
+      return receipt;
     });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      throw new Error(
-        `Failed to create sell receipt: ${response.status} - ${errorText}`
-      );
-    }
-
-    const receipt = await response.json();
-
-    // Check if receipt was actually created successfully
-    if (receipt.status && receipt.status !== 'Created') {
-      throw new Error(
-        `Sell receipt creation failed with status: ${receipt.status}`
-      );
-    }
-
-    console.log('Sell receipt created successfully:', receipt.id);
-    return receipt;
   }
 }

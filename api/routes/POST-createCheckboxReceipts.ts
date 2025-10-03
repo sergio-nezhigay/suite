@@ -31,8 +31,15 @@ export default async function route({
 
     const results = [];
 
-    // Step 3: Process each order
-    for (const orderData of orders) {
+    // Step 3: Process each order with delay to avoid rate limiting
+    for (let i = 0; i < orders.length; i++) {
+      const orderData = orders[i];
+
+      // Add delay between requests (except for the first one)
+      if (i > 0) {
+        await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay
+        console.log(`Waiting 800ms before processing next order...`);
+      }
       try {
         const { orderId, trackingNumber, customer, lineItems } = orderData;
         console.log(`Processing order: ${orderId}`);
