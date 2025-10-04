@@ -29,7 +29,7 @@ interface Order {
     nodes: Array<{
       id: string;
       title: string;
-      quantity: number;
+      currentQuantity: number;
       variant?: {
         title: string;
         sku?: string;
@@ -104,7 +104,7 @@ function App() {
                 nodes {
                   id
                   title
-                  quantity
+                  currentQuantity
                   variant {
                     title
                     sku
@@ -163,7 +163,15 @@ function App() {
           console.error('GraphQL Errors:', ordersData.errors);
         }
 
-        setOrders(ordersData.data?.nodes || []);
+        // Filter out line items with currentQuantity of 0 (removed/refunded items)
+        const filteredOrders = (ordersData.data?.nodes || []).map((order: Order) => ({
+          ...order,
+          lineItems: {
+            nodes: order.lineItems.nodes.filter(item => item.currentQuantity > 0)
+          }
+        }));
+
+        setOrders(filteredOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
         setOrders([]);
@@ -270,7 +278,7 @@ function App() {
         lineItems: order.lineItems.nodes.map(item => ({
           title: item.title,
           variant: productVariantsCache[item.title],
-          quantity: item.quantity,
+          quantity: item.currentQuantity,
           // Use discounted price if available, fallback to original
           price: formatPrice(
             item.discountedUnitPriceSet.shopMoney.amount ||
@@ -367,7 +375,7 @@ function App() {
                                 <Text>{productVariantsCache[item.title]}</Text>
                               </Box>
                               <Box minInlineSize='15%'>
-                                <Badge>{item.quantity}</Badge>
+                                <Badge>{item.currentQuantity}</Badge>
                               </Box>
                               <Box minInlineSize='25%'>
                                 {hasDiscount ? (
