@@ -81,6 +81,7 @@ function App() {
   const [processing, setProcessing] = useState(false);
   const [receiptResults, setReceiptResults] = useState<ReceiptResult[]>([]);
   const [productVariantsCache, setProductVariantsCache] = useState<Record<string, string>>({});
+  const [variantsLoading, setVariantsLoading] = useState(false);
 
   const selectedIds = data?.selected?.map(({ id }) => id) || [];
   useEffect(() => {
@@ -175,6 +176,7 @@ function App() {
   // Fetch variants when orders change
   useEffect(() => {
     if (orders.length > 0) {
+      setVariantsLoading(true);
       const allProductTitles = new Set<string>();
       orders.forEach(order => {
         order.lineItems.nodes.forEach(item => {
@@ -183,7 +185,12 @@ function App() {
       });
 
       if (allProductTitles.size > 0) {
-        fetchBestVariants(Array.from(allProductTitles)).then(setProductVariantsCache);
+        fetchBestVariants(Array.from(allProductTitles)).then(variants => {
+          setProductVariantsCache(variants);
+          setVariantsLoading(false);
+        });
+      } else {
+        setVariantsLoading(false);
       }
     }
   }, [orders]);
@@ -209,13 +216,13 @@ function App() {
       const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(productTitle)}`);
       if (!response.ok) {
         console.log('Failed to fetch variant for:', productTitle);
-        return productTitle; // Fallback to original title
+        return '';
       }
       const data = await response.json();
       return data.bestVariant;
     } catch (error) {
       console.log('Error fetching variant for:', productTitle, error);
-      return productTitle; // Fallback to original title
+      return '';
     }
   };
 
@@ -262,7 +269,7 @@ function App() {
         customer: order.customer?.displayName,
         lineItems: order.lineItems.nodes.map(item => ({
           title: item.title,
-          variant: productVariantsCache[item.title] || item.title, // Use cached variant or fallback
+          variant: productVariantsCache[item.title],
           quantity: item.quantity,
           // Use discounted price if available, fallback to original
           price: formatPrice(
@@ -308,9 +315,9 @@ function App() {
       primaryAction={
         <Button
           onPress={handleProcessChecks}
-          disabled={loading || orders.length === 0 || processing}
+          disabled={loading || orders.length === 0 || processing || variantsLoading}
         >
-          {processing ? 'Processing...' : 'Process Checks'}
+          {processing ? 'Processing...' : variantsLoading ? 'Loading variants...' : 'Process Checks'}
         </Button>
       }
       secondaryAction={<Button onPress={close}>Close</Button>}
@@ -357,7 +364,7 @@ function App() {
                                 <Text>{truncateProductName(item.title)}</Text>
                               </Box>
                               <Box minInlineSize='15%'>
-                                <Text>{productVariantsCache[item.title] || item.title}</Text>
+                                <Text>{productVariantsCache[item.title]}</Text>
                               </Box>
                               <Box minInlineSize='15%'>
                                 <Badge>{item.quantity}</Badge>
