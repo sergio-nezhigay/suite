@@ -31,7 +31,16 @@ async function createAutomaticCheck(
     // Get the bank transaction that was matched to this order
     const paymentMatch = await api.orderPaymentMatch.findFirst({
       filter: { orderId: { equals: order.id } },
-      select: { bankTransactionId: true }
+      select: {
+        id: true,
+        bankTransactionId: true,
+        checkIssued: true,
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkFiscalCode: true,
+        checkSkipped: true,
+        checkSkipReason: true
+      }
     });
 
     if (!paymentMatch) {
@@ -70,6 +79,14 @@ async function createAutomaticCheck(
     if (paymentCode && restrictedCodes.includes(paymentCode)) {
       console.log(`🚫 Skipping check creation for order ${order.name} - restricted payment code: ${paymentCode}`);
 
+      const skipReason = `Restricted payment code: ${paymentCode}`;
+
+      // Mark payment match as skipped
+      await api.orderPaymentMatch.update(paymentMatch.id, {
+        checkSkipped: true,
+        checkSkipReason: skipReason
+      });
+
       // Add note to order explaining why check wasn't created
       const restrictionNote = `🧾 Automatic Check Creation Skipped
 Reason: Payment code ${paymentCode} is restricted from automatic check creation
@@ -85,13 +102,21 @@ Note: Manual check creation may be required`;
       return {
         success: false,
         skipped: true,
-        reason: `Restricted payment code: ${paymentCode}`
+        reason: skipReason
       };
     }
 
     // Check Nova Poshta account restriction
     if (bankTransaction.counterpartyAccount === novaPoshtraAccount) {
       console.log(`🚫 Skipping check creation for order ${order.name} - Nova Poshta account restriction`);
+
+      const skipReason = 'Nova Poshta account restriction';
+
+      // Mark payment match as skipped
+      await api.orderPaymentMatch.update(paymentMatch.id, {
+        checkSkipped: true,
+        checkSkipReason: skipReason
+      });
 
       const restrictionNote = `🧾 Automatic Check Creation Skipped
 Reason: Nova Poshta account restriction
@@ -107,25 +132,28 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       return {
         success: false,
         skipped: true,
-        reason: 'Nova Poshta account restriction'
+        reason: skipReason
       };
     }
 
-    // Check for existing receipts in order notes to prevent duplicates
-    const existingOrder = await api.shopifyOrder.findFirst({
-      filter: { id: { equals: order.id } },
-      select: { note: true }
-    });
-
-    if (existingOrder?.note &&
-        (existingOrder.note.includes('Receipt ID:') ||
-         existingOrder.note.includes('Fiscal Code:') ||
-         existingOrder.note.includes('🧾 Automatic Check Created'))) {
-      console.log(`🚫 Check already exists for order ${order.name} - found existing receipt in notes`);
+    // Check if check already issued for this payment match
+    if (paymentMatch?.checkIssued) {
+      console.log(`🚫 Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`);
+      console.log(`   Receipt ID: ${paymentMatch.checkReceiptId}, Fiscal Code: ${paymentMatch.checkFiscalCode}`);
       return {
         success: false,
         skipped: true,
-        reason: 'Receipt already exists in order notes'
+        reason: 'Check already issued for this payment'
+      };
+    }
+
+    // Check if check was previously skipped
+    if (paymentMatch?.checkSkipped) {
+      console.log(`🚫 Check creation was previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`);
+      return {
+        success: false,
+        skipped: true,
+        reason: paymentMatch.checkSkipReason || 'Check previously skipped'
       };
     }
 
@@ -184,12 +212,24 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       `✅ Created check/receipt ${receipt.id} for order ${order.name}`
     );
 
+    // Update payment match with check information
+    const checkIssuedAt = new Date();
+    await api.orderPaymentMatch.update(paymentMatch.id, {
+      checkIssued: true,
+      checkReceiptId: receipt.id,
+      checkFiscalCode: receipt.fiscal_code || undefined,
+      checkReceiptUrl: receipt.receipt_url || undefined,
+      checkIssuedAt: checkIssuedAt
+    });
+
+    console.log(`✅ Updated payment match ${paymentMatch.id} with check details`);
+
     // Add receipt info to order notes
     const checkNote = `🧾 Automatic Check Created
 Receipt ID: ${receipt.id}
 Fiscal Code: ${receipt.fiscal_code || 'N/A'}
 Receipt URL: ${receipt.receipt_url || 'N/A'}
-Created: ${new Date().toISOString()}
+Created: ${checkIssuedAt.toISOString()}
 Reason: Payment verified and order marked as paid`;
 
     await updateOrderPaymentStatus(connections, order.id, order.shopId, {

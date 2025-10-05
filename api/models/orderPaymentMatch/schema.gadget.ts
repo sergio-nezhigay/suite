@@ -13,6 +13,37 @@ export const schema: GadgetModel = {
       validations: { required: true },
       storageKey: "bCdzVDxcyA0a",
     },
+    checkFiscalCode: {
+      type: "string",
+      storageKey: "checkFiscalCode-001",
+    },
+    checkIssued: {
+      type: "boolean",
+      default: false,
+      storageKey: "checkIssued-001",
+    },
+    checkIssuedAt: {
+      type: "dateTime",
+      includeTime: true,
+      storageKey: "checkIssuedAt-001",
+    },
+    checkReceiptId: {
+      type: "string",
+      storageKey: "checkReceiptId-001",
+    },
+    checkReceiptUrl: {
+      type: "string",
+      storageKey: "checkReceiptUrl-001",
+    },
+    checkSkipReason: {
+      type: "string",
+      storageKey: "checkSkipReason-001",
+    },
+    checkSkipped: {
+      type: "boolean",
+      default: false,
+      storageKey: "checkSkipped-001",
+    },
     daysDifference: {
       type: "number",
       validations: { numberRange: { min: 0, max: null } },
