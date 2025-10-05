@@ -50,13 +50,70 @@ const getFulfillmentOrders = async (
   return fulfillmentOrdersResponse.order?.fulfillmentOrders?.edges || [];
 };
 
+// Replace order tag (remove old status, add new status)
+const replaceOrderTag = async (
+  shopifyClient: any,
+  orderId: string,
+  oldTag: string,
+  newTag: string,
+  orderName: string
+): Promise<void> => {
+  // Remove old tag
+  const removeTagMutation = `
+    mutation tagsRemove($id: ID!, $tags: [String!]!) {
+      tagsRemove(id: $id, tags: $tags) {
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const removeResponse = await shopifyClient.graphql(removeTagMutation, {
+    id: `gid://shopify/Order/${orderId}`,
+    tags: [oldTag],
+  });
+
+  if (removeResponse.tagsRemove?.userErrors?.length > 0) {
+    console.error(
+      `Tag removal errors for order ${orderName}:`,
+      removeResponse.tagsRemove.userErrors
+    );
+  }
+
+  // Add new tag
+  const addTagMutation = `
+    mutation tagsAdd($id: ID!, $tags: [String!]!) {
+      tagsAdd(id: $id, tags: $tags) {
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  const addResponse = await shopifyClient.graphql(addTagMutation, {
+    id: `gid://shopify/Order/${orderId}`,
+    tags: [newTag],
+  });
+
+  if (addResponse.tagsAdd?.userErrors?.length > 0) {
+    console.error(
+      `Tag addition errors for order ${orderName}:`,
+      addResponse.tagsAdd.userErrors
+    );
+  }
+};
+
 // Create fulfillment for a fulfillment order
 const createFulfillment = async (
   shopifyClient: any,
   fulfillmentOrderId: string,
   trackingNumber: string,
   orderName: string
-): Promise<void> => {
+): Promise<boolean> => {
   const fulfillmentResponse = await shopifyClient.graphql(
     `
     mutation FulfillOrder($fulfillment: FulfillmentInput!, $message: String) {
@@ -103,36 +160,45 @@ const createFulfillment = async (
       `Fulfillment creation errors for order ${orderName}:`,
       fulfillmentResponse.fulfillmentCreate.userErrors
     );
+    return false;
   }
+
+  return true;
 };
 
 // Process fulfillment for an order with declaration
 const processFulfillment = async (
-  connections: any,
+  shopifyClient: any,
   order: Order,
   declaration: string
-): Promise<void> => {
-  const shopifyClient = await connections.shopify.forShopId(order.shopId);
+): Promise<boolean> => {
   const fulfillmentOrders = await getFulfillmentOrders(shopifyClient, order.id);
 
   if (fulfillmentOrders.length === 0) {
-    return;
+    return false;
   }
 
+  let allSuccessful = true;
+
   for (const fulfillmentOrderEdge of fulfillmentOrders) {
-    await createFulfillment(
+    const result = await createFulfillment(
       shopifyClient,
       fulfillmentOrderEdge.node.id,
       declaration,
       order.name
     );
+    if (!result) {
+      allSuccessful = false;
+    }
   }
+
+  return allSuccessful;
 };
 
 // Process a single order
 const processOrder = async (
   order: Order,
-  connections: any,
+  shopifyClient: any,
   config: any
 ): Promise<void> => {
   if (!validateOrder(order)) {
@@ -145,7 +211,32 @@ const processOrder = async (
   );
 
   if (novaPoshtaDeclaration) {
-    await processFulfillment(connections, order, novaPoshtaDeclaration);
+    const fulfillmentSuccess = await processFulfillment(
+      shopifyClient,
+      order,
+      novaPoshtaDeclaration
+    );
+
+    // Replace order tag if fulfillment was successful
+    if (fulfillmentSuccess) {
+      try {
+        await replaceOrderTag(
+          shopifyClient,
+          order.id,
+          'Декларації',
+          'Завершені',
+          order.name
+        );
+        console.log(
+          `Successfully updated tag for order ${order.name}: Декларації → Завершені`
+        );
+      } catch (error) {
+        console.error(
+          `Failed to update tag for order ${order.name}:`,
+          error
+        );
+      }
+    }
   }
 };
 
@@ -159,7 +250,7 @@ export const run = async ({ api, connections, config }: any) => {
     // Find unfulfilled orders with "Декларації" tag
     const orders = await api.shopifyOrder.findMany({
       filter: {
-        fulfillmentStatus: { notEquals: 'fulfilled' },
+        //fulfillmentStatus: { notEquals: 'fulfilled' },
         tags: { matches: 'Декларації' },
       },
       select: {
@@ -171,10 +262,14 @@ export const run = async ({ api, connections, config }: any) => {
       },
     });
 
+    if (orders.length === 0) return;
+
+    const shopifyClient = await connections.shopify.forShopId(orders[0].shopId);
+
     // Process each order
     for (const order of orders) {
       try {
-        await processOrder(order, connections, config);
+        await processOrder(order, shopifyClient, config);
       } catch (error) {
         console.error(`Error processing order ${order.name}:`, error);
       }

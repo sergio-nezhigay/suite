@@ -11,11 +11,13 @@ type SmsResponse = {
  * Sends an SMS message to the specified receiver.
  * @param {string} receiverNumber - The phone number of the receiver.
  * @param {string} messageText - The SMS text to send.
+ * @param {string} orderName - Optional order name for Rozetka integration.
  * @returns {Promise<SmsResponse>} - The response from the server with details about the sent message.
  */
 export const sendSmsMessage = async (
   receiverNumber: string,
-  messageText: string
+  messageText: string,
+  orderName?: string
 ): Promise<SmsResponse> => {
   try {
     const formattedNumber = validateAndFormatPhoneNumber(receiverNumber);
@@ -29,6 +31,7 @@ export const sendSmsMessage = async (
       body: JSON.stringify({
         to: formattedNumber,
         message: messageText,
+        orderName,
       }),
     });
 

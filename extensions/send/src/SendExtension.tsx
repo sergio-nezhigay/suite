@@ -9,7 +9,11 @@ import {
   ProgressIndicator,
 } from '@shopify/ui-extensions-react/admin';
 
-import { fetchOrdersData, OrderResponse } from '../../shared/shopifyOperations';
+import {
+  fetchOrdersData,
+  OrderResponse,
+  updateOrdersTags,
+} from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
 const TARGET = 'admin.order-index.selection-action.render';
@@ -78,9 +82,11 @@ function SendExtension() {
   let spreadsheetId = '';
   let recipientEmail = '';
   let shouldSendWarrantyEmail = false;
+  let shouldAutoTag = false;
   if (firstOrderTag.includes('Ии')) {
     spreadsheetId = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
     recipientEmail = 'deni-ua@ukr.net';
+    shouldAutoTag = true;
   } else if (firstOrderTag.includes('РІ')) {
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
     recipientEmail = 'asd1134@ukr.net';
@@ -137,6 +143,27 @@ function SendExtension() {
               );
               if (!emailResponse.ok) throw new Error('Failed to send email');
               if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
+
+              // Auto-tag orders for Easy supplier
+              if (shouldAutoTag) {
+                try {
+                  const allOrderNamesMatchPattern = ordersContent!.every(
+                    (order) => /^№\d{9}$/.test(order.name)
+                  );
+                  const newTag = allOrderNamesMatchPattern
+                    ? 'Декларації'
+                    : 'Завершені';
+                  console.log(
+                    `Auto-tagging ${ordersContent!.length} Easy orders with: ${newTag}`
+                  );
+                  await updateOrdersTags({
+                    value: newTag,
+                    orderIds: selectedIds,
+                  });
+                } catch (tagError) {
+                  console.error('Failed to auto-tag orders:', tagError);
+                }
+              }
 
               setSent(true);
             } catch (error) {
