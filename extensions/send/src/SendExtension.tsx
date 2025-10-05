@@ -80,20 +80,28 @@ function SendExtension() {
   const firstOrderTag = ordersContent?.[0]?.tags?.[0] || '';
 
   let spreadsheetId = '';
+  let sheetName = 'Sheet2';
   let recipientEmail = '';
   let shouldSendWarrantyEmail = false;
   let shouldAutoTag = false;
+  let shouldSendEmail = false;
   if (firstOrderTag.includes('Ии')) {
     spreadsheetId = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
     recipientEmail = 'deni-ua@ukr.net';
     shouldAutoTag = true;
+    shouldSendEmail = true;
   } else if (firstOrderTag.includes('РІ')) {
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
     recipientEmail = 'asd1134@ukr.net';
+    shouldSendEmail = true;
   } else if (firstOrderTag.includes('Че')) {
     spreadsheetId = '17J3L12ZHz3VoYp2la5dTcCmZg4-zcNZpCUyvifgLZkk';
     recipientEmail = 'scherginets@ukr.net';
     shouldSendWarrantyEmail = true;
+    shouldSendEmail = true;
+  } else if (firstOrderTag.includes('Ме')) {
+    spreadsheetId = '1jHwJA0U9XXSu1W66P7WOSuNiCMLvdMtXyTnPOOVQLP4';
+    sheetName = 'Sheet1';
   }
 
   const getTitle = () => {
@@ -122,27 +130,29 @@ function SendExtension() {
                 `${SHOPIFY_APP_URL}/appendRowsToSheet`,
                 {
                   method: 'POST',
-                  body: JSON.stringify({ rows, spreadsheetId }),
+                  body: JSON.stringify({ rows, spreadsheetId, sheetName }),
                   headers: { 'Content-Type': 'application/json' },
                 }
               );
               if (!appendResponse.ok) throw new Error('Failed to send data');
 
-              const emailResponse = await fetch(
-                `${SHOPIFY_APP_URL}/send-email`,
-                {
-                  method: 'POST',
-                  headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({
-                    recipientEmail,
-                    cc: 'nezhihai@gmail.com',
-                    subject: 'Замовлення, кількість: ' + ordersContent!.length,
-                    htmlContent: generateOrdersHtmlTable(ordersContent!),
-                  }),
-                }
-              );
-              if (!emailResponse.ok) throw new Error('Failed to send email');
-              if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
+              if (shouldSendEmail) {
+                const emailResponse = await fetch(
+                  `${SHOPIFY_APP_URL}/send-email`,
+                  {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      recipientEmail,
+                      cc: 'nezhihai@gmail.com',
+                      subject: 'Замовлення, кількість: ' + ordersContent!.length,
+                      htmlContent: generateOrdersHtmlTable(ordersContent!),
+                    }),
+                  }
+                );
+                if (!emailResponse.ok) throw new Error('Failed to send email');
+                if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
+              }
 
               // Auto-tag orders for Easy supplier
               if (shouldAutoTag) {

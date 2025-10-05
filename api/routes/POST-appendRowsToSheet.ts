@@ -13,17 +13,16 @@ import type { sheets_v4 } from 'googleapis';
 //  );
 //}
 
-const range = 'Sheet2!A1';
-
 interface RequestBody {
   rows: any[][];
   spreadsheetId: string;
+  sheetName?: string;
 }
 
 const route: RouteHandler<{
   Body: RequestBody;
 }> = async ({ reply, request, config }) => {
-  const { rows, spreadsheetId } = request.body;
+  const { rows, spreadsheetId, sheetName = 'Sheet2' } = request.body;
 
   if (!rows || !Array.isArray(rows) || rows.length === 0 || !spreadsheetId) {
     return reply
@@ -31,7 +30,9 @@ const route: RouteHandler<{
       .send({ error: 'Rows and spreadsheetId are required' });
   }
 
-  console.log('Received rows for Google Sheets append', { rows });
+  const range = `${sheetName}!A1`;
+
+  console.log('Received rows for Google Sheets append', { rows, spreadsheetId, sheetName });
 
   try {
     const auth = await authorize(config);
