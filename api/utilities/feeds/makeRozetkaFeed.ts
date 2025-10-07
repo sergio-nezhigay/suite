@@ -51,13 +51,13 @@ const ROZETKA_CONFIG = {
         multiplier: 1,
       },
       {
-        keywords: ['usb-rs232', 'rs485', 'оптичні аудіо перехідники'],
+        keywords: ['usb-rs232', 'rs485', 'rs232', 'оптичні аудіо перехідники'],
         categoryId: 'c80073',
         defaultParams: [
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.12,
+        multiplier: 1.14,
       },
       {
         keywords: [
