@@ -28,7 +28,7 @@ const route: RouteHandler<{
       supplierId,
       categoryId,
     } = getUrlParams(request);
-    
+
     console.log('route { supplierId,query, limit, page, categoryId } ', {
       supplierId,
       query,
@@ -54,7 +54,7 @@ const route: RouteHandler<{
           limit,
           page,
           sheetId: process.env.CHERG_PRICE_ID || '',
-          tabId: 35957627,
+          tabId: 1031863263,
         }));
         break;
       case 'universal':
