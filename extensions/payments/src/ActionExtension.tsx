@@ -324,7 +324,7 @@ function App() {
                   </InlineStack>
 
                   <Text>
-                    Amount: ${result.orderAmount.toFixed(2)} | Status:{' '}
+                    Amount: ₴{result.orderAmount.toFixed(2)} | Status:{' '}
                     {result.financialStatus}
                   </Text>
 
@@ -348,7 +348,7 @@ function App() {
                       {result.matches.map((match) => (
                         <BlockStack key={match.transactionId}>
                           <Text>
-                            💰 ${match.amount.toFixed(2)} on{' '}
+                            💰 ₴{match.amount.toFixed(2)} on{' '}
                             {new Date(match.date).toLocaleDateString()}
                           </Text>
                           <Text>

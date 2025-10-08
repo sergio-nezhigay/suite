@@ -23,7 +23,8 @@
       "Bash(npx vite:*)",
       "Bash(yarn install)",
       "Bash(npm view:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx gadget models list:*)"
     ],
     "deny": [],
     "ask": []

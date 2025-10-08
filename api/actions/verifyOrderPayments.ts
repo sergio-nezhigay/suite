@@ -24,9 +24,6 @@ async function createAutomaticCheck(
   orderData?: any
 ) {
   try {
-    console.log(
-      `🧾 Creating automatic check for verified order ${order.name}...`
-    );
 
     // Get the bank transaction that was matched to this order
     const paymentMatch = await api.orderPaymentMatch.findFirst({
@@ -44,7 +41,6 @@ async function createAutomaticCheck(
     });
 
     if (!paymentMatch) {
-      console.log(`⚠️ No payment match found for order ${order.name}, skipping check creation`);
       return {
         success: false,
         skipped: true,
@@ -62,7 +58,6 @@ async function createAutomaticCheck(
     });
 
     if (!bankTransaction) {
-      console.log(`⚠️ Bank transaction not found for order ${order.name}, skipping check creation`);
       return {
         success: false,
         skipped: true,
@@ -77,8 +72,6 @@ async function createAutomaticCheck(
 
     // Check payment code restrictions
     if (paymentCode && restrictedCodes.includes(paymentCode)) {
-      console.log(`🚫 Skipping check creation for order ${order.name} - restricted payment code: ${paymentCode}`);
-
       const skipReason = `Restricted payment code: ${paymentCode}`;
 
       // Mark payment match as skipped
@@ -108,8 +101,6 @@ Note: Manual check creation may be required`;
 
     // Check Nova Poshta account restriction
     if (bankTransaction.counterpartyAccount === novaPoshtraAccount) {
-      console.log(`🚫 Skipping check creation for order ${order.name} - Nova Poshta account restriction`);
-
       const skipReason = 'Nova Poshta account restriction';
 
       // Mark payment match as skipped
@@ -138,8 +129,6 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
 
     // Check if check already issued for this payment match
     if (paymentMatch?.checkIssued) {
-      console.log(`🚫 Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`);
-      console.log(`   Receipt ID: ${paymentMatch.checkReceiptId}, Fiscal Code: ${paymentMatch.checkFiscalCode}`);
       return {
         success: false,
         skipped: true,
@@ -149,16 +138,12 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
 
     // Check if check was previously skipped
     if (paymentMatch?.checkSkipped) {
-      console.log(`🚫 Check creation was previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`);
       return {
         success: false,
         skipped: true,
         reason: paymentMatch.checkSkipReason || 'Check previously skipped'
       };
     }
-
-    console.log(`✅ Payment validation passed for order ${order.name} - proceeding with check creation`);
-    console.log(`   Payment code: ${paymentCode}, Counterparty: ${bankTransaction.counterpartyName}`);
 
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
@@ -189,15 +174,8 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       !fullOrder.lineItems ||
       fullOrder.lineItems.length === 0
     ) {
-      console.log(
-        `⚠️ No line items found for order ${order.name}, skipping check creation`
-      );
       return null;
     }
-
-    console.log(
-      `📋 Found ${fullOrder.lineItems.length} line items for order ${fullOrder.name}`
-    );
 
     const receiptBody = orderData
       ? OrderToReceiptTransformer.transformOrderFromDataForSell(
@@ -209,10 +187,6 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     // Create the sell receipt
     const receipt = await checkboxService.createSellReceipt(receiptBody);
 
-    console.log(
-      `✅ Created check/receipt ${receipt.id} for order ${order.name}`
-    );
-
     // Update payment match with check information
     const checkIssuedAt = new Date();
     await api.orderPaymentMatch.update(paymentMatch.id, {
@@ -222,8 +196,6 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       checkReceiptUrl: receipt.receipt_url || undefined,
       checkIssuedAt: checkIssuedAt
     });
-
-    console.log(`✅ Updated payment match ${paymentMatch.id} with check details`);
 
     // Add receipt info to order notes
     const checkNote = `🧾 Automatic Check Created
@@ -237,8 +209,6 @@ Reason: Payment verified and order marked as paid`;
       note: checkNote,
     });
 
-    console.log(`📝 Added check details to order ${order.name} notes`);
-
     return {
       success: true,
       receiptId: receipt.id,
@@ -246,10 +216,7 @@ Reason: Payment verified and order marked as paid`;
       receiptUrl: receipt.receipt_url,
     };
   } catch (error) {
-    console.error(
-      `❌ Failed to create automatic check for order ${order.name}:`,
-      error
-    );
+    console.error(`Failed to create check for order ${order.name}:`, error);
 
     // Add error note to order but don't fail the payment verification
     try {
@@ -262,10 +229,7 @@ Note: Payment verification was successful, check creation can be done manually`;
         note: errorNote,
       });
     } catch (noteError) {
-      console.error(
-        `Failed to add error note to order ${order.name}:`,
-        noteError
-      );
+      console.error(`Failed to add error note:`, noteError);
     }
 
     return {
@@ -318,8 +282,6 @@ async function refreshBankDataSinceLastSync(api: any) {
 }
 
 export const run = async ({ params, api, connections }: any) => {
-  console.log('verifyOrderPayments called with params:', params);
-
   try {
     const { orderIds, autoCreateChecks = true, orderData } = params;
 
@@ -336,9 +298,6 @@ export const run = async ({ params, api, connections }: any) => {
       return id; // If it's already numeric, return as-is
     });
 
-    console.log('Original orderIds:', orderIds);
-    console.log('Converted numericOrderIds:', numericOrderIds);
-
     // Check for existing verifications first
     const existingMatches = await api.orderPaymentMatch.findMany({
       filter: { orderId: { in: numericOrderIds } },
@@ -352,20 +311,12 @@ export const run = async ({ params, api, connections }: any) => {
       },
     });
 
-    console.log(
-      `Found ${existingMatches.length} existing payment verifications`
-    );
-
     // Create a map of already verified orders
     const verifiedOrderIds = new Set(
       existingMatches.map((match: { orderId: any }) => match.orderId)
     );
     const unverifiedOrderIds = numericOrderIds.filter(
       (id) => !verifiedOrderIds.has(id)
-    );
-
-    console.log(
-      `${verifiedOrderIds.size} orders already verified, ${unverifiedOrderIds.length} need verification`
     );
 
     // Fetch selected orders
@@ -382,103 +333,40 @@ export const run = async ({ params, api, connections }: any) => {
       },
     });
 
-    console.log(`Found ${orders.length} orders`);
-
-    // Debug: Log order details
-    orders.forEach((order: any, index: number) => {
-      const currentAmount = parseFloat(
-        order.currentTotalPriceSet?.shop_money?.amount || '0'
-      );
-      const historicalAmount = parseFloat(
-        order.totalPriceSet?.shop_money?.amount || '0'
-      );
-      const hasDeletedItems = Math.abs(currentAmount - historicalAmount) > 0.01;
-
-      console.log(`DEBUG - Order ${index + 1}:`, {
-        id: order.id,
-        name: order.name,
-        currentAmount: currentAmount,
-        historicalAmount: historicalAmount,
-        hasDeletedItems: hasDeletedItems,
-        difference: hasDeletedItems ? (historicalAmount - currentAmount).toFixed(2) : 0,
-        currency: order.currentTotalPriceSet?.shop_money?.currencyCode,
-        createdAt: order.createdAt,
-        financialStatus: order.financialStatus,
-      });
-    });
-
     // Refresh bank data since last sync, then fetch recent transactions
     try {
-      console.log('Ensuring fresh bank data...');
       await refreshBankDataSinceLastSync(api);
     } catch (refreshError) {
-      console.warn(
-        'Bank data refresh failed, proceeding with existing data:',
-        refreshError
-      );
+      console.warn('Bank data refresh failed:', refreshError);
     }
 
-    // Fetch recent bank transactions (last 30 days)
-    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-    console.log(
-      `DEBUG - Searching for transactions after: ${thirtyDaysAgo.toISOString()}`
-    );
+    // Fetch recent bank transactions (last 10 days)
+    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
 
     const transactions = await api.bankTransaction.findMany({
       filter: {
-        transactionDateTime: { greaterThan: thirtyDaysAgo },
+        transactionDateTime: { greaterThan: tenDaysAgo },
         type: { equals: 'income' }, // Only incoming payments
       },
+      sort: { transactionDateTime: 'Descending' }, // Most recent first
+      first: 250,
       select: {
         id: true,
         amount: true,
         transactionDateTime: true,
         description: true,
-        currency: true,
       },
     });
-
-    console.log(`Found ${transactions.length} recent transactions`);
-
-    // Debug: Log transaction details
-    transactions.slice(0, 40).forEach((tx: any, index: number) => {
-      console.log(`DEBUG - Transaction ${index + 1}:`, {
-        id: tx.id,
-        amount: tx.amount,
-        currency: tx.currency,
-        date: tx.transactionDateTime,
-        description: tx.description?.substring(0, 50),
-      });
-    });
-
-    if (transactions.length > 10) {
-      console.log(
-        `DEBUG - ... and ${transactions.length - 10} more transactions`
-      );
-    }
 
     // Simple matching logic: exact amount + within 7 days
     const results = [];
     const currentTime = new Date();
 
     for (const order of orders) {
-      console.log('order', JSON.stringify(order, null, 2));
       // Use currentTotalPriceSet which excludes deleted/refunded items
       const orderAmount = parseFloat(
         order.currentTotalPriceSet?.shop_money?.amount || '0'
       );
-      const historicalAmount = parseFloat(
-        order.totalPriceSet?.shop_money?.amount || '0'
-      );
-      const hasDeletedItems = Math.abs(orderAmount - historicalAmount) > 0.01;
-
-      if (hasDeletedItems) {
-        console.log(`⚠️ Order ${order.name} has deleted/refunded items:`);
-        console.log(`  Current amount: ${orderAmount}`);
-        console.log(`  Historical amount: ${historicalAmount}`);
-        console.log(`  Difference: ${(historicalAmount - orderAmount).toFixed(2)}`);
-      }
-
       const orderDate = new Date(order.createdAt);
 
       // Check if this order is already verified
@@ -487,9 +375,7 @@ export const run = async ({ params, api, connections }: any) => {
       );
 
       if (existingMatch) {
-        console.log(`\nDEBUG - Order ${order.name} already verified:`);
-        console.log(`  Verified at: ${existingMatch.verifiedAt}`);
-        console.log(`  Confidence: ${existingMatch.matchConfidence}%`);
+        console.log(`Order ${order.name} already verified`);
 
         results.push({
           orderId: order.id,
@@ -513,11 +399,6 @@ export const run = async ({ params, api, connections }: any) => {
         continue;
       }
 
-      console.log(`\nDEBUG - Matching for Order ${order.name}:`);
-      console.log(`  Order Amount: ${orderAmount}`);
-      console.log(`  Order Date: ${orderDate.toISOString()}`);
-      console.log(`  Looking for transactions within 7 days...`);
-
       const matches = transactions.filter((tx: any) => {
         const txAmount = tx.amount || 0;
         const amountDiff = Math.abs(txAmount - orderAmount);
@@ -527,38 +408,12 @@ export const run = async ({ params, api, connections }: any) => {
           ? new Date(tx.transactionDateTime)
           : new Date();
         const timeDiff = Math.abs(txDateTime.getTime() - orderDate.getTime());
-        const daysDiff = timeDiff / (24 * 60 * 60 * 1000);
         const dateMatch = timeDiff < 7 * 24 * 60 * 60 * 1000;
-
-        // Debug each transaction check
-        if (amountMatch || daysDiff <= 7) {
-          console.log(`  Checking Transaction ${tx.id}:`);
-          console.log(
-            `    Amount: ${txAmount} (diff: ${amountDiff.toFixed(4)}) - ${
-              amountMatch ? 'MATCH' : 'NO MATCH'
-            }`
-          );
-          console.log(
-            `    Date: ${txDateTime.toISOString()} (${daysDiff.toFixed(
-              2
-            )} days diff) - ${dateMatch ? 'MATCH' : 'NO MATCH'}`
-          );
-          console.log(
-            `    Overall: ${
-              amountMatch && dateMatch ? 'FULL MATCH ✓' : 'NO MATCH ✗'
-            }`
-          );
-          console.log(
-            `    Description: ${tx.description?.substring(0, 50)}...`
-          );
-        }
 
         return amountMatch && dateMatch;
       });
 
-      console.log(
-        `  Found ${matches.length} matching transactions for order ${order.name}`
-      );
+      console.log(`Found ${matches.length} matching transactions for order ${order.name}`);
 
       // Save new matches to database
       if (matches.length > 0) {
@@ -579,7 +434,7 @@ export const run = async ({ params, api, connections }: any) => {
             if (daysDiff > 1) confidence -= daysDiff * 2; // Reduce by days difference
             confidence = Math.max(50, Math.min(100, confidence)); // Keep between 50-100
 
-            const savedMatch = await api.orderPaymentMatch.create({
+            await api.orderPaymentMatch.create({
               orderId: order.id,
               bankTransactionId: (match as any).id,
               matchConfidence: Math.round(confidence),
@@ -593,12 +448,6 @@ export const run = async ({ params, api, connections }: any) => {
               amountDifference: amountDiff,
               daysDifference: daysDiff,
             });
-
-            console.log(
-              `  Saved payment match ${savedMatch.id} with ${confidence.toFixed(
-                1
-              )}% confidence`
-            );
           } catch (saveError) {
             console.error(
               `  Failed to save match for order ${order.id}:`,
@@ -609,14 +458,10 @@ export const run = async ({ params, api, connections }: any) => {
 
         // Update Shopify order after successful matches
         try {
-          console.log(
-            `  Updating Shopify order ${order.name} payment status...`
-          );
-
           const matchDetails = matches
             .map(
               (match: any, index: number) =>
-                `${index + 1}. $${match.amount} on ${new Date(
+                `${index + 1}. ₴${match.amount} on ${new Date(
                   match.transactionDateTime
                 ).toLocaleDateString()}`
             )
@@ -629,14 +474,11 @@ export const run = async ({ params, api, connections }: any) => {
             markAsPaid: true,
           });
 
-          console.log(`  ✅ Successfully updated Shopify order ${order.name}`);
+          console.log(`Successfully updated order ${order.name}`);
 
           // Create automatic check for verified payment (if enabled)
           if (autoCreateChecks) {
             try {
-              console.log(
-                `🧾 Attempting automatic check creation for order ${order.name}...`
-              );
               // Find the corresponding orderData for this specific order
               const currentOrderData = orderData?.find(
                 (od: any) => od.id === order.id
@@ -649,40 +491,16 @@ export const run = async ({ params, api, connections }: any) => {
               );
 
               if (checkResult?.success) {
-                console.log(
-                  `✅ Automatic check created successfully for order ${order.name}`
-                );
-                console.log(`   Receipt ID: ${checkResult.receiptId}`);
-                console.log(`   Fiscal Code: ${checkResult.fiscalCode}`);
+                console.log(`Check created for order ${order.name}`);
               } else if (checkResult?.skipped) {
-                console.log(
-                  `⚠️ Automatic check skipped for order ${order.name}: ${checkResult.reason}`
-                );
-              } else {
-                console.log(
-                  `⚠️ Automatic check creation failed for order ${
-                    order.name
-                  }: ${checkResult?.error || 'Unknown error'}`
-                );
+                console.log(`Check skipped for order ${order.name}: ${checkResult.reason}`);
               }
             } catch (checkError) {
-              console.error(
-                `❌ Error during automatic check creation for order ${order.name}:`,
-                checkError
-              );
-              // Don't throw - payment verification was successful, check creation is secondary
+              console.error(`Check creation error for order ${order.name}:`, checkError);
             }
-          } else {
-            console.log(
-              `⚙️ Automatic check creation disabled for order ${order.name}`
-            );
           }
         } catch (shopifyError) {
-          console.error(
-            `  ❌ Failed to update Shopify order ${order.id}:`,
-            shopifyError
-          );
-          // Don't throw - we want verification to continue even if Shopify update fails
+          console.error(`Failed to update Shopify order ${order.id}:`, shopifyError);
         }
       }
 
@@ -703,8 +521,6 @@ export const run = async ({ params, api, connections }: any) => {
         })),
       });
     }
-
-    console.log('Verification results:', results);
 
     return {
       success: true,
