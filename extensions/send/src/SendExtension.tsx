@@ -145,7 +145,8 @@ function SendExtension() {
                     body: JSON.stringify({
                       recipientEmail,
                       cc: 'nezhihai@gmail.com',
-                      subject: 'Замовлення, кількість: ' + ordersContent!.length,
+                      subject:
+                        'Замовлення, кількість: ' + ordersContent!.length,
                       htmlContent: generateOrdersHtmlTable(ordersContent!),
                     }),
                   }
@@ -157,19 +158,20 @@ function SendExtension() {
               // Auto-tag orders for Easy supplier
               if (shouldAutoTag) {
                 try {
-                  const allOrderNamesMatchPattern = ordersContent!.every(
-                    (order) => /^№\d{9}$/.test(order.name)
-                  );
-                  const newTag = allOrderNamesMatchPattern
-                    ? 'Декларації'
-                    : 'Завершені';
-                  console.log(
-                    `Auto-tagging ${ordersContent!.length} Easy orders with: ${newTag}`
-                  );
-                  await updateOrdersTags({
-                    value: newTag,
-                    orderIds: selectedIds,
-                  });
+                  // Process each order individually
+                  for (const order of ordersContent!) {
+                    const matchesPattern = /^№\d{9}$/.test(order.name);
+                    const newTag = matchesPattern ? 'Декларації' : 'Завершені';
+
+                    console.log(
+                      `Auto-tagging order ${order.name} with: ${newTag} (matches pattern: ${matchesPattern})`
+                    );
+
+                    await updateOrdersTags({
+                      value: newTag,
+                      orderIds: [order.id],
+                    });
+                  }
                 } catch (tagError) {
                   console.error('Failed to auto-tag orders:', tagError);
                 }

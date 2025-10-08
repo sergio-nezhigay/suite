@@ -20,7 +20,10 @@
       "Bash(git commit:*)",
       "Bash(node:*)",
       "Bash(cross-env:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(yarn install)",
+      "Bash(npm view:*)",
+      "Bash(find:*)"
     ],
     "deny": [],
     "ask": []

@@ -14,6 +14,8 @@ import {
 } from 'utilities';
 
 async function getDefaultImageUrl(title: string): Promise<string> {
+  const fallbackImage = 'https://www.zip.ua/wp-content/uploads/woocommerce-placeholder.png';
+
   try {
     const response = await axios.get(
       'https://www.googleapis.com/customsearch/v1',
@@ -31,13 +33,18 @@ async function getDefaultImageUrl(title: string): Promise<string> {
 
     const items = response.data.items;
     if (items && items.length > 0) {
-      return items[0].link;
+      const imageUrl = items[0].link;
+      // Validate URL scheme - only accept http/https
+      if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
+        return imageUrl;
+      }
+      console.log('Invalid image URL scheme:', imageUrl);
     }
 
-    return 'https://www.zip.ua/wp-content/uploads/woocommerce-placeholder.png';
+    return fallbackImage;
   } catch (error) {
     console.error(error);
-    return 'https://www.zip.ua/wp-content/uploads/woocommerce-placeholder.png';
+    return fallbackImage;
   }
 }
 
