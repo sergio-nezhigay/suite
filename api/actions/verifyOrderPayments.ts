@@ -172,6 +172,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
         id: true,
         name: true,
         totalPriceSet: true,
+        currentTotalPriceSet: true,
         lineItems: {
           select: {
             title: true,
@@ -374,6 +375,7 @@ export const run = async ({ params, api, connections }: any) => {
         id: true,
         name: true,
         totalPriceSet: true,
+        currentTotalPriceSet: true,
         createdAt: true,
         financialStatus: true,
         shopId: true,
@@ -384,17 +386,24 @@ export const run = async ({ params, api, connections }: any) => {
 
     // Debug: Log order details
     orders.forEach((order: any, index: number) => {
-      const orderAmount = parseFloat(
+      const currentAmount = parseFloat(
+        order.currentTotalPriceSet?.shop_money?.amount || '0'
+      );
+      const historicalAmount = parseFloat(
         order.totalPriceSet?.shop_money?.amount || '0'
       );
+      const hasDeletedItems = Math.abs(currentAmount - historicalAmount) > 0.01;
+
       console.log(`DEBUG - Order ${index + 1}:`, {
         id: order.id,
         name: order.name,
-        amount: orderAmount,
-        currency: order.totalPriceSet?.shop_money?.currencyCode,
+        currentAmount: currentAmount,
+        historicalAmount: historicalAmount,
+        hasDeletedItems: hasDeletedItems,
+        difference: hasDeletedItems ? (historicalAmount - currentAmount).toFixed(2) : 0,
+        currency: order.currentTotalPriceSet?.shop_money?.currencyCode,
         createdAt: order.createdAt,
         financialStatus: order.financialStatus,
-        totalPriceSet: order.totalPriceSet,
       });
     });
 
@@ -454,9 +463,22 @@ export const run = async ({ params, api, connections }: any) => {
 
     for (const order of orders) {
       console.log('order', JSON.stringify(order, null, 2));
+      // Use currentTotalPriceSet which excludes deleted/refunded items
       const orderAmount = parseFloat(
+        order.currentTotalPriceSet?.shop_money?.amount || '0'
+      );
+      const historicalAmount = parseFloat(
         order.totalPriceSet?.shop_money?.amount || '0'
       );
+      const hasDeletedItems = Math.abs(orderAmount - historicalAmount) > 0.01;
+
+      if (hasDeletedItems) {
+        console.log(`⚠️ Order ${order.name} has deleted/refunded items:`);
+        console.log(`  Current amount: ${orderAmount}`);
+        console.log(`  Historical amount: ${historicalAmount}`);
+        console.log(`  Difference: ${(historicalAmount - orderAmount).toFixed(2)}`);
+      }
+
       const orderDate = new Date(order.createdAt);
 
       // Check if this order is already verified
