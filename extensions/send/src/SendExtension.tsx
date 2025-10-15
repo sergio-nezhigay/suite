@@ -85,23 +85,36 @@ function SendExtension() {
   let shouldSendWarrantyEmail = false;
   let shouldAutoTag = false;
   let shouldSendEmail = false;
+  let tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string) = COMPLETED_TAG;
+
   if (firstOrderTag.includes('Ии')) {
+    // Easy supplier
     spreadsheetId = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
     recipientEmail = 'deni-ua@ukr.net';
     shouldAutoTag = true;
     shouldSendEmail = true;
+    tagStrategy = getEasySupplierTag;
   } else if (firstOrderTag.includes('РІ')) {
+    // Rozetka supplier
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
     recipientEmail = 'asd1134@ukr.net';
+    shouldAutoTag = true;
     shouldSendEmail = true;
+    tagStrategy = COMPLETED_TAG;
   } else if (firstOrderTag.includes('Че')) {
+    // Schusev supplier
     spreadsheetId = '17J3L12ZHz3VoYp2la5dTcCmZg4-zcNZpCUyvifgLZkk';
     recipientEmail = 'scherginets@ukr.net';
+    shouldAutoTag = true;
     shouldSendWarrantyEmail = true;
     shouldSendEmail = true;
+    tagStrategy = COMPLETED_TAG;
   } else if (firstOrderTag.includes('Ме')) {
+    // Unknown supplier
     spreadsheetId = '1jHwJA0U9XXSu1W66P7WOSuNiCMLvdMtXyTnPOOVQLP4';
     sheetName = 'Sheet1';
+    shouldAutoTag = true;
+    tagStrategy = COMPLETED_TAG;
   }
 
   const getTitle = () => {
@@ -155,23 +168,10 @@ function SendExtension() {
                 if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
               }
 
-              // Auto-tag orders for Easy supplier
+              // Auto-tag processed orders
               if (shouldAutoTag) {
                 try {
-                  // Process each order individually
-                  for (const order of ordersContent!) {
-                    const matchesPattern = /^№\d{9}$/.test(order.name);
-                    const newTag = matchesPattern ? 'Декларації' : 'Завершені';
-
-                    console.log(
-                      `Auto-tagging order ${order.name} with: ${newTag} (matches pattern: ${matchesPattern})`
-                    );
-
-                    await updateOrdersTags({
-                      value: newTag,
-                      orderIds: [order.id],
-                    });
-                  }
+                  await autoTagProcessedOrders(ordersContent!, tagStrategy);
                 } catch (tagError) {
                   console.error('Failed to auto-tag orders:', tagError);
                 }
@@ -447,4 +447,30 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
     .join('')}</tbody>`;
 
   return `<table border="1" cellpadding="4" cellspacing="0">${thead}${tbody}</table>`;
+}
+
+// Tag strategies
+const COMPLETED_TAG = 'Завершені';
+
+function getEasySupplierTag(order: OrderResponse['nodes'][number]): string {
+  const matchesPattern = /^№\d{9}$/.test(order.name);
+  return matchesPattern ? 'Декларації' : 'Завершені';
+}
+
+// Reusable auto-tagging function
+async function autoTagProcessedOrders(
+  orders: OrderResponse['nodes'],
+  tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string)
+): Promise<void> {
+  for (const order of orders) {
+    const newTag =
+      typeof tagStrategy === 'function' ? tagStrategy(order) : tagStrategy;
+
+    console.log(`Auto-tagging order ${order.name} with: ${newTag}`);
+
+    await updateOrdersTags({
+      value: newTag,
+      orderIds: [order.id],
+    });
+  }
 }
