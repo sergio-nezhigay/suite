@@ -13,6 +13,9 @@ export const run = async ({ connections, config, params }: any) => {
       );
     }
 
+    const ipResponse = await axios.get('https://api.ipify.org?format=json');
+    console.log('Gadget server outbound IP:', ipResponse.data.ip);
+
     // Get days back parameter (default to 1 for better coverage)
     const daysBack = Number(params?.daysBack) || 1;
 

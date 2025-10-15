@@ -75,9 +75,22 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
       orderId: record.id,
     });
 
+    const fullOrder = await api.shopifyOrder.findOne(record.id, {
+      select: {
+        id: true,
+        paymentGatewayNames: true,
+      },
+    });
+
+    console.log(
+      'fullOrder.paymentGatewayNames=',
+      fullOrder.paymentGatewayNames
+    );
+
     // Extract payment method
-    const gateways = Array.isArray(record.paymentGatewayNames)
-      ? record.paymentGatewayNames
+
+    const gateways = Array.isArray(fullOrder.paymentGatewayNames)
+      ? fullOrder.paymentGatewayNames
       : [];
 
     // Check if any gateway contains prepayment indicators
@@ -86,8 +99,10 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
         gateway &&
         typeof gateway === 'string' &&
         (gateway.toLowerCase().includes('передплат') ||
+          gateway.toLowerCase().includes('переказ') ||
           gateway.toLowerCase().includes('prepay'))
     );
+    console.log('isPrepaid', JSON.stringify(isPrepaid, null, 2));
 
     const paymentMethod = isPrepaid
       ? 'Передплата безготівка'

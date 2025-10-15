@@ -137,7 +137,7 @@ function App() {
                 ? 'success'
                 : status.startsWith('Error')
                 ? 'critical'
-                : 'default'
+                : undefined
             }
             size='small-100'
           >
