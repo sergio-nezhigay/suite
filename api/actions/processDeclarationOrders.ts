@@ -281,6 +281,6 @@ export const run = async ({ api, connections, config }: any) => {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '0 */12 * * *' }],
+    scheduler: [{ cron: '11 1,7,13,19 * * *' }],
   },
 };

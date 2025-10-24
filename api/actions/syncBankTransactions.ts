@@ -553,6 +553,11 @@ export const params = {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '0 9 * * *' }],
+    scheduler: [
+      { cron: '0 6 * * *' }, // 6:00 AM
+      { cron: '0 12 * * *' }, // 12:00 PM
+      { cron: '0 18 * * *' }, // 6:00 PM
+      { cron: '0 0 * * *' }, // 12:00 AM (midnight)
+    ],
   },
 };
