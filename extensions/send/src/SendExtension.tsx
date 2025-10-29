@@ -13,6 +13,7 @@ import {
   fetchOrdersData,
   OrderResponse,
   updateOrdersTags,
+  addOrderNote,
 } from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
@@ -85,7 +86,9 @@ function SendExtension() {
   let shouldSendWarrantyEmail = false;
   let shouldAutoTag = false;
   let shouldSendEmail = false;
-  let tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string) = COMPLETED_TAG;
+  let tagStrategy:
+    | string
+    | ((order: OrderResponse['nodes'][number]) => string) = COMPLETED_TAG;
 
   if (firstOrderTag.includes('Ии')) {
     // Easy supplier
@@ -472,5 +475,15 @@ async function autoTagProcessedOrders(
       value: newTag,
       orderIds: [order.id],
     });
+
+    try {
+      await addOrderNote({
+        orderId: order.id,
+        note: `Order sent to supplier. Tagged as: ${newTag}`,
+      });
+    } catch (error) {
+      console.error(`Failed to add note to order ${order.name}:`, error);
+      // Don't throw - continue processing other orders
+    }
   }
 }
