@@ -54,7 +54,7 @@ export const run = async ({ connections, config, params }: any) => {
     const requestConfig = {
       url: 'https://acp.privatbank.ua/api/statements/transactions',
       headers: {
-        Id: privatBankId,
+        // Id: privatBankId,
         Token:
           privatBankToken.substring(0, 10) + '...' + privatBankToken.slice(-4), // Mask token for security
         'Content-Type': 'application/json; charset=utf-8',
@@ -78,7 +78,7 @@ export const run = async ({ connections, config, params }: any) => {
       'https://acp.privatbank.ua/api/statements/transactions',
       {
         headers: {
-          Id: privatBankId,
+          //  Id: privatBankId,
           Token: privatBankToken,
           'Content-Type': 'application/json; charset=utf-8',
         },
