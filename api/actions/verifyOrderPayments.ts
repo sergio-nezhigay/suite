@@ -24,7 +24,6 @@ async function createAutomaticCheck(
   orderData?: any
 ) {
   try {
-
     // Get the bank transaction that was matched to this order
     const paymentMatch = await api.orderPaymentMatch.findFirst({
       filter: { orderId: { equals: order.id } },
@@ -36,15 +35,15 @@ async function createAutomaticCheck(
         checkReceiptId: true,
         checkFiscalCode: true,
         checkSkipped: true,
-        checkSkipReason: true
-      }
+        checkSkipReason: true,
+      },
     });
 
     if (!paymentMatch) {
       return {
         success: false,
         skipped: true,
-        reason: 'No payment match found'
+        reason: 'No payment match found',
       };
     }
 
@@ -53,20 +52,22 @@ async function createAutomaticCheck(
       filter: { id: { equals: paymentMatch.bankTransactionId } },
       select: {
         counterpartyAccount: true,
-        counterpartyName: true
-      }
+        counterpartyName: true,
+      },
     });
 
     if (!bankTransaction) {
       return {
         success: false,
         skipped: true,
-        reason: 'Bank transaction not found'
+        reason: 'Bank transaction not found',
       };
     }
 
     // Extract and validate payment code
-    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount);
+    const paymentCode = extractPaymentCodeFromAccount(
+      bankTransaction.counterpartyAccount
+    );
     const restrictedCodes = ['2600', '2902', '2909', '2920'];
     const novaPoshtraAccount = 'UA813005280000026548000000014';
 
@@ -77,7 +78,7 @@ async function createAutomaticCheck(
       // Mark payment match as skipped
       await api.orderPaymentMatch.update(paymentMatch.id, {
         checkSkipped: true,
-        checkSkipReason: skipReason
+        checkSkipReason: skipReason,
       });
 
       // Add note to order explaining why check wasn't created
@@ -95,7 +96,7 @@ Note: Manual check creation may be required`;
       return {
         success: false,
         skipped: true,
-        reason: skipReason
+        reason: skipReason,
       };
     }
 
@@ -106,7 +107,7 @@ Note: Manual check creation may be required`;
       // Mark payment match as skipped
       await api.orderPaymentMatch.update(paymentMatch.id, {
         checkSkipped: true,
-        checkSkipReason: skipReason
+        checkSkipReason: skipReason,
       });
 
       const restrictionNote = `🧾 Automatic Check Creation Skipped
@@ -123,7 +124,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       return {
         success: false,
         skipped: true,
-        reason: skipReason
+        reason: skipReason,
       };
     }
 
@@ -132,7 +133,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       return {
         success: false,
         skipped: true,
-        reason: 'Check already issued for this payment'
+        reason: 'Check already issued for this payment',
       };
     }
 
@@ -141,7 +142,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       return {
         success: false,
         skipped: true,
-        reason: paymentMatch.checkSkipReason || 'Check previously skipped'
+        reason: paymentMatch.checkSkipReason || 'Check previously skipped',
       };
     }
 
@@ -194,7 +195,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       checkReceiptId: receipt.id,
       checkFiscalCode: receipt.fiscal_code || undefined,
       checkReceiptUrl: receipt.receipt_url || undefined,
-      checkIssuedAt: checkIssuedAt
+      checkIssuedAt: checkIssuedAt,
     });
 
     // Add receipt info to order notes
@@ -413,7 +414,9 @@ export const run = async ({ params, api, connections }: any) => {
         return amountMatch && dateMatch;
       });
 
-      console.log(`Found ${matches.length} matching transactions for order ${order.name}`);
+      console.log(
+        `Found ${matches.length} matching transactions for order ${order.name}`
+      );
 
       // Save new matches to database
       if (matches.length > 0) {
@@ -493,14 +496,22 @@ export const run = async ({ params, api, connections }: any) => {
               if (checkResult?.success) {
                 console.log(`Check created for order ${order.name}`);
               } else if (checkResult?.skipped) {
-                console.log(`Check skipped for order ${order.name}: ${checkResult.reason}`);
+                console.log(
+                  `Check skipped for order ${order.name}: ${checkResult.reason}`
+                );
               }
             } catch (checkError) {
-              console.error(`Check creation error for order ${order.name}:`, checkError);
+              console.error(
+                `Check creation error for order ${order.name}:`,
+                checkError
+              );
             }
           }
         } catch (shopifyError) {
-          console.error(`Failed to update Shopify order ${order.id}:`, shopifyError);
+          console.error(
+            `Failed to update Shopify order ${order.id}:`,
+            shopifyError
+          );
         }
       }
 
