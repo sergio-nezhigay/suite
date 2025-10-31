@@ -8,11 +8,37 @@ import {
   Text,
   InlineStack,
   Badge,
+  Box,
+  Section,
+  Divider,
 } from '@shopify/ui-extensions-react/admin';
 
 const TARGET = 'admin.order-index.selection-action.render';
 
 export default reactExtension(TARGET, () => <App />);
+
+interface LineItem {
+  id: string;
+  title: string;
+  currentQuantity: number;
+  variant?: {
+    title: string;
+  };
+  discountedUnitPriceSet: {
+    shopMoney: {
+      amount: string;
+      currencyCode: string;
+    };
+  };
+}
+
+interface Order {
+  id: string;
+  name: string;
+  lineItems: {
+    nodes: LineItem[];
+  };
+}
 
 interface VerificationResult {
   orderId: string;
@@ -24,6 +50,14 @@ interface VerificationResult {
   alreadyVerified?: boolean;
   verifiedAt?: string;
   matchConfidence?: number;
+  // Check information
+  checkIssued?: boolean;
+  checkIssuedAt?: string;
+  checkReceiptId?: string;
+  checkFiscalCode?: string;
+  checkReceiptUrl?: string;
+  checkSkipped?: boolean;
+  checkSkipReason?: string;
   matches: Array<{
     transactionId: string;
     amount: number;
@@ -43,52 +77,31 @@ interface VerificationResponse {
   error?: string;
 }
 
-interface LineItem {
-  id: string;
-  title: string;
-  quantity: number;
-  price: {
-    amount: string;
-    currencyCode: string;
-  };
-  variant?: {
-    title: string;
-  };
-}
-
-interface OrderDetails {
-  id: string;
-  name: string;
-  lineItems: {
-    nodes: LineItem[];
-  };
-}
-
 function App() {
-  const { close, data, query } = useApi(TARGET);
+  const { close, data } = useApi(TARGET);
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
-  const [verificationResults, setVerificationResults] =
-    useState<VerificationResponse | null>(null);
+  const [verificationResults, setVerificationResults] = useState<VerificationResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [orderDetails, setOrderDetails] = useState<OrderDetails[]>([]);
-  const [isLoadingDetails, setIsLoadingDetails] = useState(false);
-  const [bestVariants, setBestVariants] = useState<{ [key: string]: string }>({});
-
-  console.log('Selected orders data:', data);
+  const [bestVariants, setBestVariants] = useState<Record<string, string>>({});
+  const [variantsLoading, setVariantsLoading] = useState(false);
 
   const selectedOrderIds = useMemo(() =>
     data?.selected?.map((item: any) => item.id) || [],
     [data?.selected]
   );
 
-  const fetchOrderDetails = useCallback(async (orderIds: string[]) => {
-    if (orderIds.length === 0) {
-      setOrderDetails([]);
-      return;
-    }
+  console.log('Selected orders data:', data);
 
-    setIsLoadingDetails(true);
-    try {
+  // Fetch order details using fetch (same as checks extension)
+  useEffect(() => {
+    (async function getOrdersInfo() {
+      if (selectedOrderIds.length === 0) {
+        setLoading(false);
+        return;
+      }
+
       const getOrdersQuery = {
         query: `query GetOrders($ids: [ID!]!) {
           nodes(ids: $ids) {
@@ -99,66 +112,122 @@ function App() {
                 nodes {
                   id
                   title
-                  quantity
-                  price {
-                    amount
-                    currencyCode
-                  }
+                  currentQuantity
                   variant {
                     title
+                  }
+                  discountedUnitPriceSet {
+                    shopMoney {
+                      amount
+                      currencyCode
+                    }
                   }
                 }
               }
             }
           }
         }`,
-        variables: { ids: orderIds },
+        variables: { ids: selectedOrderIds },
       };
 
-      console.log('Fetching orders with query:', getOrdersQuery);
-      const result = await query(getOrdersQuery.query, { variables: getOrdersQuery.variables });
-      console.log('Query result:', result);
+      try {
+        const res = await fetch('shopify:admin/api/graphql.json', {
+          method: 'POST',
+          body: JSON.stringify(getOrdersQuery),
+        });
 
-      const orders = (result as any)?.data?.nodes?.filter((node: any) => node?.id) || [];
-      setOrderDetails(orders);
-    } catch (err) {
-      console.error('Error fetching order details:', err);
-      setError('Failed to load order details');
-    } finally {
-      setIsLoadingDetails(false);
-    }
-  }, [query]);
-
-  const fetchBestVariants = useCallback(async (orders: OrderDetails[]) => {
-    const variants: { [key: string]: string } = {};
-
-    try {
-      for (const order of orders) {
-        for (const item of order.lineItems.nodes) {
-          if (!variants[item.id] && item.title) {
-            const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(item.title)}`);
-            if (response.ok) {
-              const result = await response.json();
-              variants[item.id] = result.bestVariant;
-            }
-          }
+        if (!res.ok) {
+          console.error('GraphQL request failed:', res.status);
+          setLoading(false);
+          return;
         }
+
+        const ordersData = await res.json();
+
+        console.log('GraphQL Response:', ordersData);
+
+        if (ordersData.errors) {
+          console.error('GraphQL Errors:', ordersData.errors);
+        }
+
+        // Filter out line items with currentQuantity of 0 (removed/refunded items)
+        const filteredOrders = (ordersData.data?.nodes || []).map((order: Order) => ({
+          ...order,
+          lineItems: {
+            nodes: order.lineItems.nodes.filter(item => item.currentQuantity > 0)
+          }
+        }));
+
+        console.log('Filtered orders:', filteredOrders);
+        setOrders(filteredOrders);
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        setOrders([]);
+      } finally {
+        setLoading(false);
       }
-      setBestVariants(variants);
-    } catch (err) {
-      console.error('Error fetching best variants:', err);
-    }
-  }, []);
+    })();
+  }, [selectedOrderIds.join(',')]);
 
+  // Fetch best variants when orders change
   useEffect(() => {
-    fetchOrderDetails(selectedOrderIds);
-  }, [selectedOrderIds, fetchOrderDetails]);
+    if (orders.length > 0) {
+      setVariantsLoading(true);
+      const allProductTitles = new Set<string>();
+      orders.forEach(order => {
+        order.lineItems.nodes.forEach(item => {
+          allProductTitles.add(item.title);
+        });
+      });
 
-  useEffect(() => {
-    if (orderDetails.length > 0) {
-      fetchBestVariants(orderDetails);
+      if (allProductTitles.size > 0) {
+        fetchBestVariants(Array.from(allProductTitles)).then(variants => {
+          setBestVariants(variants);
+          setVariantsLoading(false);
+        });
+      } else {
+        setVariantsLoading(false);
+      }
     }
-  }, [orderDetails, fetchBestVariants]);
+  }, [orders]);
+
+  const fetchBestVariant = async (productTitle: string): Promise<string> => {
+    try {
+      const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(productTitle)}`);
+      if (!response.ok) {
+        console.log('Failed to fetch variant for:', productTitle);
+        return '';
+      }
+      const data = await response.json();
+      return data.bestVariant;
+    } catch (error) {
+      console.log('Error fetching variant for:', productTitle, error);
+      return '';
+    }
+  };
+
+  const fetchBestVariants = async (productTitles: string[]): Promise<Record<string, string>> => {
+    const variants: Record<string, string> = {};
+
+    // Process in parallel for better performance
+    const promises = productTitles.map(async (title) => {
+      const variant = await fetchBestVariant(title);
+      variants[title] = variant;
+    });
+
+    await Promise.all(promises);
+    return variants;
+  };
+
+  const truncateProductName = (name: string, maxLength: number = 40) => {
+    return name.length > maxLength
+      ? name.substring(0, maxLength) + '...'
+      : name;
+  };
+
+  const formatPrice = (amount: string) => {
+    return Math.round(parseFloat(amount)).toString();
+  };
 
   const handleVerifyPayments = async () => {
     if (selectedOrderIds.length === 0) {
@@ -173,16 +242,16 @@ function App() {
     try {
       console.log('Verifying payments for orders:', selectedOrderIds);
 
-      // Prepare order data with pre-calculated variants
-      const orderData = orderDetails.map(order => ({
+      // Prepare order data with pre-calculated variants (same as checks extension)
+      const orderData = orders.map(order => ({
         id: order.id,
         name: order.name,
         lineItems: order.lineItems.nodes.map(item => ({
           id: item.id,
           title: item.title,
-          quantity: item.quantity,
-          price: item.price.amount, // Send just the amount as string
-          variant: bestVariants[item.id] || item.title // Use pre-calculated variant or fallback to original title
+          quantity: item.currentQuantity,
+          price: formatPrice(item.discountedUnitPriceSet.shopMoney.amount),
+          variant: bestVariants[item.title] || item.title // Use title as key, not id
         }))
       }));
 
@@ -196,7 +265,7 @@ function App() {
         },
         body: JSON.stringify({
           orderIds: selectedOrderIds,
-          orderData: orderData // Include the pre-calculated order data
+          orderData: orderData
         }),
       });
 
@@ -236,6 +305,17 @@ function App() {
     }
   };
 
+  const getCheckStatusBadge = (result: VerificationResult) => {
+    if (result.checkIssued) {
+      return <Badge tone='success'>🧾 Check Issued</Badge>;
+    } else if (result.checkSkipped) {
+      return <Badge tone='warning'>⏭️ Check Skipped</Badge>;
+    } else if (result.matchCount > 0) {
+      return <Badge tone='attention'>⏳ Check Pending</Badge>;
+    }
+    return null;
+  };
+
   const formatVerificationTime = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -254,41 +334,64 @@ function App() {
 
   return (
     <AdminAction
+      title={`Payment Verification for ${selectedOrderIds.length} order${
+        selectedOrderIds.length === 1 ? '' : 's'
+      }`}
       primaryAction={
         <Button
           onPress={handleVerifyPayments}
-          disabled={isVerifying || selectedOrderIds.length === 0}
+          disabled={isVerifying || selectedOrderIds.length === 0 || loading || variantsLoading}
         >
-          {isVerifying ? 'Verifying...' : 'Check Payments'}
+          {isVerifying ? 'Verifying...' : variantsLoading ? 'Loading variants...' : 'Check Payments'}
         </Button>
       }
       secondaryAction={<Button onPress={close}>Close</Button>}
     >
       <BlockStack>
-        <Text fontWeight='bold'>💰 Payment Verification</Text>
-
-        <Text>Selected Orders: {selectedOrderIds.length}</Text>
-
-        {isLoadingDetails && <Text>🔄 Loading order details...</Text>}
-
-        {!isLoadingDetails && orderDetails.length > 0 && (
+        {loading ? (
+          <Text>Loading order details...</Text>
+        ) : orders.length === 0 ? (
+          <Text>No orders found</Text>
+        ) : (
           <BlockStack>
-            <Text fontWeight='bold'>📋 Order Line Items:</Text>
-            {orderDetails.map((order) => (
+            <Text fontWeight='bold'>📦 Order Preview</Text>
+            {orders.map((order, index) => (
               <BlockStack key={order.id}>
-                <Text fontWeight='bold'>{order.name}</Text>
-                {order.lineItems.nodes.map((item) => (
-                  <BlockStack key={item.id}>
-                    <InlineStack>
-                      <Text>• {item.title} {item.variant?.title ? `(${item.variant.title})` : ''} - Qty: {item.quantity}</Text>
-                    </InlineStack>
-                    {bestVariants[item.id] && bestVariants[item.id] !== item.title && (
-                      <Text>
-                        ↳ Best Match: {bestVariants[item.id]}
-                      </Text>
+                <Section heading={order.name}>
+                  <BlockStack>
+                    {/* Line Items */}
+                    {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {
+                      const price = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
+
+                      return (
+                        <Box key={itemIndex}>
+                          <InlineStack>
+                            <Box minInlineSize='45%'>
+                              <Text>{truncateProductName(item.title)}</Text>
+                            </Box>
+                            <Box minInlineSize='20%'>
+                              <Text>{bestVariants[item.title] || '...'}</Text>
+                            </Box>
+                            <Box minInlineSize='15%'>
+                              <Badge>{item.currentQuantity}</Badge>
+                            </Box>
+                            <Box minInlineSize='20%'>
+                              <Text>₴{price}</Text>
+                            </Box>
+                          </InlineStack>
+                        </Box>
+                      );
+                    })}
+                    {order.lineItems.nodes.length > 5 && (
+                      <Box>
+                        <Text>
+                          ...and {order.lineItems.nodes.length - 5} more items
+                        </Text>
+                      </Box>
                     )}
                   </BlockStack>
-                ))}
+                </Section>
+                {index < orders.length - 1 && <Divider />}
               </BlockStack>
             ))}
           </BlockStack>
@@ -321,6 +424,7 @@ function App() {
                   <InlineStack>
                     <Text fontWeight='bold'>{result.orderName}</Text>
                     {getPaymentStatusBadge(result)}
+                    {getCheckStatusBadge(result)}
                   </InlineStack>
 
                   <Text>
@@ -336,6 +440,33 @@ function App() {
                         : 'Just verified'}
                       : {formatVerificationTime(result.verifiedAt)}
                     </Text>
+                  )}
+
+                  {result.checkIssued && (
+                    <BlockStack>
+                      <Text fontWeight='bold'>🧾 Fiscal Check Details:</Text>
+                      {result.checkReceiptId && (
+                        <Text>Receipt ID: {result.checkReceiptId}</Text>
+                      )}
+                      {result.checkFiscalCode && result.checkFiscalCode !== 'N/A' && (
+                        <Text>Fiscal Code: {result.checkFiscalCode}</Text>
+                      )}
+                      {result.checkReceiptUrl && result.checkReceiptUrl !== 'N/A' && (
+                        <Text>URL: {result.checkReceiptUrl}</Text>
+                      )}
+                      {result.checkIssuedAt && (
+                        <Text>
+                          Issued: {formatVerificationTime(result.checkIssuedAt)}
+                        </Text>
+                      )}
+                    </BlockStack>
+                  )}
+
+                  {result.checkSkipped && (
+                    <BlockStack>
+                      <Text>⏭️ Check Creation Skipped</Text>
+                      <Text>Reason: {result.checkSkipReason}</Text>
+                    </BlockStack>
                   )}
 
                   {result.matches.length > 0 && (

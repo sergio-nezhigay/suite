@@ -140,7 +140,8 @@ export class CheckboxService {
       const receipt = await response.json();
 
       // Check if receipt was actually created successfully
-      if (receipt.status && receipt.status !== 'created') {
+      // API can return 'created', 'CREATED', or other status
+      if (receipt.status && receipt.status.toUpperCase() !== 'CREATED') {
         throw new Error(`Receipt creation failed with status: ${receipt.status}`);
       }
 
@@ -186,7 +187,8 @@ export class CheckboxService {
       const receipt = await response.json();
 
       // Check if receipt was actually created successfully
-      if (receipt.status && receipt.status !== 'Created') {
+      // API can return 'Created', 'CREATED', or other status
+      if (receipt.status && receipt.status.toUpperCase() !== 'CREATED') {
         throw new Error(
           `Sell receipt creation failed with status: ${receipt.status}`
         );

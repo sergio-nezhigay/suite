@@ -39,6 +39,13 @@ async function createAutomaticCheck(
       },
     });
 
+    console.log(`[createAutomaticCheck] Payment match for order ${order.name}:`, {
+      found: !!paymentMatch,
+      checkIssued: paymentMatch?.checkIssued,
+      checkSkipped: paymentMatch?.checkSkipped,
+      checkReceiptId: paymentMatch?.checkReceiptId,
+    });
+
     if (!paymentMatch) {
       return {
         success: false,
@@ -130,15 +137,17 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
 
     // Check if check already issued for this payment match
     if (paymentMatch?.checkIssued) {
+      console.log(`[createAutomaticCheck] Skipping: Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`);
       return {
         success: false,
         skipped: true,
-        reason: 'Check already issued for this payment',
+        reason: `Check already issued for this payment (Receipt ID: ${paymentMatch.checkReceiptId || 'N/A'})`,
       };
     }
 
     // Check if check was previously skipped
     if (paymentMatch?.checkSkipped) {
+      console.log(`[createAutomaticCheck] Skipping: Check previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`);
       return {
         success: false,
         skipped: true,
@@ -146,56 +155,49 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       };
     }
 
+    console.log(`[createAutomaticCheck] Proceeding to create check for order ${order.name}`);
+
+
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
     await checkboxService.signIn();
     await checkboxService.ensureShiftOpen();
 
-    // Fetch full order details with line items for the receipt
-    const fullOrder = await api.shopifyOrder.findFirst({
-      filter: { id: { equals: order.id } },
-      select: {
-        id: true,
-        name: true,
-        totalPriceSet: true,
-        currentTotalPriceSet: true,
-        lineItems: {
-          select: {
-            title: true,
-            quantity: true,
-            priceSet: true,
-            price: true,
-          },
-        },
-      },
-    });
-
-    if (
-      !fullOrder ||
-      !fullOrder.lineItems ||
-      fullOrder.lineItems.length === 0
-    ) {
-      return null;
+    // Require orderData for automatic check creation
+    // The frontend provides orderData with pre-calculated AI variants
+    if (!orderData) {
+      return {
+        success: false,
+        skipped: true,
+        reason: 'Order data with variants not provided'
+      };
     }
 
-    const receiptBody = orderData
-      ? OrderToReceiptTransformer.transformOrderFromDataForSell(
-          orderData,
-          fullOrder
-        )
-      : OrderToReceiptTransformer.transformOrderForSell(fullOrder);
+    // Use the order object already passed in (has id, name, shopId, etc.)
+    // and the orderData from frontend (has line items with AI-selected variants)
+    const receiptBody = OrderToReceiptTransformer.transformOrderFromDataForSell(
+      orderData,
+      order
+    );
 
     // Create the sell receipt
     const receipt = await checkboxService.createSellReceipt(receiptBody);
 
+    console.log(`[createAutomaticCheck] Check created successfully for order ${order.name}, receipt ID: ${receipt.id}`);
+
     // Update payment match with check information
     const checkIssuedAt = new Date();
-    await api.orderPaymentMatch.update(paymentMatch.id, {
+    const updateResult = await api.orderPaymentMatch.update(paymentMatch.id, {
       checkIssued: true,
       checkReceiptId: receipt.id,
       checkFiscalCode: receipt.fiscal_code || undefined,
       checkReceiptUrl: receipt.receipt_url || undefined,
       checkIssuedAt: checkIssuedAt,
+    });
+
+    console.log(`[createAutomaticCheck] Database updated for payment match ${paymentMatch.id}:`, {
+      checkIssued: updateResult.checkIssued,
+      checkReceiptId: updateResult.checkReceiptId,
     });
 
     // Add receipt info to order notes
@@ -286,6 +288,14 @@ export const run = async ({ params, api, connections }: any) => {
   try {
     const { orderIds, autoCreateChecks = true, orderData } = params;
 
+    console.log(`=== Payment Verification Started ===`);
+    console.log(`  Orders: ${orderIds?.length || 0}`);
+    console.log(`  Auto-create checks: ${autoCreateChecks}`);
+    console.log(`  OrderData provided: ${orderData ? 'YES' : 'NO'}`);
+    if (orderData) {
+      console.log(`  OrderData count: ${orderData.length}`);
+    }
+
     if (!orderIds || !Array.isArray(orderIds)) {
       throw new Error('orderIds parameter is required and must be an array');
     }
@@ -309,7 +319,20 @@ export const run = async ({ params, api, connections }: any) => {
         verifiedAt: true,
         matchConfidence: true,
         notes: true,
+        checkIssued: true,
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkFiscalCode: true,
+        checkReceiptUrl: true,
+        checkSkipped: true,
+        checkSkipReason: true,
       },
+    });
+
+    // Log existing matches for debugging
+    console.log(`Found ${existingMatches.length} existing payment matches`);
+    existingMatches.forEach((match: any) => {
+      console.log(`  Order ${match.orderId}: checkIssued=${match.checkIssued}, checkSkipped=${match.checkSkipped}`);
     });
 
     // Create a map of already verified orders
@@ -378,6 +401,63 @@ export const run = async ({ params, api, connections }: any) => {
       if (existingMatch) {
         console.log(`Order ${order.name} already verified`);
 
+        // Check if we need to create a check for this previously verified order
+        if (autoCreateChecks && !existingMatch.checkIssued && !existingMatch.checkSkipped) {
+          console.log(`Attempting to create check for previously verified order ${order.name} (ID: ${order.id})`);
+          console.log(`Check status - issued: ${existingMatch.checkIssued}, skipped: ${existingMatch.checkSkipped}`);
+
+          try {
+            // Find the corresponding orderData for this specific order
+            const currentOrderData = orderData?.find(
+              (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
+            );
+
+            console.log(`Found orderData for order ${order.name}:`, currentOrderData ? 'YES' : 'NO');
+            if (currentOrderData) {
+              console.log(`OrderData has ${currentOrderData.lineItems?.length || 0} line items`);
+            }
+
+            const checkResult = await createAutomaticCheck(
+              order,
+              connections,
+              api,
+              currentOrderData
+            );
+
+            if (checkResult?.success) {
+              console.log(`Check created for previously verified order ${order.name}`);
+            } else if (checkResult?.skipped) {
+              console.log(`Check skipped for previously verified order ${order.name}: ${checkResult.reason}`);
+            }
+          } catch (checkError) {
+            console.error(`Check creation error for previously verified order ${order.name}:`, checkError);
+          }
+
+          // Fetch updated match info after check creation attempt
+          const updatedMatch = await api.orderPaymentMatch.findFirst({
+            filter: { orderId: { equals: order.id } },
+            select: {
+              checkIssued: true,
+              checkIssuedAt: true,
+              checkReceiptId: true,
+              checkFiscalCode: true,
+              checkReceiptUrl: true,
+              checkSkipped: true,
+              checkSkipReason: true,
+            },
+          });
+
+          if (updatedMatch) {
+            existingMatch.checkIssued = updatedMatch.checkIssued;
+            existingMatch.checkIssuedAt = updatedMatch.checkIssuedAt;
+            existingMatch.checkReceiptId = updatedMatch.checkReceiptId;
+            existingMatch.checkFiscalCode = updatedMatch.checkFiscalCode;
+            existingMatch.checkReceiptUrl = updatedMatch.checkReceiptUrl;
+            existingMatch.checkSkipped = updatedMatch.checkSkipped;
+            existingMatch.checkSkipReason = updatedMatch.checkSkipReason;
+          }
+        }
+
         results.push({
           orderId: order.id,
           orderName: order.name || '',
@@ -388,6 +468,14 @@ export const run = async ({ params, api, connections }: any) => {
           alreadyVerified: true,
           verifiedAt: existingMatch.verifiedAt,
           matchConfidence: existingMatch.matchConfidence,
+          // Add check information
+          checkIssued: existingMatch.checkIssued,
+          checkIssuedAt: existingMatch.checkIssuedAt,
+          checkReceiptId: existingMatch.checkReceiptId,
+          checkFiscalCode: existingMatch.checkFiscalCode,
+          checkReceiptUrl: existingMatch.checkReceiptUrl,
+          checkSkipped: existingMatch.checkSkipped,
+          checkSkipReason: existingMatch.checkSkipReason,
           matches: [
             {
               transactionId: existingMatch.bankTransactionId,
@@ -515,6 +603,47 @@ export const run = async ({ params, api, connections }: any) => {
         }
       }
 
+      // Fetch check information for newly verified orders
+      let checkInfo = {
+        checkIssued: false,
+        checkIssuedAt: null,
+        checkReceiptId: null,
+        checkFiscalCode: null,
+        checkReceiptUrl: null,
+        checkSkipped: false,
+        checkSkipReason: null,
+      };
+
+      if (matches.length > 0) {
+        try {
+          const paymentMatch = await api.orderPaymentMatch.findFirst({
+            filter: { orderId: { equals: order.id } },
+            select: {
+              checkIssued: true,
+              checkIssuedAt: true,
+              checkReceiptId: true,
+              checkFiscalCode: true,
+              checkReceiptUrl: true,
+              checkSkipped: true,
+              checkSkipReason: true,
+            },
+          });
+          if (paymentMatch) {
+            checkInfo = {
+              checkIssued: paymentMatch.checkIssued,
+              checkIssuedAt: paymentMatch.checkIssuedAt,
+              checkReceiptId: paymentMatch.checkReceiptId,
+              checkFiscalCode: paymentMatch.checkFiscalCode,
+              checkReceiptUrl: paymentMatch.checkReceiptUrl,
+              checkSkipped: paymentMatch.checkSkipped,
+              checkSkipReason: paymentMatch.checkSkipReason,
+            };
+          }
+        } catch (err) {
+          console.error(`Error fetching check info for order ${order.id}:`, err);
+        }
+      }
+
       results.push({
         orderId: order.id,
         orderName: order.name || '',
@@ -524,6 +653,14 @@ export const run = async ({ params, api, connections }: any) => {
         matchCount: matches.length,
         alreadyVerified: false,
         verifiedAt: matches.length > 0 ? currentTime : null,
+        // Add check information
+        checkIssued: checkInfo.checkIssued,
+        checkIssuedAt: checkInfo.checkIssuedAt,
+        checkReceiptId: checkInfo.checkReceiptId,
+        checkFiscalCode: checkInfo.checkFiscalCode,
+        checkReceiptUrl: checkInfo.checkReceiptUrl,
+        checkSkipped: checkInfo.checkSkipped,
+        checkSkipReason: checkInfo.checkSkipReason,
         matches: matches.map((tx: any) => ({
           transactionId: tx.id,
           amount: tx.amount || 0,
