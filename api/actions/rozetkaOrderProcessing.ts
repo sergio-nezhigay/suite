@@ -210,9 +210,23 @@ async function findOrCreateShopifyCustomer(
 }
 
 export const getNewOrders = async (
-  accessToken: string
+  accessToken: string,
+  isRetry = false
 ): Promise<RozetkaOrder[] | null> => {
   const ROZETKA_ORDERS_API_URL = `${ROZETKA_API_BASE_URL}/orders/search`;
+
+  const requestParams = {
+    types: ORDER_STATUS_CODES.NEW,
+    expand: 'purchases,delivery',
+  };
+
+  console.log('[getNewOrders] Making API request', {
+    url: ROZETKA_ORDERS_API_URL,
+    params: requestParams,
+    tokenPreview: `${accessToken.substring(0, 8)}...`,
+    tokenLength: accessToken.length,
+    isRetry,
+  });
 
   try {
     const response = await axios.get(ROZETKA_ORDERS_API_URL, {
@@ -220,22 +234,69 @@ export const getNewOrders = async (
         Authorization: `Bearer ${accessToken}`,
         Accept: 'application/json',
       },
-      params: {
-        //types: ORDER_STATUS_CODES.ALL,
-        types: ORDER_STATUS_CODES.NEW,
-        expand: 'purchases,delivery',
-      },
+      params: requestParams,
+    });
+
+    console.log('[getNewOrders] API response received', {
+      status: response.status,
+      statusText: response.statusText,
+      success: response.data?.success,
+      hasContent: !!response.data?.content,
+      ordersCount: response.data?.content?.orders?.length || 0,
     });
 
     if (response.data.success) {
+      console.log('[getNewOrders] Successfully fetched orders', {
+        ordersCount: response.data.content.orders.length,
+        orderIds: response.data.content.orders.map((o: any) => o.id),
+      });
       return response.data.content.orders;
     } else {
+      // Check if this is an invalid token error (error code 1020)
+      const errorCode = response.data?.errors?.code;
+      const errorMessage = response.data?.errors?.message;
+
+      console.error('[getNewOrders] API returned success=false', {
+        responseData: JSON.stringify(response.data, null, 2),
+        message: errorMessage || 'No error message provided',
+        errorCode: errorCode || 'No error code',
+        content: response.data?.content || 'No content',
+      });
+
+      // Handle incorrect_access_token error (code 1020)
+      if (errorCode === 1020 && errorMessage === 'incorrect_access_token' && !isRetry) {
+        console.log('[getNewOrders] Detected invalid token error, invalidating cached token and retrying...');
+
+        // Invalidate the cached token
+        await rozetkaTokenManager.invalidateToken();
+        console.log('[getNewOrders] Token invalidated, fetching fresh token...');
+
+        // Get a fresh token
+        const freshToken = await rozetkaTokenManager.getValidToken();
+        console.log('[getNewOrders] Fresh token obtained, retrying API request', {
+          tokenPreview: `${freshToken.substring(0, 8)}...`,
+          tokenLength: freshToken.length,
+        });
+
+        // Retry with the fresh token (pass isRetry=true to prevent infinite loop)
+        return getNewOrders(freshToken, true);
+      }
+
       return logAndReturnError(
-        new Error('Failed to get access orders'),
+        new Error(`Failed to get access orders: ${errorMessage || 'Unknown error'} (code: ${errorCode})`),
         'getNewOrders'
       );
     }
-  } catch (error) {
+  } catch (error: any) {
+    console.error('[getNewOrders] Exception caught', {
+      errorMessage: error.message,
+      errorName: error.name,
+      responseStatus: error.response?.status,
+      responseStatusText: error.response?.statusText,
+      responseData: error.response?.data ? JSON.stringify(error.response.data, null, 2) : 'No response data',
+      requestUrl: error.config?.url,
+      requestParams: error.config?.params,
+    });
     return logAndReturnError(error, 'getNewOrders');
   }
 };
@@ -352,8 +413,26 @@ const getRozetkaAccessToken = async (): Promise<string | null> => {
 
 const logAndReturnError = (error: unknown, context: string): null => {
   const err = error as any;
-  const message = err?.response?.data || err?.message || 'Unknown error';
-  console.error(`[${context}] Error: ${message}`);
+
+  // Extract all relevant error information
+  const errorDetails = {
+    context,
+    message: err?.message || 'Unknown error',
+    errorName: err?.name,
+    httpStatus: err?.response?.status,
+    httpStatusText: err?.response?.statusText,
+    responseData: err?.response?.data,
+    requestUrl: err?.config?.url,
+    requestMethod: err?.config?.method,
+    requestHeaders: err?.config?.headers ? {
+      ...err.config.headers,
+      Authorization: err.config.headers.Authorization ? '[REDACTED]' : undefined,
+    } : undefined,
+    stack: err?.stack,
+  };
+
+  console.error(`[${context}] Detailed error information:`, JSON.stringify(errorDetails, null, 2));
+
   return null;
 };
 
