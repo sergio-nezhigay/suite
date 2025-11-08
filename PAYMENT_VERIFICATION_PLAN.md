@@ -25,18 +25,20 @@ Fix any errors immediately before proceeding to the next phase.
 - [x] Left join with orderPaymentMatch (checkIssued=false or null)
 - [x] Return transaction data with payment match status
 
-### **Phase 3: Frontend Data Display**
-- [ ] **Run TypeScript check after changes** ⚠️
-- [ ] Use `useGlobalAction` hook to fetch uncovered payments
-- [ ] Display table columns:
+### **Phase 3: Frontend Data Display** ✅ COMPLETED
+- [x] **TypeScript check passed** ✅
+- [x] Use `useGlobalAction` hook to fetch uncovered payments
+- [x] Display table columns:
     - Transaction Date
     - Amount (UAH)
     - Counterparty Name
     - Account Code (extracted)
     - Days Ago
     - Action Buttons (Preview, Issue Check)
-- [ ] Add pagination controls
-- [ ] Add loading and error states
+- [x] Add loading and error states
+- [x] Register route in App.jsx
+- [x] Add navigation menu link
+- [ ] Add pagination controls (deferred - table shows all results for now)
 
 ### **Phase 4: Backend Check Preview Logic**
 - [ ] **Run TypeScript check after changes** ⚠️

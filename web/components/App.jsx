@@ -18,6 +18,7 @@ import {
 } from 'react-router-dom';
 import { api } from '../api';
 import Feeds from '../routes/feeds';
+import Payments from '../routes/payments';
 
 //import FileUploadPage from '../routes/upload';
 import Index from '../routes/index';
@@ -46,6 +47,7 @@ function App() {
       <Route path='/' element={<Layout />}>
         <Route index element={<Index />} />
         <Route path='/feeds' element={<Feeds />} />
+        <Route path='/payments' element={<Payments />} />
         <Route path='/test' element={<Test />} />
         <Route path='/tagger' element={<Tagger />} />
         <Route path='/supplier/:supplierId' element={<Supplier />} />
@@ -110,6 +112,7 @@ function EmbeddedApp() {
         <Link to='/supplier/schusev'>Schusev</Link>
         <Link to='/supplier/universal'>Universal</Link>
         <Link to='/feeds'>Feeds</Link>
+        <Link to='/payments'>Payment Verification</Link>
       </NavMenu>
     </>
   );

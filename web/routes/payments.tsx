@@ -1,6 +1,8 @@
-import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState } from '@shopify/polaris';
+import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useGlobalAction } from '@gadgetinc/react';
+import { api } from '../api';
 
 interface UncoveredPayment {
   id: string;
@@ -14,18 +16,50 @@ interface UncoveredPayment {
 
 export default function Payments() {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(false);
   const [payments, setPayments] = useState<UncoveredPayment[]>([]);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
-  // Placeholder data structure - will be populated in Phase 3
-  const mockPayments: UncoveredPayment[] = [];
+  // Use Gadget hook to fetch uncovered payments
+  const [{ data, fetching, error }, getPayments] = useGlobalAction(api.getUncoveredPayments);
+
+  // Fetch payments on component mount
+  useEffect(() => {
+    fetchPayments();
+  }, []);
+
+  // Update payments when data changes
+  useEffect(() => {
+    if (data?.success && data?.payments) {
+      console.log('[Payments UI] Received payments:', data.payments.length);
+      setPayments(data.payments);
+      setErrorMessage(null);
+    }
+  }, [data]);
+
+  // Handle errors
+  useEffect(() => {
+    if (error) {
+      console.error('[Payments UI] Error fetching payments:', error);
+      setErrorMessage(error.message || 'Failed to fetch payments');
+    }
+  }, [error]);
+
+  const fetchPayments = async () => {
+    try {
+      console.log('[Payments UI] Fetching uncovered payments...');
+      await getPayments({});
+    } catch (err) {
+      console.error('[Payments UI] Error:', err);
+      setErrorMessage('Failed to fetch payments');
+    }
+  };
 
   const resourceName = {
     singular: 'payment',
     plural: 'payments',
   };
 
-  const rowMarkup = mockPayments.map(
+  const rowMarkup = payments.map(
     (payment, index) => (
       <IndexTable.Row
         id={payment.id}
@@ -87,13 +121,8 @@ export default function Payments() {
       }}
       primaryAction={{
         content: 'Refresh',
-        loading: loading,
-        onAction: () => {
-          setLoading(true);
-          console.log('Refreshing payments data...');
-          // Will be implemented in Phase 3
-          setTimeout(() => setLoading(false), 1000);
-        },
+        loading: fetching,
+        onAction: fetchPayments,
       }}
     >
       <Layout>
@@ -105,14 +134,26 @@ export default function Payments() {
           </Card>
         </Layout.Section>
 
+        {errorMessage && (
+          <Layout.Section>
+            <Banner tone="critical" title="Error loading payments">
+              <p>{errorMessage}</p>
+            </Banner>
+          </Layout.Section>
+        )}
+
         <Layout.Section>
           <Card padding="0">
-            {mockPayments.length === 0 ? (
+            {fetching ? (
+              <div style={{ padding: '40px', textAlign: 'center' }}>
+                <Text variant="bodyMd" as="p">Loading payments...</Text>
+              </div>
+            ) : payments.length === 0 ? (
               emptyStateMarkup
             ) : (
               <IndexTable
                 resourceName={resourceName}
-                itemCount={mockPayments.length}
+                itemCount={payments.length}
                 headings={[
                   { title: 'Transaction Date' },
                   { title: 'Amount' },
