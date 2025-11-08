@@ -311,7 +311,7 @@ function App() {
     } else if (result.checkSkipped) {
       return <Badge tone='warning'>⏭️ Check Skipped</Badge>;
     } else if (result.matchCount > 0) {
-      return <Badge tone='attention'>⏳ Check Pending</Badge>;
+      return <Badge tone='warning'>⏳ Check Pending</Badge>;
     }
     return null;
   };
