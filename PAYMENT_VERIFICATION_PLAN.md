@@ -60,23 +60,23 @@ Fix any errors immediately before proceeding to the next phase.
 - [x] Add close button (no check creation)
 - [x] Wire to previewCheckForPayment action using useGlobalAction
 
-### **Phase 6: Backend Check Creation**
-- [ ] **Run TypeScript check after changes** ⚠️
-- [ ] Create `/api/actions/issueCheckForPayment.ts` global action
-- [ ] Get or create orderPaymentMatch record for transaction
-- [ ] Build CheckboxSellReceiptBody using preview logic
-- [ ] Call CheckboxService.createSellReceipt() with CASHLESS payment
-- [ ] Update orderPaymentMatch with check info (checkIssued, checkReceiptId, etc.)
-- [ ] Handle Checkbox errors and retry logic
+### **Phase 6: Backend Check Creation** ✅ COMPLETED
+- [x] **TypeScript check passed** ✅
+- [x] Create `/api/actions/issueCheckForPayment.ts` global action
+- [x] Get or create orderPaymentMatch record for transaction
+- [x] Build CheckboxSellReceiptBody using preview logic
+- [x] Call CheckboxService.createSellReceipt() with CASHLESS payment
+- [x] Update orderPaymentMatch with check info (checkIssued, checkReceiptId, etc.)
+- [x] Handle Checkbox errors and retry logic (built-in retry in CheckboxService)
 
-### **Phase 7: Frontend Check Issuance**
-- [ ] **Run TypeScript check after changes** ⚠️
-- [ ] Add "Issue Check" button to each table row
-- [ ] Wire to `issueCheckForPayment` action using `useGlobalAction`
-- [ ] Show loading state during check creation
-- [ ] Display success toast with receipt info
-- [ ] Handle errors with error toast
-- [ ] Refresh table data after successful issuance
+### **Phase 7: Frontend Check Issuance** ✅ COMPLETED
+- [x] **TypeScript check passed** ✅
+- [x] Add "Issue Check" button to each table row
+- [x] Wire to `issueCheckForPayment` action using `useGlobalAction`
+- [x] Show loading state during check creation
+- [x] Display success toast with receipt info
+- [x] Handle errors with error toast
+- [x] Refresh table data after successful issuance
 
 ### **Phase 8: Polish & Error Handling**
 - [ ] **Run TypeScript check after changes** ⚠️

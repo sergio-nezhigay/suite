@@ -316,6 +316,7 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         getUncoveredPayments: true,
+        issueCheckForPayment: true,
         previewCheckForPayment: true,
       },
     },

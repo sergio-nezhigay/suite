@@ -1,4 +1,4 @@
-import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable } from '@shopify/polaris';
+import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable, Toast, Frame } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGlobalAction } from '@gadgetinc/react';
@@ -33,11 +33,22 @@ export default function Payments() {
   const [previewTotal, setPreviewTotal] = useState(0);
   const [currentPayment, setCurrentPayment] = useState<UncoveredPayment | null>(null);
 
+  // Toast state
+  const [toastActive, setToastActive] = useState(false);
+  const [toastMessage, setToastMessage] = useState('');
+  const [toastError, setToastError] = useState(false);
+
+  // Track which payment is being issued
+  const [issuingPaymentId, setIssuingPaymentId] = useState<string | null>(null);
+
   // Use Gadget hook to fetch uncovered payments
   const [{ data, fetching, error }, getPayments] = useGlobalAction(api.getUncoveredPayments);
 
   // Use Gadget hook to preview check
   const [{ data: previewData, fetching: previewFetching, error: previewError }, previewCheck] = useGlobalAction(api.previewCheckForPayment);
+
+  // Use Gadget hook to issue check
+  const [{ data: issueData, fetching: issueFetching, error: issueError }, issueCheck] = useGlobalAction(api.issueCheckForPayment);
 
   // Fetch payments on component mount
   useEffect(() => {
@@ -79,6 +90,41 @@ export default function Payments() {
     }
   }, [previewError]);
 
+  // Handle issue check data
+  useEffect(() => {
+    if (issueData) {
+      console.log('[Payments UI] Issue check response:', issueData);
+
+      if (issueData.success) {
+        // Show success toast
+        setToastMessage(`Check issued successfully! Receipt ID: ${issueData.receiptId}`);
+        setToastError(false);
+        setToastActive(true);
+
+        // Refresh payments list
+        fetchPayments();
+      } else {
+        // Show error toast
+        setToastMessage(issueData.error || 'Failed to issue check');
+        setToastError(true);
+        setToastActive(true);
+      }
+
+      setIssuingPaymentId(null);
+    }
+  }, [issueData]);
+
+  // Handle issue check errors
+  useEffect(() => {
+    if (issueError) {
+      console.error('[Payments UI] Issue check error:', issueError);
+      setToastMessage(issueError.message || 'Failed to issue check');
+      setToastError(true);
+      setToastActive(true);
+      setIssuingPaymentId(null);
+    }
+  }, [issueError]);
+
   const fetchPayments = async () => {
     try {
       console.log('[Payments UI] Fetching uncovered payments...');
@@ -109,6 +155,26 @@ export default function Payments() {
     setPreviewTotal(0);
     setCurrentPayment(null);
   };
+
+  const handleIssueCheck = async (payment: UncoveredPayment) => {
+    try {
+      console.log('[Payments UI] Issuing check for payment:', payment.id);
+      setIssuingPaymentId(payment.id);
+
+      await issueCheck({
+        transactionId: payment.id,
+        amount: payment.amount,
+      });
+    } catch (err) {
+      console.error('[Payments UI] Issue check error:', err);
+      setToastMessage('Failed to issue check');
+      setToastError(true);
+      setToastActive(true);
+      setIssuingPaymentId(null);
+    }
+  };
+
+  const toggleToastActive = () => setToastActive((active) => !active);
 
   const resourceName = {
     singular: 'payment',
@@ -154,7 +220,12 @@ export default function Payments() {
             >
               Preview
             </Button>
-            <Button size="slim" variant="primary" onClick={() => console.log('Issue Check', payment.id)}>
+            <Button
+              size="slim"
+              variant="primary"
+              onClick={() => handleIssueCheck(payment)}
+              loading={issueFetching && issuingPaymentId === payment.id}
+            >
               Issue Check
             </Button>
           </div>
@@ -172,19 +243,28 @@ export default function Payments() {
     </EmptyState>
   );
 
+  const toastMarkup = toastActive ? (
+    <Toast
+      content={toastMessage}
+      onDismiss={toggleToastActive}
+      error={toastError}
+    />
+  ) : null;
+
   return (
-    <Page
-      title="Payment Verification & Check Issuance"
-      backAction={{
-        content: 'Back',
-        onAction: () => navigate('/'),
-      }}
-      primaryAction={{
-        content: 'Refresh',
-        loading: fetching,
-        onAction: fetchPayments,
-      }}
-    >
+    <Frame>
+      <Page
+        title="Payment Verification & Check Issuance"
+        backAction={{
+          content: 'Back',
+          onAction: () => navigate('/'),
+        }}
+        primaryAction={{
+          content: 'Refresh',
+          loading: fetching,
+          onAction: fetchPayments,
+        }}
+      >
       <Layout>
         <Layout.Section>
           <Card>
@@ -289,6 +369,9 @@ export default function Payments() {
           </div>
         </Modal.Section>
       </Modal>
-    </Page>
+
+      {toastMarkup}
+      </Page>
+    </Frame>
   );
 }
