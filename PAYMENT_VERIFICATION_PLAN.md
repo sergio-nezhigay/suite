@@ -40,13 +40,15 @@ Fix any errors immediately before proceeding to the next phase.
 - [x] Add navigation menu link
 - [ ] Add pagination controls (deferred - table shows all results for now)
 
-### **Phase 4: Backend Check Preview Logic**
-- [ ] **Run TypeScript check after changes** ⚠️
-- [ ] Create `/api/actions/previewCheckForPayment.ts` global action
-- [ ] Implement amount distribution algorithm:
+### **Phase 4: Backend Check Preview Logic** ✅ COMPLETED
+- [x] **TypeScript check passed** ✅
+- [x] Create `/api/actions/previewCheckForPayment.ts` global action
+- [x] Implement amount distribution algorithm:
     - If ≤ 1000 UAH: 1 item "Перехідник HDMI to VGA"
     - If > 1000 UAH: Split into multiple items with variable pricing (300-900 UAH range)
-- [ ] Return preview data: `{ items: [{ name, quantity, price }], total }`
+    - Weighted random distribution: 60% mid-range (450-700), 20% low (300-450), 20% high (700-900)
+    - Prices rounded to nearest 10 UAH for natural appearance
+- [x] Return preview data: `{ items: [{ name, quantity, price }], total }`
 
 ### **Phase 5: Frontend Preview Modal**
 - [ ] **Run TypeScript check after changes** ⚠️
