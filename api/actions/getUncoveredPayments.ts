@@ -1,0 +1,131 @@
+import { ActionOptions } from 'gadget-server';
+
+// Helper function to extract payment code from counterparty account
+function extractPaymentCodeFromAccount(account: string): string | null {
+  if (!account) return null;
+
+  // Extract the 4-digit payment code from positions 15-19 of the account
+  // Example: UA293052990000029023866100110 -> account.substring(15, 19) -> "2902"
+  if (account.length >= 19) {
+    return account.substring(15, 19);
+  }
+
+  return null;
+}
+
+export const run: ActionRun = async ({ api, logger }) => {
+  try {
+    console.log('[getUncoveredPayments] Starting to fetch uncovered payments...');
+
+    // Calculate date 7 days ago
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+    console.log('[getUncoveredPayments] Fetching transactions since:', sevenDaysAgo.toISOString());
+
+    // Restricted payment codes that need manual check issuance
+    const restrictedCodes = ['2600', '2902', '2909', '2920'];
+
+    // Fetch all income transactions from last 7 days
+    const allTransactions = await api.bankTransaction.findMany({
+      filter: {
+        transactionDateTime: { greaterThan: sevenDaysAgo },
+        type: { equals: 'income' },
+      },
+      select: {
+        id: true,
+        amount: true,
+        counterpartyAccount: true,
+        counterpartyName: true,
+        transactionDateTime: true,
+        description: true,
+        externalId: true,
+      },
+      sort: { transactionDateTime: 'Descending' },
+      first: 250,
+    });
+
+    console.log('[getUncoveredPayments] Found total income transactions:', allTransactions.length);
+
+    // Filter transactions by restricted payment codes
+    const filteredTransactions = allTransactions.filter((transaction) => {
+      const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
+      return paymentCode && restrictedCodes.includes(paymentCode);
+    });
+
+    console.log('[getUncoveredPayments] Transactions with restricted codes:', filteredTransactions.length);
+
+    // For each filtered transaction, check if it has a payment match with a check
+    const uncoveredPayments = [];
+
+    for (const transaction of filteredTransactions) {
+      // Check if there's a payment match for this transaction
+      const paymentMatch = await api.orderPaymentMatch.findFirst({
+        filter: {
+          bankTransactionId: { equals: transaction.id },
+        },
+        select: {
+          id: true,
+          checkIssued: true,
+          checkSkipped: true,
+          checkReceiptId: true,
+          orderId: true,
+        },
+      });
+
+      // Only include if:
+      // 1. No payment match exists, OR
+      // 2. Payment match exists but check not issued and not skipped
+      const shouldInclude =
+        !paymentMatch ||
+        (!paymentMatch.checkIssued && !paymentMatch.checkSkipped);
+
+      if (shouldInclude) {
+        // Skip transactions without a valid date
+        if (!transaction.transactionDateTime) {
+          console.log('[getUncoveredPayments] Skipping transaction without date:', transaction.id);
+          continue;
+        }
+
+        const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
+        const transactionDate = new Date(transaction.transactionDateTime);
+        const now = new Date();
+        const daysAgo = Math.floor(
+          (now.getTime() - transactionDate.getTime()) / (1000 * 60 * 60 * 24)
+        );
+
+        uncoveredPayments.push({
+          id: transaction.id,
+          transactionId: transaction.externalId || '',
+          date: transactionDate.toISOString().split('T')[0], // YYYY-MM-DD format
+          amount: transaction.amount || 0,
+          counterpartyName: transaction.counterpartyName || 'Unknown',
+          counterpartyAccount: transaction.counterpartyAccount || '',
+          accountCode: paymentCode,
+          daysAgo,
+          description: transaction.description || '',
+          hasPaymentMatch: !!paymentMatch,
+          paymentMatchId: paymentMatch?.id || null,
+        });
+      }
+    }
+
+    console.log('[getUncoveredPayments] Uncovered payments found:', uncoveredPayments.length);
+
+    return {
+      success: true,
+      payments: uncoveredPayments,
+      total: uncoveredPayments.length,
+      restrictedCodes,
+      dateRange: {
+        from: sevenDaysAgo.toISOString(),
+        to: new Date().toISOString(),
+      },
+    };
+  } catch (error) {
+    console.error('[getUncoveredPayments] Error:', error);
+    throw error;
+  }
+};
+
+export const options: ActionOptions = {
+  actionType: 'custom',
+};
