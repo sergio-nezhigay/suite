@@ -100,6 +100,12 @@ export const run: ActionRun = async ({ api, logger }) => {
           continue;
         }
 
+        // Skip transactions without a valid amount
+        if (!transaction.amount || transaction.amount <= 0) {
+          console.log('[getUncoveredPayments] Skipping transaction without valid amount:', transaction.id, transaction.amount);
+          continue;
+        }
+
         const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
         const transactionDate = new Date(transaction.transactionDateTime);
         const now = new Date();
@@ -111,7 +117,7 @@ export const run: ActionRun = async ({ api, logger }) => {
           id: transaction.id,
           transactionId: transaction.externalId || '',
           date: transactionDate.toISOString().split('T')[0], // YYYY-MM-DD format
-          amount: transaction.amount || 0,
+          amount: transaction.amount,
           counterpartyName: transaction.counterpartyName || 'Unknown',
           counterpartyAccount: transaction.counterpartyAccount || '',
           accountCode: paymentCode,

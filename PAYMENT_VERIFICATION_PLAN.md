@@ -50,13 +50,15 @@ Fix any errors immediately before proceeding to the next phase.
     - Prices rounded to nearest 10 UAH for natural appearance
 - [x] Return preview data: `{ items: [{ name, quantity, price }], total }`
 
-### **Phase 5: Frontend Preview Modal**
-- [ ] **Run TypeScript check after changes** ⚠️
-- [ ] Create preview modal component
-- [ ] Add "Preview" button to each table row
-- [ ] Display products/qty/price table in modal
-- [ ] Show total amount verification
-- [ ] Add close button (no check creation)
+### **Phase 5: Frontend Preview Modal** ✅ COMPLETED
+- [x] **TypeScript check passed** ✅
+- [x] Create preview modal component
+- [x] Add "Preview" button to each table row with loading state
+- [x] Display products/qty/price table in modal using DataTable
+- [x] Show payment details (amount, date, account code)
+- [x] Show total amount verification with success/error indicator
+- [x] Add close button (no check creation)
+- [x] Wire to previewCheckForPayment action using useGlobalAction
 
 ### **Phase 6: Backend Check Creation**
 - [ ] **Run TypeScript check after changes** ⚠️

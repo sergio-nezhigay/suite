@@ -1,4 +1,4 @@
-import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner } from '@shopify/polaris';
+import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGlobalAction } from '@gadgetinc/react';
@@ -14,13 +14,30 @@ interface UncoveredPayment {
   transactionId: string;
 }
 
+interface PreviewItem {
+  code: string;
+  name: string;
+  quantity: number;
+  priceUAH: number;
+  totalUAH: number;
+}
+
 export default function Payments() {
   const navigate = useNavigate();
   const [payments, setPayments] = useState<UncoveredPayment[]>([]);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
+  // Preview modal state
+  const [previewModalOpen, setPreviewModalOpen] = useState(false);
+  const [previewItems, setPreviewItems] = useState<PreviewItem[]>([]);
+  const [previewTotal, setPreviewTotal] = useState(0);
+  const [currentPayment, setCurrentPayment] = useState<UncoveredPayment | null>(null);
+
   // Use Gadget hook to fetch uncovered payments
   const [{ data, fetching, error }, getPayments] = useGlobalAction(api.getUncoveredPayments);
+
+  // Use Gadget hook to preview check
+  const [{ data: previewData, fetching: previewFetching, error: previewError }, previewCheck] = useGlobalAction(api.previewCheckForPayment);
 
   // Fetch payments on component mount
   useEffect(() => {
@@ -44,6 +61,24 @@ export default function Payments() {
     }
   }, [error]);
 
+  // Handle preview data
+  useEffect(() => {
+    if (previewData?.success && previewData?.items) {
+      console.log('[Payments UI] Preview data received:', previewData.items.length, 'items');
+      setPreviewItems(previewData.items);
+      setPreviewTotal(previewData.totalAmountUAH);
+      setPreviewModalOpen(true);
+    }
+  }, [previewData]);
+
+  // Handle preview errors
+  useEffect(() => {
+    if (previewError) {
+      console.error('[Payments UI] Preview error:', previewError);
+      setErrorMessage(previewError.message || 'Failed to preview check');
+    }
+  }, [previewError]);
+
   const fetchPayments = async () => {
     try {
       console.log('[Payments UI] Fetching uncovered payments...');
@@ -52,6 +87,27 @@ export default function Payments() {
       console.error('[Payments UI] Error:', err);
       setErrorMessage('Failed to fetch payments');
     }
+  };
+
+  const handlePreview = async (payment: UncoveredPayment) => {
+    try {
+      console.log('[Payments UI] Previewing check for payment:', payment.id);
+      setCurrentPayment(payment);
+      await previewCheck({
+        transactionId: payment.id,
+        amount: payment.amount,
+      });
+    } catch (err) {
+      console.error('[Payments UI] Preview error:', err);
+      setErrorMessage('Failed to preview check');
+    }
+  };
+
+  const closePreviewModal = () => {
+    setPreviewModalOpen(false);
+    setPreviewItems([]);
+    setPreviewTotal(0);
+    setCurrentPayment(null);
   };
 
   const resourceName = {
@@ -91,7 +147,11 @@ export default function Payments() {
         </IndexTable.Cell>
         <IndexTable.Cell>
           <div style={{ display: 'flex', gap: '8px' }}>
-            <Button size="slim" onClick={() => console.log('Preview', payment.id)}>
+            <Button
+              size="slim"
+              onClick={() => handlePreview(payment)}
+              loading={previewFetching && currentPayment?.id === payment.id}
+            >
               Preview
             </Button>
             <Button size="slim" variant="primary" onClick={() => console.log('Issue Check', payment.id)}>
@@ -170,6 +230,65 @@ export default function Payments() {
           </Card>
         </Layout.Section>
       </Layout>
+
+      {/* Preview Modal */}
+      <Modal
+        open={previewModalOpen}
+        onClose={closePreviewModal}
+        title={`Check Preview - ${currentPayment?.counterpartyName || 'Payment'}`}
+        primaryAction={{
+          content: 'Close',
+          onAction: closePreviewModal,
+        }}
+      >
+        <Modal.Section>
+          {currentPayment && (
+            <div style={{ marginBottom: '16px' }}>
+              <Text variant="bodyMd" as="p">
+                <strong>Payment Amount:</strong> {currentPayment.amount} UAH
+              </Text>
+              <Text variant="bodyMd" as="p">
+                <strong>Transaction Date:</strong> {currentPayment.date}
+              </Text>
+              <Text variant="bodyMd" as="p">
+                <strong>Account Code:</strong> {currentPayment.accountCode}
+              </Text>
+            </div>
+          )}
+
+          <Text variant="headingMd" as="h3">
+            Check Items
+          </Text>
+          <div style={{ marginTop: '12px' }}>
+            <DataTable
+              columnContentTypes={['text', 'text', 'numeric', 'numeric', 'numeric']}
+              headings={['Code', 'Product Name', 'Qty', 'Price (UAH)', 'Total (UAH)']}
+              rows={previewItems.map((item) => [
+                item.code,
+                item.name,
+                item.quantity,
+                item.priceUAH.toFixed(2),
+                item.totalUAH.toFixed(2),
+              ])}
+            />
+          </div>
+
+          <div style={{ marginTop: '16px', padding: '12px', backgroundColor: '#f6f6f7', borderRadius: '8px' }}>
+            <Text variant="bodyLg" as="p" fontWeight="bold">
+              Total Amount: {previewTotal.toFixed(2)} UAH
+            </Text>
+            {currentPayment && Math.abs(previewTotal - currentPayment.amount) <= 1 ? (
+              <Text variant="bodyMd" as="p" tone="success">
+                ✓ Amount verified
+              </Text>
+            ) : (
+              <Text variant="bodyMd" as="p" tone="critical">
+                ⚠ Amount mismatch detected
+              </Text>
+            )}
+          </div>
+        </Modal.Section>
+      </Modal>
     </Page>
   );
 }

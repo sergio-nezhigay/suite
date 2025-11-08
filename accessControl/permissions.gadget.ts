@@ -316,6 +316,7 @@ export const permissions: GadgetPermissions = {
       },
       actions: {
         getUncoveredPayments: true,
+        previewCheckForPayment: true,
       },
     },
     "shopify-storefront-customers": {
