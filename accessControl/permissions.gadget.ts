@@ -314,6 +314,9 @@ export const permissions: GadgetPermissions = {
           },
         },
       },
+      actions: {
+        getUncoveredPayments: true,
+      },
     },
     "shopify-storefront-customers": {
       storageKey: "Role-Shopify-Customer",
