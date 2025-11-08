@@ -2,6 +2,7 @@ import { ActionOptions } from 'gadget-server';
 import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
 import { CheckboxService } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
+import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -75,12 +76,10 @@ async function createAutomaticCheck(
     const paymentCode = extractPaymentCodeFromAccount(
       bankTransaction.counterpartyAccount
     );
-    const restrictedCodes = ['2600', '2902', '2909', '2920'];
-    const novaPoshtraAccount = 'UA813005280000026548000000014';
 
-    // Check payment code restrictions
-    if (paymentCode && restrictedCodes.includes(paymentCode)) {
-      const skipReason = `Restricted payment code: ${paymentCode}`;
+    // Skip check creation for excluded payment codes
+    if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
+      const skipReason = `Excluded payment code: ${paymentCode} (doesn't require check)`;
 
       // Mark payment match as skipped
       await api.orderPaymentMatch.update(paymentMatch.id, {
@@ -90,11 +89,11 @@ async function createAutomaticCheck(
 
       // Add note to order explaining why check wasn't created
       const restrictionNote = `🧾 Automatic Check Creation Skipped
-Reason: Payment code ${paymentCode} is restricted from automatic check creation
+Reason: Payment code ${paymentCode} doesn't require check issuance
 Counterparty: ${bankTransaction.counterpartyName || 'Unknown'}
 Account: ${bankTransaction.counterpartyAccount || 'Unknown'}
 Date: ${new Date().toISOString()}
-Note: Manual check creation may be required`;
+Note: This payment code (2600, 2902, 2909, or 2920) is excluded from automatic check creation`;
 
       await updateOrderPaymentStatus(connections, order.id, order.shopId, {
         note: restrictionNote,
@@ -108,7 +107,7 @@ Note: Manual check creation may be required`;
     }
 
     // Check Nova Poshta account restriction
-    if (bankTransaction.counterpartyAccount === novaPoshtraAccount) {
+    if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
       const skipReason = 'Nova Poshta account restriction';
 
       // Mark payment match as skipped

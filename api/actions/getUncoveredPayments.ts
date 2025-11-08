@@ -1,4 +1,5 @@
 import { ActionOptions } from 'gadget-server';
+import { EXCLUDED_PAYMENT_CODES } from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -21,9 +22,6 @@ export const run: ActionRun = async ({ api, logger }) => {
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
     console.log('[getUncoveredPayments] Fetching transactions since:', sevenDaysAgo.toISOString());
 
-    // Restricted payment codes that need manual check issuance
-    const restrictedCodes = ['2600', '2902', '2909', '2920'];
-
     // Fetch all income transactions from last 7 days
     const allTransactions = await api.bankTransaction.findMany({
       filter: {
@@ -45,13 +43,14 @@ export const run: ActionRun = async ({ api, logger }) => {
 
     console.log('[getUncoveredPayments] Found total income transactions:', allTransactions.length);
 
-    // Filter transactions by restricted payment codes
+    // Filter transactions - exclude payments with codes that don't need checks
     const filteredTransactions = allTransactions.filter((transaction) => {
       const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
-      return paymentCode && restrictedCodes.includes(paymentCode);
+      // Include transactions where code is NOT in excluded list
+      return paymentCode && !EXCLUDED_PAYMENT_CODES.includes(paymentCode);
     });
 
-    console.log('[getUncoveredPayments] Transactions with restricted codes:', filteredTransactions.length);
+    console.log(`[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(', ')}):`, filteredTransactions.length);
 
     // Fetch all payment matches for filtered transactions in one query (much faster than loop)
     const transactionIds = filteredTransactions.map((t) => t.id);
@@ -135,7 +134,7 @@ export const run: ActionRun = async ({ api, logger }) => {
       success: true,
       payments: uncoveredPayments,
       total: uncoveredPayments.length,
-      restrictedCodes,
+      excludedCodes: EXCLUDED_PAYMENT_CODES,
       dateRange: {
         from: sevenDaysAgo.toISOString(),
         to: new Date().toISOString(),

@@ -1,7 +1,7 @@
 # Payment Verification & Check Issuance Feature - Implementation Plan
 
 ## Overview
-Create a UI to monitor incoming payments (last 7 days) with restricted account codes (2600, 2902, 2909, 2920) that haven't been covered with Checkbox checks. Allow manual check issuance with preview functionality.
+Create a UI to monitor incoming payments (last 7 days) that require check issuance. Payments with account codes 2600, 2902, 2909, and 2920 are excluded as they don't require checks. Allow manual check issuance with preview functionality for qualifying payments.
 
 ## ⚠️ IMPORTANT: After Each Phase
 **ALWAYS run `npx tsc --noEmit` after changing .ts/.tsx files to check for TypeScript errors!**
@@ -21,7 +21,7 @@ Fix any errors immediately before proceeding to the next phase.
 - [x] Create `/api/actions/getUncoveredPayments.ts` global action
 - [x] Filter bankTransactions (last 7 days, type='income')
 - [x] Extract account codes using `account.substring(15, 19)`
-- [x] Filter for codes: 2600, 2902, 2909, 2920
+- [x] Exclude codes that don't need checks: 2600, 2902, 2909, 2920
 - [x] Left join with orderPaymentMatch (checkIssued=false or null)
 - [x] Return transaction data with payment match status
 
@@ -103,7 +103,7 @@ Fix any errors immediately before proceeding to the next phase.
 - **Product**: "Перехідник HDMI to VGA" (from existing variants)
 - **Price Range**: 300-900 UAH per item for natural distribution
 - **Payment Type**: CASHLESS
-- **Restricted Codes**: 2600, 2902, 2909, 2920
+- **Excluded Codes**: 2600, 2902, 2909, 2920 (these codes don't require checks)
 - **Date Range**: 7 days (configurable if needed)
 
 ## Files to Create/Modify
@@ -121,7 +121,7 @@ Fix any errors immediately before proceeding to the next phase.
 
 ## Success Criteria
 
-✅ Table shows only payments with codes 2600, 2902, 2909, 2920 without checks
+✅ Table shows payments that need checks (excluding codes 2600, 2902, 2909, 2920)
 ✅ Preview button shows accurate item breakdown with variable pricing
 ✅ Issue Check button creates valid Checkbox receipts
 ✅ Large amounts (> 1000 UAH) split into multiple items naturally

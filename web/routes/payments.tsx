@@ -239,7 +239,7 @@ export default function Payments() {
       heading="No uncovered payments"
       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
     >
-      <p>There are no payments with restricted codes that need check issuance.</p>
+      <p>There are no payments requiring check issuance at this time.</p>
     </EmptyState>
   );
 
@@ -269,7 +269,7 @@ export default function Payments() {
         <Layout.Section>
           <Card>
             <Text as="p" variant="bodyMd">
-              This page shows incoming payments from the last 7 days with restricted account codes (2600, 2902, 2909, 2920) that haven't been covered with Checkbox checks.
+              This page shows incoming payments from the last 7 days that require check issuance. Payments with account codes 2600, 2902, 2909, and 2920 are excluded as they don't require checks.
             </Text>
           </Card>
         </Layout.Section>

@@ -25,7 +25,8 @@
       "Bash(npm view:*)",
       "Bash(find:*)",
       "Bash(npx gadget models list:*)",
-      "Bash(yarn ggt:*)"
+      "Bash(yarn ggt:*)",
+      "mcp__ide__getDiagnostics"
     ],
     "deny": [],
     "ask": []
