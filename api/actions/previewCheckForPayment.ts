@@ -1,4 +1,18 @@
 import { ActionOptions } from 'gadget-server';
+import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+
+// Helper function to extract payment code from counterparty account
+function extractPaymentCodeFromAccount(account: string): string | null {
+  if (!account) return null;
+
+  // Extract the 4-digit payment code from positions 15-19 of the account
+  // Example: UA293052990000029023866100110 -> account.substring(15, 19) -> "2902"
+  if (account.length >= 19) {
+    return account.substring(15, 19);
+  }
+
+  return null;
+}
 
 interface PreviewItem {
   name: string;
@@ -93,7 +107,7 @@ export const params = {
   amount: { type: 'number', required: true },
 };
 
-export const run: ActionRun = async ({ params, logger }) => {
+export const run: ActionRun = async ({ params, api, logger }) => {
   try {
     const { transactionId, amount } = params;
 
@@ -107,6 +121,34 @@ export const run: ActionRun = async ({ params, logger }) => {
 
     if (!amount || amount <= 0) {
       throw new Error('Invalid amount for check preview');
+    }
+
+    // Fetch the bank transaction to validate exclusions
+    const bankTransaction = await api.bankTransaction.findFirst({
+      filter: { id: { equals: transactionId } },
+      select: {
+        id: true,
+        counterpartyAccount: true,
+        counterpartyName: true,
+      },
+    });
+
+    if (!bankTransaction) {
+      console.error('[previewCheckForPayment] Bank transaction not found:', transactionId);
+      throw new Error('Bank transaction not found');
+    }
+
+    // Check if this is Nova Poshta account (excluded from checks)
+    if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
+      console.log('[previewCheckForPayment] Nova Poshta account detected - check not allowed');
+      throw new Error('Check preview not allowed for Nova Poshta payments');
+    }
+
+    // Check if this payment code is excluded from checks
+    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount || '');
+    if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
+      console.log('[previewCheckForPayment] Excluded payment code detected:', paymentCode);
+      throw new Error(`Check preview not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(', ')} don't require checks)`);
     }
 
     // Distribute amount across items

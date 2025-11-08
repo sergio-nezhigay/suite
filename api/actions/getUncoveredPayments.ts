@@ -1,5 +1,5 @@
 import { ActionOptions } from 'gadget-server';
-import { EXCLUDED_PAYMENT_CODES } from '../utilities/fiscal/paymentConstants';
+import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -45,12 +45,19 @@ export const run: ActionRun = async ({ api, logger }) => {
 
     // Filter transactions - exclude payments with codes that don't need checks
     const filteredTransactions = allTransactions.filter((transaction) => {
-      const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
+      const counterpartyAccount = transaction.counterpartyAccount || '';
+
+      // Exclude Nova Poshta account
+      if (counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
+        return false;
+      }
+
+      const paymentCode = extractPaymentCodeFromAccount(counterpartyAccount);
       // Include transactions where code is NOT in excluded list
       return paymentCode && !EXCLUDED_PAYMENT_CODES.includes(paymentCode);
     });
 
-    console.log(`[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(', ')}):`, filteredTransactions.length);
+    console.log(`[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(', ')} and Nova Poshta):`, filteredTransactions.length);
 
     // Fetch all payment matches for filtered transactions in one query (much faster than loop)
     const transactionIds = filteredTransactions.map((t) => t.id);

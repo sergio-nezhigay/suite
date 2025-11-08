@@ -5,6 +5,20 @@ import {
   CheckboxGood,
   CheckboxCashlessPayment,
 } from '../utilities/fiscal/checkboxTypes';
+import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+
+// Helper function to extract payment code from counterparty account
+function extractPaymentCodeFromAccount(account: string): string | null {
+  if (!account) return null;
+
+  // Extract the 4-digit payment code from positions 15-19 of the account
+  // Example: UA293052990000029023866100110 -> account.substring(15, 19) -> "2902"
+  if (account.length >= 19) {
+    return account.substring(15, 19);
+  }
+
+  return null;
+}
 
 interface PreviewItem {
   name: string;
@@ -114,6 +128,43 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     if (!amount || amount <= 0) {
       throw new Error('Invalid amount for check issuance');
+    }
+
+    // Fetch the bank transaction to validate exclusions
+    const bankTransaction = await api.bankTransaction.findFirst({
+      filter: { id: { equals: transactionId } },
+      select: {
+        id: true,
+        counterpartyAccount: true,
+        counterpartyName: true,
+      },
+    });
+
+    if (!bankTransaction) {
+      console.error('[issueCheckForPayment] Bank transaction not found:', transactionId);
+      return {
+        success: false,
+        error: 'Bank transaction not found',
+      };
+    }
+
+    // Check if this is Nova Poshta account (excluded from checks)
+    if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
+      console.log('[issueCheckForPayment] Nova Poshta account detected - check not allowed');
+      return {
+        success: false,
+        error: 'Check issuance not allowed for Nova Poshta payments',
+      };
+    }
+
+    // Check if this payment code is excluded from checks
+    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount || '');
+    if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
+      console.log('[issueCheckForPayment] Excluded payment code detected:', paymentCode);
+      return {
+        success: false,
+        error: `Check issuance not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(', ')} don't require checks)`,
+      };
     }
 
     // Get or create orderPaymentMatch record
