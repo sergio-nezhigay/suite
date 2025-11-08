@@ -53,23 +53,38 @@ export const run: ActionRun = async ({ api, logger }) => {
 
     console.log('[getUncoveredPayments] Transactions with restricted codes:', filteredTransactions.length);
 
+    // Fetch all payment matches for filtered transactions in one query (much faster than loop)
+    const transactionIds = filteredTransactions.map((t) => t.id);
+
+    const allPaymentMatches = await api.orderPaymentMatch.findMany({
+      filter: {
+        bankTransactionId: { in: transactionIds },
+      },
+      select: {
+        id: true,
+        bankTransactionId: true,
+        checkIssued: true,
+        checkSkipped: true,
+        checkReceiptId: true,
+        orderId: true,
+      },
+      first: 250,
+    });
+
+    console.log('[getUncoveredPayments] Found payment matches:', allPaymentMatches.length);
+
+    // Build a Map for quick lookups: bankTransactionId -> paymentMatch
+    const paymentMatchMap = new Map();
+    for (const match of allPaymentMatches) {
+      paymentMatchMap.set(match.bankTransactionId, match);
+    }
+
     // For each filtered transaction, check if it has a payment match with a check
     const uncoveredPayments = [];
 
     for (const transaction of filteredTransactions) {
-      // Check if there's a payment match for this transaction
-      const paymentMatch = await api.orderPaymentMatch.findFirst({
-        filter: {
-          bankTransactionId: { equals: transaction.id },
-        },
-        select: {
-          id: true,
-          checkIssued: true,
-          checkSkipped: true,
-          checkReceiptId: true,
-          orderId: true,
-        },
-      });
+      // Look up payment match from Map (much faster than API call)
+      const paymentMatch = paymentMatchMap.get(transaction.id);
 
       // Only include if:
       // 1. No payment match exists, OR
