@@ -13,12 +13,14 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
 
   // If amount is 1000 UAH or less, use single item
   if (totalAmountUAH <= 1000) {
-    return [{
-      name: productName,
-      quantity: 1,
-      priceUAH: totalAmountUAH,
-      totalUAH: totalAmountUAH,
-    }];
+    return [
+      {
+        name: productName,
+        quantity: 1,
+        priceUAH: totalAmountUAH,
+        totalUAH: totalAmountUAH,
+      },
+    ];
   }
 
   // For amounts > 1000 UAH, split into multiple items with variable pricing
@@ -28,7 +30,11 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
   const items: PreviewItem[] = [];
   let remainingAmount = totalAmountUAH;
 
-  console.log('[previewCheckForPayment] Distributing amount:', totalAmountUAH, 'UAH');
+  console.log(
+    '[previewCheckForPayment] Distributing amount:',
+    totalAmountUAH,
+    'UAH'
+  );
 
   // Generate items until remaining amount is covered
   while (remainingAmount > 0) {
@@ -70,17 +76,34 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
     });
 
     remainingAmount -= itemPrice;
-    console.log('[previewCheckForPayment] Added item:', itemPrice, 'UAH, remaining:', remainingAmount, 'UAH');
+    console.log(
+      '[previewCheckForPayment] Added item:',
+      itemPrice,
+      'UAH, remaining:',
+      remainingAmount,
+      'UAH'
+    );
   }
 
   return items;
 }
 
+export const params = {
+  transactionId: { type: 'string', required: true },
+  amount: { type: 'number', required: true },
+};
+
 export const run: ActionRun = async ({ params, logger }) => {
   try {
     const { transactionId, amount } = params;
 
-    console.log('[previewCheckForPayment] Previewing check for transaction:', transactionId, 'amount:', amount, 'UAH');
+    console.log(
+      '[previewCheckForPayment] Previewing check for transaction:',
+      transactionId,
+      'amount:',
+      amount,
+      'UAH'
+    );
 
     if (!amount || amount <= 0) {
       throw new Error('Invalid amount for check preview');
@@ -92,12 +115,25 @@ export const run: ActionRun = async ({ params, logger }) => {
     // Calculate total for verification
     const calculatedTotal = items.reduce((sum, item) => sum + item.totalUAH, 0);
 
-    console.log('[previewCheckForPayment] Generated', items.length, 'items, total:', calculatedTotal, 'UAH');
+    console.log(
+      '[previewCheckForPayment] Generated',
+      items.length,
+      'items, total:',
+      calculatedTotal,
+      'UAH'
+    );
 
     // Verify total matches (allow 1 UAH rounding difference)
     if (Math.abs(calculatedTotal - amount) > 1) {
-      console.error('[previewCheckForPayment] Total mismatch! Expected:', amount, 'Got:', calculatedTotal);
-      throw new Error(`Total amount mismatch: expected ${amount} UAH, got ${calculatedTotal} UAH`);
+      console.error(
+        '[previewCheckForPayment] Total mismatch! Expected:',
+        amount,
+        'Got:',
+        calculatedTotal
+      );
+      throw new Error(
+        `Total amount mismatch: expected ${amount} UAH, got ${calculatedTotal} UAH`
+      );
     }
 
     return {

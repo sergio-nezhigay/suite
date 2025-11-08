@@ -24,7 +24,8 @@
       "Bash(yarn install)",
       "Bash(npm view:*)",
       "Bash(find:*)",
-      "Bash(npx gadget models list:*)"
+      "Bash(npx gadget models list:*)",
+      "Bash(yarn ggt:*)"
     ],
     "deny": [],
     "ask": []
