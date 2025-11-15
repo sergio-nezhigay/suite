@@ -51,13 +51,22 @@ const ROZETKA_CONFIG = {
         multiplier: 1,
       },
       {
-        keywords: ['usb-rs232', 'rs485', 'rs232', 'оптичні аудіо перехідники'],
+        keywords: ['usb-rs232', 'rs485', 'rs232'],
         categoryId: 'c80073',
         defaultParams: [
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.14,
+        multiplier: 1.16,
+      },
+      {
+        keywords: ['оптичні аудіо перехідники'],
+        categoryId: 'c80073',
+        defaultParams: [
+          { paramName: 'Тип', paramValue: 'Перехідник' },
+          { paramName: 'Гарантія', paramValue: '12 місяців' },
+        ],
+        multiplier: 1.2,
       },
       {
         keywords: [
@@ -125,7 +134,7 @@ const ROZETKA_CONFIG = {
     fallback: {
       categoryId: 'c4670691',
       defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
-      multiplier: 1.23,
+      multiplier: 1.26,
     },
   },
 
@@ -308,7 +317,7 @@ class RozetkaProductProcessor {
       ? categoryConfig.multiplier
       : undefined;
 
-    const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.23;
+    const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.26;
 
     const price = product.price * multiplier;
     const oldPrice = (price * 1.11).toFixed(2);

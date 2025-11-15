@@ -2,7 +2,10 @@ import { ActionOptions } from 'gadget-server';
 import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
 import { CheckboxService } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
-import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+import {
+  EXCLUDED_PAYMENT_CODES,
+  NOVA_POSHTA_ACCOUNT,
+} from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -40,12 +43,15 @@ async function createAutomaticCheck(
       },
     });
 
-    console.log(`[createAutomaticCheck] Payment match for order ${order.name}:`, {
-      found: !!paymentMatch,
-      checkIssued: paymentMatch?.checkIssued,
-      checkSkipped: paymentMatch?.checkSkipped,
-      checkReceiptId: paymentMatch?.checkReceiptId,
-    });
+    console.log(
+      `[createAutomaticCheck] Payment match for order ${order.name}:`,
+      {
+        found: !!paymentMatch,
+        checkIssued: paymentMatch?.checkIssued,
+        checkSkipped: paymentMatch?.checkSkipped,
+        checkReceiptId: paymentMatch?.checkReceiptId,
+      }
+    );
 
     if (!paymentMatch) {
       return {
@@ -136,17 +142,23 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
 
     // Check if check already issued for this payment match
     if (paymentMatch?.checkIssued) {
-      console.log(`[createAutomaticCheck] Skipping: Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`);
+      console.log(
+        `[createAutomaticCheck] Skipping: Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`
+      );
       return {
         success: false,
         skipped: true,
-        reason: `Check already issued for this payment (Receipt ID: ${paymentMatch.checkReceiptId || 'N/A'})`,
+        reason: `Check already issued for this payment (Receipt ID: ${
+          paymentMatch.checkReceiptId || 'N/A'
+        })`,
       };
     }
 
     // Check if check was previously skipped
     if (paymentMatch?.checkSkipped) {
-      console.log(`[createAutomaticCheck] Skipping: Check previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`);
+      console.log(
+        `[createAutomaticCheck] Skipping: Check previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`
+      );
       return {
         success: false,
         skipped: true,
@@ -154,8 +166,9 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       };
     }
 
-    console.log(`[createAutomaticCheck] Proceeding to create check for order ${order.name}`);
-
+    console.log(
+      `[createAutomaticCheck] Proceeding to create check for order ${order.name}`
+    );
 
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
@@ -168,7 +181,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       return {
         success: false,
         skipped: true,
-        reason: 'Order data with variants not provided'
+        reason: 'Order data with variants not provided',
       };
     }
 
@@ -182,7 +195,9 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     // Create the sell receipt
     const receipt = await checkboxService.createSellReceipt(receiptBody);
 
-    console.log(`[createAutomaticCheck] Check created successfully for order ${order.name}, receipt ID: ${receipt.id}`);
+    console.log(
+      `[createAutomaticCheck] Check created successfully for order ${order.name}, receipt ID: ${receipt.id}`
+    );
 
     // Update payment match with check information
     const checkIssuedAt = new Date();
@@ -194,10 +209,13 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       checkIssuedAt: checkIssuedAt,
     });
 
-    console.log(`[createAutomaticCheck] Database updated for payment match ${paymentMatch.id}:`, {
-      checkIssued: updateResult.checkIssued,
-      checkReceiptId: updateResult.checkReceiptId,
-    });
+    console.log(
+      `[createAutomaticCheck] Database updated for payment match ${paymentMatch.id}:`,
+      {
+        checkIssued: updateResult.checkIssued,
+        checkReceiptId: updateResult.checkReceiptId,
+      }
+    );
 
     // Add receipt info to order notes
     const checkNote = `🧾 Automatic Check Created
@@ -328,10 +346,17 @@ export const run = async ({ params, api, connections }: any) => {
       },
     });
 
+    // Create a set of already matched bankTransactionIds to avoid duplicates
+    const matchedTransactionIds = new Set(
+      existingMatches.map((match) => match.bankTransactionId)
+    );
+
     // Log existing matches for debugging
     console.log(`Found ${existingMatches.length} existing payment matches`);
     existingMatches.forEach((match: any) => {
-      console.log(`  Order ${match.orderId}: checkIssued=${match.checkIssued}, checkSkipped=${match.checkSkipped}`);
+      console.log(
+        `  Order ${match.orderId}: checkIssued=${match.checkIssued}, checkSkipped=${match.checkSkipped}`
+      );
     });
 
     // Create a map of already verified orders
@@ -401,19 +426,36 @@ export const run = async ({ params, api, connections }: any) => {
         console.log(`Order ${order.name} already verified`);
 
         // Check if we need to create a check for this previously verified order
-        if (autoCreateChecks && !existingMatch.checkIssued && !existingMatch.checkSkipped) {
-          console.log(`Attempting to create check for previously verified order ${order.name} (ID: ${order.id})`);
-          console.log(`Check status - issued: ${existingMatch.checkIssued}, skipped: ${existingMatch.checkSkipped}`);
+        if (
+          autoCreateChecks &&
+          !existingMatch.checkIssued &&
+          !existingMatch.checkSkipped
+        ) {
+          console.log(
+            `Attempting to create check for previously verified order ${order.name} (ID: ${order.id})`
+          );
+          console.log(
+            `Check status - issued: ${existingMatch.checkIssued}, skipped: ${existingMatch.checkSkipped}`
+          );
 
           try {
             // Find the corresponding orderData for this specific order
             const currentOrderData = orderData?.find(
-              (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
+              (od: any) =>
+                od.id === order.id ||
+                od.id === `gid://shopify/Order/${order.id}`
             );
 
-            console.log(`Found orderData for order ${order.name}:`, currentOrderData ? 'YES' : 'NO');
+            console.log(
+              `Found orderData for order ${order.name}:`,
+              currentOrderData ? 'YES' : 'NO'
+            );
             if (currentOrderData) {
-              console.log(`OrderData has ${currentOrderData.lineItems?.length || 0} line items`);
+              console.log(
+                `OrderData has ${
+                  currentOrderData.lineItems?.length || 0
+                } line items`
+              );
             }
 
             const checkResult = await createAutomaticCheck(
@@ -424,12 +466,19 @@ export const run = async ({ params, api, connections }: any) => {
             );
 
             if (checkResult?.success) {
-              console.log(`Check created for previously verified order ${order.name}`);
+              console.log(
+                `Check created for previously verified order ${order.name}`
+              );
             } else if (checkResult?.skipped) {
-              console.log(`Check skipped for previously verified order ${order.name}: ${checkResult.reason}`);
+              console.log(
+                `Check skipped for previously verified order ${order.name}: ${checkResult.reason}`
+              );
             }
           } catch (checkError) {
-            console.error(`Check creation error for previously verified order ${order.name}:`, checkError);
+            console.error(
+              `Check creation error for previously verified order ${order.name}:`,
+              checkError
+            );
           }
 
           // Fetch updated match info after check creation attempt
@@ -508,6 +557,15 @@ export const run = async ({ params, api, connections }: any) => {
       // Save new matches to database
       if (matches.length > 0) {
         for (const match of matches) {
+          const txId = (match as any).id;
+          // Skip if this transaction is already matched to another order
+          if (matchedTransactionIds.has(txId)) {
+            console.log(
+              `Skipping duplicate match for bankTransactionId: ${txId} (already matched to another order)`
+            );
+            continue;
+          }
+
           try {
             const txAmount = (match as any).amount || 0;
             const amountDiff = Math.abs(txAmount - orderAmount);
@@ -526,7 +584,7 @@ export const run = async ({ params, api, connections }: any) => {
 
             await api.orderPaymentMatch.create({
               orderId: order.id,
-              bankTransactionId: (match as any).id,
+              bankTransactionId: txId,
               matchConfidence: Math.round(confidence),
               verifiedAt: currentTime,
               matchedBy: 'manual',
@@ -639,7 +697,10 @@ export const run = async ({ params, api, connections }: any) => {
             };
           }
         } catch (err) {
-          console.error(`Error fetching check info for order ${order.id}:`, err);
+          console.error(
+            `Error fetching check info for order ${order.id}:`,
+            err
+          );
         }
       }
 

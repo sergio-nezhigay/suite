@@ -5,7 +5,10 @@ import {
   CheckboxGood,
   CheckboxCashlessPayment,
 } from '../utilities/fiscal/checkboxTypes';
-import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+import {
+  EXCLUDED_PAYMENT_CODES,
+  NOVA_POSHTA_ACCOUNT,
+} from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -141,7 +144,10 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     });
 
     if (!bankTransaction) {
-      console.error('[issueCheckForPayment] Bank transaction not found:', transactionId);
+      console.error(
+        '[issueCheckForPayment] Bank transaction not found:',
+        transactionId
+      );
       return {
         success: false,
         error: 'Bank transaction not found',
@@ -150,7 +156,9 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     // Check if this is Nova Poshta account (excluded from checks)
     if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
-      console.log('[issueCheckForPayment] Nova Poshta account detected - check not allowed');
+      console.log(
+        '[issueCheckForPayment] Nova Poshta account detected - check not allowed'
+      );
       return {
         success: false,
         error: 'Check issuance not allowed for Nova Poshta payments',
@@ -158,12 +166,19 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     }
 
     // Check if this payment code is excluded from checks
-    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount || '');
+    const paymentCode = extractPaymentCodeFromAccount(
+      bankTransaction.counterpartyAccount || ''
+    );
     if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
-      console.log('[issueCheckForPayment] Excluded payment code detected:', paymentCode);
+      console.log(
+        '[issueCheckForPayment] Excluded payment code detected:',
+        paymentCode
+      );
       return {
         success: false,
-        error: `Check issuance not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(', ')} don't require checks)`,
+        error: `Check issuance not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(
+          ', '
+        )} don't require checks)`,
       };
     }
 
@@ -177,8 +192,21 @@ export const run: ActionRun = async ({ params, api, logger }) => {
         checkReceiptId: true,
         checkFiscalCode: true,
         checkReceiptUrl: true,
+        orderId: true, // Added to check if already linked to an order
       },
     });
+
+    // If a match exists but is linked to a different order, prevent creation
+    if (paymentMatch && paymentMatch.orderId) {
+      console.log(
+        '[issueCheckForPayment] Transaction already matched to order:',
+        paymentMatch.orderId
+      );
+      return {
+        success: false,
+        error: 'Transaction already matched to another order',
+      };
+    }
 
     // Check if check already issued
     if (paymentMatch && paymentMatch.checkIssued) {
@@ -274,7 +302,9 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     await checkboxService.signIn();
     await checkboxService.ensureShiftOpen();
 
-    console.log('[issueCheckForPayment] Calling Checkbox API to create receipt...');
+    console.log(
+      '[issueCheckForPayment] Calling Checkbox API to create receipt...'
+    );
 
     // Create the sell receipt (with built-in retry logic)
     const receipt = await checkboxService.createSellReceipt(receiptBody);
