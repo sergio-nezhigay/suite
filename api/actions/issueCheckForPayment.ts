@@ -223,7 +223,8 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       };
     }
 
-    // If no payment match exists, create one
+    // Location: Create payment match for manual check issuance
+    // If no payment match exists, create one (dual-write note)
     if (!paymentMatch) {
       console.log(
         '[issueCheckForPayment] Creating new payment match record for transaction:',
@@ -240,6 +241,10 @@ export const run: ActionRun = async ({ params, api, logger }) => {
         '[issueCheckForPayment] Payment match created with ID:',
         paymentMatch.id
       );
+
+      // Note: matchedOrderId is intentionally null here because manual
+      // check issuance can happen before an order match. When the order is
+      // matched later, verifyOrderPayments will set bankTransaction.matchedOrderId.
     }
 
     // Distribute amount across items
@@ -318,16 +323,24 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     const checkIssuedAt = new Date();
     const updateResult = await api.orderPaymentMatch.update(paymentMatch.id, {
       checkIssued: true,
+      checkIssuedAt: checkIssuedAt,
       checkReceiptId: receipt.id,
       checkFiscalCode: receipt.fiscal_code || undefined,
       checkReceiptUrl: receipt.receipt_url || undefined,
-      checkIssuedAt: checkIssuedAt,
     });
 
     console.log(
       '[issueCheckForPayment] Payment match updated:',
       updateResult.id
     );
+
+    // Dual-write: also update the bank transaction
+    // Use the fetched bankTransaction.id (already validated above) so the
+    // update call receives a definite string instead of `string | undefined`.
+    await api.bankTransaction.update(bankTransaction.id, {
+      checkReceiptId: receipt.id,
+      checkIssuedAt: checkIssuedAt,
+    });
 
     return {
       success: true,

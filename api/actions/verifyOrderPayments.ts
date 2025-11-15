@@ -93,6 +93,11 @@ async function createAutomaticCheck(
         checkSkipReason: skipReason,
       });
 
+      // Dual-write: also update bankTransaction
+      await api.bankTransaction.update(paymentMatch.bankTransactionId, {
+        checkSkipReason: skipReason,
+      });
+
       // Add note to order explaining why check wasn't created
       const restrictionNote = `🧾 Automatic Check Creation Skipped
 Reason: Payment code ${paymentCode} doesn't require check issuance
@@ -119,6 +124,11 @@ Note: This payment code (2600, 2902, 2909, or 2920) is excluded from automatic c
       // Mark payment match as skipped
       await api.orderPaymentMatch.update(paymentMatch.id, {
         checkSkipped: true,
+        checkSkipReason: skipReason,
+      });
+
+      // Dual-write: also update bankTransaction
+      await api.bankTransaction.update(paymentMatch.bankTransactionId, {
         checkSkipReason: skipReason,
       });
 
@@ -206,6 +216,12 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       checkReceiptId: receipt.id,
       checkFiscalCode: receipt.fiscal_code || undefined,
       checkReceiptUrl: receipt.receipt_url || undefined,
+      checkIssuedAt: checkIssuedAt,
+    });
+
+    // Dual-write: also update the bank transaction
+    await api.bankTransaction.update(paymentMatch.bankTransactionId, {
+      checkReceiptId: receipt.id,
       checkIssuedAt: checkIssuedAt,
     });
 
@@ -595,6 +611,11 @@ export const run = async ({ params, api, connections }: any) => {
               transactionAmount: txAmount,
               amountDifference: amountDiff,
               daysDifference: daysDiff,
+            });
+
+            // Dual-write: set matchedOrderId on the bank transaction
+            await api.bankTransaction.update(txId, {
+              matchedOrderId: order.id,
             });
           } catch (saveError) {
             console.error(
