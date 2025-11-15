@@ -12,6 +12,13 @@ export const schema: GadgetModel = {
       validations: { numberRange: { min: 0, max: 1000000 } },
       storageKey: "N-3nvM-qGU_R",
     },
+    checkIssuedAt: {
+      type: "dateTime",
+      includeTime: true,
+      storageKey: "qUNObmIRQwLs",
+    },
+    checkReceiptId: { type: "string", storageKey: "jNuZlHmPN1vH" },
+    checkSkipReason: { type: "string", storageKey: "ohgcuozCOZIx" },
     counterpartyAccount: {
       type: "string",
       storageKey: "zKicsG4beJ7o",
@@ -32,6 +39,7 @@ export const schema: GadgetModel = {
       },
       storageKey: "yst3hxSgaVsZ",
     },
+    matchedOrderId: { type: "string", storageKey: "KLALjvN-eoUp" },
     rawData: { type: "json", storageKey: "Swc_qri8D-Lo" },
     reference: { type: "string", storageKey: "Q6sIYCHuc6lg" },
     status: {
