@@ -57,7 +57,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.16,
+        multiplier: 1.18,
       },
       {
         keywords: ['оптичні аудіо перехідники'],
