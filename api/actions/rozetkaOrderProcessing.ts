@@ -264,26 +264,41 @@ export const getNewOrders = async (
       });
 
       // Handle incorrect_access_token error (code 1020)
-      if (errorCode === 1020 && errorMessage === 'incorrect_access_token' && !isRetry) {
-        console.log('[getNewOrders] Detected invalid token error, invalidating cached token and retrying...');
+      if (
+        errorCode === 1020 &&
+        errorMessage === 'incorrect_access_token' &&
+        !isRetry
+      ) {
+        console.log(
+          '[getNewOrders] Detected invalid token error, invalidating cached token and retrying...'
+        );
 
         // Invalidate the cached token
         await rozetkaTokenManager.invalidateToken();
-        console.log('[getNewOrders] Token invalidated, fetching fresh token...');
+        console.log(
+          '[getNewOrders] Token invalidated, fetching fresh token...'
+        );
 
         // Get a fresh token
         const freshToken = await rozetkaTokenManager.getValidToken();
-        console.log('[getNewOrders] Fresh token obtained, retrying API request', {
-          tokenPreview: `${freshToken.substring(0, 8)}...`,
-          tokenLength: freshToken.length,
-        });
+        console.log(
+          '[getNewOrders] Fresh token obtained, retrying API request',
+          {
+            tokenPreview: `${freshToken.substring(0, 8)}...`,
+            tokenLength: freshToken.length,
+          }
+        );
 
         // Retry with the fresh token (pass isRetry=true to prevent infinite loop)
         return getNewOrders(freshToken, true);
       }
 
       return logAndReturnError(
-        new Error(`Failed to get access orders: ${errorMessage || 'Unknown error'} (code: ${errorCode})`),
+        new Error(
+          `Failed to get access orders: ${
+            errorMessage || 'Unknown error'
+          } (code: ${errorCode})`
+        ),
         'getNewOrders'
       );
     }
@@ -293,7 +308,9 @@ export const getNewOrders = async (
       errorName: error.name,
       responseStatus: error.response?.status,
       responseStatusText: error.response?.statusText,
-      responseData: error.response?.data ? JSON.stringify(error.response.data, null, 2) : 'No response data',
+      responseData: error.response?.data
+        ? JSON.stringify(error.response.data, null, 2)
+        : 'No response data',
       requestUrl: error.config?.url,
       requestParams: error.config?.params,
     });
@@ -319,7 +336,7 @@ const transformOrderToShopifyVariables = async (
   if (!order) throw new Error('Order is required');
 
   const mapPurchaseToLineItem = async (purchase: any) => {
-    const { barcode, cost } = await getBarcodeAndCostFromOfferId(
+    const { barcode, cost, handle } = await getPropertiesFromOfferId(
       purchase.item.price_offer_id,
       shopify
     );
@@ -341,6 +358,10 @@ const transformOrderToShopifyVariables = async (
         {
           name: '_cost',
           value: cost,
+        },
+        {
+          name: '_product_handle',
+          value: handle,
         },
       ],
     };
@@ -424,14 +445,21 @@ const logAndReturnError = (error: unknown, context: string): null => {
     responseData: err?.response?.data,
     requestUrl: err?.config?.url,
     requestMethod: err?.config?.method,
-    requestHeaders: err?.config?.headers ? {
-      ...err.config.headers,
-      Authorization: err.config.headers.Authorization ? '[REDACTED]' : undefined,
-    } : undefined,
+    requestHeaders: err?.config?.headers
+      ? {
+          ...err.config.headers,
+          Authorization: err.config.headers.Authorization
+            ? '[REDACTED]'
+            : undefined,
+        }
+      : undefined,
     stack: err?.stack,
   };
 
-  console.error(`[${context}] Detailed error information:`, JSON.stringify(errorDetails, null, 2));
+  console.error(
+    `[${context}] Detailed error information:`,
+    JSON.stringify(errorDetails, null, 2)
+  );
 
   return null;
 };
@@ -500,27 +528,29 @@ export const getShopifyProductIdByOfferId = async (
   }
 };
 
-interface BarcodeCost {
+interface Properties {
   barcode: string;
   cost: string;
+  handle: string;
 }
 
-export const getBarcodeAndCostByProductId = async (
+export const getPropertiesByProductId = async (
   productId: string,
   shopify: Shopify
-): Promise<BarcodeCost> => {
+): Promise<Properties> => {
   if (!productId) {
     console.warn(`[fetchBarcodeByProductId] No productId provided`);
-    return { barcode: '', cost: '' };
+    return { barcode: '', cost: '', handle: '' };
   }
 
   console.log(
     `[fetchBarcodeByProductId] Fetching barcode for product ID: ${productId}`
   );
-  // need to return alson "cost" field
+  // need to return alson "cost" field and variant id
   const query = `
         query getProductBarcode($id: ID!) {
           product(id: $id) {
+            handle
             variants(first: 1) {
               edges {
                 node {
@@ -540,33 +570,36 @@ export const getBarcodeAndCostByProductId = async (
 
   try {
     const response = await shopify.graphql(query, { id: productId });
-    const barcode =
-      response?.product?.variants?.edges?.[0]?.node?.barcode || '';
-    const cost =
-      response?.product?.variants?.edges?.[0]?.node?.inventoryItem?.unitCost
-        ?.amount || 0;
+    const variantNode = response?.product?.variants?.edges?.[0]?.node;
+    const barcode = variantNode?.barcode || '';
+    const cost = variantNode?.inventoryItem?.unitCost?.amount
+      ? String(variantNode.inventoryItem.unitCost.amount)
+      : '';
+    const handle = response?.product?.handle || '';
 
     if (barcode) {
-      console.log(`[fetchBarcodeByProductId] Found barcode: ${barcode}`);
+      console.log(`[fetchBarcodeByProductId] Found barcode: ${barcode}`, {
+        handle,
+      });
     } else {
       console.warn(
         `[fetchBarcodeByProductId] No barcode found for product ID: ${productId}`
       );
     }
 
-    return { barcode, cost };
+    return { barcode, cost, handle };
   } catch (error) {
     console.error(`[fetchBarcodeByProductId] Error fetching barcode:`, error);
-    return { barcode: '', cost: '' };
+    return { barcode: '', cost: '', handle: '' };
   }
 };
 
-export const getBarcodeAndCostFromOfferId = async (
+export const getPropertiesFromOfferId = async (
   offerId: string,
   shopify: Shopify
-): Promise<BarcodeCost> => {
+): Promise<Properties> => {
   const productId = await getShopifyProductIdByOfferId(offerId, shopify);
-  if (!productId) return { barcode: '', cost: '' };
+  if (!productId) return { barcode: '', cost: '', handle: '' };
 
-  return getBarcodeAndCostByProductId(productId, shopify);
+  return getPropertiesByProductId(productId, shopify);
 };
