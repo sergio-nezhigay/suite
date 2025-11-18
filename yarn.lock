@@ -429,6 +429,11 @@
     wonka "^6.3.2"
     ws "^8.18.2"
 
+"@gadgetinc/core@0.14.0":
+  version "0.14.0"
+  resolved "https://registry.yarnpkg.com/@gadgetinc/core/-/core-0.14.0.tgz#149f63724ecad15438bb773f975ed6ed5c04f9cb"
+  integrity sha512-LLXJcsYrQj3yrYkSUygkKoye2vqzW2d30P5hkiaQnL/ySF+MLKvpvl/QzfgWXZ+XZGxJB6nLepdQzCUWdV0wSQ==
+
 "@gadgetinc/react-shopify-app-bridge@^0.16.3":
   version "0.16.3"
   resolved "https://registry.yarnpkg.com/@gadgetinc/react-shopify-app-bridge/-/react-shopify-app-bridge-0.16.3.tgz#4793f72ddad54874c428bdef36c9673acedd2971"
@@ -691,6 +696,15 @@
     "@remote-ui/react" "^5.0.2"
     "@types/react" ">=18.2.67"
 
+"@shopify/ui-extensions-react@2025.4.x":
+  version "2025.4.0"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.4.0.tgz#5351169b7c612b0437936ce57748a99c6b6d725c"
+  integrity sha512-sFmoMHGgnKrok6wr8Db1xTyZUispON0J13HsGpkCWxneLVhBf0vH5mxHyFxBpnjR335DYqwlZph985SWh/Xyaw==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.16"
+    "@remote-ui/react" "^5.0.6"
+    "@types/react" ">=18.2.67"
+
 "@shopify/ui-extensions-react@2025.7.x":
   version "2025.7.1"
   resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.7.1.tgz#650a87be612fe4a3762b5efff1f0ecbcb5219296"
@@ -707,6 +721,14 @@
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
+
+"@shopify/ui-extensions@2025.4.x":
+  version "2025.4.0"
+  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2025.4.0.tgz#8d967017ac6467aecea5c89291124cd926caed7f"
+  integrity sha512-i8LxM3EnEwLBjB7bXAWBYLKYnngYfY+PKg8a2s/ll5/hvgWr8XOHNLsXe2aej69tyXVei5QtO4McNiFDU8jBKw==
+  dependencies:
+    "@remote-ui/async-subscription" "^2.1.16"
+    "@remote-ui/core" "^2.2.5"
 
 "@shopify/ui-extensions@2025.7.x":
   version "2025.7.1"
