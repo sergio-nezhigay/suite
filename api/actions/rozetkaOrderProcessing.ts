@@ -336,10 +336,8 @@ const transformOrderToShopifyVariables = async (
   if (!order) throw new Error('Order is required');
 
   const mapPurchaseToLineItem = async (purchase: any) => {
-    const { barcode, cost, handle } = await getPropertiesFromOfferId(
-      purchase.item.price_offer_id,
-      shopify
-    );
+    const { barcode, cost, handle, alternativeTitle } =
+      await getPropertiesFromOfferId(purchase.item.price_offer_id, shopify);
 
     return {
       title: purchase.item_name,
@@ -363,6 +361,7 @@ const transformOrderToShopifyVariables = async (
           name: '_product_handle',
           value: handle,
         },
+        { name: '_alternative_title', value: alternativeTitle },
       ],
     };
   };
@@ -532,6 +531,7 @@ interface Properties {
   barcode: string;
   cost: string;
   handle: string;
+  alternativeTitle: string;
 }
 
 export const getPropertiesByProductId = async (
@@ -540,17 +540,19 @@ export const getPropertiesByProductId = async (
 ): Promise<Properties> => {
   if (!productId) {
     console.warn(`[fetchBarcodeByProductId] No productId provided`);
-    return { barcode: '', cost: '', handle: '' };
+    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
   }
 
   console.log(
-    `[fetchBarcodeByProductId] Fetching barcode for product ID: ${productId}`
+    `[fetchBarcodeByProductId] Fetching barcode and metafield for product ID: ${productId}`
   );
-  // need to return alson "cost" field and variant id
   const query = `
-        query getProductBarcode($id: ID!) {
+        query getProductBarcodeAndMetafield($id: ID!) {
           product(id: $id) {
             handle
+            metafield(namespace: "custom", key: "alternative_title") {
+              value
+            }
             variants(first: 1) {
               edges {
                 node {
@@ -576,21 +578,27 @@ export const getPropertiesByProductId = async (
       ? String(variantNode.inventoryItem.unitCost.amount)
       : '';
     const handle = response?.product?.handle || '';
+    const alternativeTitle = response?.product?.metafield?.value || '';
 
-    if (barcode) {
-      console.log(`[fetchBarcodeByProductId] Found barcode: ${barcode}`, {
+    if (barcode || alternativeTitle) {
+      console.log(`[fetchBarcodeByProductId] Found data`, {
+        barcode,
         handle,
+        alternativeTitle,
       });
     } else {
       console.warn(
-        `[fetchBarcodeByProductId] No barcode found for product ID: ${productId}`
+        `[fetchBarcodeByProductId] No barcode/metafield found for product ID: ${productId}`
       );
     }
 
-    return { barcode, cost, handle };
+    return { barcode, cost, handle, alternativeTitle };
   } catch (error) {
-    console.error(`[fetchBarcodeByProductId] Error fetching barcode:`, error);
-    return { barcode: '', cost: '', handle: '' };
+    console.error(
+      `[fetchBarcodeByProductId] Error fetching product data:`,
+      error
+    );
+    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
   }
 };
 
@@ -599,7 +607,8 @@ export const getPropertiesFromOfferId = async (
   shopify: Shopify
 ): Promise<Properties> => {
   const productId = await getShopifyProductIdByOfferId(offerId, shopify);
-  if (!productId) return { barcode: '', cost: '', handle: '' };
+  if (!productId)
+    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
 
   return getPropertiesByProductId(productId, shopify);
 };
