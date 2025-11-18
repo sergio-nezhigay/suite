@@ -1,28 +1,88 @@
+// extensions/nova-poshta/src/BlockExtension.tsx
 import {
   reactExtension,
   useApi,
   AdminBlock,
   BlockStack,
   Text,
+  Button,
+  InlineStack,
+  Banner,
 } from '@shopify/ui-extensions-react/admin';
+import { useState } from 'react';
 
-// The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
 function App() {
-  // The useApi hook provides access to several useful APIs like i18n and data.
   const { i18n, data } = useApi(TARGET);
+  const [loading, setLoading] = useState(false);
+  const [userData, setUserData] = useState(null);
+  const [error, setError] = useState(null);
+
   console.log({ data });
 
+  const handleFetchUser = async () => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      // ✅ Call your Gadget backend route (relative URL)
+      const response = await fetch('/nova-poshta/fetch-user-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          userId: 1, // JSONPlaceholder user ID
+        }),
+      });
+
+      const result = await response.json();
+
+      if (response.ok) {
+        setUserData(result.data);
+      } else {
+        setError(result.error || 'Failed to fetch user data');
+      }
+    } catch (err) {
+      setError(err.message || 'Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    // The AdminBlock component provides an API for setting the title of the Block extension wrapper.
-    <AdminBlock title='New Nova Poshta'>
+    <AdminBlock title='Nova Poshta - User Lookup'>
       <BlockStack>
         <Text fontWeight='bold'>
           {i18n.translate('welcome', { target: TARGET })}
         </Text>
+
+        {/* Fetch User Button */}
+        <InlineStack>
+          <Button onPress={handleFetchUser} disabled={loading}>
+            {loading ? 'Loading...' : 'Fetch User from JSONPlaceholder'}
+          </Button>
+        </InlineStack>
+
+        {/* Error Display */}
+        {error && <Banner tone='critical'>{error}</Banner>}
+
+        {/* User Data Display */}
+        {userData && (
+          <BlockStack>
+            <Banner tone='success'>User data fetched successfully!</Banner>
+
+            <Text fontWeight='bold'>User Information:</Text>
+            <Text>Name: {userData.name}</Text>
+            <Text>Email: {userData.email}</Text>
+            <Text>Phone: {userData.phone}</Text>
+            <Text>Company: {userData.company.name}</Text>
+            <Text>Website: {userData.website}</Text>
+          </BlockStack>
+        )}
       </BlockStack>
     </AdminBlock>
   );
