@@ -79,6 +79,7 @@ function SendExtension() {
     fetchOrdersContent();
   }, [selectedIds]);
   const firstOrderTag = ordersContent?.[0]?.tags?.[0] || '';
+  console.log('firstOrderTag', JSON.stringify(firstOrderTag, null, 2));
 
   let spreadsheetId = '';
   let sheetName = 'Sheet2';
@@ -93,19 +94,20 @@ function SendExtension() {
   if (firstOrderTag.includes('Ии')) {
     // Easy supplier
     spreadsheetId = '1DIDI_GIIehGNRADrOCZXOlPwyXvh4hkHSKkO79GaIIM';
+    sheetName = 'Відправки';
     recipientEmail = 'deni-ua@ukr.net';
     shouldAutoTag = true;
     shouldSendEmail = true;
     tagStrategy = getEasySupplierTag;
   } else if (firstOrderTag.includes('РІ')) {
-    // Rozetka supplier
+    // Rizka supplier
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
     recipientEmail = 'asd1134@ukr.net';
     shouldAutoTag = true;
     shouldSendEmail = true;
     tagStrategy = COMPLETED_TAG;
   } else if (firstOrderTag.includes('Че')) {
-    // Schusev supplier
+    // Cherg supplier
     spreadsheetId = '17J3L12ZHz3VoYp2la5dTcCmZg4-zcNZpCUyvifgLZkk';
     recipientEmail = 'scherginets@ukr.net';
     shouldAutoTag = true;
@@ -113,7 +115,6 @@ function SendExtension() {
     shouldSendEmail = true;
     tagStrategy = COMPLETED_TAG;
   } else if (firstOrderTag.includes('Ме')) {
-    // Unknown supplier
     spreadsheetId = '1jHwJA0U9XXSu1W66P7WOSuNiCMLvdMtXyTnPOOVQLP4';
     sheetName = 'Sheet1';
     shouldAutoTag = true;
