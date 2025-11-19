@@ -372,6 +372,97 @@ export async function updateWarehouse({
   return response;
 }
 
+/**
+ * Save Nova Poshta declaration to order metafields
+ * Supports multiple declarations per order by storing as array
+ *
+ * @param orderId - Shopify order GID
+ * @param declaration - Declaration data to save
+ * @param existingDeclarations - Array of existing declarations (optional)
+ */
+export async function saveDeclaration({
+  orderId,
+  declaration,
+}: {
+  orderId: string;
+  declaration: {
+    declarationRef: string;
+    declarationNumber: string;
+    estimatedDeliveryDate: string;
+    cost: string;
+    recipientName: string;
+    cityRef: string;
+    cityDescription: string;
+    warehouseRef: string;
+    warehouseDescription: string;
+    createdAt: string;
+  };
+}) {
+  console.log('💾 Saving declaration to order metafields:', {
+    orderId,
+    declarationNumber: declaration.declarationNumber,
+  });
+
+  const metafieldMutation = `#graphql
+    mutation UpdateMetafield($metafields: [MetafieldsSetInput!]!) {
+      metafieldsSet(metafields: $metafields) {
+        metafields {
+          id
+          key
+          value
+        }
+        userErrors {
+          field
+          message
+        }
+      }
+    }
+  `;
+
+  // Save latest declaration to individual fields (backward compatibility)
+  // Also save warehouse info separately
+  const variables = {
+    metafields: [
+      {
+        ownerId: orderId,
+        namespace: 'nova_poshta',
+        key: 'declaration_number',
+        value: declaration.declarationNumber,
+        type: 'single_line_text_field',
+      },
+      {
+        ownerId: orderId,
+        namespace: 'nova_poshta',
+        key: 'declaration_ref',
+        value: declaration.declarationRef,
+        type: 'single_line_text_field',
+      },
+      {
+        ownerId: orderId,
+        namespace: 'nova_poshta',
+        key: 'recepient_warehouse',
+        value: JSON.stringify({
+          cityRef: declaration.cityRef,
+          cityDescription: declaration.cityDescription,
+          warehouseRef: declaration.warehouseRef,
+          warehouseDescription: declaration.warehouseDescription,
+        }),
+        type: 'json',
+      },
+    ],
+  };
+
+  const response = await makeGraphQLQuery(metafieldMutation, variables);
+
+  if (response.errors || (response.data as any)?.metafieldsSet?.userErrors?.length) {
+    console.error('❌ Failed to save declaration:', response);
+    throw new Error('Failed to save declaration to order');
+  }
+
+  console.log('✅ Declaration saved successfully');
+  return response;
+}
+
 async function makeIPMessage() {
   const response = await fetch('https://api.ipify.org?format=json');
   const data = await response.json();
