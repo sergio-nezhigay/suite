@@ -32,3 +32,5 @@ export * from './data/getPaginatedData';
 export * from './pdf/warrantyPdfUtils';
 export * from './email/warrantyEmailUtils';
 export * from './rozetka/sendRozetkaMessage';
+export * from './novaPoshta/senderConfig';
+export * from './novaPoshta/types';

@@ -1,13 +1,14 @@
 import type { RouteHandler } from 'gadget-server';
-import { npClient } from 'utilities';
-import { SENDER_CONFIG, validateSenderConfig } from 'utilities/novaPoshta/senderConfig';
-import type {
-  CreateDeclarationRequestBody,
-  CreateDeclarationResponse,
-  CounterpartyResponse,
-  InternetDocumentResponse,
-  NovaPoshtaApiResponse,
-} from 'utilities/novaPoshta/types';
+import {
+  npClient,
+  SENDER_CONFIG,
+  validateSenderConfig,
+  type CreateDeclarationRequestBody,
+  type CreateDeclarationResponse,
+  type CounterpartyResponse,
+  type InternetDocumentResponse,
+  type NovaPoshtaApiResponse,
+} from 'utilities';
 
 /**
  * POST /nova-poshta/create-document
@@ -55,7 +56,8 @@ const route: RouteHandler<{
   if (!recipientWarehouseRef || !recipientCityRef) {
     return await reply.status(400).send({
       success: false,
-      error: 'Missing required delivery destination: recipientWarehouseRef, recipientCityRef',
+      error:
+        'Missing required delivery destination: recipientWarehouseRef, recipientCityRef',
     } as CreateDeclarationResponse);
   }
 
@@ -65,10 +67,14 @@ const route: RouteHandler<{
 
   const configValidation = validateSenderConfig();
   if (!configValidation.valid) {
-    console.log('❌ Sender configuration validation failed:', configValidation.errors);
+    console.log(
+      '❌ Sender configuration validation failed:',
+      configValidation.errors
+    );
     return await reply.status(500).send({
       success: false,
-      error: 'Sender configuration not set up properly. Please check senderConfig.ts file.',
+      error:
+        'Sender configuration not set up properly. Please check senderConfig.ts file.',
       details: configValidation.errors,
     } as CreateDeclarationResponse);
   }
@@ -78,7 +84,12 @@ const route: RouteHandler<{
     // 3. Create Recipient Counterparty
     // ============================================
 
-    console.log('📦 Creating recipient counterparty:', { firstName, lastName, phone, email });
+    console.log('📦 Creating recipient counterparty:', {
+      firstName,
+      lastName,
+      phone,
+      email,
+    });
 
     const createCounterpartyPayload = {
       modelName: 'CounterpartyGeneral',
@@ -93,9 +104,9 @@ const route: RouteHandler<{
       },
     };
 
-    const counterpartyResponse = await npClient(
+    const counterpartyResponse = (await npClient(
       createCounterpartyPayload
-    ) as NovaPoshtaApiResponse<CounterpartyResponse[]>;
+    )) as NovaPoshtaApiResponse<CounterpartyResponse[]>;
 
     if (!counterpartyResponse.success || !counterpartyResponse.data?.[0]) {
       console.log('❌ Failed to create counterparty:', counterpartyResponse);
@@ -107,7 +118,8 @@ const route: RouteHandler<{
     }
 
     const recipientRef = counterpartyResponse.data[0].Ref;
-    const recipientContactRef = counterpartyResponse.data[0].ContactPerson.data[0].Ref;
+    const recipientContactRef =
+      counterpartyResponse.data[0].ContactPerson.data[0].Ref;
 
     console.log('✅ Recipient counterparty created:', {
       recipientRef,
@@ -122,10 +134,13 @@ const route: RouteHandler<{
     const documentWeight = weight || SENDER_CONFIG.DEFAULT_WEIGHT;
     const documentCost = cost || SENDER_CONFIG.DEFAULT_COST;
     const documentSeats = seatsAmount || SENDER_CONFIG.DEFAULT_SEATS_AMOUNT;
-    const documentDescription = description || SENDER_CONFIG.DEFAULT_DESCRIPTION;
+    const documentDescription =
+      description || SENDER_CONFIG.DEFAULT_DESCRIPTION;
     const documentCargoType = cargoType || SENDER_CONFIG.DEFAULT_CARGO_TYPE;
-    const documentPaymentMethod = paymentMethod || SENDER_CONFIG.DEFAULT_PAYMENT_METHOD;
-    const documentServiceType = serviceType || SENDER_CONFIG.DEFAULT_SERVICE_TYPE;
+    const documentPaymentMethod =
+      paymentMethod || SENDER_CONFIG.DEFAULT_PAYMENT_METHOD;
+    const documentServiceType =
+      serviceType || SENDER_CONFIG.DEFAULT_SERVICE_TYPE;
 
     console.log('📋 Creating InternetDocument with params:', {
       sender: SENDER_CONFIG.SENDER_REF,
@@ -167,9 +182,9 @@ const route: RouteHandler<{
       },
     };
 
-    const documentResponse = await npClient(
+    const documentResponse = (await npClient(
       createDocumentPayload
-    ) as NovaPoshtaApiResponse<InternetDocumentResponse[]>;
+    )) as NovaPoshtaApiResponse<InternetDocumentResponse[]>;
 
     if (!documentResponse.success || !documentResponse.data?.[0]) {
       console.log('❌ Failed to create InternetDocument:', documentResponse);

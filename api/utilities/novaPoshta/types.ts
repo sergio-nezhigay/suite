@@ -257,5 +257,6 @@ export interface CreateDeclarationResponse {
     printedFormUrl?: string;        // Label URL
   };
   error?: string;
-  novaPoshtaResponse?: NovaPoshtaApiResponse<InternetDocumentResponse[]>;
+  details?: string[];
+  novaPoshtaResponse?: NovaPoshtaApiResponse<InternetDocumentResponse[] | CounterpartyResponse[]>;
 }
