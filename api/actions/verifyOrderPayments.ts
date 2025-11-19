@@ -364,7 +364,9 @@ export const run = async ({ params, api, connections }: any) => {
 
     // Create a set of already matched bankTransactionIds to avoid duplicates
     const matchedTransactionIds = new Set(
-      existingMatches.map((match) => match.bankTransactionId)
+      existingMatches.map(
+        (match: { bankTransactionId: any }) => match.bankTransactionId
+      )
     );
 
     // Log existing matches for debugging

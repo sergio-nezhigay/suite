@@ -15,11 +15,23 @@ const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
 
+// Define the User type based on JSONPlaceholder response
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  phone: string;
+  website: string;
+  company: {
+    name: string;
+  };
+}
+
 function App() {
   const { i18n, data } = useApi(TARGET);
   const [loading, setLoading] = useState(false);
-  const [userData, setUserData] = useState(null);
-  const [error, setError] = useState(null);
+  const [userData, setUserData] = useState<User | null>(null); // ✅ Add type
+  const [error, setError] = useState<string | null>(null); // ✅ Add type
 
   console.log({ data });
 
@@ -28,7 +40,7 @@ function App() {
     setError(null);
 
     try {
-      // ✅ Call your Gadget backend route (relative URL)
+      // Call your Gadget backend route (relative URL)
       const response = await fetch('/nova-poshta/fetch-user-data', {
         method: 'POST',
         headers: {
@@ -47,7 +59,7 @@ function App() {
         setError(result.error || 'Failed to fetch user data');
       }
     } catch (err) {
-      setError(err.message || 'Network error');
+      setError(err instanceof Error ? err.message : 'Network error');
     } finally {
       setLoading(false);
     }
