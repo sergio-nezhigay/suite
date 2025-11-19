@@ -96,7 +96,7 @@ export default function CityAutocomplete({
             label: formatCityLabel(city),
           }))}
           onChange={handleCityChange}
-          value={selectedCityRef || ''}
+          value={selectedCityRef ?? undefined}
         />
       )}
 

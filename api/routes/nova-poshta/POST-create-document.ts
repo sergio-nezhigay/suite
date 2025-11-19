@@ -24,6 +24,7 @@ import type {
 const route: RouteHandler<{
   Body: CreateDeclarationRequestBody;
 }> = async ({ request, reply }) => {
+  const body = request.body as CreateDeclarationRequestBody;
   const {
     firstName,
     lastName,
@@ -38,7 +39,7 @@ const route: RouteHandler<{
     cargoType,
     paymentMethod,
     serviceType,
-  } = request.body;
+  } = body;
 
   // ============================================
   // 1. Validate Required Fields

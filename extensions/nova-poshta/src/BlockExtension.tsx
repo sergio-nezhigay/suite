@@ -94,7 +94,7 @@ function App() {
         }
 
         // Load existing declarations
-        if (info?.novaposhtaDeclaration?.number) {
+        if (info?.novaposhtaDeclaration?.number && info?.orderDetails) {
           // We have at least one declaration
           const existingDeclaration: Declaration = {
             declarationRef: info.novaposhtaDeclaration.ref || '',
@@ -270,17 +270,19 @@ function App() {
         )}
 
         {/* Shipping Address Section */}
-        <BlockStack>
-          <Text fontWeight="bold">Адреса доставки (з замовлення):</Text>
-          <Text>
-            {orderDetails.firstName} {orderDetails.lastName}
-          </Text>
-          {orderDetails.shippingPhone && (
-            <Text>Телефон: {orderDetails.shippingPhone}</Text>
-          )}
-          {orderDetails.city && <Text>Місто: {orderDetails.city}</Text>}
-          {orderDetails.address && <Text>Адреса: {orderDetails.address}</Text>}
-        </BlockStack>
+        {orderDetails && (
+          <BlockStack>
+            <Text fontWeight="bold">Адреса доставки (з замовлення):</Text>
+            <Text>
+              {orderDetails.firstName} {orderDetails.lastName}
+            </Text>
+            {orderDetails.shippingPhone && (
+              <Text>Телефон: {orderDetails.shippingPhone}</Text>
+            )}
+            {orderDetails.city && <Text>Місто: {orderDetails.city}</Text>}
+            {orderDetails.address && <Text>Адреса: {orderDetails.address}</Text>}
+          </BlockStack>
+        )}
 
         <Divider />
 

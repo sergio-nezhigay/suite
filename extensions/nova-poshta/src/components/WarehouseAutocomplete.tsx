@@ -89,7 +89,7 @@ export default function WarehouseAutocomplete({
             value: warehouse.Ref,
             label: warehouse.Description,
           }))}
-          value={localSelectedRef || ''}
+          value={localSelectedRef ?? undefined}
           onChange={handleWarehouseChange}
           disabled={disabled}
           error={displayError}
