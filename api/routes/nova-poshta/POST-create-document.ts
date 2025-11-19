@@ -158,11 +158,14 @@ const route: RouteHandler<{
       methodProperties: {
         // Sender information (from config)
         Sender: SENDER_CONFIG.SENDER_REF,
+        CitySender: SENDER_CONFIG.SENDER_CITY_REF,
         SenderAddress: SENDER_CONFIG.SENDER_WAREHOUSE_REF,
         ContactSender: SENDER_CONFIG.SENDER_CONTACT_REF,
+        SendersPhone: SENDER_CONFIG.SENDER_PHONE,
 
         // Recipient information (from request + created counterparty)
         Recipient: recipientRef,
+        CityRecipient: recipientCityRef,
         RecipientAddress: recipientWarehouseRef,
         ContactRecipient: recipientContactRef,
         RecipientsPhone: phone,

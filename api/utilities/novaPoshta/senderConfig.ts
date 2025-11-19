@@ -20,6 +20,12 @@ export const SENDER_CONFIG = {
   SENDER_REF: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da',
 
   /**
+   * Your city reference (UUID)
+   * Миньківці - с. Миньківці, Бородянський р-н, Київська обл.
+   */
+  SENDER_CITY_REF: 'e71abb60-4b33-11e4-ab6d-005056801329',
+
+  /**
    * Your warehouse/address reference (UUID)
    * Миньківці - Пункт приймання-видачі (до 30 кг): вул. Квітнева, 15А
    */
@@ -32,6 +38,11 @@ export const SENDER_CONFIG = {
    * Please create a contact person in Nova Poshta cabinet or use the helper below
    */
   SENDER_CONTACT_REF: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da',
+
+  /**
+   * Your phone number for Nova Poshta (format: 380XXXXXXXXX)
+   */
+  SENDER_PHONE: '380933639090',
 
   // ============================================
   // DEFAULT DECLARATION PARAMETERS
@@ -111,12 +122,20 @@ export function validateSenderConfig(): { valid: boolean; errors: string[] } {
     errors.push('SENDER_REF is not configured. Please update senderConfig.ts with your actual sender reference.');
   }
 
+  if (SENDER_CONFIG.SENDER_CITY_REF.includes('YOUR_SENDER')) {
+    errors.push('SENDER_CITY_REF is not configured. Please update senderConfig.ts with your actual city reference.');
+  }
+
   if (SENDER_CONFIG.SENDER_WAREHOUSE_REF.includes('YOUR_SENDER')) {
     errors.push('SENDER_WAREHOUSE_REF is not configured. Please update senderConfig.ts with your actual warehouse reference.');
   }
 
   if (SENDER_CONFIG.SENDER_CONTACT_REF.includes('YOUR_SENDER')) {
     errors.push('SENDER_CONTACT_REF is not configured. Please update senderConfig.ts with your actual contact reference.');
+  }
+
+  if (!SENDER_CONFIG.SENDER_PHONE || SENDER_CONFIG.SENDER_PHONE.includes('YOUR_SENDER')) {
+    errors.push('SENDER_PHONE is not configured. Please update senderConfig.ts with your actual phone number.');
   }
 
   return {
