@@ -34,3 +34,4 @@ export * from './email/warrantyEmailUtils';
 export * from './rozetka/sendRozetkaMessage';
 export * from './novaPoshta/senderConfig';
 export * from './novaPoshta/types';
+export * from './novaPoshta/fetchSenderCredentials';
