@@ -34,8 +34,8 @@ export default function WarehouseAutocomplete({
   error,
   disabled = false,
 }: WarehouseAutocompleteProps) {
-  const [localSelectedRef, setLocalSelectedRef] = useState<string | null>(
-    selectedWarehouseRef
+  const [localSelectedRef, setLocalSelectedRef] = useState<string | undefined>(
+    selectedWarehouseRef ?? undefined
   );
   const { warehouses, isLoading, error: searchError } = useWarehouseSearch(cityRef);
 
@@ -46,7 +46,7 @@ export default function WarehouseAutocomplete({
       setLocalSelectedRef(warehouse.Ref);
       onWarehouseSelect(warehouse.Ref, warehouse.Description);
     } else if (warehouses.length === 0) {
-      setLocalSelectedRef(null);
+      setLocalSelectedRef(undefined);
     }
   }, [warehouses, localSelectedRef, onWarehouseSelect]);
 
@@ -89,7 +89,7 @@ export default function WarehouseAutocomplete({
             value: warehouse.Ref,
             label: warehouse.Description,
           }))}
-          value={localSelectedRef ?? undefined}
+          value={localSelectedRef}
           onChange={handleWarehouseChange}
           disabled={disabled}
           error={displayError}
