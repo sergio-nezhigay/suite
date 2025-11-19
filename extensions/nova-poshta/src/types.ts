@@ -70,13 +70,6 @@ export interface PackageDetails {
   serviceType: string;
 }
 
-export interface PackageDetailsFormProps {
-  packageDetails: PackageDetails;
-  onPackageDetailsChange: (details: Partial<PackageDetails>) => void;
-  errors?: Partial<Record<keyof PackageDetails, string>>;
-  disabled?: boolean;
-}
-
 export interface Declaration {
   declarationRef: string;
   declarationNumber: string;

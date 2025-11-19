@@ -27,6 +27,9 @@ import { useCreateDeclaration } from './hooks/useNovaPoshtaApi';
 // Import types
 import type { PackageDetails, Declaration } from './types';
 
+// Import constants
+import { DEFAULT_PACKAGE_DETAILS } from './constants';
+
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
@@ -50,16 +53,16 @@ function App() {
   const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<string | null>(null);
   const [selectedWarehouseDescription, setSelectedWarehouseDescription] = useState<string>('');
 
-  // State for package details
-  const [packageDetails, setPackageDetails] = useState<PackageDetails>({
-    weight: '1',
-    cost: '100',
-    seatsAmount: '1',
-    description: 'Інтернет-замовлення',
-    cargoType: 'Cargo',
-    paymentMethod: 'Cash',
-    serviceType: 'WarehouseWarehouse',
-  });
+  // Package details - all constants
+  const packageDetails: PackageDetails = {
+    weight: DEFAULT_PACKAGE_DETAILS.WEIGHT,
+    cost: DEFAULT_PACKAGE_DETAILS.COST,
+    seatsAmount: DEFAULT_PACKAGE_DETAILS.SEATS_AMOUNT,
+    description: DEFAULT_PACKAGE_DETAILS.DESCRIPTION,
+    cargoType: DEFAULT_PACKAGE_DETAILS.CARGO_TYPE,
+    paymentMethod: DEFAULT_PACKAGE_DETAILS.PAYMENT_METHOD,
+    serviceType: DEFAULT_PACKAGE_DETAILS.SERVICE_TYPE,
+  };
 
   // State for declarations list
   const [declarations, setDeclarations] = useState<Declaration[]>([]);
@@ -192,15 +195,6 @@ function App() {
         setCitySearchQuery('');
         setSelectedCityRef(null);
         setSelectedWarehouseRef(null);
-        setPackageDetails({
-          weight: '1',
-          cost: '100',
-          seatsAmount: '1',
-          description: 'Інтернет-замовлення',
-          cargoType: 'Cargo',
-          paymentMethod: 'Cash',
-          serviceType: 'WarehouseWarehouse',
-        });
 
         // Clear success message after 5 seconds
         setTimeout(() => setSuccessMessage(null), 5000);
@@ -338,15 +332,9 @@ function App() {
               />
             )}
 
-            {/* Package Details Form */}
+            {/* Package Details Display */}
             {selectedWarehouseRef && (
-              <PackageDetailsForm
-                packageDetails={packageDetails}
-                onPackageDetailsChange={(updates) =>
-                  setPackageDetails({ ...packageDetails, ...updates })
-                }
-                disabled={isCreating}
-              />
+              <PackageDetailsForm />
             )}
 
             {/* Action Buttons */}
