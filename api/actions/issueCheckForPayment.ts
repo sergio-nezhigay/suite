@@ -241,41 +241,16 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     }
 
     // Location: Create payment match for manual check issuance
-    // If no payment match exists, create one (dual-write note)
+    // Note: We intentionally DON'T create orderPaymentMatch here if it doesn't exist.
+    // Manual check issuance can happen before an order match, and since orderId is
+    // required in the model, we can't create a record without it. Instead, we rely
+    // on the bankTransaction fields (checkReceiptId, checkIssuedAt) which are updated
+    // via dual-write below. When an order is matched later, verifyOrderPayments will
+    // create the orderPaymentMatch with the orderId and copy check data from bankTransaction.
     if (!paymentMatch) {
       console.log(
-        '[issueCheckForPayment] Creating new payment match record for transaction:',
-        transactionId
+        '[issueCheckForPayment] No existing payment match found. Skipping creation since orderId is required. Check data will be stored in bankTransaction.'
       );
-      try {
-        paymentMatch = await api.orderPaymentMatch.create({
-          bankTransactionId: transactionId,
-          matchedBy: 'manual',
-          verifiedAt: new Date(),
-          notes: 'Created via manual check issuance from payments page',
-          transactionAmount: amount,
-        });
-        console.log(
-          '[issueCheckForPayment] Payment match created with ID:',
-          paymentMatch.id
-        );
-      } catch (err: any) {
-        // If the model was deleted, continue without creating a payment match
-        if (
-          err?.code === 'GGT_RECORD_NOT_FOUND' ||
-          err?.message?.includes('orderPaymentMatches')
-        ) {
-          console.warn(
-            '[issueCheckForPayment] orderPaymentMatch model not available — skipping creation'
-          );
-        } else {
-          throw err;
-        }
-      }
-
-      // Note: matchedOrderId is intentionally null here because manual
-      // check issuance can happen before an order match. When the order is
-      // matched later, verifyOrderPayments will set bankTransaction.matchedOrderId.
     }
 
     // Distribute amount across items
@@ -354,7 +329,7 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     const checkIssuedAt = new Date();
     if (paymentMatch) {
       try {
-        const updateResult = await api.orderPaymentMatch.update(
+        await api.orderPaymentMatch.update(
           paymentMatch.id,
           {
             checkIssued: true,
@@ -367,7 +342,7 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
         console.log(
           '[issueCheckForPayment] Payment match updated:',
-          updateResult.id
+          paymentMatch.id
         );
       } catch (err: any) {
         // If the model was deleted, continue without updating payment match
