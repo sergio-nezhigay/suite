@@ -1,9 +1,11 @@
 # Phase 3: Main Extension Integration
 
 ## Overview
+
 This PR integrates all components into the main `BlockExtension.tsx`, creating the complete Nova Poshta declaration creation flow. Includes order data fetching, declaration creation, automatic metafield saving, and display of existing declarations.
 
 ## Goals
+
 - ✅ Rewrite `BlockExtension.tsx` with complete user flow
 - ✅ Fetch order data using `getOrderInfo` from shared utilities
 - ✅ Integrate all components (autocomplete, form, cards)
@@ -16,6 +18,7 @@ This PR integrates all components into the main `BlockExtension.tsx`, creating t
 ## Files Changed
 
 ### MODIFY
+
 - `extensions/nova-poshta/src/BlockExtension.tsx` - Complete rewrite with full integration
 - `extensions/shared/shopifyOperations.ts` - Add function to save declarations array
 
@@ -124,6 +127,7 @@ export async function saveDeclaration({
 ```
 
 **Explanation**:
+
 - Saves declaration to order metafields automatically after creation
 - Maintains backward compatibility with existing metafield structure
 - Saves declaration_number, declaration_ref, and recepient_warehouse
@@ -186,16 +190,20 @@ function App() {
   // State for city/warehouse selection
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [selectedCityRef, setSelectedCityRef] = useState<string | null>(null);
-  const [selectedCityDescription, setSelectedCityDescription] = useState<string>('');
-  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<string | null>(null);
-  const [selectedWarehouseDescription, setSelectedWarehouseDescription] = useState<string>('');
+  const [selectedCityDescription, setSelectedCityDescription] =
+    useState<string>('');
+  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<
+    string | null
+  >(null);
+  const [selectedWarehouseDescription, setSelectedWarehouseDescription] =
+    useState<string>('');
 
   // State for package details
   const [packageDetails, setPackageDetails] = useState<PackageDetails>({
     weight: '1',
     cost: '100',
     seatsAmount: '1',
-    description: 'Інтернет-замовлення',
+    description: 'Комп`ютерні аксесуари',
     cargoType: 'Cargo',
     paymentMethod: 'Cash',
     serviceType: 'WarehouseWarehouse',
@@ -208,7 +216,11 @@ function App() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Hook for declaration creation
-  const { createDeclaration, isLoading: isCreating, error: createError } = useCreateDeclaration();
+  const {
+    createDeclaration,
+    isLoading: isCreating,
+    error: createError,
+  } = useCreateDeclaration();
 
   // ============================================
   // Effect: Fetch Order Data on Mount
@@ -242,7 +254,8 @@ function App() {
             estimatedDeliveryDate: '',
             cost: '',
             recipientName: `${info.orderDetails.firstName} ${info.orderDetails.lastName}`,
-            warehouseDescription: info.novaposhtaRecepientWarehouse?.warehouseDescription,
+            warehouseDescription:
+              info.novaposhtaRecepientWarehouse?.warehouseDescription,
             cityDescription: info.novaposhtaRecepientWarehouse?.cityDescription,
           };
           setDeclarations([existingDeclaration]);
@@ -251,7 +264,9 @@ function App() {
         setIsLoadingOrder(false);
       } catch (err) {
         console.error('Failed to fetch order info:', err);
-        setOrderError(err instanceof Error ? err.message : 'Помилка завантаження замовлення');
+        setOrderError(
+          err instanceof Error ? err.message : 'Помилка завантаження замовлення'
+        );
         setIsLoadingOrder(false);
       }
     };
@@ -269,7 +284,8 @@ function App() {
 
     setSuccessMessage(null);
 
-    const { firstName, lastName, shippingPhone, email } = orderInfo.orderDetails;
+    const { firstName, lastName, shippingPhone, email } =
+      orderInfo.orderDetails;
 
     // Validate phone number
     if (!shippingPhone) {
@@ -325,7 +341,9 @@ function App() {
         ]);
 
         // Show success message
-        setSuccessMessage(`✅ Декларація створена: ${declaration.declarationNumber}`);
+        setSuccessMessage(
+          `✅ Декларація створена: ${declaration.declarationNumber}`
+        );
 
         // Reset form
         setShowForm(false);
@@ -336,7 +354,7 @@ function App() {
           weight: '1',
           cost: '100',
           seatsAmount: '1',
-          description: 'Інтернет-замовлення',
+          description: 'Комп`ютерні аксесуари',
           cargoType: 'Cargo',
           paymentMethod: 'Cash',
           serviceType: 'WarehouseWarehouse',
@@ -354,7 +372,9 @@ function App() {
   // Handler: View Label
   // ============================================
   const handleViewLabel = (declarationRef: string) => {
-    const declaration = declarations.find((d) => d.declarationRef === declarationRef);
+    const declaration = declarations.find(
+      (d) => d.declarationRef === declarationRef
+    );
     if (declaration?.printedFormUrl) {
       window.open(declaration.printedFormUrl, '_blank');
     }
@@ -365,7 +385,7 @@ function App() {
   // ============================================
   if (isLoadingOrder) {
     return (
-      <AdminBlock title="Нова Пошта - Декларації">
+      <AdminBlock title='Нова Пошта - Декларації'>
         <BlockStack>
           <Text>Завантаження інформації про замовлення...</Text>
         </BlockStack>
@@ -378,8 +398,8 @@ function App() {
   // ============================================
   if (orderError || !orderInfo) {
     return (
-      <AdminBlock title="Нова Пошта - Декларації">
-        <Banner tone="critical">
+      <AdminBlock title='Нова Пошта - Декларації'>
+        <Banner tone='critical'>
           {orderError || 'Не вдалося завантажити дані замовлення'}
         </Banner>
       </AdminBlock>
@@ -397,21 +417,17 @@ function App() {
     parseFloat(packageDetails.cost) > 0;
 
   return (
-    <AdminBlock title="Нова Пошта - Створення Декларації">
+    <AdminBlock title='Нова Пошта - Створення Декларації'>
       <BlockStack>
         {/* Success Message */}
-        {successMessage && (
-          <Banner tone="success">{successMessage}</Banner>
-        )}
+        {successMessage && <Banner tone='success'>{successMessage}</Banner>}
 
         {/* Error Message */}
-        {createError && (
-          <Banner tone="critical">{createError}</Banner>
-        )}
+        {createError && <Banner tone='critical'>{createError}</Banner>}
 
         {/* Shipping Address Section */}
         <BlockStack>
-          <Text fontWeight="bold">Адреса доставки (з замовлення):</Text>
+          <Text fontWeight='bold'>Адреса доставки (з замовлення):</Text>
           <Text>
             {orderDetails.firstName} {orderDetails.lastName}
           </Text>
@@ -427,7 +443,9 @@ function App() {
         {/* Existing Declarations Section */}
         {declarations.length > 0 && (
           <BlockStack>
-            <Text fontWeight="bold">Існуючі декларації ({declarations.length}):</Text>
+            <Text fontWeight='bold'>
+              Існуючі декларації ({declarations.length}):
+            </Text>
             {declarations.map((declaration, index) => (
               <DeclarationCard
                 key={declaration.declarationRef || index}
@@ -447,11 +465,11 @@ function App() {
           </Button>
         ) : (
           <BlockStack>
-            <Text fontWeight="bold">Нова декларація</Text>
+            <Text fontWeight='bold'>Нова декларація</Text>
 
             {/* City Autocomplete */}
             <CityAutocomplete
-              label="Місто отримувача"
+              label='Місто отримувача'
               value={citySearchQuery}
               onChange={setCitySearchQuery}
               onCitySelect={(ref, description) => {
@@ -465,7 +483,7 @@ function App() {
             {/* Warehouse Autocomplete */}
             {selectedCityRef && (
               <WarehouseAutocomplete
-                label="Відділення Нової Пошти"
+                label='Відділення Нової Пошти'
                 cityRef={selectedCityRef}
                 selectedWarehouseRef={selectedWarehouseRef}
                 onWarehouseSelect={(ref, description) => {
@@ -516,6 +534,7 @@ function App() {
 ```
 
 **Explanation**:
+
 - **Complete user flow**: Order data → Existing declarations → Create new form
 - **Auto-populates city search** with shipping address city from order
 - **Smart form visibility**: Shows "Create" button first, then expands to full form
@@ -535,37 +554,44 @@ function App() {
 ### Step-by-Step User Experience:
 
 1. **User opens order details page**
+
    - Extension loads automatically in order details block
    - Shows "Loading order information..." spinner
 
 2. **Order data loads**
+
    - Displays shipping address from order
    - Shows existing declarations (if any) in cards
    - Shows "Create new declaration" button
 
 3. **User clicks "Create new declaration"**
+
    - Form expands
    - City search field pre-filled with shipping address city
    - User can modify or accept the pre-filled city
 
 4. **User searches for city**
+
    - Types in city name (e.g., "Київ")
    - 500ms debounce delay
    - Cities list appears in dropdown
    - First city auto-selected
 
 5. **User selects city**
+
    - Warehouse dropdown appears
    - 500ms debounce delay
    - Warehouses load for selected city
    - If only one warehouse, it auto-selects
 
 6. **User selects warehouse**
+
    - Package details form appears
    - Shows default values (1kg, 100 UAH, etc.)
    - User can customize all fields
 
 7. **User clicks "Create declaration"**
+
    - Button shows "Creating..." with spinner
    - Backend creates counterparty and declaration
    - Extension saves to order metafields
@@ -696,6 +722,7 @@ npx tsc --noEmit
 **Expected**: No type errors
 
 Common issues to check:
+
 - All imports resolve correctly
 - `getOrderInfo` and `saveDeclaration` types match
 - Component prop types match usage
@@ -799,6 +826,7 @@ This PR completes the Nova Poshta declaration extension by integrating all compo
 ## Changes
 
 ### ✨ Main Features
+
 - **Complete BlockExtension rewrite** with full user flow
 - **Automatic order data fetching** using `getOrderInfo`
 - **Pre-filled city search** from shipping address
@@ -808,9 +836,11 @@ This PR completes the Nova Poshta declaration extension by integrating all compo
 - **Real-time validation** before submission
 
 ### 🔧 New Functions
+
 - `saveDeclaration()` in `shopifyOperations.ts` - Saves declaration to order metafields
 
 ### 🎨 UI/UX Improvements
+
 - Clean card-based layout for existing declarations
 - Collapsible form for creating new declarations
 - Success/error banners with auto-dismiss
@@ -836,24 +866,28 @@ This PR completes the Nova Poshta declaration extension by integrating all compo
 ## Key Features
 
 ### Automatic Data Handling
+
 - ✅ Fetches order details, shipping address, and existing declarations
 - ✅ Pre-fills city search with shipping address city
 - ✅ Auto-saves declaration to metafields after creation
 - ✅ Updates UI immediately after successful creation
 
 ### Smart Form Flow
+
 - ✅ Progressive disclosure (warehouse only shows after city selected)
 - ✅ Package form only shows after warehouse selected
 - ✅ Create button disabled until all required fields filled
 - ✅ Form collapses and resets after successful creation
 
 ### Error Handling
+
 - ✅ Loading states during API calls
 - ✅ Error banners for API failures
 - ✅ Validation before submission
 - ✅ User-friendly error messages in Ukrainian
 
 ### Multiple Declarations
+
 - ✅ Displays all existing declarations in cards
 - ✅ Allows creating multiple declarations per order
 - ✅ Each declaration tracked independently
@@ -862,14 +896,17 @@ This PR completes the Nova Poshta declaration extension by integrating all compo
 ## Integration Points
 
 ### Backend Routes Used
+
 - `POST /nova-poshta/general` - City and warehouse search
 - `POST /nova-poshta/create-document` - Declaration creation
 
 ### Shopify GraphQL Used
+
 - Order query (via `getOrderInfo`)
 - Metafield mutation (via `saveDeclaration`)
 
 ### Components Integrated
+
 - `CityAutocomplete` - Debounced city search
 - `WarehouseAutocomplete` - Debounced warehouse loading
 - `PackageDetailsForm` - Package details inputs
@@ -891,6 +928,7 @@ This PR completes the Nova Poshta declaration extension by integrating all compo
 ## Configuration Required
 
 Before using this extension, ensure:
+
 1. Phase 1 backend is deployed with sender config set
 2. Nova Poshta API key is configured
 3. Sender credentials in `senderConfig.ts` are valid
@@ -898,6 +936,7 @@ Before using this extension, ensure:
 ## Screenshots
 
 _Add screenshots showing:_
+
 1. Extension with shipping address and existing declaration
 2. Create new declaration form expanded
 3. City autocomplete dropdown
@@ -909,6 +948,7 @@ _Add screenshots showing:_
 ## Next Steps
 
 Future enhancements (not in this PR):
+
 - Add declaration cancellation functionality
 - Add label printing/downloading
 - Add declaration status tracking
@@ -954,6 +994,7 @@ Before marking this PR as ready for review:
 ### Issue: "Order data not loading"
 
 **Solution**:
+
 1. Check console for errors
 2. Verify `getOrderInfo` GraphQL query succeeds
 3. Ensure order ID is valid Shopify GID format
@@ -961,6 +1002,7 @@ Before marking this PR as ready for review:
 ### Issue: "Declaration creation fails"
 
 **Solution**:
+
 1. Check Phase 1 backend is deployed
 2. Verify sender config in `senderConfig.ts` is set up
 3. Check Nova Poshta API key environment variable
@@ -969,6 +1011,7 @@ Before marking this PR as ready for review:
 ### Issue: "Metafields not saving"
 
 **Solution**:
+
 1. Verify GraphQL mutation permissions
 2. Check `saveDeclaration` function is being called
 3. Look for GraphQL userErrors in response
@@ -977,6 +1020,7 @@ Before marking this PR as ready for review:
 ### Issue: "Debouncing not working"
 
 **Solution**:
+
 1. Check `useDebounce` hook is imported correctly
 2. Verify 500ms delay in hook implementations
 3. Check browser network tab for request timing
@@ -987,12 +1031,14 @@ Before marking this PR as ready for review:
 ## Performance Considerations
 
 ### API Call Optimization
+
 - ✅ Debouncing prevents excessive API calls (500ms delay)
 - ✅ City search only triggers after 2+ characters
 - ✅ Warehouse loading only happens when city selected
 - ✅ Declaration creation only allowed when form valid
 
 ### User Experience
+
 - ✅ Progressive disclosure reduces cognitive load
 - ✅ Auto-selection speeds up common workflows
 - ✅ Loading indicators provide feedback
@@ -1000,6 +1046,7 @@ Before marking this PR as ready for review:
 - ✅ Form reset prepares for next task
 
 ### Memory Management
+
 - ✅ Cleanup functions prevent memory leaks
 - ✅ Debounce timers cleared on unmount
 - ✅ API requests cancelled on component unmount
@@ -1010,6 +1057,7 @@ Before marking this PR as ready for review:
 **Phase 3 Complete!** 🎉🚀
 
 All three phases are now complete. The Nova Poshta declaration extension is fully functional with:
+
 - ✅ Backend foundation (Phase 1)
 - ✅ Reusable components with debouncing (Phase 2)
 - ✅ Complete integration and user flow (Phase 3)

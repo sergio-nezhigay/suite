@@ -8,7 +8,7 @@
  */
 export const DEFAULT_PACKAGE_DETAILS = {
   /** Default weight in kg */
-  WEIGHT: '1',
+  WEIGHT: '0.3',
 
   /** Default declared cost in UAH */
   COST: '100',
@@ -17,7 +17,7 @@ export const DEFAULT_PACKAGE_DETAILS = {
   SEATS_AMOUNT: '1',
 
   /** Default package description */
-  DESCRIPTION: 'Інтернет-замовлення',
+  DESCRIPTION: 'Комп`ютерні аксесуари',
 
   /** Default cargo type (0 = Cargo) */
   CARGO_TYPE: 'Cargo',

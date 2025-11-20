@@ -1,7 +1,4 @@
-import {
-  BlockStack,
-  Text,
-} from '@shopify/ui-extensions-react/admin';
+import { BlockStack, Text } from '@shopify/ui-extensions-react/admin';
 import { DEFAULT_PACKAGE_DETAILS } from '../constants';
 
 /**
@@ -11,7 +8,7 @@ import { DEFAULT_PACKAGE_DETAILS } from '../constants';
  * - Weight: 1 kg
  * - Cost: 100 UAH
  * - Seats: 1
- * - Description: "Інтернет-замовлення"
+ * - Description: "Комп`ютерні аксесуари"
  * - Cargo Type: "Cargo"
  * - Payment Method: "Cash" (recipient pays)
  * - Service Type: "WarehouseWarehouse"
@@ -22,13 +19,13 @@ import { DEFAULT_PACKAGE_DETAILS } from '../constants';
 export default function PackageDetailsForm() {
   return (
     <BlockStack>
-      <Text fontWeight="bold">Деталі відправлення</Text>
+      <Text fontWeight='bold'>Деталі відправлення</Text>
 
       {/* Display all constant values */}
       <Text>
-        Вага: {DEFAULT_PACKAGE_DETAILS.WEIGHT} кг |
-        Вартість: {DEFAULT_PACKAGE_DETAILS.COST} ₴ |
-        Місць: {DEFAULT_PACKAGE_DETAILS.SEATS_AMOUNT}
+        Вага: {DEFAULT_PACKAGE_DETAILS.WEIGHT} кг | Вартість:{' '}
+        {DEFAULT_PACKAGE_DETAILS.COST} ₴ | Місць:{' '}
+        {DEFAULT_PACKAGE_DETAILS.SEATS_AMOUNT}
       </Text>
       <Text>Опис: {DEFAULT_PACKAGE_DETAILS.DESCRIPTION}</Text>
       <Text>Тип вантажу: Вантаж</Text>

@@ -1,9 +1,11 @@
 # Phase 2: Extension Components & Hooks
 
 ## Overview
+
 This PR creates all the UI components and custom hooks needed for the Nova Poshta declaration extension, including city and warehouse autocomplete with debouncing (500ms), package details form, and declaration display cards.
 
 ## Goals
+
 - ✅ Create custom hooks with proper debouncing for API calls
 - ✅ Build reusable autocomplete components for city and warehouse selection
 - ✅ Create package details form with validation
@@ -15,6 +17,7 @@ This PR creates all the UI components and custom hooks needed for the Nova Posht
 ## Files Changed
 
 ### CREATE
+
 - `extensions/nova-poshta/src/hooks/useNovaPoshtaApi.ts` - Custom hooks with debouncing
 - `extensions/nova-poshta/src/hooks/useDebounce.ts` - Generic debounce hook
 - `extensions/nova-poshta/src/components/CityAutocomplete.tsx` - City search with autocomplete
@@ -72,6 +75,7 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
 ```
 
 **Explanation**:
+
 - Generic reusable debounce hook for any value type
 - Uses `setTimeout` to delay value updates
 - Cleans up previous timeout on value changes
@@ -95,26 +99,26 @@ export function useDebounce<T>(value: T, delay: number = 500): T {
 // ============================================
 
 export interface NovaPoshtaCity {
-  Ref: string;                       // City UUID reference
-  Description: string;               // City name in Ukrainian
-  DescriptionRu?: string;            // City name in Russian
-  AreaDescription?: string;          // Region/Oblast name
-  SettlementType?: string;           // Type of settlement
-  CityID?: string;                   // Numeric city ID
+  Ref: string; // City UUID reference
+  Description: string; // City name in Ukrainian
+  DescriptionRu?: string; // City name in Russian
+  AreaDescription?: string; // Region/Oblast name
+  SettlementType?: string; // Type of settlement
+  CityID?: string; // Numeric city ID
 }
 
 export interface NovaPoshtaWarehouse {
-  Ref: string;                       // Warehouse UUID reference
-  Description: string;               // Warehouse full description
-  Number?: string;                   // Warehouse number (e.g., "1", "12")
-  CityRef?: string;                  // City reference
-  CityDescription?: string;          // City name
+  Ref: string; // Warehouse UUID reference
+  Description: string; // Warehouse full description
+  Number?: string; // Warehouse number (e.g., "1", "12")
+  CityRef?: string; // City reference
+  CityDescription?: string; // City name
   SettlementAreaDescription?: string; // Region name
-  ShortAddress?: string;             // Short address
-  Longitude?: string;                // GPS coordinates
-  Latitude?: string;                 // GPS coordinates
-  WarehouseStatus?: string;          // Warehouse status
-  CategoryOfWarehouse?: string;      // Warehouse category
+  ShortAddress?: string; // Short address
+  Longitude?: string; // GPS coordinates
+  Latitude?: string; // GPS coordinates
+  WarehouseStatus?: string; // Warehouse status
+  CategoryOfWarehouse?: string; // Warehouse category
 }
 
 export interface NovaPoshtaApiResponse<T = any> {
@@ -143,7 +147,10 @@ export interface WarehouseAutocompleteProps {
   label: string;
   cityRef: string | null;
   selectedWarehouseRef: string | null;
-  onWarehouseSelect: (warehouseRef: string, warehouseDescription: string) => void;
+  onWarehouseSelect: (
+    warehouseRef: string,
+    warehouseDescription: string
+  ) => void;
   error?: string;
   disabled?: boolean;
 }
@@ -225,7 +232,9 @@ export interface UseWarehouseSearchResult {
 }
 
 export interface UseCreateDeclarationResult {
-  createDeclaration: (params: CreateDeclarationParams) => Promise<Declaration | null>;
+  createDeclaration: (
+    params: CreateDeclarationParams
+  ) => Promise<Declaration | null>;
   isLoading: boolean;
   error: string | null;
 }
@@ -262,6 +271,7 @@ export interface FormValidationResult {
 ```
 
 **Explanation**:
+
 - Comprehensive type definitions for all components
 - Matches Nova Poshta API response structure
 - Includes prop types for all components
@@ -369,7 +379,9 @@ export function useCitySearch(
       } catch (err) {
         if (!isCancelled) {
           console.error('Failed to fetch cities:', err);
-          setError(err instanceof Error ? err.message : 'Помилка завантаження міст');
+          setError(
+            err instanceof Error ? err.message : 'Помилка завантаження міст'
+          );
           setCities([]);
         }
       } finally {
@@ -442,7 +454,11 @@ export function useWarehouseSearch(
       } catch (err) {
         if (!isCancelled) {
           console.error('Failed to fetch warehouses:', err);
-          setError(err instanceof Error ? err.message : 'Помилка завантаження відділень');
+          setError(
+            err instanceof Error
+              ? err.message
+              : 'Помилка завантаження відділень'
+          );
           setWarehouses([]);
         }
       } finally {
@@ -481,13 +497,16 @@ export function useCreateDeclaration(): UseCreateDeclarationResult {
       setError(null);
 
       try {
-        const response = await fetch(`${SHOPIFY_APP_URL}/nova-poshta/create-document`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(params),
-        });
+        const response = await fetch(
+          `${SHOPIFY_APP_URL}/nova-poshta/create-document`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(params),
+          }
+        );
 
         const result = await response.json();
 
@@ -498,7 +517,8 @@ export function useCreateDeclaration(): UseCreateDeclarationResult {
         setIsLoading(false);
         return result.data as Declaration;
       } catch (err) {
-        const errorMessage = err instanceof Error ? err.message : 'Помилка створення декларації';
+        const errorMessage =
+          err instanceof Error ? err.message : 'Помилка створення декларації';
         console.error('Failed to create declaration:', err);
         setError(errorMessage);
         setIsLoading(false);
@@ -513,6 +533,7 @@ export function useCreateDeclaration(): UseCreateDeclarationResult {
 ```
 
 **Explanation**:
+
 - **useCitySearch**: Debounced city search hook (500ms delay)
 - **useWarehouseSearch**: Debounced warehouse search hook (500ms delay)
 - **useCreateDeclaration**: Declaration creation hook
@@ -609,19 +630,23 @@ export default function CityAutocomplete({
         onChange={onChange}
         placeholder={placeholder}
         disabled={disabled}
-        error={value.length > 0 && value.length < 2 ? 'Мінімум 2 символи' : displayError}
+        error={
+          value.length > 0 && value.length < 2
+            ? 'Мінімум 2 символи'
+            : displayError
+        }
       />
 
       {isLoading && (
-        <InlineStack inlineAlignment="start">
-          <ProgressIndicator size="small-100" />
+        <InlineStack inlineAlignment='start'>
+          <ProgressIndicator size='small-100' />
           <Text>Пошук міст...</Text>
         </InlineStack>
       )}
 
       {!isLoading && cities.length > 0 && (
         <Select
-          label="Оберіть місто"
+          label='Оберіть місто'
           options={cities.map((city) => ({
             value: city.Ref,
             label: formatCityLabel(city),
@@ -632,15 +657,17 @@ export default function CityAutocomplete({
         />
       )}
 
-      {!isLoading && value.trim().length >= 2 && cities.length === 0 && !searchError && (
-        <Text tone="subdued">Міста не знайдено</Text>
-      )}
+      {!isLoading &&
+        value.trim().length >= 2 &&
+        cities.length === 0 &&
+        !searchError && <Text tone='subdued'>Міста не знайдено</Text>}
     </BlockStack>
   );
 }
 ```
 
 **Explanation**:
+
 - Debounced search via `useCitySearch` hook (500ms)
 - Auto-selects first result for better UX
 - Formats city labels with region for single-word cities
@@ -696,7 +723,11 @@ export default function WarehouseAutocomplete({
   const [localSelectedRef, setLocalSelectedRef] = useState<string | null>(
     selectedWarehouseRef
   );
-  const { warehouses, isLoading, error: searchError } = useWarehouseSearch(cityRef);
+  const {
+    warehouses,
+    isLoading,
+    error: searchError,
+  } = useWarehouseSearch(cityRef);
 
   // Auto-select if only one warehouse available
   useEffect(() => {
@@ -722,8 +753,8 @@ export default function WarehouseAutocomplete({
   if (!cityRef) {
     return (
       <BlockStack>
-        <Text tone="subdued">{label}</Text>
-        <Text tone="subdued" size="small">
+        <Text tone='subdued'>{label}</Text>
+        <Text tone='subdued' size='small'>
           Спочатку оберіть місто
         </Text>
       </BlockStack>
@@ -735,8 +766,8 @@ export default function WarehouseAutocomplete({
   return (
     <BlockStack>
       {isLoading && (
-        <InlineStack inlineAlignment="start">
-          <ProgressIndicator size="small-100" />
+        <InlineStack inlineAlignment='start'>
+          <ProgressIndicator size='small-100' />
           <Text>Завантаження відділень...</Text>
         </InlineStack>
       )}
@@ -756,11 +787,11 @@ export default function WarehouseAutocomplete({
       )}
 
       {!isLoading && warehouses.length === 0 && !searchError && (
-        <Text tone="subdued">Відділення не знайдено для цього міста</Text>
+        <Text tone='subdued'>Відділення не знайдено для цього міста</Text>
       )}
 
       {displayError && !isLoading && (
-        <Text tone="critical">{displayError}</Text>
+        <Text tone='critical'>{displayError}</Text>
       )}
     </BlockStack>
   );
@@ -768,6 +799,7 @@ export default function WarehouseAutocomplete({
 ```
 
 **Explanation**:
+
 - Debounced warehouse loading via `useWarehouseSearch` hook (500ms)
 - Auto-selects when only one warehouse exists
 - Shows loading indicator during fetch
@@ -818,58 +850,58 @@ export default function PackageDetailsForm({
 }: PackageDetailsFormProps) {
   return (
     <BlockStack>
-      <Text fontWeight="bold">Деталі відправлення</Text>
+      <Text fontWeight='bold'>Деталі відправлення</Text>
 
       {/* Weight */}
       <TextField
-        label="Вага (кг)"
-        type="number"
+        label='Вага (кг)'
+        type='number'
         value={packageDetails.weight}
         onChange={(value) => onPackageDetailsChange({ weight: value })}
         error={errors.weight}
         disabled={disabled}
-        placeholder="1.0"
-        helpText="Мінімум 0.1 кг"
+        placeholder='1.0'
+        helpText='Мінімум 0.1 кг'
       />
 
       {/* Declared Cost */}
       <TextField
-        label="Оголошена вартість (₴)"
-        type="number"
+        label='Оголошена вартість (₴)'
+        type='number'
         value={packageDetails.cost}
         onChange={(value) => onPackageDetailsChange({ cost: value })}
         error={errors.cost}
         disabled={disabled}
-        placeholder="100"
-        helpText="Вартість вмісту посилки для страхування"
+        placeholder='100'
+        helpText='Вартість вмісту посилки для страхування'
       />
 
       {/* Seats Amount */}
       <TextField
-        label="Кількість місць"
-        type="number"
+        label='Кількість місць'
+        type='number'
         value={packageDetails.seatsAmount}
         onChange={(value) => onPackageDetailsChange({ seatsAmount: value })}
         error={errors.seatsAmount}
         disabled={disabled}
-        placeholder="1"
-        helpText="Скільки окремих коробок/пакунків"
+        placeholder='1'
+        helpText='Скільки окремих коробок/пакунків'
       />
 
       {/* Description */}
       <TextField
-        label="Опис відправлення"
+        label='Опис відправлення'
         value={packageDetails.description}
         onChange={(value) => onPackageDetailsChange({ description: value })}
         error={errors.description}
         disabled={disabled}
-        placeholder="Інтернет-замовлення"
-        helpText="Що міститься у посилці"
+        placeholder='Комп`ютерні аксесуари'
+        helpText='Що міститься у посилці'
       />
 
       {/* Cargo Type */}
       <Select
-        label="Тип вантажу"
+        label='Тип вантажу'
         options={[
           { value: 'Cargo', label: 'Вантаж' },
           { value: 'Documents', label: 'Документи' },
@@ -884,7 +916,7 @@ export default function PackageDetailsForm({
 
       {/* Payment Method */}
       <Select
-        label="Спосіб оплати"
+        label='Спосіб оплати'
         options={[
           { value: 'Cash', label: 'Готівка (платить одержувач)' },
           { value: 'NonCash', label: 'Безготівковий (платить відправник)' },
@@ -892,12 +924,12 @@ export default function PackageDetailsForm({
         value={packageDetails.paymentMethod}
         onChange={(value) => onPackageDetailsChange({ paymentMethod: value })}
         disabled={disabled}
-        helpText="Хто платить за доставку"
+        helpText='Хто платить за доставку'
       />
 
       {/* Service Type */}
       <Select
-        label="Тип доставки"
+        label='Тип доставки'
         options={[
           { value: 'WarehouseWarehouse', label: 'Відділення → Відділення' },
           { value: 'WarehouseDoors', label: 'Відділення → Адреса' },
@@ -914,6 +946,7 @@ export default function PackageDetailsForm({
 ```
 
 **Explanation**:
+
 - Complete form for all package details
 - Number inputs with validation for weight/cost/seats
 - Text input for description
@@ -963,14 +996,10 @@ export default function DeclarationCard({
   onDownloadLabel,
 }: DeclarationCardProps) {
   return (
-    <BlockStack
-      padding="base"
-      border="base"
-      borderRadius="base"
-    >
+    <BlockStack padding='base' border='base' borderRadius='base'>
       {/* Declaration Number - Most Important */}
-      <InlineStack blockAlignment="center" inlineAlignment="space-between">
-        <Text fontWeight="bold">Номер декларації:</Text>
+      <InlineStack blockAlignment='center' inlineAlignment='space-between'>
+        <Text fontWeight='bold'>Номер декларації:</Text>
         <Text>{declaration.declarationNumber}</Text>
       </InlineStack>
 
@@ -978,7 +1007,7 @@ export default function DeclarationCard({
 
       {/* Estimated Delivery Date */}
       {declaration.estimatedDeliveryDate && (
-        <InlineStack blockAlignment="center" inlineAlignment="space-between">
+        <InlineStack blockAlignment='center' inlineAlignment='space-between'>
           <Text>Очікувана дата доставки:</Text>
           <Text>{declaration.estimatedDeliveryDate}</Text>
         </InlineStack>
@@ -986,7 +1015,7 @@ export default function DeclarationCard({
 
       {/* Cost */}
       {declaration.cost && (
-        <InlineStack blockAlignment="center" inlineAlignment="space-between">
+        <InlineStack blockAlignment='center' inlineAlignment='space-between'>
           <Text>Вартість доставки:</Text>
           <Text>{declaration.cost} ₴</Text>
         </InlineStack>
@@ -994,7 +1023,7 @@ export default function DeclarationCard({
 
       {/* Recipient Name */}
       {declaration.recipientName && (
-        <InlineStack blockAlignment="center" inlineAlignment="space-between">
+        <InlineStack blockAlignment='center' inlineAlignment='space-between'>
           <Text>Одержувач:</Text>
           <Text>{declaration.recipientName}</Text>
         </InlineStack>
@@ -1003,8 +1032,8 @@ export default function DeclarationCard({
       {/* Warehouse */}
       {declaration.warehouseDescription && (
         <BlockStack>
-          <Text fontWeight="semibold">Адреса доставки:</Text>
-          <Text size="small" tone="subdued">
+          <Text fontWeight='semibold'>Адреса доставки:</Text>
+          <Text size='small' tone='subdued'>
             {declaration.cityDescription && `${declaration.cityDescription}, `}
             {declaration.warehouseDescription}
           </Text>
@@ -1013,11 +1042,11 @@ export default function DeclarationCard({
 
       {/* Created At */}
       {declaration.createdAt && (
-        <InlineStack blockAlignment="center" inlineAlignment="space-between">
-          <Text size="small" tone="subdued">
+        <InlineStack blockAlignment='center' inlineAlignment='space-between'>
+          <Text size='small' tone='subdued'>
             Створено:
           </Text>
-          <Text size="small" tone="subdued">
+          <Text size='small' tone='subdued'>
             {new Date(declaration.createdAt).toLocaleString('uk-UA')}
           </Text>
         </InlineStack>
@@ -1029,9 +1058,7 @@ export default function DeclarationCard({
           <Divider />
           <InlineStack>
             {onViewLabel && declaration.printedFormUrl && (
-              <Button
-                onPress={() => onViewLabel(declaration.declarationRef)}
-              >
+              <Button onPress={() => onViewLabel(declaration.declarationRef)}>
                 Переглянути етикетку
               </Button>
             )}
@@ -1051,6 +1078,7 @@ export default function DeclarationCard({
 ```
 
 **Explanation**:
+
 - Clean card layout with border and padding
 - Shows all relevant declaration information
 - Formatted dates in Ukrainian locale
@@ -1097,7 +1125,7 @@ function MyComponent() {
 
   return (
     <CityAutocomplete
-      label="Місто отримувача"
+      label='Місто отримувача'
       value={cityQuery}
       onChange={setCityQuery}
       onCitySelect={(ref, name) => {
@@ -1116,11 +1144,13 @@ import WarehouseAutocomplete from './components/WarehouseAutocomplete';
 
 function MyComponent() {
   const [selectedCityRef, setSelectedCityRef] = useState<string | null>(null);
-  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<string | null>(null);
+  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<
+    string | null
+  >(null);
 
   return (
     <WarehouseAutocomplete
-      label="Відділення Нової Пошти"
+      label='Відділення Нової Пошти'
       cityRef={selectedCityRef}
       selectedWarehouseRef={selectedWarehouseRef}
       onWarehouseSelect={(ref, description) => {
@@ -1142,7 +1172,7 @@ function MyComponent() {
     weight: '1',
     cost: '100',
     seatsAmount: '1',
-    description: 'Інтернет-замовлення',
+    description: 'Комп`ютерні аксесуари',
     cargoType: 'Cargo',
     paymentMethod: 'Cash',
     serviceType: 'WarehouseWarehouse',
@@ -1214,6 +1244,7 @@ npx tsc --noEmit
 **Expected**: No type errors in the new files
 
 Common issues to check:
+
 - All imports resolve correctly
 - `SHOPIFY_APP_URL` is imported from `../../shared/data`
 - All component props match their type definitions
@@ -1247,7 +1278,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## PR Description Template
 
-```markdown
+````markdown
 # Phase 2: Nova Poshta Extension Components & Hooks
 
 ## Summary
@@ -1257,18 +1288,21 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
 ## Changes
 
 ### ✨ New Hooks
+
 - **useDebounce** - Generic debounce hook (500ms default)
 - **useCitySearch** - Debounced city search with Nova Poshta API
 - **useWarehouseSearch** - Debounced warehouse loading (500ms delay)
 - **useCreateDeclaration** - Declaration creation with loading/error states
 
 ### 🎨 New Components
+
 - **CityAutocomplete** - City search with dropdown, auto-selects first result
 - **WarehouseAutocomplete** - Warehouse selection, auto-selects if only one available
 - **PackageDetailsForm** - Complete form for weight, cost, description, etc.
 - **DeclarationCard** - Display existing declaration with formatted data
 
 ### 📘 TypeScript Types
+
 - Comprehensive type definitions for all components
 - Nova Poshta API response types
 - Component prop types with full IDE support
@@ -1276,12 +1310,14 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
 ## Key Features
 
 ### Debouncing Implementation
+
 - ✅ City search debounced at 500ms
 - ✅ Warehouse search debounced at 500ms
 - ✅ Prevents excessive API calls during typing
 - ✅ Cleanup functions prevent memory leaks
 
 ### User Experience
+
 - ✅ Auto-selection of first/only results
 - ✅ Loading indicators during API calls
 - ✅ Error messages in Ukrainian
@@ -1289,6 +1325,7 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
 - ✅ Disabled states when dependencies not met
 
 ### Code Quality
+
 - ✅ Fully typed with TypeScript
 - ✅ Reusable component architecture
 - ✅ Proper error handling
@@ -1298,9 +1335,10 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
 ## Component Examples
 
 ### CityAutocomplete Usage
+
 ```typescript
 <CityAutocomplete
-  label="Місто"
+  label='Місто'
   value={cityQuery}
   onChange={setCityQuery}
   onCitySelect={(ref, name) => {
@@ -1309,11 +1347,13 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
   }}
 />
 ```
+````
 
 ### WarehouseAutocomplete Usage
+
 ```typescript
 <WarehouseAutocomplete
-  label="Відділення"
+  label='Відділення'
   cityRef={selectedCityRef}
   selectedWarehouseRef={selectedWarehouseRef}
   onWarehouseSelect={(ref, description) => {
@@ -1335,6 +1375,7 @@ This PR adds all the UI components and custom hooks needed for the Nova Poshta d
 ## Dependencies
 
 Depends on Phase 1 backend routes:
+
 - `/nova-poshta/general` - For city and warehouse API calls
 - `/nova-poshta/create-document` - For declaration creation
 
@@ -1345,6 +1386,7 @@ Phase 3 will integrate these components into the main `BlockExtension.tsx` to cr
 ## Screenshots
 
 _Components are not yet integrated into the extension. Phase 3 will show the complete UI._
+
 ```
 
 ---
@@ -1410,3 +1452,4 @@ Before marking this PR as ready for review:
 **Phase 2 Complete!** 🎉
 
 All components and hooks are ready. Phase 3 will integrate them into the main extension with order data fetching and declaration creation flow.
+```

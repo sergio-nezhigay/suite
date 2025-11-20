@@ -1,9 +1,11 @@
 # Phase 1: Backend Foundation
 
 ## Overview
+
 This PR establishes the backend foundation for Nova Poshta declaration creation by adding sender configuration constants and enhancing the existing `POST-create-document` route to support complete declaration creation with package details.
 
 ## Goals
+
 - ✅ Create sender configuration constants (company details)
 - ✅ Add TypeScript types for Nova Poshta API interactions
 - ✅ Enhance declaration creation route with sender data injection
@@ -14,13 +16,16 @@ This PR establishes the backend foundation for Nova Poshta declaration creation 
 ## Files Changed
 
 ### CREATE
+
 - `api/utilities/novaPoshta/senderConfig.ts` - Sender company constants and defaults
 - `api/utilities/novaPoshta/types.ts` - TypeScript types for Nova Poshta API
 
 ### MODIFY
+
 - `api/routes/nova-poshta/POST-create-document.ts` - Enhanced with sender config and package details
 
 ### DELETE
+
 - `api/routes/nova-poshta/POST-fetch-user-data.ts` - Demo route (not needed)
 
 ---
@@ -119,7 +124,7 @@ export const SENDER_CONFIG = {
   /**
    * Default description for packages
    */
-  DEFAULT_DESCRIPTION: 'Інтернет-замовлення',
+  DEFAULT_DESCRIPTION: 'Комп`ютерні аксесуари',
 
   /**
    * Default weight in kg (minimum 0.1)
@@ -130,7 +135,6 @@ export const SENDER_CONFIG = {
    * Default declared cost in UAH
    */
   DEFAULT_COST: '100',
-
 } as const;
 
 /**
@@ -141,20 +145,26 @@ export function validateSenderConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (SENDER_CONFIG.SENDER_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_REF is not configured. Please update senderConfig.ts with your actual sender reference.');
+    errors.push(
+      'SENDER_REF is not configured. Please update senderConfig.ts with your actual sender reference.'
+    );
   }
 
   if (SENDER_CONFIG.SENDER_WAREHOUSE_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_WAREHOUSE_REF is not configured. Please update senderConfig.ts with your actual warehouse reference.');
+    errors.push(
+      'SENDER_WAREHOUSE_REF is not configured. Please update senderConfig.ts with your actual warehouse reference.'
+    );
   }
 
   if (SENDER_CONFIG.SENDER_CONTACT_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_CONTACT_REF is not configured. Please update senderConfig.ts with your actual contact reference.');
+    errors.push(
+      'SENDER_CONTACT_REF is not configured. Please update senderConfig.ts with your actual contact reference.'
+    );
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 
@@ -168,6 +178,7 @@ export type PayerType = typeof SENDER_CONFIG.DEFAULT_PAYER_TYPE;
 ```
 
 **Explanation**:
+
 - This file centralizes all sender-related configuration in one place
 - Uses TypeScript `as const` for type safety and autocompletion
 - Includes validation function to ensure config is properly set
@@ -217,46 +228,48 @@ export interface CreateInternetDocumentRequest {
 
 export interface InternetDocumentProperties {
   // Sender information
-  Sender: string;                    // Sender counterparty ref
-  SenderAddress: string;             // Sender warehouse ref
-  ContactSender: string;             // Sender contact person ref
-  SendersPhone?: string;             // Sender phone
+  Sender: string; // Sender counterparty ref
+  SenderAddress: string; // Sender warehouse ref
+  ContactSender: string; // Sender contact person ref
+  SendersPhone?: string; // Sender phone
 
   // Recipient information
-  Recipient: string;                 // Recipient counterparty ref
-  RecipientAddress: string;          // Recipient warehouse ref
-  ContactRecipient: string;          // Recipient contact person ref
-  RecipientsPhone?: string;          // Recipient phone
+  Recipient: string; // Recipient counterparty ref
+  RecipientAddress: string; // Recipient warehouse ref
+  ContactRecipient: string; // Recipient contact person ref
+  RecipientsPhone?: string; // Recipient phone
 
   // Shipment details
-  DateTime: string;                  // Date in format DD.MM.YYYY
-  ServiceType: string;               // WarehouseWarehouse, WarehouseDoors, etc.
-  PaymentMethod: string;             // Cash, NonCash
-  PayerType?: string;                // Sender, Recipient, ThirdPerson
-  Cost: string;                      // Declared value in UAH
+  DateTime: string; // Date in format DD.MM.YYYY
+  ServiceType: string; // WarehouseWarehouse, WarehouseDoors, etc.
+  PaymentMethod: string; // Cash, NonCash
+  PayerType?: string; // Sender, Recipient, ThirdPerson
+  Cost: string; // Declared value in UAH
 
   // Cargo details
-  CargoType: string;                 // Cargo, Documents, Parcel, etc.
-  Weight: string;                    // Weight in kg
-  SeatsAmount: string;               // Number of seats/packages
-  Description: string;               // Cargo description
+  CargoType: string; // Cargo, Documents, Parcel, etc.
+  Weight: string; // Weight in kg
+  SeatsAmount: string; // Number of seats/packages
+  Description: string; // Cargo description
 
   // Optional fields
-  VolumeGeneral?: string;            // Volume in cubic meters
-  OptionsSeat?: Array<{              // Detailed seat information
+  VolumeGeneral?: string; // Volume in cubic meters
+  OptionsSeat?: Array<{
+    // Detailed seat information
     volumetricVolume: string;
     volumetricWidth: string;
     volumetricLength: string;
     volumetricHeight: string;
     weight: string;
   }>;
-  BackwardDeliveryData?: Array<{     // Backward delivery (cash on delivery)
+  BackwardDeliveryData?: Array<{
+    // Backward delivery (cash on delivery)
     PayerType: string;
     CargoType: string;
-    RedeliveryString: string;        // Amount to collect
+    RedeliveryString: string; // Amount to collect
   }>;
-  AfterpaymentOnGoodsCost?: string;  // Cash on delivery amount
-  InfoRegClientBarcodes?: string;    // Client barcode
+  AfterpaymentOnGoodsCost?: string; // Cash on delivery amount
+  InfoRegClientBarcodes?: string; // Client barcode
 }
 
 // ============================================
@@ -301,13 +314,13 @@ export interface CounterpartyResponse {
 }
 
 export interface InternetDocumentResponse {
-  Ref: string;                       // Declaration reference (UUID)
-  CostOnSite: string;               // Cost calculated by Nova Poshta
-  EstimatedDeliveryDate: string;    // Estimated delivery date
-  IntDocNumber: string;             // Declaration number (e.g., "20450012345678")
-  TypeDocument: string;             // Document type
-  PrintedForm?: string;             // URL to printed form (label)
-  ErrorCode?: string;               // Error code if any
+  Ref: string; // Declaration reference (UUID)
+  CostOnSite: string; // Cost calculated by Nova Poshta
+  EstimatedDeliveryDate: string; // Estimated delivery date
+  IntDocNumber: string; // Declaration number (e.g., "20450012345678")
+  TypeDocument: string; // Document type
+  PrintedForm?: string; // URL to printed form (label)
+  ErrorCode?: string; // Error code if any
   ValidationErrors?: Array<{
     Field: string;
     Error: string;
@@ -315,48 +328,48 @@ export interface InternetDocumentResponse {
 }
 
 export interface CitySearchResponse {
-  Description: string;              // City name
-  DescriptionRu: string;           // City name in Russian
-  Ref: string;                     // City reference (UUID)
-  Delivery1: string;               // Delivery available
-  Delivery2: string;               // Delivery available
-  Delivery3: string;               // Delivery available
-  Delivery4: string;               // Delivery available
-  Delivery5: string;               // Delivery available
-  Delivery6: string;               // Delivery available
-  Delivery7: string;               // Delivery available
-  Area: string;                    // Region name
-  SettlementType: string;          // Settlement type
-  IsBranch: string;                // Has branch
+  Description: string; // City name
+  DescriptionRu: string; // City name in Russian
+  Ref: string; // City reference (UUID)
+  Delivery1: string; // Delivery available
+  Delivery2: string; // Delivery available
+  Delivery3: string; // Delivery available
+  Delivery4: string; // Delivery available
+  Delivery5: string; // Delivery available
+  Delivery6: string; // Delivery available
+  Delivery7: string; // Delivery available
+  Area: string; // Region name
+  SettlementType: string; // Settlement type
+  IsBranch: string; // Has branch
   PreventEntryNewStreetsUser: string;
   Conglomerates: string | null;
-  CityID: string;                  // City ID (numeric)
+  CityID: string; // City ID (numeric)
   SettlementTypeDescription: string;
   SettlementTypeDescriptionRu: string;
 }
 
 export interface WarehouseResponse {
-  Ref: string;                     // Warehouse reference (UUID)
-  Description: string;             // Warehouse name/address
-  DescriptionRu: string;           // Warehouse name in Russian
-  Number: string;                  // Warehouse number
-  CityRef: string;                 // City reference
-  CityDescription: string;         // City name
-  SettlementRef: string;           // Settlement reference
-  SettlementDescription: string;   // Settlement name
+  Ref: string; // Warehouse reference (UUID)
+  Description: string; // Warehouse name/address
+  DescriptionRu: string; // Warehouse name in Russian
+  Number: string; // Warehouse number
+  CityRef: string; // City reference
+  CityDescription: string; // City name
+  SettlementRef: string; // Settlement reference
+  SettlementDescription: string; // Settlement name
   SettlementAreaDescription: string; // Settlement region
   SettlementRegionsDescription: string;
   SettlementTypeDescription: string;
-  Longitude: string;               // GPS longitude
-  Latitude: string;                // GPS latitude
-  PostFinance: string;             // Has financial services
-  BicycleParking: string;          // Has bicycle parking
-  PaymentAccess: string;           // Payment available
-  POSTerminal: string;             // Has POS terminal
-  InternationalShipping: string;   // International shipping
+  Longitude: string; // GPS longitude
+  Latitude: string; // GPS latitude
+  PostFinance: string; // Has financial services
+  BicycleParking: string; // Has bicycle parking
+  PaymentAccess: string; // Payment available
+  POSTerminal: string; // Has POS terminal
+  InternationalShipping: string; // International shipping
   SelfServiceWorkplacesCount: string;
-  TotalMaxWeightAllowed: string;   // Max weight allowed
-  PlaceMaxWeightAllowed: string;   // Max weight per place
+  TotalMaxWeightAllowed: string; // Max weight allowed
+  PlaceMaxWeightAllowed: string; // Max weight per place
   Reception: {
     Monday: string;
     Tuesday: string;
@@ -418,27 +431,27 @@ export interface CreateDeclarationRequestBody {
   email?: string;
 
   // Delivery destination
-  recipientWarehouseRef: string;    // Selected warehouse UUID
-  recipientCityRef: string;         // Selected city UUID
+  recipientWarehouseRef: string; // Selected warehouse UUID
+  recipientCityRef: string; // Selected city UUID
 
   // Package details (optional - will use defaults if not provided)
-  weight?: string;                  // In kg (default: 1)
-  cost?: string;                    // Declared value in UAH (default: 100)
-  seatsAmount?: string;             // Number of packages (default: 1)
-  description?: string;             // Package description (default: "Інтернет-замовлення")
-  cargoType?: string;               // Cargo type (default: "Cargo")
-  paymentMethod?: string;           // Payment method (default: "Cash")
-  serviceType?: string;             // Service type (default: "WarehouseWarehouse")
+  weight?: string; // In kg (default: 1)
+  cost?: string; // Declared value in UAH (default: 100)
+  seatsAmount?: string; // Number of packages (default: 1)
+  description?: string; // Package description (default: "Комп`ютерні аксесуари")
+  cargoType?: string; // Cargo type (default: "Cargo")
+  paymentMethod?: string; // Payment method (default: "Cash")
+  serviceType?: string; // Service type (default: "WarehouseWarehouse")
 }
 
 export interface CreateDeclarationResponse {
   success: boolean;
   data?: {
-    declarationRef: string;         // UUID reference
-    declarationNumber: string;      // Tracking number
+    declarationRef: string; // UUID reference
+    declarationNumber: string; // Tracking number
     estimatedDeliveryDate: string;
     cost: string;
-    printedFormUrl?: string;        // Label URL
+    printedFormUrl?: string; // Label URL
   };
   error?: string;
   novaPoshtaResponse?: NovaPoshtaApiResponse<InternetDocumentResponse[]>;
@@ -446,6 +459,7 @@ export interface CreateDeclarationResponse {
 ```
 
 **Explanation**:
+
 - Comprehensive TypeScript types for all Nova Poshta API interactions
 - Includes request and response types for counterparties, documents, cities, warehouses
 - Route-specific types for our API endpoints
@@ -462,7 +476,10 @@ export interface CreateDeclarationResponse {
 ```typescript
 import type { RouteHandler } from 'gadget-server';
 import { npClient } from 'utilities';
-import { SENDER_CONFIG, validateSenderConfig } from 'utilities/novaPoshta/senderConfig';
+import {
+  SENDER_CONFIG,
+  validateSenderConfig,
+} from 'utilities/novaPoshta/senderConfig';
 import type {
   CreateDeclarationRequestBody,
   CreateDeclarationResponse,
@@ -516,7 +533,8 @@ const route: RouteHandler<{
   if (!recipientWarehouseRef || !recipientCityRef) {
     return await reply.status(400).send({
       success: false,
-      error: 'Missing required delivery destination: recipientWarehouseRef, recipientCityRef',
+      error:
+        'Missing required delivery destination: recipientWarehouseRef, recipientCityRef',
     } as CreateDeclarationResponse);
   }
 
@@ -526,10 +544,14 @@ const route: RouteHandler<{
 
   const configValidation = validateSenderConfig();
   if (!configValidation.valid) {
-    console.log('❌ Sender configuration validation failed:', configValidation.errors);
+    console.log(
+      '❌ Sender configuration validation failed:',
+      configValidation.errors
+    );
     return await reply.status(500).send({
       success: false,
-      error: 'Sender configuration not set up properly. Please check senderConfig.ts file.',
+      error:
+        'Sender configuration not set up properly. Please check senderConfig.ts file.',
       details: configValidation.errors,
     } as CreateDeclarationResponse);
   }
@@ -539,7 +561,12 @@ const route: RouteHandler<{
     // 3. Create Recipient Counterparty
     // ============================================
 
-    console.log('📦 Creating recipient counterparty:', { firstName, lastName, phone, email });
+    console.log('📦 Creating recipient counterparty:', {
+      firstName,
+      lastName,
+      phone,
+      email,
+    });
 
     const createCounterpartyPayload = {
       modelName: 'CounterpartyGeneral',
@@ -554,9 +581,9 @@ const route: RouteHandler<{
       },
     };
 
-    const counterpartyResponse = await npClient(
+    const counterpartyResponse = (await npClient(
       createCounterpartyPayload
-    ) as NovaPoshtaApiResponse<CounterpartyResponse[]>;
+    )) as NovaPoshtaApiResponse<CounterpartyResponse[]>;
 
     if (!counterpartyResponse.success || !counterpartyResponse.data?.[0]) {
       console.log('❌ Failed to create counterparty:', counterpartyResponse);
@@ -568,7 +595,8 @@ const route: RouteHandler<{
     }
 
     const recipientRef = counterpartyResponse.data[0].Ref;
-    const recipientContactRef = counterpartyResponse.data[0].ContactPerson.data[0].Ref;
+    const recipientContactRef =
+      counterpartyResponse.data[0].ContactPerson.data[0].Ref;
 
     console.log('✅ Recipient counterparty created:', {
       recipientRef,
@@ -583,10 +611,13 @@ const route: RouteHandler<{
     const documentWeight = weight || SENDER_CONFIG.DEFAULT_WEIGHT;
     const documentCost = cost || SENDER_CONFIG.DEFAULT_COST;
     const documentSeats = seatsAmount || SENDER_CONFIG.DEFAULT_SEATS_AMOUNT;
-    const documentDescription = description || SENDER_CONFIG.DEFAULT_DESCRIPTION;
+    const documentDescription =
+      description || SENDER_CONFIG.DEFAULT_DESCRIPTION;
     const documentCargoType = cargoType || SENDER_CONFIG.DEFAULT_CARGO_TYPE;
-    const documentPaymentMethod = paymentMethod || SENDER_CONFIG.DEFAULT_PAYMENT_METHOD;
-    const documentServiceType = serviceType || SENDER_CONFIG.DEFAULT_SERVICE_TYPE;
+    const documentPaymentMethod =
+      paymentMethod || SENDER_CONFIG.DEFAULT_PAYMENT_METHOD;
+    const documentServiceType =
+      serviceType || SENDER_CONFIG.DEFAULT_SERVICE_TYPE;
 
     console.log('📋 Creating InternetDocument with params:', {
       sender: SENDER_CONFIG.SENDER_REF,
@@ -628,9 +659,9 @@ const route: RouteHandler<{
       },
     };
 
-    const documentResponse = await npClient(
+    const documentResponse = (await npClient(
       createDocumentPayload
-    ) as NovaPoshtaApiResponse<InternetDocumentResponse[]>;
+    )) as NovaPoshtaApiResponse<InternetDocumentResponse[]>;
 
     if (!documentResponse.success || !documentResponse.data?.[0]) {
       console.log('❌ Failed to create InternetDocument:', documentResponse);
@@ -679,6 +710,7 @@ export default route;
 ```
 
 **Explanation**:
+
 - **Enhanced validation**: Checks all required fields including warehouse refs
 - **Sender config validation**: Ensures sender credentials are configured before proceeding
 - **Flexible package details**: Accepts custom weight, cost, description, or uses defaults
@@ -746,6 +778,7 @@ Create a simple test script or use a tool like Postman:
 ### Test 2: Create a Test Declaration
 
 **Request**:
+
 ```bash
 curl -X POST http://localhost:YOUR_PORT/nova-poshta/create-document \
   -H "Content-Type: application/json" \
@@ -763,6 +796,7 @@ curl -X POST http://localhost:YOUR_PORT/nova-poshta/create-document \
 ```
 
 **Expected Response** (Success):
+
 ```json
 {
   "success": true,
@@ -777,6 +811,7 @@ curl -X POST http://localhost:YOUR_PORT/nova-poshta/create-document \
 ```
 
 **Expected Response** (Config Not Set):
+
 ```json
 {
   "success": false,
@@ -804,9 +839,10 @@ curl -X POST http://localhost:YOUR_PORT/nova-poshta/create-document \
 ```
 
 Should use defaults from `senderConfig.ts`:
+
 - Weight: 1 kg
 - Cost: 100 UAH
-- Description: "Інтернет-замовлення"
+- Description: "Комп`ютерні аксесуари"
 
 ---
 
@@ -821,6 +857,7 @@ npx tsc --noEmit
 **Expected output**: No errors (or only pre-existing errors unrelated to this PR)
 
 If you see errors related to:
+
 - `utilities/novaPoshta/senderConfig` not found
 - `utilities/novaPoshta/types` not found
 
@@ -871,7 +908,7 @@ Co-Authored-By: Claude <noreply@anthropic.com>
 
 ## PR Description Template
 
-```markdown
+````markdown
 # Phase 1: Nova Poshta Backend Foundation
 
 ## Summary
@@ -881,30 +918,36 @@ This PR establishes the backend foundation for Nova Poshta declaration creation 
 ## Changes
 
 ### ✨ New Features
+
 - **Sender Configuration**: Centralized config file for company's Nova Poshta credentials
 - **Package Details Support**: API now accepts weight, cost, description, and other package parameters
 - **Configuration Validation**: Automatic validation of sender credentials before API calls
 - **TypeScript Types**: Comprehensive type definitions for Nova Poshta API
 
 ### 🔧 Improvements
+
 - Enhanced `POST-create-document` route with sender data injection
 - Better error handling and structured error responses
 - Detailed logging for debugging
 - Fallback to sensible defaults for optional parameters
 
 ### 🗑️ Cleanup
+
 - Removed demo `POST-fetch-user-data` route
 
 ## Technical Details
 
 ### New Files
+
 - `api/utilities/novaPoshta/senderConfig.ts` - Sender credentials and defaults
 - `api/utilities/novaPoshta/types.ts` - TypeScript type definitions
 
 ### Modified Files
+
 - `api/routes/nova-poshta/POST-create-document.ts` - Complete rewrite with sender config
 
 ### Deleted Files
+
 - `api/routes/nova-poshta/POST-fetch-user-data.ts` - Demo code removed
 
 ## Setup Required
@@ -931,9 +974,10 @@ POST /nova-poshta/create-document
   "recipientCityRef": "uuid-here",
   "weight": "2",
   "cost": "500",
-  "description": "Інтернет-замовлення #12345"
+  "description": "Комп`ютерні аксесуари #12345"
 }
 ```
+````
 
 ## Testing
 
@@ -950,7 +994,8 @@ Phase 2 will add the extension UI components with autocomplete functionality for
 ## Screenshots
 
 N/A (Backend only)
-```
+
+````
 
 ---
 
@@ -998,7 +1043,7 @@ If you don't have your sender refs yet, you can:
     "CityName": "Київ"  // Your city
   }
 }
-```
+````
 
 ---
 

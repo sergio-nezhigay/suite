@@ -95,7 +95,7 @@ export const SENDER_CONFIG = {
   /**
    * Default description for packages
    */
-  DEFAULT_DESCRIPTION: 'Інтернет-замовлення',
+  DEFAULT_DESCRIPTION: 'Комп`ютерні аксесуари',
 
   /**
    * Default weight in kg (minimum 0.1)
@@ -106,7 +106,6 @@ export const SENDER_CONFIG = {
    * Default declared cost in UAH
    */
   DEFAULT_COST: '100',
-
 } as const;
 
 /**
@@ -117,28 +116,41 @@ export function validateSenderConfig(): { valid: boolean; errors: string[] } {
   const errors: string[] = [];
 
   if (SENDER_CONFIG.SENDER_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_REF is not configured. Please update senderConfig.ts with your actual sender reference.');
+    errors.push(
+      'SENDER_REF is not configured. Please update senderConfig.ts with your actual sender reference.'
+    );
   }
 
   if (SENDER_CONFIG.SENDER_CITY_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_CITY_REF is not configured. Please update senderConfig.ts with your actual city reference.');
+    errors.push(
+      'SENDER_CITY_REF is not configured. Please update senderConfig.ts with your actual city reference.'
+    );
   }
 
   if (SENDER_CONFIG.SENDER_WAREHOUSE_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_WAREHOUSE_REF is not configured. Please update senderConfig.ts with your actual warehouse reference.');
+    errors.push(
+      'SENDER_WAREHOUSE_REF is not configured. Please update senderConfig.ts with your actual warehouse reference.'
+    );
   }
 
   if (SENDER_CONFIG.SENDER_CONTACT_REF.includes('YOUR_SENDER')) {
-    errors.push('SENDER_CONTACT_REF is not configured. Please update senderConfig.ts with your actual contact reference.');
+    errors.push(
+      'SENDER_CONTACT_REF is not configured. Please update senderConfig.ts with your actual contact reference.'
+    );
   }
 
-  if (!SENDER_CONFIG.SENDER_PHONE || SENDER_CONFIG.SENDER_PHONE.includes('YOUR_SENDER')) {
-    errors.push('SENDER_PHONE is not configured. Please update senderConfig.ts with your actual phone number.');
+  if (
+    !SENDER_CONFIG.SENDER_PHONE ||
+    SENDER_CONFIG.SENDER_PHONE.includes('YOUR_SENDER')
+  ) {
+    errors.push(
+      'SENDER_PHONE is not configured. Please update senderConfig.ts with your actual phone number.'
+    );
   }
 
   return {
     valid: errors.length === 0,
-    errors
+    errors,
   };
 }
 

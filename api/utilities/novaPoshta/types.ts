@@ -33,46 +33,48 @@ export interface CreateInternetDocumentRequest {
 
 export interface InternetDocumentProperties {
   // Sender information
-  Sender: string;                    // Sender counterparty ref
-  SenderAddress: string;             // Sender warehouse ref
-  ContactSender: string;             // Sender contact person ref
-  SendersPhone?: string;             // Sender phone
+  Sender: string; // Sender counterparty ref
+  SenderAddress: string; // Sender warehouse ref
+  ContactSender: string; // Sender contact person ref
+  SendersPhone?: string; // Sender phone
 
   // Recipient information
-  Recipient: string;                 // Recipient counterparty ref
-  RecipientAddress: string;          // Recipient warehouse ref
-  ContactRecipient: string;          // Recipient contact person ref
-  RecipientsPhone?: string;          // Recipient phone
+  Recipient: string; // Recipient counterparty ref
+  RecipientAddress: string; // Recipient warehouse ref
+  ContactRecipient: string; // Recipient contact person ref
+  RecipientsPhone?: string; // Recipient phone
 
   // Shipment details
-  DateTime: string;                  // Date in format DD.MM.YYYY
-  ServiceType: string;               // WarehouseWarehouse, WarehouseDoors, etc.
-  PaymentMethod: string;             // Cash, NonCash
-  PayerType?: string;                // Sender, Recipient, ThirdPerson
-  Cost: string;                      // Declared value in UAH
+  DateTime: string; // Date in format DD.MM.YYYY
+  ServiceType: string; // WarehouseWarehouse, WarehouseDoors, etc.
+  PaymentMethod: string; // Cash, NonCash
+  PayerType?: string; // Sender, Recipient, ThirdPerson
+  Cost: string; // Declared value in UAH
 
   // Cargo details
-  CargoType: string;                 // Cargo, Documents, Parcel, etc.
-  Weight: string;                    // Weight in kg
-  SeatsAmount: string;               // Number of seats/packages
-  Description: string;               // Cargo description
+  CargoType: string; // Cargo, Documents, Parcel, etc.
+  Weight: string; // Weight in kg
+  SeatsAmount: string; // Number of seats/packages
+  Description: string; // Cargo description
 
   // Optional fields
-  VolumeGeneral?: string;            // Volume in cubic meters
-  OptionsSeat?: Array<{              // Detailed seat information
+  VolumeGeneral?: string; // Volume in cubic meters
+  OptionsSeat?: Array<{
+    // Detailed seat information
     volumetricVolume: string;
     volumetricWidth: string;
     volumetricLength: string;
     volumetricHeight: string;
     weight: string;
   }>;
-  BackwardDeliveryData?: Array<{     // Backward delivery (cash on delivery)
+  BackwardDeliveryData?: Array<{
+    // Backward delivery (cash on delivery)
     PayerType: string;
     CargoType: string;
-    RedeliveryString: string;        // Amount to collect
+    RedeliveryString: string; // Amount to collect
   }>;
-  AfterpaymentOnGoodsCost?: string;  // Cash on delivery amount
-  InfoRegClientBarcodes?: string;    // Client barcode
+  AfterpaymentOnGoodsCost?: string; // Cash on delivery amount
+  InfoRegClientBarcodes?: string; // Client barcode
 }
 
 // ============================================
@@ -117,13 +119,13 @@ export interface CounterpartyResponse {
 }
 
 export interface InternetDocumentResponse {
-  Ref: string;                       // Declaration reference (UUID)
-  CostOnSite: string;               // Cost calculated by Nova Poshta
-  EstimatedDeliveryDate: string;    // Estimated delivery date
-  IntDocNumber: string;             // Declaration number (e.g., "20450012345678")
-  TypeDocument: string;             // Document type
-  PrintedForm?: string;             // URL to printed form (label)
-  ErrorCode?: string;               // Error code if any
+  Ref: string; // Declaration reference (UUID)
+  CostOnSite: string; // Cost calculated by Nova Poshta
+  EstimatedDeliveryDate: string; // Estimated delivery date
+  IntDocNumber: string; // Declaration number (e.g., "20450012345678")
+  TypeDocument: string; // Document type
+  PrintedForm?: string; // URL to printed form (label)
+  ErrorCode?: string; // Error code if any
   ValidationErrors?: Array<{
     Field: string;
     Error: string;
@@ -131,48 +133,48 @@ export interface InternetDocumentResponse {
 }
 
 export interface CitySearchResponse {
-  Description: string;              // City name
-  DescriptionRu: string;           // City name in Russian
-  Ref: string;                     // City reference (UUID)
-  Delivery1: string;               // Delivery available
-  Delivery2: string;               // Delivery available
-  Delivery3: string;               // Delivery available
-  Delivery4: string;               // Delivery available
-  Delivery5: string;               // Delivery available
-  Delivery6: string;               // Delivery available
-  Delivery7: string;               // Delivery available
-  Area: string;                    // Region name
-  SettlementType: string;          // Settlement type
-  IsBranch: string;                // Has branch
+  Description: string; // City name
+  DescriptionRu: string; // City name in Russian
+  Ref: string; // City reference (UUID)
+  Delivery1: string; // Delivery available
+  Delivery2: string; // Delivery available
+  Delivery3: string; // Delivery available
+  Delivery4: string; // Delivery available
+  Delivery5: string; // Delivery available
+  Delivery6: string; // Delivery available
+  Delivery7: string; // Delivery available
+  Area: string; // Region name
+  SettlementType: string; // Settlement type
+  IsBranch: string; // Has branch
   PreventEntryNewStreetsUser: string;
   Conglomerates: string | null;
-  CityID: string;                  // City ID (numeric)
+  CityID: string; // City ID (numeric)
   SettlementTypeDescription: string;
   SettlementTypeDescriptionRu: string;
 }
 
 export interface WarehouseResponse {
-  Ref: string;                     // Warehouse reference (UUID)
-  Description: string;             // Warehouse name/address
-  DescriptionRu: string;           // Warehouse name in Russian
-  Number: string;                  // Warehouse number
-  CityRef: string;                 // City reference
-  CityDescription: string;         // City name
-  SettlementRef: string;           // Settlement reference
-  SettlementDescription: string;   // Settlement name
+  Ref: string; // Warehouse reference (UUID)
+  Description: string; // Warehouse name/address
+  DescriptionRu: string; // Warehouse name in Russian
+  Number: string; // Warehouse number
+  CityRef: string; // City reference
+  CityDescription: string; // City name
+  SettlementRef: string; // Settlement reference
+  SettlementDescription: string; // Settlement name
   SettlementAreaDescription: string; // Settlement region
   SettlementRegionsDescription: string;
   SettlementTypeDescription: string;
-  Longitude: string;               // GPS longitude
-  Latitude: string;                // GPS latitude
-  PostFinance: string;             // Has financial services
-  BicycleParking: string;          // Has bicycle parking
-  PaymentAccess: string;           // Payment available
-  POSTerminal: string;             // Has POS terminal
-  InternationalShipping: string;   // International shipping
+  Longitude: string; // GPS longitude
+  Latitude: string; // GPS latitude
+  PostFinance: string; // Has financial services
+  BicycleParking: string; // Has bicycle parking
+  PaymentAccess: string; // Payment available
+  POSTerminal: string; // Has POS terminal
+  InternationalShipping: string; // International shipping
   SelfServiceWorkplacesCount: string;
-  TotalMaxWeightAllowed: string;   // Max weight allowed
-  PlaceMaxWeightAllowed: string;   // Max weight per place
+  TotalMaxWeightAllowed: string; // Max weight allowed
+  PlaceMaxWeightAllowed: string; // Max weight per place
   Reception: {
     Monday: string;
     Tuesday: string;
@@ -234,29 +236,31 @@ export interface CreateDeclarationRequestBody {
   email?: string;
 
   // Delivery destination
-  recipientWarehouseRef: string;    // Selected warehouse UUID
-  recipientCityRef: string;         // Selected city UUID
+  recipientWarehouseRef: string; // Selected warehouse UUID
+  recipientCityRef: string; // Selected city UUID
 
   // Package details (optional - will use defaults if not provided)
-  weight?: string;                  // In kg (default: 1)
-  cost?: string;                    // Declared value in UAH (default: 100)
-  seatsAmount?: string;             // Number of packages (default: 1)
-  description?: string;             // Package description (default: "Інтернет-замовлення")
-  cargoType?: string;               // Cargo type (default: "Cargo")
-  paymentMethod?: string;           // Payment method (default: "Cash")
-  serviceType?: string;             // Service type (default: "WarehouseWarehouse")
+  weight?: string; // In kg (default: 1)
+  cost?: string; // Declared value in UAH (default: 100)
+  seatsAmount?: string; // Number of packages (default: 1)
+  description?: string; // Package description (default: "Комп`ютерні аксесуари")
+  cargoType?: string; // Cargo type (default: "Cargo")
+  paymentMethod?: string; // Payment method (default: "Cash")
+  serviceType?: string; // Service type (default: "WarehouseWarehouse")
 }
 
 export interface CreateDeclarationResponse {
   success: boolean;
   data?: {
-    declarationRef: string;         // UUID reference
-    declarationNumber: string;      // Tracking number
+    declarationRef: string; // UUID reference
+    declarationNumber: string; // Tracking number
     estimatedDeliveryDate: string;
     cost: string;
-    printedFormUrl?: string;        // Label URL
+    printedFormUrl?: string; // Label URL
   };
   error?: string;
   details?: string[];
-  novaPoshtaResponse?: NovaPoshtaApiResponse<InternetDocumentResponse[] | CounterpartyResponse[]>;
+  novaPoshtaResponse?: NovaPoshtaApiResponse<
+    InternetDocumentResponse[] | CounterpartyResponse[]
+  >;
 }

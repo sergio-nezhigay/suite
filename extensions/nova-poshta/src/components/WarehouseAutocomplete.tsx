@@ -1,21 +1,26 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   BlockStack,
   Select,
   ProgressIndicator,
   Text,
   InlineStack,
+  TextField,
 } from '@shopify/ui-extensions-react/admin';
 import { useWarehouseSearch } from '../hooks/useNovaPoshtaApi';
 import type { WarehouseAutocompleteProps } from '../types';
+import { sortWarehousesByNumber, filterWarehouses } from '../utils/warehouseUtils';
 
 /**
  * Warehouse Autocomplete Component
  *
- * Loads warehouses for selected city with debouncing
+ * Loads warehouses for selected city with search filtering
  * - Fetches warehouses when city is selected
  * - Debounced loading (500ms)
- * - Displays warehouses in dropdown
+ * - Search field to filter warehouses by number or address
+ * - Sorts warehouses by number
+ * - Displays filtered warehouses in dropdown
+ * - Shows result count
  * - Auto-selects if only one warehouse available
  *
  * @example
@@ -37,23 +42,41 @@ export default function WarehouseAutocomplete({
   const [localSelectedRef, setLocalSelectedRef] = useState<string | undefined>(
     selectedWarehouseRef ?? undefined
   );
+  const [warehouseSearchQuery, setWarehouseSearchQuery] = useState<string>('');
   const { warehouses, isLoading, error: searchError } = useWarehouseSearch(cityRef);
 
-  // Auto-select if only one warehouse available
+  // Sort and filter warehouses
+  const sortedWarehouses = useMemo(
+    () => sortWarehousesByNumber(warehouses),
+    [warehouses]
+  );
+
+  const filteredWarehouses = useMemo(
+    () => filterWarehouses(sortedWarehouses, warehouseSearchQuery),
+    [sortedWarehouses, warehouseSearchQuery]
+  );
+
+  // Reset search when city changes
   useEffect(() => {
-    if (warehouses.length === 1 && !localSelectedRef) {
-      const warehouse = warehouses[0];
+    setWarehouseSearchQuery('');
+    setLocalSelectedRef(undefined);
+  }, [cityRef]);
+
+  // Auto-select if only one warehouse available (in filtered results)
+  useEffect(() => {
+    if (filteredWarehouses.length === 1 && !localSelectedRef) {
+      const warehouse = filteredWarehouses[0];
       setLocalSelectedRef(warehouse.Ref);
       onWarehouseSelect(warehouse.Ref, warehouse.Description);
-    } else if (warehouses.length === 0) {
+    } else if (filteredWarehouses.length === 0 && !warehouseSearchQuery) {
       setLocalSelectedRef(undefined);
     }
-  }, [warehouses, localSelectedRef, onWarehouseSelect]);
+  }, [filteredWarehouses, localSelectedRef, onWarehouseSelect, warehouseSearchQuery]);
 
   // Handle warehouse selection
   const handleWarehouseChange = (warehouseRef: string) => {
     setLocalSelectedRef(warehouseRef);
-    const selectedWarehouse = warehouses.find((w) => w.Ref === warehouseRef);
+    const selectedWarehouse = filteredWarehouses.find((w) => w.Ref === warehouseRef);
     if (selectedWarehouse) {
       onWarehouseSelect(warehouseRef, selectedWarehouse.Description);
     }
@@ -83,17 +106,36 @@ export default function WarehouseAutocomplete({
       )}
 
       {!isLoading && warehouses.length > 0 && (
-        <Select
-          label={label}
-          options={warehouses.map((warehouse) => ({
-            value: warehouse.Ref,
-            label: warehouse.Description,
-          }))}
-          value={localSelectedRef}
-          onChange={handleWarehouseChange}
-          disabled={disabled}
-          error={displayError}
-        />
+        <>
+          <TextField
+            label="Пошук відділення"
+            value={warehouseSearchQuery}
+            onChange={setWarehouseSearchQuery}
+            placeholder="Номер або адреса (наприклад: 234 або Хрещатик)"
+            disabled={disabled}
+          />
+
+          {filteredWarehouses.length > 0 && (
+            <>
+              <Text>Знайдено відділень: {filteredWarehouses.length}</Text>
+              <Select
+                label={label}
+                options={filteredWarehouses.map((warehouse) => ({
+                  value: warehouse.Ref,
+                  label: warehouse.Description,
+                }))}
+                value={localSelectedRef}
+                onChange={handleWarehouseChange}
+                disabled={disabled}
+                error={displayError}
+              />
+            </>
+          )}
+
+          {filteredWarehouses.length === 0 && warehouseSearchQuery && (
+            <Text>Відділення не знайдено. Спробуйте інший запит.</Text>
+          )}
+        </>
       )}
 
       {!isLoading && warehouses.length === 0 && !searchError && (
