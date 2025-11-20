@@ -136,7 +136,7 @@ function App() {
 
     setSuccessMessage(null);
 
-    const { firstName, lastName, shippingPhone, email } = orderInfo.orderDetails;
+    const { firstName, lastName, shippingPhone, email, paymentMethod } = orderInfo.orderDetails;
 
     // Validate phone number
     if (!shippingPhone) {
@@ -157,7 +157,7 @@ function App() {
         seatsAmount: packageDetails.seatsAmount,
         description: packageDetails.description,
         cargoType: packageDetails.cargoType,
-        paymentMethod: packageDetails.paymentMethod,
+        paymentMethod: paymentMethod || packageDetails.paymentMethod,
         serviceType: packageDetails.serviceType,
       });
 

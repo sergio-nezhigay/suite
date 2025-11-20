@@ -142,6 +142,13 @@ const route: RouteHandler<{
     const documentServiceType =
       serviceType || SENDER_CONFIG.DEFAULT_SERVICE_TYPE;
 
+    // ============================================
+    // Determine if COD (Cash on Delivery) should be enabled
+    // ============================================
+    // Enable COD by default, UNLESS payment method contains "Передплата безготівка"
+    const isPrepaid = paymentMethod?.toLowerCase().includes('передплата безготівка');
+    const enableCOD = !isPrepaid;
+
     console.log('📋 Creating InternetDocument with params:', {
       sender: SENDER_CONFIG.SENDER_REF,
       senderWarehouse: SENDER_CONFIG.SENDER_WAREHOUSE_REF,
@@ -182,6 +189,18 @@ const route: RouteHandler<{
         Weight: documentWeight,
         SeatsAmount: documentSeats,
         Description: documentDescription,
+
+        // Cash on Delivery (COD) - Накладений платіж
+        // Add backward delivery data when COD is enabled (not prepaid)
+        ...(enableCOD && {
+          BackwardDeliveryData: [
+            {
+              PayerType: 'Recipient',
+              CargoType: 'Money',
+              RedeliveryString: documentCost, // Amount to collect from recipient
+            },
+          ],
+        }),
       },
     };
 
