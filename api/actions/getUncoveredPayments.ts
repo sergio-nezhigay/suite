@@ -1,5 +1,8 @@
 import { ActionOptions } from 'gadget-server';
-import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+import {
+  EXCLUDED_PAYMENT_CODES,
+  NOVA_POSHTA_ACCOUNT,
+} from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -16,11 +19,16 @@ function extractPaymentCodeFromAccount(account: string): string | null {
 
 export const run: ActionRun = async ({ api, logger }) => {
   try {
-    console.log('[getUncoveredPayments] Starting to fetch uncovered payments...');
+    console.log(
+      '[getUncoveredPayments] Starting to fetch uncovered payments...'
+    );
 
     // Calculate date 7 days ago
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    console.log('[getUncoveredPayments] Fetching transactions since:', sevenDaysAgo.toISOString());
+    console.log(
+      '[getUncoveredPayments] Fetching transactions since:',
+      sevenDaysAgo.toISOString()
+    );
 
     // Fetch all income transactions from last 7 days
     const allTransactions = await api.bankTransaction.findMany({
@@ -46,7 +54,10 @@ export const run: ActionRun = async ({ api, logger }) => {
       first: 250,
     });
 
-    console.log('[getUncoveredPayments] Found total income transactions:', allTransactions.length);
+    console.log(
+      '[getUncoveredPayments] Found total income transactions:',
+      allTransactions.length
+    );
 
     // Filter transactions - exclude payments with codes that don't need checks
     const filteredTransactions = allTransactions.filter((transaction) => {
@@ -62,27 +73,49 @@ export const run: ActionRun = async ({ api, logger }) => {
       return paymentCode && !EXCLUDED_PAYMENT_CODES.includes(paymentCode);
     });
 
-    console.log(`[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(', ')} and Nova Poshta):`, filteredTransactions.length);
+    console.log(
+      `[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(
+        ', '
+      )} and Nova Poshta):`,
+      filteredTransactions.length
+    );
 
     // For each filtered transaction, check if it has a check (prefer bankTransaction, fallback to orderPaymentMatch)
     const uncoveredPayments = [];
 
     // First, fetch payment matches for fallback (old data)
     const transactionIds = filteredTransactions.map((t) => t.id);
-    const allPaymentMatches = await api.orderPaymentMatch.findMany({
-      filter: {
-        bankTransactionId: { in: transactionIds },
-      },
-      select: {
-        id: true,
-        bankTransactionId: true,
-        checkIssued: true,
-        checkSkipped: true,
-        checkReceiptId: true,
-        orderId: true,
-      },
-      first: 250,
-    });
+    let allPaymentMatches = [];
+    try {
+      allPaymentMatches = await api.orderPaymentMatch.findMany({
+        filter: {
+          bankTransactionId: { in: transactionIds },
+        },
+        select: {
+          id: true,
+          bankTransactionId: true,
+          checkIssued: true,
+          checkSkipped: true,
+          checkReceiptId: true,
+          orderId: true,
+        },
+        first: 250,
+      });
+    } catch (err: any) {
+      // If the model was deleted, Gadget returns GGT_RECORD_NOT_FOUND (404).
+      // Ignore that specific error so the action continues to use bankTransaction data.
+      if (
+        err?.code === 'GGT_RECORD_NOT_FOUND' ||
+        err?.message?.includes('orderPaymentMatches')
+      ) {
+        console.warn(
+          '[getUncoveredPayments] orderPaymentMatch model not available — skipping legacy fallback'
+        );
+      } else {
+        // Unexpected error — rethrow so it surfaces
+        throw err;
+      }
+    }
 
     // Build a Map for quick lookups: bankTransactionId -> paymentMatch
     const paymentMatchMap = new Map();
@@ -116,17 +149,26 @@ export const run: ActionRun = async ({ api, logger }) => {
       if (shouldInclude) {
         // Skip transactions without a valid date
         if (!transaction.transactionDateTime) {
-          console.log('[getUncoveredPayments] Skipping transaction without date:', transaction.id);
+          console.log(
+            '[getUncoveredPayments] Skipping transaction without date:',
+            transaction.id
+          );
           continue;
         }
 
         // Skip transactions without a valid amount
         if (!transaction.amount || transaction.amount <= 0) {
-          console.log('[getUncoveredPayments] Skipping transaction without valid amount:', transaction.id, transaction.amount);
+          console.log(
+            '[getUncoveredPayments] Skipping transaction without valid amount:',
+            transaction.id,
+            transaction.amount
+          );
           continue;
         }
 
-        const paymentCode = extractPaymentCodeFromAccount(transaction.counterpartyAccount || '');
+        const paymentCode = extractPaymentCodeFromAccount(
+          transaction.counterpartyAccount || ''
+        );
         const transactionDate = new Date(transaction.transactionDateTime);
         const now = new Date();
         const daysAgo = Math.floor(
@@ -155,7 +197,10 @@ export const run: ActionRun = async ({ api, logger }) => {
       }
     }
 
-    console.log('[getUncoveredPayments] Uncovered payments found:', uncoveredPayments.length);
+    console.log(
+      '[getUncoveredPayments] Uncovered payments found:',
+      uncoveredPayments.length
+    );
 
     return {
       success: true,

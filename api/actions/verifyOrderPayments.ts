@@ -29,19 +29,38 @@ async function createAutomaticCheck(
 ) {
   try {
     // Get the payment match to find the bank transaction
-    const paymentMatch = await api.orderPaymentMatch.findFirst({
-      filter: { orderId: { equals: order.id } },
-      select: {
-        id: true,
-        bankTransactionId: true,
-        checkIssued: true,
-        checkIssuedAt: true,
-        checkReceiptId: true,
-        checkFiscalCode: true,
-        checkSkipped: true,
-        checkSkipReason: true,
-      },
-    });
+    let paymentMatch = null;
+    try {
+      paymentMatch = await api.orderPaymentMatch.findFirst({
+        filter: { orderId: { equals: order.id } },
+        select: {
+          id: true,
+          bankTransactionId: true,
+          checkIssued: true,
+          checkIssuedAt: true,
+          checkReceiptId: true,
+          checkFiscalCode: true,
+          checkSkipped: true,
+          checkSkipReason: true,
+        },
+      });
+    } catch (err: any) {
+      if (
+        err?.code === 'GGT_RECORD_NOT_FOUND' ||
+        err?.message?.includes('orderPaymentMatches')
+      ) {
+        console.warn(
+          '[createAutomaticCheck] orderPaymentMatch model not available'
+        );
+        return {
+          success: false,
+          skipped: true,
+          reason: 'Payment match model not available',
+        };
+      } else {
+        throw err;
+      }
+    }
 
     if (!paymentMatch) {
       return {
@@ -115,12 +134,15 @@ async function createAutomaticCheck(
       );
     }
 
-    console.log(`[createAutomaticCheck] Payment match for order ${order.name}:`, {
-      found: !!paymentMatch,
-      checkIssued: existingCheckIssued,
-      checkSkipped: existingCheckSkipped,
-      checkReceiptId: existingCheckReceiptId,
-    });
+    console.log(
+      `[createAutomaticCheck] Payment match for order ${order.name}:`,
+      {
+        found: !!paymentMatch,
+        checkIssued: existingCheckIssued,
+        checkSkipped: existingCheckSkipped,
+        checkReceiptId: existingCheckReceiptId,
+      }
+    );
 
     // Check if check already issued
     if (existingCheckIssued) {
@@ -158,10 +180,23 @@ async function createAutomaticCheck(
       const skipReason = `Excluded payment code: ${paymentCode} (doesn't require check)`;
 
       // Mark payment match as skipped
-      await api.orderPaymentMatch.update(paymentMatch.id, {
-        checkSkipped: true,
-        checkSkipReason: skipReason,
-      });
+      try {
+        await api.orderPaymentMatch.update(paymentMatch.id, {
+          checkSkipped: true,
+          checkSkipReason: skipReason,
+        });
+      } catch (err: any) {
+        if (
+          err?.code === 'GGT_RECORD_NOT_FOUND' ||
+          err?.message?.includes('orderPaymentMatches')
+        ) {
+          console.warn(
+            '[createAutomaticCheck] orderPaymentMatch model not available — skipping update'
+          );
+        } else {
+          throw err;
+        }
+      }
 
       // Dual-write: also update bankTransaction
       await api.bankTransaction.update(paymentMatch.bankTransactionId, {
@@ -192,10 +227,23 @@ Note: This payment code (2600, 2902, 2909, or 2920) is excluded from automatic c
       const skipReason = 'Nova Poshta account restriction';
 
       // Mark payment match as skipped
-      await api.orderPaymentMatch.update(paymentMatch.id, {
-        checkSkipped: true,
-        checkSkipReason: skipReason,
-      });
+      try {
+        await api.orderPaymentMatch.update(paymentMatch.id, {
+          checkSkipped: true,
+          checkSkipReason: skipReason,
+        });
+      } catch (err: any) {
+        if (
+          err?.code === 'GGT_RECORD_NOT_FOUND' ||
+          err?.message?.includes('orderPaymentMatches')
+        ) {
+          console.warn(
+            '[createAutomaticCheck] orderPaymentMatch model not available — skipping update'
+          );
+        } else {
+          throw err;
+        }
+      }
 
       // Dual-write: also update bankTransaction
       await api.bankTransaction.update(paymentMatch.bankTransactionId, {
@@ -255,27 +303,40 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
 
     // Update payment match with check information
     const checkIssuedAt = new Date();
-    const updateResult = await api.orderPaymentMatch.update(paymentMatch.id, {
-      checkIssued: true,
-      checkReceiptId: receipt.id,
-      checkFiscalCode: receipt.fiscal_code || undefined,
-      checkReceiptUrl: receipt.receipt_url || undefined,
-      checkIssuedAt: checkIssuedAt,
-    });
+    try {
+      const updateResult = await api.orderPaymentMatch.update(paymentMatch.id, {
+        checkIssued: true,
+        checkReceiptId: receipt.id,
+        checkFiscalCode: receipt.fiscal_code || undefined,
+        checkReceiptUrl: receipt.receipt_url || undefined,
+        checkIssuedAt: checkIssuedAt,
+      });
+
+      console.log(
+        `[createAutomaticCheck] Database updated for payment match ${paymentMatch.id}:`,
+        {
+          checkIssued: updateResult.checkIssued,
+          checkReceiptId: updateResult.checkReceiptId,
+        }
+      );
+    } catch (err: any) {
+      if (
+        err?.code === 'GGT_RECORD_NOT_FOUND' ||
+        err?.message?.includes('orderPaymentMatches')
+      ) {
+        console.warn(
+          '[createAutomaticCheck] orderPaymentMatch model not available — skipping update'
+        );
+      } else {
+        throw err;
+      }
+    }
 
     // Dual-write: also update the bank transaction
     await api.bankTransaction.update(paymentMatch.bankTransactionId, {
       checkReceiptId: receipt.id,
       checkIssuedAt: checkIssuedAt,
     });
-
-    console.log(
-      `[createAutomaticCheck] Database updated for payment match ${paymentMatch.id}:`,
-      {
-        checkIssued: updateResult.checkIssued,
-        checkReceiptId: updateResult.checkReceiptId,
-      }
-    );
 
     // Add receipt info to order notes
     const checkNote = `🧾 Automatic Check Created
@@ -387,24 +448,38 @@ export const run = async ({ params, api, connections }: any) => {
     });
 
     // Check for existing verifications first
-    const existingMatches = await api.orderPaymentMatch.findMany({
-      filter: { orderId: { in: numericOrderIds } },
-      select: {
-        id: true,
-        orderId: true,
-        bankTransactionId: true,
-        verifiedAt: true,
-        matchConfidence: true,
-        notes: true,
-        checkIssued: true,
-        checkIssuedAt: true,
-        checkReceiptId: true,
-        checkFiscalCode: true,
-        checkReceiptUrl: true,
-        checkSkipped: true,
-        checkSkipReason: true,
-      },
-    });
+    let existingMatches = [];
+    try {
+      existingMatches = await api.orderPaymentMatch.findMany({
+        filter: { orderId: { in: numericOrderIds } },
+        select: {
+          id: true,
+          orderId: true,
+          bankTransactionId: true,
+          verifiedAt: true,
+          matchConfidence: true,
+          notes: true,
+          checkIssued: true,
+          checkIssuedAt: true,
+          checkReceiptId: true,
+          checkFiscalCode: true,
+          checkReceiptUrl: true,
+          checkSkipped: true,
+          checkSkipReason: true,
+        },
+      });
+    } catch (err: any) {
+      if (
+        err?.code === 'GGT_RECORD_NOT_FOUND' ||
+        err?.message?.includes('orderPaymentMatches')
+      ) {
+        console.warn(
+          '[verifyOrderPayments] orderPaymentMatch model not available — using empty list'
+        );
+      } else {
+        throw err;
+      }
+    }
 
     // Create a set of already matched bankTransactionIds to avoid duplicates
     const matchedTransactionIds = new Set(
@@ -544,18 +619,32 @@ export const run = async ({ params, api, connections }: any) => {
           }
 
           // Fetch updated match info after check creation attempt
-          const updatedMatch = await api.orderPaymentMatch.findFirst({
-            filter: { orderId: { equals: order.id } },
-            select: {
-              checkIssued: true,
-              checkIssuedAt: true,
-              checkReceiptId: true,
-              checkFiscalCode: true,
-              checkReceiptUrl: true,
-              checkSkipped: true,
-              checkSkipReason: true,
-            },
-          });
+          let updatedMatch = null;
+          try {
+            updatedMatch = await api.orderPaymentMatch.findFirst({
+              filter: { orderId: { equals: order.id } },
+              select: {
+                checkIssued: true,
+                checkIssuedAt: true,
+                checkReceiptId: true,
+                checkFiscalCode: true,
+                checkReceiptUrl: true,
+                checkSkipped: true,
+                checkSkipReason: true,
+              },
+            });
+          } catch (err: any) {
+            if (
+              err?.code === 'GGT_RECORD_NOT_FOUND' ||
+              err?.message?.includes('orderPaymentMatches')
+            ) {
+              console.warn(
+                '[verifyOrderPayments] orderPaymentMatch model not available — skipping match update'
+              );
+            } else {
+              throw err;
+            }
+          }
 
           if (updatedMatch) {
             existingMatch.checkIssued = updatedMatch.checkIssued;
@@ -644,20 +733,33 @@ export const run = async ({ params, api, connections }: any) => {
             if (daysDiff > 1) confidence -= daysDiff * 2; // Reduce by days difference
             confidence = Math.max(50, Math.min(100, confidence)); // Keep between 50-100
 
-            await api.orderPaymentMatch.create({
-              orderId: order.id,
-              bankTransactionId: txId,
-              matchConfidence: Math.round(confidence),
-              verifiedAt: currentTime,
-              matchedBy: 'manual',
-              notes: `Amount diff: ${amountDiff.toFixed(
-                4
-              )}, Days diff: ${daysDiff.toFixed(2)}`,
-              orderAmount: orderAmount,
-              transactionAmount: txAmount,
-              amountDifference: amountDiff,
-              daysDifference: daysDiff,
-            });
+            try {
+              await api.orderPaymentMatch.create({
+                orderId: order.id,
+                bankTransactionId: txId,
+                matchConfidence: Math.round(confidence),
+                verifiedAt: currentTime,
+                matchedBy: 'manual',
+                notes: `Amount diff: ${amountDiff.toFixed(
+                  4
+                )}, Days diff: ${daysDiff.toFixed(2)}`,
+                orderAmount: orderAmount,
+                transactionAmount: txAmount,
+                amountDifference: amountDiff,
+                daysDifference: daysDiff,
+              });
+            } catch (err: any) {
+              if (
+                err?.code === 'GGT_RECORD_NOT_FOUND' ||
+                err?.message?.includes('orderPaymentMatches')
+              ) {
+                console.warn(
+                  '[verifyOrderPayments] orderPaymentMatch model not available — skipping creation'
+                );
+              } else {
+                throw err;
+              }
+            }
 
             // Dual-write: set matchedOrderId on the bank transaction
             await api.bankTransaction.update(txId, {
@@ -741,19 +843,33 @@ export const run = async ({ params, api, connections }: any) => {
       if (matches.length > 0) {
         try {
           // Find the payment match to get the bank transaction ID
-          const paymentMatch = await api.orderPaymentMatch.findFirst({
-            filter: { orderId: { equals: order.id } },
-            select: {
-              bankTransactionId: true,
-              checkIssued: true,
-              checkIssuedAt: true,
-              checkReceiptId: true,
-              checkFiscalCode: true,
-              checkReceiptUrl: true,
-              checkSkipped: true,
-              checkSkipReason: true,
-            },
-          });
+          let paymentMatch = null;
+          try {
+            paymentMatch = await api.orderPaymentMatch.findFirst({
+              filter: { orderId: { equals: order.id } },
+              select: {
+                bankTransactionId: true,
+                checkIssued: true,
+                checkIssuedAt: true,
+                checkReceiptId: true,
+                checkFiscalCode: true,
+                checkReceiptUrl: true,
+                checkSkipped: true,
+                checkSkipReason: true,
+              },
+            });
+          } catch (err: any) {
+            if (
+              err?.code === 'GGT_RECORD_NOT_FOUND' ||
+              err?.message?.includes('orderPaymentMatches')
+            ) {
+              console.warn(
+                '[verifyOrderPayments] orderPaymentMatch model not available for check info'
+              );
+            } else {
+              throw err;
+            }
+          }
 
           if (paymentMatch) {
             // PREFER: Check bankTransaction first (new data)
