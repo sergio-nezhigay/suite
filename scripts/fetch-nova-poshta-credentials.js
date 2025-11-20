@@ -10,7 +10,7 @@
  */
 
 // Try to read API key from environment or .env file
-let API_KEY = process.env.NP_API_KEY_SSh;
+let API_KEY = process.env.NP_API_KEY_SNe;
 
 // If not in environment, try reading from .env file
 if (!API_KEY) {
@@ -21,7 +21,9 @@ if (!API_KEY) {
 
     if (fs.existsSync(envPath)) {
       const envContent = fs.readFileSync(envPath, 'utf-8');
-      const match = envContent.match(/NP_API_KEY_SSh\s*=\s*["']?([^"'\n\r]+)["']?/);
+      const match = envContent.match(
+        /NP_API_KEY_SNe\s*=\s*["']?([^"'\n\r]+)["']?/
+      );
       if (match) {
         API_KEY = match[1].trim();
       }
@@ -32,8 +34,10 @@ if (!API_KEY) {
 }
 
 if (!API_KEY) {
-  console.error('❌ Error: NP_API_KEY_SSh not found');
-  console.error('Please set your Nova Poshta API key in .env file or environment');
+  console.error('❌ Error: NP_API_KEY_SNe not found');
+  console.error(
+    'Please set your Nova Poshta API key in .env file or environment'
+  );
   console.error('\nYou can pass it as an argument:');
   console.error('  node scripts/fetch-nova-poshta-credentials.js YOUR_API_KEY');
 
@@ -92,7 +96,9 @@ async function fetchSenderCredentials() {
     });
 
     if (!counterpartyResponse.data || counterpartyResponse.data.length === 0) {
-      console.error('❌ No sender counterparty found. Please create one in Nova Poshta cabinet first.');
+      console.error(
+        '❌ No sender counterparty found. Please create one in Nova Poshta cabinet first.'
+      );
       return;
     }
 
@@ -127,7 +133,9 @@ async function fetchSenderCredentials() {
           console.log(`   SENDER_CONTACT_REF: ${contactRef}`);
         }
       } catch (contactError) {
-        console.log(`   ⚠️  No contact person found (this is normal for new accounts)`);
+        console.log(
+          `   ⚠️  No contact person found (this is normal for new accounts)`
+        );
       }
     }
 
@@ -161,31 +169,38 @@ async function fetchSenderCredentials() {
       // 3. Print Summary
       // ============================================
       console.log('\n\n' + '='.repeat(70));
-      console.log('📝 COPY THESE VALUES TO api/utilities/novaPoshta/senderConfig.ts');
+      console.log(
+        '📝 COPY THESE VALUES TO api/utilities/novaPoshta/senderConfig.ts'
+      );
       console.log('='.repeat(70));
       console.log('\nReplace the placeholder values with these:');
-      console.log('\n  SENDER_REF: \'' + sender.Ref + '\',');
-      console.log('  SENDER_WAREHOUSE_REF: \'' + firstWarehouseRef + '\',');
+      console.log("\n  SENDER_REF: '" + sender.Ref + "',");
+      console.log("  SENDER_WAREHOUSE_REF: '" + firstWarehouseRef + "',");
       if (contactRef) {
-        console.log('  SENDER_CONTACT_REF: \'' + contactRef + '\',');
+        console.log("  SENDER_CONTACT_REF: '" + contactRef + "',");
       } else {
-        console.log('  SENDER_CONTACT_REF: \'<NEED TO CREATE CONTACT PERSON>\',');
+        console.log("  SENDER_CONTACT_REF: '<NEED TO CREATE CONTACT PERSON>',");
       }
       console.log('\n' + '='.repeat(70));
 
       if (!contactRef) {
         console.log('\n⚠️  WARNING: No contact person found!');
-        console.log('You need to create a contact person in your Nova Poshta cabinet.');
+        console.log(
+          'You need to create a contact person in your Nova Poshta cabinet.'
+        );
       }
 
       if (warehouseResponse.data.length > 1) {
         console.log('\n💡 TIP: You have multiple warehouses.');
-        console.log('   Choose the one you want to use as your default sender address.');
+        console.log(
+          '   Choose the one you want to use as your default sender address.'
+        );
       }
-
     } else {
       console.log('❌ No warehouses found for this counterparty.');
-      console.log('You may need to add warehouses in your Nova Poshta cabinet.');
+      console.log(
+        'You may need to add warehouses in your Nova Poshta cabinet.'
+      );
 
       // Try searching by cities
       console.log('\nSearching for warehouses in major cities...');
@@ -202,7 +217,10 @@ async function fetchSenderCredentials() {
             },
           });
 
-          if (cityWarehousesResponse.data && cityWarehousesResponse.data.length > 0) {
+          if (
+            cityWarehousesResponse.data &&
+            cityWarehousesResponse.data.length > 0
+          ) {
             console.log(`\n📍 Warehouses in ${city}:`);
             cityWarehousesResponse.data.slice(0, 3).forEach((w) => {
               console.log(`   ${w.Description} - Ref: ${w.Ref}`);
@@ -213,9 +231,10 @@ async function fetchSenderCredentials() {
         }
       }
 
-      console.log('\n💡 You can use any of these warehouse refs as SENDER_WAREHOUSE_REF');
+      console.log(
+        '\n💡 You can use any of these warehouse refs as SENDER_WAREHOUSE_REF'
+      );
     }
-
   } catch (error) {
     console.error('\n❌ Error fetching credentials:', error.message);
     process.exit(1);

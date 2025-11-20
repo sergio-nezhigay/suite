@@ -958,7 +958,7 @@ N/A (Backend only)
 
 ### Important Reminders
 1. **Configure senderConfig.ts**: You MUST replace placeholder values before testing
-2. **API Key**: Ensure `NP_API_KEY_SSh` environment variable is set
+2. **API Key**: Ensure `NP_API_KEY_SNe` environment variable is set
 3. **Testing**: Use real warehouse/city refs from Nova Poshta API for testing
 4. **Type Safety**: All TypeScript types are now properly defined
 
