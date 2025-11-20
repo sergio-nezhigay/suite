@@ -18,7 +18,6 @@ import type { OrderInfo } from '../../shared/shopifyOperations';
 // Import components
 import CityAutocomplete from './components/CityAutocomplete';
 import WarehouseAutocomplete from './components/WarehouseAutocomplete';
-import PackageDetailsForm from './components/PackageDetailsForm';
 import DeclarationCard from './components/DeclarationCard';
 
 // Import hooks
@@ -270,7 +269,7 @@ function App() {
         {/* Shipping Address Section */}
         {orderDetails && (
           <BlockStack>
-            <Text fontWeight="bold">Адреса доставки (з замовлення):</Text>
+            <Text fontWeight="bold">Деталі доставки:</Text>
             <Text>
               {orderDetails.firstName} {orderDetails.lastName}
             </Text>
@@ -279,6 +278,11 @@ function App() {
             )}
             {orderDetails.city && <Text>Місто: {orderDetails.city}</Text>}
             {orderDetails.address && <Text>Адреса: {orderDetails.address}</Text>}
+            <Text>
+              Оплата: {orderDetails.paymentMethod === 'Cash'
+                ? `Накладний платіж - ${calculatedCost} ₴`
+                : 'Передоплата'}
+            </Text>
           </BlockStack>
         )}
 
@@ -334,11 +338,6 @@ function App() {
                 }}
                 disabled={isCreating}
               />
-            )}
-
-            {/* Package Details Display */}
-            {selectedWarehouseRef && (
-              <PackageDetailsForm cost={calculatedCost} />
             )}
 
             {/* Action Buttons */}
