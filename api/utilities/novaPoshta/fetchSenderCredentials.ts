@@ -12,7 +12,7 @@
  * 2. Run this as a global action or test it via API route
  */
 
-import { npClient } from './client';
+import { npClient } from '../http/npClient';
 
 interface CounterpartyData {
   Ref: string;
