@@ -1,5 +1,8 @@
 import { ActionOptions } from 'gadget-server';
-import { EXCLUDED_PAYMENT_CODES, NOVA_POSHTA_ACCOUNT } from '../utilities/fiscal/paymentConstants';
+import {
+  EXCLUDED_PAYMENT_CODES,
+  NOVA_POSHTA_ACCOUNT,
+} from '../utilities/fiscal/paymentConstants';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -139,7 +142,10 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     });
 
     if (!bankTransaction) {
-      console.error('[previewCheckForPayment] Bank transaction not found:', transactionId);
+      console.error(
+        '[previewCheckForPayment] Bank transaction not found:',
+        transactionId
+      );
       return {
         success: false,
         error: 'Transaction not found',
@@ -148,15 +154,26 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     // Check if this is Nova Poshta account (excluded from checks)
     if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
-      console.log('[previewCheckForPayment] Nova Poshta account detected - check not allowed');
+      console.log(
+        '[previewCheckForPayment] Nova Poshta account detected - check not allowed'
+      );
       throw new Error('Check preview not allowed for Nova Poshta payments');
     }
 
     // Check if this payment code is excluded from checks
-    const paymentCode = extractPaymentCodeFromAccount(bankTransaction.counterpartyAccount || '');
+    const paymentCode = extractPaymentCodeFromAccount(
+      bankTransaction.counterpartyAccount || ''
+    );
     if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
-      console.log('[previewCheckForPayment] Excluded payment code detected:', paymentCode);
-      throw new Error(`Check preview not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(', ')} don't require checks)`);
+      console.log(
+        '[previewCheckForPayment] Excluded payment code detected:',
+        paymentCode
+      );
+      throw new Error(
+        `Check preview not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(
+          ', '
+        )} don't require checks)`
+      );
     }
 
     // PREFER: Check bankTransaction first (new data)
@@ -174,23 +191,39 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     // FALLBACK: Check orderPaymentMatch (old data)
     if (!checkAlreadyIssued) {
-      const existingMatch = await api.orderPaymentMatch.findFirst({
-        filter: { bankTransactionId: { equals: transactionId } },
-        select: {
-          checkIssued: true,
-          checkIssuedAt: true,
-          checkReceiptId: true,
-        },
-      });
+      try {
+        const existingMatch = await api.orderPaymentMatch.findFirst({
+          filter: { bankTransactionId: { equals: transactionId } },
+          select: {
+            checkIssued: true,
+            checkIssuedAt: true,
+            checkReceiptId: true,
+          },
+        });
 
-      if (existingMatch?.checkIssued) {
-        checkAlreadyIssued = true;
-        receiptId = existingMatch.checkReceiptId;
-        issuedAt = existingMatch.checkIssuedAt;
-        console.log(
-          '[previewCheckForPayment] Check already issued (from orderPaymentMatch):',
-          transactionId
-        );
+        if (existingMatch?.checkIssued) {
+          checkAlreadyIssued = true;
+          receiptId = existingMatch.checkReceiptId;
+          issuedAt = existingMatch.checkIssuedAt;
+          console.log(
+            '[previewCheckForPayment] Check already issued (from orderPaymentMatch):',
+            transactionId
+          );
+        }
+      } catch (err: any) {
+        // If the model was deleted, Gadget returns GGT_RECORD_NOT_FOUND (404).
+        // Ignore that specific error so the action continues to use bankTransaction data.
+        if (
+          err?.code === 'GGT_RECORD_NOT_FOUND' ||
+          err?.message?.includes('orderPaymentMatches')
+        ) {
+          console.warn(
+            '[previewCheckForPayment] orderPaymentMatch model not available — skipping legacy fallback'
+          );
+        } else {
+          // Unexpected error — rethrow so it surfaces
+          throw err;
+        }
       }
     }
 
