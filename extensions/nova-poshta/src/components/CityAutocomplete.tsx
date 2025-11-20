@@ -36,7 +36,7 @@ export default function CityAutocomplete({
   disabled = false,
   placeholder = 'Почніть вводити назву міста...',
 }: CityAutocompleteProps) {
-  const [selectedCityRef, setSelectedCityRef] = useState<string | null>(null);
+  const [selectedCityRef, setSelectedCityRef] = useState<string | undefined>(undefined);
   const { cities, isLoading, error: searchError } = useCitySearch(value, 2);
 
   // Auto-select first city when results arrive
@@ -46,7 +46,7 @@ export default function CityAutocomplete({
       setSelectedCityRef(firstCity.Ref);
       onCitySelect(firstCity.Ref, firstCity.Description);
     } else if (cities.length === 0) {
-      setSelectedCityRef(null);
+      setSelectedCityRef(undefined);
     }
   }, [cities, selectedCityRef, onCitySelect]);
 

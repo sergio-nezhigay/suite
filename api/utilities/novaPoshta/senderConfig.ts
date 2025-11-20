@@ -17,32 +17,30 @@ export const SENDER_CONFIG = {
    * Your company's counterparty reference (UUID)
    * Find this in Nova Poshta cabinet or via API: Counterparty.getCounterparties
    */
-  SENDER_REF: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da',
+  SENDER_REF: '6a11bc85-464d-11e8-8b24-005056881c6b',
 
   /**
    * Your city reference (UUID)
-   * Миньківці - с. Миньківці, Бородянський р-н, Київська обл.
+   * Буча - м. Буча, Бучанський р-н, Київська обл.
    */
-  SENDER_CITY_REF: 'e71abb60-4b33-11e4-ab6d-005056801329',
+  SENDER_CITY_REF: 'db5c88d9-391c-11dd-90d9-001a92567626',
 
   /**
    * Your warehouse/address reference (UUID)
-   * Миньківці - Пункт приймання-видачі (до 30 кг): вул. Квітнева, 15А
+   * Буча - Відділення №6: вул. Інститутська, 28А
    */
-  SENDER_WAREHOUSE_REF: 'f220c0ef-fd3c-11ed-9eb1-d4f5ef0df2b8',
+  SENDER_WAREHOUSE_REF: '84a24ee3-4d6e-11ee-9eb1-d4f5ef0df2b8',
 
   /**
    * Your contact person reference (UUID)
-   * ⚠️ IMPORTANT: You need to create a contact person!
-   * TEMPORARY: Using SENDER_REF as workaround - this may cause issues
-   * Please create a contact person in Nova Poshta cabinet or use the helper below
+   * Contact person registered in Nova Poshta system
    */
-  SENDER_CONTACT_REF: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da',
+  SENDER_CONTACT_REF: '72040cf9-0919-11e9-8b24-005056881c6b',
 
   /**
    * Your phone number for Nova Poshta (format: 380XXXXXXXXX)
    */
-  SENDER_PHONE: '380933639090',
+  SENDER_PHONE: '380980059236',
 
   // ============================================
   // DEFAULT DECLARATION PARAMETERS

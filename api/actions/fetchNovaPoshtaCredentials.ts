@@ -62,7 +62,7 @@ interface WarehouseData {
   ShortAddress: string;
 }
 
-export const run = async ({ logger }) => {
+export const run = async ({ logger }: { logger: any }) => {
   logger.info('🔍 Fetching Nova Poshta sender credentials...');
 
   try {
