@@ -51,12 +51,18 @@ function App() {
   // State for city/warehouse selection
   const [citySearchQuery, setCitySearchQuery] = useState('');
   const [selectedCityRef, setSelectedCityRef] = useState<string | null>(null);
-  const [selectedCityDescription, setSelectedCityDescription] = useState<string>('');
-  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<string | null>(null);
-  const [selectedWarehouseDescription, setSelectedWarehouseDescription] = useState<string>('');
+  const [selectedCityDescription, setSelectedCityDescription] =
+    useState<string>('');
+  const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<
+    string | null
+  >(null);
+  const [selectedWarehouseDescription, setSelectedWarehouseDescription] =
+    useState<string>('');
 
   // Package details - calculate cost from unfulfilled line items
-  const calculatedCost = calculateUnfulfilledItemsCost(orderInfo?.orderDetails?.lineItems);
+  const calculatedCost = calculateUnfulfilledItemsCost(
+    orderInfo?.orderDetails?.lineItems
+  );
   const packageDetails: PackageDetails = {
     weight: DEFAULT_PACKAGE_DETAILS.WEIGHT,
     cost: calculatedCost,
@@ -74,7 +80,11 @@ function App() {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Hook for declaration creation
-  const { createDeclaration, isLoading: isCreating, error: createError } = useCreateDeclaration();
+  const {
+    createDeclaration,
+    isLoading: isCreating,
+    error: createError,
+  } = useCreateDeclaration();
 
   // ============================================
   // Effect: Fetch Order Data on Mount
@@ -108,7 +118,8 @@ function App() {
             estimatedDeliveryDate: '',
             cost: '',
             recipientName: `${info.orderDetails.firstName} ${info.orderDetails.lastName}`,
-            warehouseDescription: info.novaposhtaRecepientWarehouse?.warehouseDescription,
+            warehouseDescription:
+              info.novaposhtaRecepientWarehouse?.warehouseDescription,
             cityDescription: info.novaposhtaRecepientWarehouse?.cityDescription,
           };
           setDeclarations([existingDeclaration]);
@@ -117,7 +128,9 @@ function App() {
         setIsLoadingOrder(false);
       } catch (err) {
         console.error('Failed to fetch order info:', err);
-        setOrderError(err instanceof Error ? err.message : 'Помилка завантаження замовлення');
+        setOrderError(
+          err instanceof Error ? err.message : 'Помилка завантаження замовлення'
+        );
         setIsLoadingOrder(false);
       }
     };
@@ -135,7 +148,8 @@ function App() {
 
     setSuccessMessage(null);
 
-    const { firstName, lastName, shippingPhone, email, paymentMethod } = orderInfo.orderDetails;
+    const { firstName, lastName, shippingPhone, email, paymentMethod } =
+      orderInfo.orderDetails;
 
     // Validate phone number
     if (!shippingPhone) {
@@ -191,7 +205,9 @@ function App() {
         ]);
 
         // Show success message
-        setSuccessMessage(`✅ Декларація створена: ${declaration.declarationNumber}`);
+        setSuccessMessage(
+          `✅ Декларація створена: ${declaration.declarationNumber}`
+        );
 
         // Reset form
         setShowForm(false);
@@ -211,7 +227,9 @@ function App() {
   // Handler: View Label
   // ============================================
   const handleViewLabel = (declarationRef: string) => {
-    const declaration = declarations.find((d) => d.declarationRef === declarationRef);
+    const declaration = declarations.find(
+      (d) => d.declarationRef === declarationRef
+    );
     if (declaration?.printedFormUrl) {
       window.open(declaration.printedFormUrl, '_blank');
     }
@@ -222,7 +240,7 @@ function App() {
   // ============================================
   if (isLoadingOrder) {
     return (
-      <AdminBlock title="Нова Пошта - Декларації">
+      <AdminBlock title='Нова Пошта - Декларації'>
         <BlockStack>
           <Text>Завантаження інформації про замовлення...</Text>
         </BlockStack>
@@ -235,8 +253,8 @@ function App() {
   // ============================================
   if (orderError || !orderInfo) {
     return (
-      <AdminBlock title="Нова Пошта - Декларації">
-        <Banner tone="critical">
+      <AdminBlock title='Нова Пошта - Декларації'>
+        <Banner tone='critical'>
           {orderError || 'Не вдалося завантажити дані замовлення'}
         </Banner>
       </AdminBlock>
@@ -254,22 +272,17 @@ function App() {
     parseFloat(packageDetails.cost) > 0;
 
   return (
-    <AdminBlock title="Нова Пошта - Створення Декларації">
+    <AdminBlock title='Нова Пошта - Створення Декларації'>
       <BlockStack>
         {/* Success Message */}
-        {successMessage && (
-          <Banner tone="success">{successMessage}</Banner>
-        )}
+        {successMessage && <Banner tone='success'>{successMessage}</Banner>}
 
         {/* Error Message */}
-        {createError && (
-          <Banner tone="critical">{createError}</Banner>
-        )}
+        {createError && <Banner tone='critical'>{createError}</Banner>}
 
         {/* Shipping Address Section */}
         {orderDetails && (
           <BlockStack>
-            <Text fontWeight="bold">Деталі доставки:</Text>
             <Text>
               {orderDetails.firstName} {orderDetails.lastName}
             </Text>
@@ -277,12 +290,14 @@ function App() {
               <Text>Телефон: {orderDetails.shippingPhone}</Text>
             )}
             {orderDetails.city && <Text>Місто: {orderDetails.city}</Text>}
-            {orderDetails.address && <Text>Адреса: {orderDetails.address}</Text>}
-            <Text>
-              Оплата: {orderDetails.paymentMethod === 'Cash'
-                ? `Накладний платіж - ${calculatedCost} ₴`
-                : 'Передоплата'}
-            </Text>
+            {orderDetails.address && (
+              <Text>Адреса: {orderDetails.address}</Text>
+            )}
+            {orderDetails.paymentMethod && (
+              <Text>
+                {orderDetails.paymentMethod} - {calculatedCost} ₴
+              </Text>
+            )}
           </BlockStack>
         )}
 
@@ -291,7 +306,9 @@ function App() {
         {/* Existing Declarations Section */}
         {declarations.length > 0 && (
           <BlockStack>
-            <Text fontWeight="bold">Існуючі декларації ({declarations.length}):</Text>
+            <Text fontWeight='bold'>
+              Існуючі декларації ({declarations.length}):
+            </Text>
             {declarations.map((declaration, index) => (
               <DeclarationCard
                 key={declaration.declarationRef || index}
@@ -311,11 +328,11 @@ function App() {
           </Button>
         ) : (
           <BlockStack>
-            <Text fontWeight="bold">Нова декларація</Text>
+            <Text fontWeight='bold'>Нова декларація</Text>
 
             {/* City Autocomplete */}
             <CityAutocomplete
-              label="Місто отримувача"
+              label='Місто отримувача'
               value={citySearchQuery}
               onChange={setCitySearchQuery}
               onCitySelect={(ref, description) => {
@@ -329,7 +346,7 @@ function App() {
             {/* Warehouse Autocomplete */}
             {selectedCityRef && (
               <WarehouseAutocomplete
-                label="Відділення Нової Пошти"
+                label='Відділення Нової Пошти'
                 cityRef={selectedCityRef}
                 selectedWarehouseRef={selectedWarehouseRef}
                 onWarehouseSelect={(ref, description) => {
