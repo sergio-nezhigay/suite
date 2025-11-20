@@ -34,6 +34,45 @@ import { calculateUnfulfilledItemsCost } from './utils/orderUtils';
 
 const TARGET = 'admin.order-details.block.render';
 
+/**
+ * Map order payment method to Nova Poshta API payment method
+ * Nova Poshta accepts: "Cash" (накладний платіж) or "NonCash" (передоплата)
+ */
+function mapPaymentMethodToNovaPoshtaApi(paymentMethod: string | null): string {
+  if (!paymentMethod) return 'Cash'; // Default to Cash
+
+  const method = paymentMethod.toLowerCase().trim();
+
+  console.log('Payment method original:', paymentMethod);
+  console.log('Payment method normalized:', method);
+
+  // Check if it's cash on delivery (COD)
+  // Накладений платіж = Cash on Delivery
+  if (method.includes('cash') ||
+      method.includes('наклад') ||
+      method.includes('наложен') ||
+      method.includes('cod') ||
+      method.includes('платіж') ||
+      method.includes('платеж')) {
+    console.log('Matched as Cash');
+    return 'Cash';
+  }
+
+  // Check if it's prepayment
+  // Передоплата = Prepayment
+  if (method.includes('передопл') ||
+      method.includes('предоплат') ||
+      method.includes('prepay') ||
+      method.includes('prepaid')) {
+    console.log('Matched as NonCash');
+    return 'NonCash';
+  }
+
+  // Default to Cash
+  console.log('No match, defaulting to Cash');
+  return 'Cash';
+}
+
 export default reactExtension(TARGET, () => <App />);
 
 function App() {
@@ -158,6 +197,13 @@ function App() {
     }
 
     try {
+      // Map payment method to Nova Poshta API format
+      const novaPoshtaPaymentMethod = mapPaymentMethodToNovaPoshtaApi(paymentMethod);
+      console.log('Payment method mapping:', {
+        original: paymentMethod,
+        mapped: novaPoshtaPaymentMethod,
+      });
+
       const declaration = await createDeclaration({
         firstName,
         lastName,
@@ -170,7 +216,7 @@ function App() {
         seatsAmount: packageDetails.seatsAmount,
         description: packageDetails.description,
         cargoType: packageDetails.cargoType,
-        paymentMethod: paymentMethod || packageDetails.paymentMethod,
+        paymentMethod: novaPoshtaPaymentMethod,
         serviceType: packageDetails.serviceType,
       });
 
@@ -283,6 +329,7 @@ function App() {
         {/* Shipping Address Section */}
         {orderDetails && (
           <BlockStack>
+            <Text fontWeight='bold'>Деталі доставки:</Text>
             <Text>
               {orderDetails.firstName} {orderDetails.lastName}
             </Text>
@@ -294,10 +341,13 @@ function App() {
               <Text>Адреса: {orderDetails.address}</Text>
             )}
             {orderDetails.paymentMethod && (
-              <Text>
-                {orderDetails.paymentMethod} - {calculatedCost} ₴
-              </Text>
+              <Text>Метод оплати: {orderDetails.paymentMethod}</Text>
             )}
+            <Text>
+              Оплата: {mapPaymentMethodToNovaPoshtaApi(orderDetails.paymentMethod) === 'Cash'
+                ? `Накладний платіж - ${calculatedCost} ₴`
+                : 'Передоплата'}
+            </Text>
           </BlockStack>
         )}
 
