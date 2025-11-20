@@ -4,27 +4,26 @@ import { DEFAULT_PACKAGE_DETAILS } from '../constants';
 /**
  * Package Details Display Component
  *
- * Displays all package details as constants (no user input):
- * - Weight: 1 kg
- * - Cost: 100 UAH
- * - Seats: 1
- * - Description: "Комп`ютерні аксесуари"
- * - Cargo Type: "Cargo"
- * - Payment Method: "Cash" (recipient pays)
- * - Service Type: "WarehouseWarehouse"
+ * Displays all package details:
+ * - Weight: 0.3 kg (default)
+ * - Cost: Calculated from unfulfilled order items
+ * - Seats: 1 (default)
+ * - Description: "Комп`ютерні аксесуари" (default)
+ * - Cargo Type: "Cargo" (default)
+ * - Payment Method: "Cash" - recipient pays (default)
+ * - Service Type: "WarehouseWarehouse" (default)
  *
  * @example
- * <PackageDetailsForm />
+ * <PackageDetailsForm cost="1250.50" />
  */
-export default function PackageDetailsForm() {
+export default function PackageDetailsForm({ cost }: { cost: string }) {
   return (
     <BlockStack>
       <Text fontWeight='bold'>Деталі відправлення</Text>
 
-      {/* Display all constant values */}
+      {/* Display package details with calculated cost */}
       <Text>
-        Вага: {DEFAULT_PACKAGE_DETAILS.WEIGHT} кг | Вартість:{' '}
-        {DEFAULT_PACKAGE_DETAILS.COST} ₴ | Місць:{' '}
+        Вага: {DEFAULT_PACKAGE_DETAILS.WEIGHT} кг | Вартість: {cost} ₴ | Місць:{' '}
         {DEFAULT_PACKAGE_DETAILS.SEATS_AMOUNT}
       </Text>
       <Text>Опис: {DEFAULT_PACKAGE_DETAILS.DESCRIPTION}</Text>

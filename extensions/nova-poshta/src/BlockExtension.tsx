@@ -30,6 +30,9 @@ import type { PackageDetails, Declaration } from './types';
 // Import constants
 import { DEFAULT_PACKAGE_DETAILS } from './constants';
 
+// Import utilities
+import { calculateUnfulfilledItemsCost } from './utils/orderUtils';
+
 const TARGET = 'admin.order-details.block.render';
 
 export default reactExtension(TARGET, () => <App />);
@@ -53,10 +56,11 @@ function App() {
   const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<string | null>(null);
   const [selectedWarehouseDescription, setSelectedWarehouseDescription] = useState<string>('');
 
-  // Package details - all constants
+  // Package details - calculate cost from unfulfilled line items
+  const calculatedCost = calculateUnfulfilledItemsCost(orderInfo?.orderDetails?.lineItems);
   const packageDetails: PackageDetails = {
     weight: DEFAULT_PACKAGE_DETAILS.WEIGHT,
-    cost: DEFAULT_PACKAGE_DETAILS.COST,
+    cost: calculatedCost,
     seatsAmount: DEFAULT_PACKAGE_DETAILS.SEATS_AMOUNT,
     description: DEFAULT_PACKAGE_DETAILS.DESCRIPTION,
     cargoType: DEFAULT_PACKAGE_DETAILS.CARGO_TYPE,
@@ -334,7 +338,7 @@ function App() {
 
             {/* Package Details Display */}
             {selectedWarehouseRef && (
-              <PackageDetailsForm />
+              <PackageDetailsForm cost={calculatedCost} />
             )}
 
             {/* Action Buttons */}

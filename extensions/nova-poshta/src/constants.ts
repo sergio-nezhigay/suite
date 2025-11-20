@@ -10,9 +10,6 @@ export const DEFAULT_PACKAGE_DETAILS = {
   /** Default weight in kg */
   WEIGHT: '0.3',
 
-  /** Default declared cost in UAH */
-  COST: '100',
-
   /** Default number of packages/seats */
   SEATS_AMOUNT: '1',
 

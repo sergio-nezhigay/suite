@@ -177,7 +177,7 @@ function buildPayload(orderInfo: OrderInfo) {
         weight: '0.3',
       },
     ],
-    Description: `Комп`ютерні аксесуари`,
+    Description: 'Комп`ютерні аксесуари',
     Cost: orderInfo?.orderDetails?.total,
     CitySender: 'db5c88d9-391c-11dd-90d9-001a92567626', // Буча
     Sender: 'ad3dbd0e-ae6c-11ec-92e7-48df37b921da', // СШ

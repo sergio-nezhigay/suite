@@ -46,7 +46,15 @@ export type OrderDetails = {
   address: string | null;
   zip: string | null;
   paymentMethod: string | null;
-  lineItems?: { title: string; unfulfilledQuantity: number }[];
+  lineItems?: {
+    title: string;
+    unfulfilledQuantity: number;
+    discountedUnitPriceSet: {
+      shopMoney: {
+        amount: string;
+      };
+    };
+  }[];
 } | null;
 
 export type OrderInfo =
@@ -102,6 +110,11 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
           nodes {
             title
             unfulfilledQuantity
+            discountedUnitPriceSet {
+              shopMoney {
+                amount
+              }
+            }
           }
         }
       }
@@ -129,7 +142,17 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       novaposhtaRecepientWarehouse: { value: string };
       novaposhtaDeclarationNumber: { value: string };
       novaposhtaDeclarationRef: { value: string };
-      lineItems: { nodes: { title: string; unfulfilledQuantity: number }[] };
+      lineItems: {
+        nodes: {
+          title: string;
+          unfulfilledQuantity: number;
+          discountedUnitPriceSet: {
+            shopMoney: {
+              amount: string;
+            };
+          };
+        }[];
+      };
     };
   }>(query, { id: orderId });
 
