@@ -28,7 +28,7 @@ async function createAutomaticCheck(
   orderData?: any
 ) {
   try {
-    // Get the bank transaction that was matched to this order
+    // Get the payment match to find the bank transaction
     const paymentMatch = await api.orderPaymentMatch.findFirst({
       filter: { orderId: { equals: order.id } },
       select: {
@@ -43,16 +43,6 @@ async function createAutomaticCheck(
       },
     });
 
-    console.log(
-      `[createAutomaticCheck] Payment match for order ${order.name}:`,
-      {
-        found: !!paymentMatch,
-        checkIssued: paymentMatch?.checkIssued,
-        checkSkipped: paymentMatch?.checkSkipped,
-        checkReceiptId: paymentMatch?.checkReceiptId,
-      }
-    );
-
     if (!paymentMatch) {
       return {
         success: false,
@@ -61,12 +51,17 @@ async function createAutomaticCheck(
       };
     }
 
-    // Fetch the bank transaction details
+    // Fetch bank transaction to check new fields
     const bankTransaction = await api.bankTransaction.findFirst({
       filter: { id: { equals: paymentMatch.bankTransactionId } },
       select: {
+        id: true,
         counterpartyAccount: true,
         counterpartyName: true,
+        // NEW: Include payment matching fields
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkSkipReason: true,
       },
     });
 
@@ -75,6 +70,81 @@ async function createAutomaticCheck(
         success: false,
         skipped: true,
         reason: 'Bank transaction not found',
+      };
+    }
+
+    // PREFER: Check bankTransaction first (new data)
+    let existingCheckIssued = false;
+    let existingCheckIssuedAt = null;
+    let existingCheckReceiptId = null;
+    let existingCheckSkipped = false;
+    let existingCheckSkipReason = null;
+
+    if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
+      existingCheckIssued = true;
+      existingCheckIssuedAt = bankTransaction.checkIssuedAt;
+      existingCheckReceiptId = bankTransaction.checkReceiptId;
+      console.log(
+        '[createAutomaticCheck] Check status from bankTransaction (new data)'
+      );
+    }
+
+    if (bankTransaction.checkSkipReason) {
+      existingCheckSkipped = true;
+      existingCheckSkipReason = bankTransaction.checkSkipReason;
+      console.log(
+        '[createAutomaticCheck] Skip status from bankTransaction (new data)'
+      );
+    }
+
+    // FALLBACK: Check orderPaymentMatch (old data)
+    if (!existingCheckIssued && paymentMatch.checkIssued) {
+      existingCheckIssued = true;
+      existingCheckIssuedAt = paymentMatch.checkIssuedAt;
+      existingCheckReceiptId = paymentMatch.checkReceiptId;
+      console.log(
+        '[createAutomaticCheck] Check status from orderPaymentMatch (old data)'
+      );
+    }
+
+    if (!existingCheckSkipped && paymentMatch.checkSkipped) {
+      existingCheckSkipped = true;
+      existingCheckSkipReason = paymentMatch.checkSkipReason;
+      console.log(
+        '[createAutomaticCheck] Skip status from orderPaymentMatch (old data)'
+      );
+    }
+
+    console.log(`[createAutomaticCheck] Payment match for order ${order.name}:`, {
+      found: !!paymentMatch,
+      checkIssued: existingCheckIssued,
+      checkSkipped: existingCheckSkipped,
+      checkReceiptId: existingCheckReceiptId,
+    });
+
+    // Check if check already issued
+    if (existingCheckIssued) {
+      console.log(
+        `[createAutomaticCheck] Skipping: Check already issued for order ${order.name} at ${existingCheckIssuedAt}`
+      );
+      return {
+        success: false,
+        skipped: true,
+        reason: `Check already issued for this payment (Receipt ID: ${
+          existingCheckReceiptId || 'N/A'
+        })`,
+      };
+    }
+
+    // Check if check was previously skipped
+    if (existingCheckSkipped) {
+      console.log(
+        `[createAutomaticCheck] Skipping: Check previously skipped for order ${order.name}: ${existingCheckSkipReason}`
+      );
+      return {
+        success: false,
+        skipped: true,
+        reason: existingCheckSkipReason || 'Check previously skipped',
       };
     }
 
@@ -147,32 +217,6 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
         success: false,
         skipped: true,
         reason: skipReason,
-      };
-    }
-
-    // Check if check already issued for this payment match
-    if (paymentMatch?.checkIssued) {
-      console.log(
-        `[createAutomaticCheck] Skipping: Check already issued for order ${order.name} at ${paymentMatch.checkIssuedAt}`
-      );
-      return {
-        success: false,
-        skipped: true,
-        reason: `Check already issued for this payment (Receipt ID: ${
-          paymentMatch.checkReceiptId || 'N/A'
-        })`,
-      };
-    }
-
-    // Check if check was previously skipped
-    if (paymentMatch?.checkSkipped) {
-      console.log(
-        `[createAutomaticCheck] Skipping: Check previously skipped for order ${order.name}: ${paymentMatch.checkSkipReason}`
-      );
-      return {
-        success: false,
-        skipped: true,
-        reason: paymentMatch.checkSkipReason || 'Check previously skipped',
       };
     }
 
@@ -683,7 +727,7 @@ export const run = async ({ params, api, connections }: any) => {
         }
       }
 
-      // Fetch check information for newly verified orders
+      // Fetch check information for newly verified orders (prefer bankTransaction, fallback to orderPaymentMatch)
       let checkInfo = {
         checkIssued: false,
         checkIssuedAt: null,
@@ -696,9 +740,11 @@ export const run = async ({ params, api, connections }: any) => {
 
       if (matches.length > 0) {
         try {
+          // Find the payment match to get the bank transaction ID
           const paymentMatch = await api.orderPaymentMatch.findFirst({
             filter: { orderId: { equals: order.id } },
             select: {
+              bankTransactionId: true,
               checkIssued: true,
               checkIssuedAt: true,
               checkReceiptId: true,
@@ -708,16 +754,55 @@ export const run = async ({ params, api, connections }: any) => {
               checkSkipReason: true,
             },
           });
+
           if (paymentMatch) {
-            checkInfo = {
-              checkIssued: paymentMatch.checkIssued,
-              checkIssuedAt: paymentMatch.checkIssuedAt,
-              checkReceiptId: paymentMatch.checkReceiptId,
-              checkFiscalCode: paymentMatch.checkFiscalCode,
-              checkReceiptUrl: paymentMatch.checkReceiptUrl,
-              checkSkipped: paymentMatch.checkSkipped,
-              checkSkipReason: paymentMatch.checkSkipReason,
-            };
+            // PREFER: Check bankTransaction first (new data)
+            const bankTransaction = await api.bankTransaction.findFirst({
+              filter: { id: { equals: paymentMatch.bankTransactionId } },
+              select: {
+                checkIssuedAt: true,
+                checkReceiptId: true,
+                checkSkipReason: true,
+              },
+            });
+
+            if (bankTransaction) {
+              const hasCheckInTransaction =
+                bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt;
+
+              if (hasCheckInTransaction) {
+                checkInfo.checkIssued = true;
+                checkInfo.checkIssuedAt = bankTransaction.checkIssuedAt;
+                checkInfo.checkReceiptId = bankTransaction.checkReceiptId;
+                // Note: fiscal code and receipt URL only in orderPaymentMatch for now
+                checkInfo.checkFiscalCode = paymentMatch.checkFiscalCode;
+                checkInfo.checkReceiptUrl = paymentMatch.checkReceiptUrl;
+                console.log(
+                  `[verifyOrderPayments] Check info from bankTransaction (new data) for order ${order.id}`
+                );
+              }
+
+              if (bankTransaction.checkSkipReason) {
+                checkInfo.checkSkipped = true;
+                checkInfo.checkSkipReason = bankTransaction.checkSkipReason;
+              }
+            }
+
+            // FALLBACK: Use orderPaymentMatch if bankTransaction doesn't have data (old data)
+            if (!checkInfo.checkIssued && paymentMatch.checkIssued) {
+              checkInfo = {
+                checkIssued: paymentMatch.checkIssued,
+                checkIssuedAt: paymentMatch.checkIssuedAt,
+                checkReceiptId: paymentMatch.checkReceiptId,
+                checkFiscalCode: paymentMatch.checkFiscalCode,
+                checkReceiptUrl: paymentMatch.checkReceiptUrl,
+                checkSkipped: paymentMatch.checkSkipped,
+                checkSkipReason: paymentMatch.checkSkipReason,
+              };
+              console.log(
+                `[verifyOrderPayments] Check info from orderPaymentMatch (old data) for order ${order.id}`
+              );
+            }
           }
         } catch (err) {
           console.error(

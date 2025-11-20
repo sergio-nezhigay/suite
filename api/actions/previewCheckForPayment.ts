@@ -123,19 +123,27 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       throw new Error('Invalid amount for check preview');
     }
 
-    // Fetch the bank transaction to validate exclusions
+    // Fetch the bank transaction (prefer checking here first)
     const bankTransaction = await api.bankTransaction.findFirst({
       filter: { id: { equals: transactionId } },
       select: {
         id: true,
+        amount: true,
         counterpartyAccount: true,
         counterpartyName: true,
+        // NEW: Include payment matching fields
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkSkipReason: true,
       },
     });
 
     if (!bankTransaction) {
       console.error('[previewCheckForPayment] Bank transaction not found:', transactionId);
-      throw new Error('Bank transaction not found');
+      return {
+        success: false,
+        error: 'Transaction not found',
+      };
     }
 
     // Check if this is Nova Poshta account (excluded from checks)
@@ -149,6 +157,50 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
       console.log('[previewCheckForPayment] Excluded payment code detected:', paymentCode);
       throw new Error(`Check preview not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(', ')} don't require checks)`);
+    }
+
+    // PREFER: Check bankTransaction first (new data)
+    let checkAlreadyIssued = false;
+    let receiptId = bankTransaction.checkReceiptId;
+    let issuedAt = bankTransaction.checkIssuedAt;
+
+    if (receiptId || issuedAt) {
+      checkAlreadyIssued = true;
+      console.log(
+        '[previewCheckForPayment] Check already issued (from bankTransaction):',
+        transactionId
+      );
+    }
+
+    // FALLBACK: Check orderPaymentMatch (old data)
+    if (!checkAlreadyIssued) {
+      const existingMatch = await api.orderPaymentMatch.findFirst({
+        filter: { bankTransactionId: { equals: transactionId } },
+        select: {
+          checkIssued: true,
+          checkIssuedAt: true,
+          checkReceiptId: true,
+        },
+      });
+
+      if (existingMatch?.checkIssued) {
+        checkAlreadyIssued = true;
+        receiptId = existingMatch.checkReceiptId;
+        issuedAt = existingMatch.checkIssuedAt;
+        console.log(
+          '[previewCheckForPayment] Check already issued (from orderPaymentMatch):',
+          transactionId
+        );
+      }
+    }
+
+    if (checkAlreadyIssued) {
+      return {
+        success: false,
+        error: 'Check already issued for this transaction',
+        receiptId: receiptId,
+        issuedAt: issuedAt,
+      };
     }
 
     // Distribute amount across items

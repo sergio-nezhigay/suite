@@ -36,6 +36,11 @@ export const run: ActionRun = async ({ api, logger }) => {
         transactionDateTime: true,
         description: true,
         externalId: true,
+        // NEW: Include payment matching fields
+        matchedOrderId: true,
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkSkipReason: true,
       },
       sort: { transactionDateTime: 'Descending' },
       first: 250,
@@ -59,9 +64,11 @@ export const run: ActionRun = async ({ api, logger }) => {
 
     console.log(`[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(', ')} and Nova Poshta):`, filteredTransactions.length);
 
-    // Fetch all payment matches for filtered transactions in one query (much faster than loop)
-    const transactionIds = filteredTransactions.map((t) => t.id);
+    // For each filtered transaction, check if it has a check (prefer bankTransaction, fallback to orderPaymentMatch)
+    const uncoveredPayments = [];
 
+    // First, fetch payment matches for fallback (old data)
+    const transactionIds = filteredTransactions.map((t) => t.id);
     const allPaymentMatches = await api.orderPaymentMatch.findMany({
       filter: {
         bankTransactionId: { in: transactionIds },
@@ -77,27 +84,34 @@ export const run: ActionRun = async ({ api, logger }) => {
       first: 250,
     });
 
-    console.log('[getUncoveredPayments] Found payment matches:', allPaymentMatches.length);
-
     // Build a Map for quick lookups: bankTransactionId -> paymentMatch
     const paymentMatchMap = new Map();
     for (const match of allPaymentMatches) {
       paymentMatchMap.set(match.bankTransactionId, match);
     }
 
-    // For each filtered transaction, check if it has a payment match with a check
-    const uncoveredPayments = [];
+    console.log(
+      '[getUncoveredPayments] Found payment matches (fallback):',
+      allPaymentMatches.length
+    );
 
     for (const transaction of filteredTransactions) {
-      // Look up payment match from Map (much faster than API call)
-      const paymentMatch = paymentMatchMap.get(transaction.id);
+      // PREFER: Check bankTransaction fields first (new data)
+      const hasCheckInTransaction =
+        transaction.checkReceiptId || transaction.checkIssuedAt;
+      const hasSkipInTransaction = transaction.checkSkipReason;
 
-      // Only include if:
-      // 1. No payment match exists, OR
-      // 2. Payment match exists but check not issued and not skipped
-      const shouldInclude =
-        !paymentMatch ||
-        (!paymentMatch.checkIssued && !paymentMatch.checkSkipped);
+      // FALLBACK: Check orderPaymentMatch (old data)
+      const paymentMatch = paymentMatchMap.get(transaction.id);
+      const hasCheckInMatch = paymentMatch && paymentMatch.checkIssued;
+      const hasSkipInMatch = paymentMatch && paymentMatch.checkSkipped;
+
+      // Determine if payment needs check
+      const hasCheck = hasCheckInTransaction || hasCheckInMatch;
+      const isSkipped = hasSkipInTransaction || hasSkipInMatch;
+
+      // Only include if no check and not skipped
+      const shouldInclude = !hasCheck && !isSkipped;
 
       if (shouldInclude) {
         // Skip transactions without a valid date
@@ -132,6 +146,12 @@ export const run: ActionRun = async ({ api, logger }) => {
           hasPaymentMatch: !!paymentMatch,
           paymentMatchId: paymentMatch?.id || null,
         });
+      } else {
+        console.log(
+          `[getUncoveredPayments] Skipping transaction ${transaction.id}: ` +
+            `hasCheck=${hasCheck} (txn=${hasCheckInTransaction}, match=${hasCheckInMatch}), ` +
+            `isSkipped=${isSkipped} (txn=${hasSkipInTransaction}, match=${hasSkipInMatch})`
+        );
       }
     }
 
