@@ -176,63 +176,19 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       );
     }
 
-    // PREFER: Check bankTransaction first (new data)
-    let checkAlreadyIssued = false;
-    let receiptId = bankTransaction.checkReceiptId;
-    let issuedAt = bankTransaction.checkIssuedAt;
-
-    if (receiptId || issuedAt) {
-      checkAlreadyIssued = true;
+    // Check if check already issued (using bankTransaction only)
+    if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
       console.log(
-        '[previewCheckForPayment] Check already issued (from bankTransaction):',
-        transactionId
+        '[previewCheckForPayment] Check already issued for transaction:',
+        transactionId,
+        'Receipt ID:',
+        bankTransaction.checkReceiptId
       );
-    }
-
-    // FALLBACK: Check orderPaymentMatch (old data)
-    if (!checkAlreadyIssued) {
-      try {
-        const existingMatch = await api.orderPaymentMatch.findFirst({
-          filter: { bankTransactionId: { equals: transactionId } },
-          select: {
-            checkIssued: true,
-            checkIssuedAt: true,
-            checkReceiptId: true,
-          },
-        });
-
-        if (existingMatch?.checkIssued) {
-          checkAlreadyIssued = true;
-          receiptId = existingMatch.checkReceiptId;
-          issuedAt = existingMatch.checkIssuedAt;
-          console.log(
-            '[previewCheckForPayment] Check already issued (from orderPaymentMatch):',
-            transactionId
-          );
-        }
-      } catch (err: any) {
-        // If the model was deleted, Gadget returns GGT_RECORD_NOT_FOUND (404).
-        // Ignore that specific error so the action continues to use bankTransaction data.
-        if (
-          err?.code === 'GGT_RECORD_NOT_FOUND' ||
-          err?.message?.includes('orderPaymentMatches')
-        ) {
-          console.warn(
-            '[previewCheckForPayment] orderPaymentMatch model not available — skipping legacy fallback'
-          );
-        } else {
-          // Unexpected error — rethrow so it surfaces
-          throw err;
-        }
-      }
-    }
-
-    if (checkAlreadyIssued) {
       return {
         success: false,
         error: 'Check already issued for this transaction',
-        receiptId: receiptId,
-        issuedAt: issuedAt,
+        receiptId: bankTransaction.checkReceiptId,
+        issuedAt: bankTransaction.checkIssuedAt,
       };
     }
 

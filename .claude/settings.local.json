@@ -27,7 +27,8 @@
       "Bash(npx gadget models list:*)",
       "Bash(yarn ggt:*)",
       "mcp__ide__getDiagnostics",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(test:*)"
     ],
     "deny": [],
     "ask": []

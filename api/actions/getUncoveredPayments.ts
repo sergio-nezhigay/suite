@@ -80,73 +80,16 @@ export const run: ActionRun = async ({ api, logger }) => {
       filteredTransactions.length
     );
 
-    // For each filtered transaction, check if it has a check (prefer bankTransaction, fallback to orderPaymentMatch)
+    // Check each transaction using only bankTransaction fields
     const uncoveredPayments = [];
 
-    // First, fetch payment matches for fallback (old data)
-    const transactionIds = filteredTransactions.map((t) => t.id);
-    let allPaymentMatches = [];
-    try {
-      allPaymentMatches = await api.orderPaymentMatch.findMany({
-        filter: {
-          bankTransactionId: { in: transactionIds },
-        },
-        select: {
-          id: true,
-          bankTransactionId: true,
-          checkIssued: true,
-          checkSkipped: true,
-          checkReceiptId: true,
-          orderId: true,
-        },
-        first: 250,
-      });
-    } catch (err: any) {
-      // If the model was deleted, Gadget returns GGT_RECORD_NOT_FOUND (404).
-      // Ignore that specific error so the action continues to use bankTransaction data.
-      if (
-        err?.code === 'GGT_RECORD_NOT_FOUND' ||
-        err?.message?.includes('orderPaymentMatches')
-      ) {
-        console.warn(
-          '[getUncoveredPayments] orderPaymentMatch model not available — skipping legacy fallback'
-        );
-      } else {
-        // Unexpected error — rethrow so it surfaces
-        throw err;
-      }
-    }
-
-    // Build a Map for quick lookups: bankTransactionId -> paymentMatch
-    const paymentMatchMap = new Map();
-    for (const match of allPaymentMatches) {
-      paymentMatchMap.set(match.bankTransactionId, match);
-    }
-
-    console.log(
-      '[getUncoveredPayments] Found payment matches (fallback):',
-      allPaymentMatches.length
-    );
-
     for (const transaction of filteredTransactions) {
-      // PREFER: Check bankTransaction fields first (new data)
-      const hasCheckInTransaction =
-        transaction.checkReceiptId || transaction.checkIssuedAt;
-      const hasSkipInTransaction = transaction.checkSkipReason;
-
-      // FALLBACK: Check orderPaymentMatch (old data)
-      const paymentMatch = paymentMatchMap.get(transaction.id);
-      const hasCheckInMatch = paymentMatch && paymentMatch.checkIssued;
-      const hasSkipInMatch = paymentMatch && paymentMatch.checkSkipped;
-
-      // Determine if payment needs check
-      const hasCheck = hasCheckInTransaction || hasCheckInMatch;
-      const isSkipped = hasSkipInTransaction || hasSkipInMatch;
+      // Check if payment has a check or is skipped (using bankTransaction fields only)
+      const hasCheck = !!transaction.checkReceiptId || !!transaction.checkIssuedAt;
+      const isSkipped = !!transaction.checkSkipReason;
 
       // Only include if no check and not skipped
-      const shouldInclude = !hasCheck && !isSkipped;
-
-      if (shouldInclude) {
+      if (!hasCheck && !isSkipped) {
         // Skip transactions without a valid date
         if (!transaction.transactionDateTime) {
           console.log(
@@ -185,14 +128,11 @@ export const run: ActionRun = async ({ api, logger }) => {
           accountCode: paymentCode,
           daysAgo,
           description: transaction.description || '',
-          hasPaymentMatch: !!paymentMatch,
-          paymentMatchId: paymentMatch?.id || null,
         });
       } else {
         console.log(
           `[getUncoveredPayments] Skipping transaction ${transaction.id}: ` +
-            `hasCheck=${hasCheck} (txn=${hasCheckInTransaction}, match=${hasCheckInMatch}), ` +
-            `isSkipped=${isSkipped} (txn=${hasSkipInTransaction}, match=${hasSkipInMatch})`
+            `hasCheck=${hasCheck}, isSkipped=${isSkipped}`
         );
       }
     }

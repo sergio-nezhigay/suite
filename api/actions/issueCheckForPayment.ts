@@ -133,13 +133,17 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       throw new Error('Invalid amount for check issuance');
     }
 
-    // Fetch the bank transaction to validate exclusions
+    // Fetch the bank transaction to validate exclusions and check status
     const bankTransaction = await api.bankTransaction.findFirst({
       filter: { id: { equals: transactionId } },
       select: {
         id: true,
         counterpartyAccount: true,
         counterpartyName: true,
+        matchedOrderId: true,
+        checkIssuedAt: true,
+        checkReceiptId: true,
+        checkSkipReason: true,
       },
     });
 
@@ -182,42 +186,11 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       };
     }
 
-    // Get or create orderPaymentMatch record
-    let paymentMatch = null;
-    try {
-      paymentMatch = await api.orderPaymentMatch.findFirst({
-        filter: { bankTransactionId: { equals: transactionId } },
-        select: {
-          id: true,
-          checkIssued: true,
-          checkIssuedAt: true,
-          checkReceiptId: true,
-          checkFiscalCode: true,
-          checkReceiptUrl: true,
-          orderId: true, // Added to check if already linked to an order
-        },
-      });
-    } catch (err: any) {
-      // If the model was deleted, Gadget returns GGT_RECORD_NOT_FOUND (404).
-      // Ignore that specific error so the action continues to use bankTransaction data.
-      if (
-        err?.code === 'GGT_RECORD_NOT_FOUND' ||
-        err?.message?.includes('orderPaymentMatches')
-      ) {
-        console.warn(
-          '[issueCheckForPayment] orderPaymentMatch model not available — skipping legacy checks'
-        );
-      } else {
-        // Unexpected error — rethrow so it surfaces
-        throw err;
-      }
-    }
-
-    // If a match exists but is linked to a different order, prevent creation
-    if (paymentMatch && paymentMatch.orderId) {
+    // Check if transaction already matched to an order
+    if (bankTransaction.matchedOrderId) {
       console.log(
         '[issueCheckForPayment] Transaction already matched to order:',
-        paymentMatch.orderId
+        bankTransaction.matchedOrderId
       );
       return {
         success: false,
@@ -225,32 +198,20 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       };
     }
 
-    // Check if check already issued
-    if (paymentMatch && paymentMatch.checkIssued) {
+    // Check if check already issued (using bankTransaction only)
+    if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
       console.log(
-        '[issueCheckForPayment] Check already issued for this transaction'
+        '[issueCheckForPayment] Check already issued for this transaction:',
+        transactionId,
+        'Receipt ID:',
+        bankTransaction.checkReceiptId
       );
       return {
         success: false,
         error: 'Check already issued for this transaction',
-        receiptId: paymentMatch.checkReceiptId,
-        fiscalCode: paymentMatch.checkFiscalCode,
-        receiptUrl: paymentMatch.checkReceiptUrl,
-        issuedAt: paymentMatch.checkIssuedAt,
+        receiptId: bankTransaction.checkReceiptId,
+        issuedAt: bankTransaction.checkIssuedAt,
       };
-    }
-
-    // Location: Create payment match for manual check issuance
-    // Note: We intentionally DON'T create orderPaymentMatch here if it doesn't exist.
-    // Manual check issuance can happen before an order match, and since orderId is
-    // required in the model, we can't create a record without it. Instead, we rely
-    // on the bankTransaction fields (checkReceiptId, checkIssuedAt) which are updated
-    // via dual-write below. When an order is matched later, verifyOrderPayments will
-    // create the orderPaymentMatch with the orderId and copy check data from bankTransaction.
-    if (!paymentMatch) {
-      console.log(
-        '[issueCheckForPayment] No existing payment match found. Skipping creation since orderId is required. Check data will be stored in bankTransaction.'
-      );
     }
 
     // Distribute amount across items
@@ -325,47 +286,20 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       receipt.id
     );
 
-    // Update payment match with check information
+    // Update bank transaction with check information
     const checkIssuedAt = new Date();
-    if (paymentMatch) {
-      try {
-        await api.orderPaymentMatch.update(
-          paymentMatch.id,
-          {
-            checkIssued: true,
-            checkIssuedAt: checkIssuedAt,
-            checkReceiptId: receipt.id,
-            checkFiscalCode: receipt.fiscal_code || undefined,
-            checkReceiptUrl: receipt.receipt_url || undefined,
-          }
-        );
-
-        console.log(
-          '[issueCheckForPayment] Payment match updated:',
-          paymentMatch.id
-        );
-      } catch (err: any) {
-        // If the model was deleted, continue without updating payment match
-        if (
-          err?.code === 'GGT_RECORD_NOT_FOUND' ||
-          err?.message?.includes('orderPaymentMatches')
-        ) {
-          console.warn(
-            '[issueCheckForPayment] orderPaymentMatch model not available — skipping update'
-          );
-        } else {
-          throw err;
-        }
-      }
-    }
-
-    // Dual-write: also update the bank transaction
-    // Use the fetched bankTransaction.id (already validated above) so the
-    // update call receives a definite string instead of `string | undefined`.
     await api.bankTransaction.update(bankTransaction.id, {
       checkReceiptId: receipt.id,
       checkIssuedAt: checkIssuedAt,
     });
+
+    console.log(
+      `[issueCheckForPayment] Updated bankTransaction ${bankTransaction.id} with check details:`,
+      {
+        checkReceiptId: receipt.id,
+        checkIssuedAt: checkIssuedAt,
+      }
+    );
 
     return {
       success: true,
