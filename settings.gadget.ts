@@ -51,6 +51,8 @@ export const settings: GadgetSettings = {
           "read_payment_customizations",
           "read_products",
           "read_third_party_fulfillment_orders",
+          "read_order_edits",
+          "write_order_edits",
         ],
         customerAuthenticationEnabled: false,
       },

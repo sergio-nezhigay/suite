@@ -12,10 +12,25 @@ export const schema: GadgetModel = {
       storageKey:
         "ModelField-DataModel-Shopify-Order-cancel_reason::FieldStorageEpoch-DataModel-Shopify-Order-cancel_reason-initial",
     },
+    confirmationNumber: {
+      type: "string",
+      storageKey:
+        "ModelField-DataModel-Shopify-Order-confirmation_number::FieldStorageEpoch-DataModel-Shopify-Order-confirmation_number-initial",
+    },
     currencyBackup: {
       type: "string",
       storageKey:
         "ModelField-DataModel-Shopify-Order-currency::FieldStorageEpoch-DataModel-Shopify-Order-currency-initial",
+    },
+    currentShippingPriceSet: {
+      type: "json",
+      storageKey:
+        "ModelField-DataModel-Shopify-Order-current_shipping_price_set::FieldStorageEpoch-DataModel-Shopify-Order-current_shipping_price_set-initial",
+    },
+    dutiesIncluded: {
+      type: "boolean",
+      storageKey:
+        "ModelField-DataModel-Shopify-Order-duties_included::FieldStorageEpoch-DataModel-Shopify-Order-duties_included-initial",
     },
     financialStatusBackup: {
       type: "string",
@@ -68,11 +83,9 @@ export const schema: GadgetModel = {
       "clientDetails",
       "closed",
       "closedAt",
-      "confirmationNumber",
       "confirmed",
       "currency",
       "currentCartDiscountAmountSet",
-      "currentShippingPriceSet",
       "currentSubtotalLineItemsQuantity",
       "currentSubtotalPrice",
       "currentSubtotalPriceSet",
@@ -90,7 +103,6 @@ export const schema: GadgetModel = {
       "customerLocale",
       "discountApplications",
       "discountCodes",
-      "dutiesIncluded",
       "edited",
       "email",
       "estimatedTaxes",

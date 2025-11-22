@@ -22,6 +22,11 @@ export const schema: GadgetModel = {
       storageKey:
         "ModelField-DataModel-Shopify-OrderTransaction-kind::FieldStorageEpoch-DataModel-Shopify-OrderTransaction-kind-initial",
     },
+    manualPaymentGateway: {
+      type: "boolean",
+      storageKey:
+        "ModelField-DataModel-Shopify-OrderTransaction-manual_payment_gateway::FieldStorageEpoch-DataModel-Shopify-OrderTransaction-manual_payment_gateway-initial",
+    },
     paymentsRefundAttributes: {
       type: "json",
       storageKey:
@@ -48,7 +53,6 @@ export const schema: GadgetModel = {
       "gateway",
       "kind",
       "location",
-      "manualPaymentGateway",
       "manuallyCapturable",
       "maximumRefundableV2",
       "message",

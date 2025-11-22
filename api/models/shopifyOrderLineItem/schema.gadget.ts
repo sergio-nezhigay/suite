@@ -7,6 +7,11 @@ export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-OrderLineItem",
   fields: {
+    discountedTotalSet: {
+      type: "json",
+      storageKey:
+        "ModelField-DataModel-Shopify-OrderLineItem-discounted_total_set::FieldStorageEpoch-DataModel-Shopify-OrderLineItem-discounted_total_set-initial",
+    },
     originLocation: {
       type: "belongsTo",
       parent: { model: "shopifyLocation" },
@@ -31,7 +36,6 @@ export const schema: GadgetModel = {
       "attributedStaffs",
       "currentQuantity",
       "discountAllocations",
-      "discountedTotalSet",
       "discountedUnitPriceAfterAllDiscountsSet",
       "discountedUnitPriceSet",
       "fulfillableQuantity",
