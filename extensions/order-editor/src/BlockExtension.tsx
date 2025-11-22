@@ -188,6 +188,26 @@ function App() {
       <BlockStack gap="base">
         {error && <Banner tone="critical">{error}</Banner>}
 
+        {/* Line Items List */}
+        {loading && <Text>Loading items...</Text>}
+
+        {!loading && lineItems.filter(item => item.quantity > 0).map((item) => (
+          <InlineStack key={item.id} inlineAlignment="space-between" blockAlignment="center">
+            <Text>
+              {item.title} - Qty: {item.quantity} - {item.discountedUnitPriceSet?.shopMoney?.amount}
+            </Text>
+            <Button onPress={() => handleRemoveItem(item.id)} tone="critical" variant="tertiary">
+              Remove
+            </Button>
+          </InlineStack>
+        ))}
+
+        {!loading && lineItems.filter(item => item.quantity > 0).length === 0 && (
+          <Text>No items in this order.</Text>
+        )}
+
+        <Divider />
+
         {/* Add Custom Item Section */}
         <Box padding="base">
           <BlockStack gap>
@@ -214,26 +234,6 @@ function App() {
             </Button>
           </BlockStack>
         </Box>
-
-        <Divider />
-
-        {/* Line Items List */}
-        {loading && <Text>Loading items...</Text>}
-
-        {!loading && lineItems.map((item) => (
-          <InlineStack key={item.id} inlineAlignment="space-between" blockAlignment="center">
-            <Text>
-              {item.title} - Qty: {item.quantity} - {item.discountedUnitPriceSet?.shopMoney?.amount}
-            </Text>
-            <Button onPress={() => handleRemoveItem(item.id)} tone="critical" variant="tertiary">
-              Remove
-            </Button>
-          </InlineStack>
-        ))}
-
-        {!loading && lineItems.length === 0 && (
-          <Text>No items in this order.</Text>
-        )}
       </BlockStack>
     </AdminBlock>
   );
