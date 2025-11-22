@@ -17,7 +17,7 @@ export const SENDER_CONFIG = {
    * Your company's counterparty reference (UUID)
    * Find this in Nova Poshta cabinet or via API: Counterparty.getCounterparties
    */
-  SENDER_REF: '6a11bc85-464d-11e8-8b24-005056881c6b',
+  SENDER_REF: '63cfc23f-84c8-11ec-b0fd-b88303659df5',
 
   /**
    * Your city reference (UUID)
@@ -35,12 +35,12 @@ export const SENDER_CONFIG = {
    * Your contact person reference (UUID)
    * Contact person registered in Nova Poshta system
    */
-  SENDER_CONTACT_REF: '72040cf9-0919-11e9-8b24-005056881c6b',
+  SENDER_CONTACT_REF: '753f7382-8597-11ec-b0fd-b88303659df5',
 
   /**
    * Your phone number for Nova Poshta (format: 380XXXXXXXXX)
    */
-  SENDER_PHONE: '380980059236',
+  SENDER_PHONE: '380507025777',
 
   // ============================================
   // DEFAULT DECLARATION PARAMETERS
