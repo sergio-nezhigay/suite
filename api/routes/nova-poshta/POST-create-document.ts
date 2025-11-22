@@ -219,15 +219,9 @@ const route: RouteHandler<{
         OptionsSeat: optionsSeat,
 
         // Cash on Delivery (COD) - Накладений платіж
-        // Add backward delivery data when COD is enabled (not prepaid)
+        // Use AfterpaymentOnGoodsCost for business clients (Control of payment)
         ...(enableCOD && {
-          BackwardDeliveryData: [
-            {
-              PayerType: 'Recipient',
-              CargoType: 'Money',
-              RedeliveryString: documentCost, // Amount to collect from recipient
-            },
-          ],
+          AfterpaymentOnGoodsCost: documentCost,
         }),
       },
     };

@@ -48,22 +48,26 @@ function mapPaymentMethodToNovaPoshtaApi(paymentMethod: string | null): string {
 
   // Check if it's cash on delivery (COD)
   // Накладений платіж = Cash on Delivery
-  if (method.includes('cash') ||
-      method.includes('наклад') ||
-      method.includes('наложен') ||
-      method.includes('cod') ||
-      method.includes('платіж') ||
-      method.includes('платеж')) {
+  if (
+    method.includes('cash') ||
+    method.includes('наклад') ||
+    method.includes('наложен') ||
+    method.includes('cod') ||
+    method.includes('платіж') ||
+    method.includes('платеж')
+  ) {
     console.log('Matched as Cash');
     return 'Cash';
   }
 
   // Check if it's prepayment
   // Передоплата = Prepayment
-  if (method.includes('передопл') ||
-      method.includes('предоплат') ||
-      method.includes('prepay') ||
-      method.includes('prepaid')) {
+  if (
+    method.includes('передопл') ||
+    method.includes('предоплат') ||
+    method.includes('prepay') ||
+    method.includes('prepaid')
+  ) {
     console.log('Matched as NonCash');
     return 'NonCash';
   }
@@ -198,7 +202,8 @@ function App() {
 
     try {
       // Map payment method to Nova Poshta API format
-      const novaPoshtaPaymentMethod = mapPaymentMethodToNovaPoshtaApi(paymentMethod);
+      const novaPoshtaPaymentMethod =
+        mapPaymentMethodToNovaPoshtaApi(paymentMethod);
       console.log('Payment method mapping:', {
         original: paymentMethod,
         mapped: novaPoshtaPaymentMethod,
@@ -329,22 +334,21 @@ function App() {
         {/* Shipping Address Section */}
         {orderDetails && (
           <BlockStack>
-            <Text fontWeight='bold'>Деталі доставки:</Text>
             <Text>
               {orderDetails.firstName} {orderDetails.lastName}
+              {orderDetails.shippingPhone &&
+                ` Телефон: ${orderDetails.shippingPhone}`}
             </Text>
-            {orderDetails.shippingPhone && (
-              <Text>Телефон: {orderDetails.shippingPhone}</Text>
-            )}
+
             {orderDetails.city && <Text>Місто: {orderDetails.city}</Text>}
             {orderDetails.address && (
               <Text>Адреса: {orderDetails.address}</Text>
             )}
-            {orderDetails.paymentMethod && (
-              <Text>Метод оплати: {orderDetails.paymentMethod}</Text>
-            )}
+
             <Text>
-              Оплата: {mapPaymentMethodToNovaPoshtaApi(orderDetails.paymentMethod) === 'Cash'
+              Оплата:{' '}
+              {mapPaymentMethodToNovaPoshtaApi(orderDetails.paymentMethod) ===
+              'Cash'
                 ? `Накладний платіж - ${calculatedCost} ₴`
                 : 'Передоплата'}
             </Text>
