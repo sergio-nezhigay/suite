@@ -86,8 +86,9 @@ function App() {
       // 1. Begin Order Edit
       console.log('Step 1: Begin Order Edit');
       const beginRes = await makeGraphQLQuery(ORDER_EDIT_BEGIN_MUTATION, { id: orderId });
-      if (beginRes.data?.orderEditBegin?.userErrors?.length) {
-        throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
+      const beginErrors = beginRes.data?.orderEditBegin?.userErrors;
+      if (beginErrors?.length) {
+        throw new Error(beginErrors[0].message);
       }
       const calculatedOrderId =
         beginRes.data?.orderEditBegin?.calculatedOrder?.id;
@@ -104,10 +105,9 @@ function App() {
         price: { amount: itemPrice, currencyCode: currencyCode },
         quantity: 1,
       });
-      if (addRes.data?.orderEditAddCustomItem?.userErrors?.length) {
-        throw new Error(
-          addRes.data.orderEditAddCustomItem.userErrors[0].message
-        );
+      const addErrors = addRes.data?.orderEditAddCustomItem?.userErrors;
+      if (addErrors?.length) {
+        throw new Error(addErrors[0].message);
       }
 
       // 3. Commit Order Edit
@@ -115,8 +115,9 @@ function App() {
       const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
         id: calculatedOrderId,
       });
-      if (commitRes.data?.orderEditCommit?.userErrors?.length) {
-        throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
+      const commitErrors = commitRes.data?.orderEditCommit?.userErrors;
+      if (commitErrors?.length) {
+        throw new Error(commitErrors[0].message);
       }
 
       setSuccess('Item added successfully');
@@ -149,8 +150,9 @@ function App() {
       const beginRes = await makeGraphQLQuery(ORDER_EDIT_BEGIN_MUTATION, { id: orderId });
       console.log('Step 1 Response:', JSON.stringify(beginRes, null, 2));
 
-      if (beginRes.data?.orderEditBegin?.userErrors?.length) {
-        throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
+      const beginErrors = beginRes.data?.orderEditBegin?.userErrors;
+      if (beginErrors?.length) {
+        throw new Error(beginErrors[0].message);
       }
       const calculatedOrderId = beginRes.data?.orderEditBegin?.calculatedOrder?.id;
       console.log('Calculated Order ID:', calculatedOrderId);
@@ -165,8 +167,8 @@ function App() {
       });
       console.log('Step 2 Response:', JSON.stringify(setQuantityRes, null, 2));
 
-      if (setQuantityRes.data?.orderEditSetQuantity?.userErrors?.length) {
-        throw new Error(setQuantityRes.data.orderEditSetQuantity.userErrors[0].message);
+      if (setQuantityRes.errors?.length) {
+        throw new Error(setQuantityRes.errors[0].message);
       }
 
       // 3. Commit Order Edit
@@ -174,8 +176,9 @@ function App() {
       const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
         id: calculatedOrderId,
       });
-      if (commitRes.data?.orderEditCommit?.userErrors?.length) {
-        throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
+      const commitErrors = commitRes.data?.orderEditCommit?.userErrors;
+      if (commitErrors?.length) {
+        throw new Error(commitErrors[0].message);
       }
 
       setSuccess('Item removed successfully');
