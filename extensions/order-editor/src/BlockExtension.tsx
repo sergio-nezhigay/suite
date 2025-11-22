@@ -7,6 +7,9 @@ import {
   TextField,
   Button,
   Banner,
+  InlineStack,
+  Divider,
+  Text,
 } from '@shopify/ui-extensions-react/admin';
 import { useState, useEffect } from 'react';
 
@@ -22,6 +25,9 @@ function App() {
   // Note State
   const [note, setNote] = useState('');
   const [initialNote, setInitialNote] = useState('');
+
+  // Line Items State
+  const [lineItems, setLineItems] = useState<any[]>([]);
 
   // Add Item State
   const [itemTitle, setItemTitle] = useState('');
@@ -48,15 +54,32 @@ function App() {
         order(id: $id) {
           note
           currencyCode
+          lineItems(first: 50) {
+            edges {
+              node {
+                id
+                title
+                quantity
+                originalUnitPriceSet {
+                  shopMoney {
+                    amount
+                    currencyCode
+                  }
+                }
+              }
+            }
+          }
         }
       }`;
       const response = await makeGraphQLQuery(query, { id });
       const fetchedNote = response.data?.order?.note || '';
       const fetchedCurrency = response.data?.order?.currencyCode || 'USD';
+      const fetchedItems = response.data?.order?.lineItems?.edges?.map((edge: any) => edge.node) || [];
 
       setNote(fetchedNote);
       setInitialNote(fetchedNote);
       setCurrencyCode(fetchedCurrency);
+      setLineItems(fetchedItems);
     } catch (err) {
       setError('Failed to load order data');
       console.error(err);
@@ -118,23 +141,12 @@ function App() {
     console.log('Starting handleAddItem for order:', orderId);
 
     try {
-      // Debug: Fetch current line items
-      await logCurrentLineItems('Before Edit');
-
       // 1. Begin Order Edit
       console.log('Step 1: Begin Order Edit');
       const beginMutation = `mutation orderEditBegin($id: ID!) {
         orderEditBegin(id: $id) {
           calculatedOrder {
             id
-            lineItems(first: 10) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
           }
           userErrors {
             field
@@ -143,13 +155,10 @@ function App() {
         }
       }`;
       const beginRes = await makeGraphQLQuery(beginMutation, { id: orderId });
-      console.log('Begin Response:', JSON.stringify(beginRes, null, 2));
-
       if (beginRes.data?.orderEditBegin?.userErrors?.length) {
         throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
       }
       const calculatedOrderId = beginRes.data?.orderEditBegin?.calculatedOrder?.id;
-      console.log('Calculated Order ID:', calculatedOrderId);
 
       // 2. Add Custom Item
       console.log('Step 2: Add Custom Item', { title: itemTitle, price: itemPrice, currency: currencyCode });
@@ -186,8 +195,6 @@ function App() {
         price: { amount: itemPrice, currencyCode: currencyCode },
         quantity: 1
       });
-      console.log('Add Response:', JSON.stringify(addRes, null, 2));
-
       if (addRes.data?.orderEditAddCustomItem?.userErrors?.length) {
         throw new Error(addRes.data.orderEditAddCustomItem.userErrors[0].message);
       }
@@ -214,8 +221,6 @@ function App() {
         }
       }`;
       const commitRes = await makeGraphQLQuery(commitMutation, { id: calculatedOrderId });
-      console.log('Commit Response:', JSON.stringify(commitRes, null, 2));
-
       if (commitRes.data?.orderEditCommit?.userErrors?.length) {
         throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
       }
@@ -225,8 +230,8 @@ function App() {
       setItemPrice('');
       setIsAddingItem(false);
 
-      // Debug: Fetch line items after commit
-      await logCurrentLineItems('After Commit');
+      // Refresh order data to show new item
+      await fetchOrderData(orderId);
 
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -234,29 +239,6 @@ function App() {
       setError(err.message || 'Failed to add item');
     } finally {
       setIsSaving(false);
-    }
-  }
-
-  async function logCurrentLineItems(stage: string) {
-    try {
-      const query = `query OrderLineItems($id: ID!) {
-        order(id: $id) {
-          id
-          lineItems(first: 20) {
-            edges {
-              node {
-                id
-                title
-                quantity
-              }
-            }
-          }
-        }
-      }`;
-      const res = await makeGraphQLQuery(query, { id: orderId });
-      console.log(`Line Items [${stage}]:`, JSON.stringify(res.data?.order?.lineItems, null, 2));
-    } catch (e) {
-      console.error(`Failed to log line items at ${stage}`, e);
     }
   }
 
@@ -288,6 +270,20 @@ function App() {
         >
           {isSaving ? 'Saving...' : 'Save Note'}
         </Button>
+
+        <Divider />
+
+        <Text fontWeight="bold">Line Items ({lineItems.length})</Text>
+        <BlockStack spacing="tight">
+          {lineItems.map((item) => (
+            <InlineStack key={item.id} inlineAlignment="space-between">
+              <Text>{item.title} (x{item.quantity})</Text>
+              <Text>{item.originalUnitPriceSet?.shopMoney?.amount} {item.originalUnitPriceSet?.shopMoney?.currencyCode}</Text>
+            </InlineStack>
+          ))}
+        </BlockStack>
+
+        <Divider />
 
         <BlockStack>
           <Text fontWeight="bold">Add Custom Item</Text>
