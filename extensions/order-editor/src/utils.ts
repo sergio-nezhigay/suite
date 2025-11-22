@@ -23,6 +23,15 @@ export const ORDER_EDIT_BEGIN_MUTATION = `mutation orderEditBegin($id: ID!) {
   orderEditBegin(id: $id) {
     calculatedOrder {
       id
+      lineItems(first: 50) {
+        edges {
+          node {
+            id
+            quantity
+  title
+          }
+        }
+      }
     }
     userErrors {
       field
