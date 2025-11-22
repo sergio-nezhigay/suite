@@ -1,0 +1,13 @@
+api_version = "2025-04"
+
+[[extensions]]
+name = "t:name"
+handle = "order-editor"
+
+uid = "91678598-cc66-8366-7d9b-7e3a5403a9873d5cba1f"
+
+type = "ui_extension"
+
+[[extensions.targeting]]
+module = "./src/BlockExtension.tsx"
+target = "admin.order-details.block.render"
