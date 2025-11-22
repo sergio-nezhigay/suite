@@ -7,9 +7,8 @@ import {
   TextField,
   Button,
   Banner,
-  InlineStack,
   Divider,
-  Text,
+  InlineStack,
 } from '@shopify/ui-extensions-react/admin';
 import { useState, useEffect } from 'react';
 
@@ -21,10 +20,6 @@ export default reactExtension(TARGET, () => <App />);
 function App() {
   const { i18n, data } = useApi(TARGET);
   const orderId = data.selected[0]?.id;
-
-  // Note State
-  const [note, setNote] = useState('');
-  const [initialNote, setInitialNote] = useState('');
 
   // Line Items State
   const [lineItems, setLineItems] = useState<any[]>([]);
@@ -52,7 +47,6 @@ function App() {
     try {
       const query = `query Order($id: ID!) {
         order(id: $id) {
-          note
           currencyCode
           lineItems(first: 50) {
             edges {
@@ -72,12 +66,9 @@ function App() {
         }
       }`;
       const response = await makeGraphQLQuery(query, { id });
-      const fetchedNote = response.data?.order?.note || '';
       const fetchedCurrency = response.data?.order?.currencyCode || 'USD';
       const fetchedItems = response.data?.order?.lineItems?.edges?.map((edge: any) => edge.node) || [];
 
-      setNote(fetchedNote);
-      setInitialNote(fetchedNote);
       setCurrencyCode(fetchedCurrency);
       setLineItems(fetchedItems);
     } catch (err) {
@@ -85,46 +76,6 @@ function App() {
       console.error(err);
     } finally {
       setIsLoading(false);
-    }
-  }
-
-  async function handleSaveNote() {
-    setIsSaving(true);
-    setError(null);
-    setSuccess(null);
-    try {
-      const mutation = `mutation orderUpdate($input: OrderInput!) {
-        orderUpdate(input: $input) {
-          order {
-            note
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`;
-      const response = await makeGraphQLQuery(mutation, {
-        input: {
-          id: orderId,
-          note: note,
-        },
-      });
-
-      if (response.data?.orderUpdate?.userErrors?.length) {
-        const errors = response.data.orderUpdate.userErrors
-          .map((e: any) => e.message)
-          .join(', ');
-        throw new Error(errors);
-      }
-
-      setInitialNote(note);
-      setSuccess('Note updated successfully');
-      setTimeout(() => setSuccess(null), 3000);
-    } catch (err: any) {
-      setError(err.message || 'Failed to update note');
-    } finally {
-      setIsSaving(false);
     }
   }
 
@@ -256,22 +207,6 @@ function App() {
       <BlockStack>
         {error && <Banner tone="critical">{error}</Banner>}
         {success && <Banner tone="success">{success}</Banner>}
-
-        <Text fontWeight="bold">Order Note</Text>
-        <TextField
-          label="Note"
-          value={note}
-          onChange={setNote}
-          disabled={isLoading || isSaving}
-        />
-        <Button
-          onPress={handleSaveNote}
-          disabled={isLoading || isSaving || note === initialNote}
-        >
-          {isSaving ? 'Saving...' : 'Save Note'}
-        </Button>
-
-        <Divider />
 
         <Text fontWeight="bold">Line Items ({lineItems.length})</Text>
         <BlockStack spacing="tight">
