@@ -11,6 +11,15 @@ import {
   InlineStack,
 } from '@shopify/ui-extensions-react/admin';
 import { useState, useEffect } from 'react';
+import {
+  makeGraphQLQuery,
+  GET_ORDER_QUERY,
+  ORDER_EDIT_BEGIN_MUTATION,
+  ORDER_EDIT_ADD_CUSTOM_ITEM_MUTATION,
+  ORDER_EDIT_COMMIT_MUTATION,
+  ORDER_EDIT_SET_QUANTITY_MUTATION,
+} from './utils';
+
 
 // The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
 const TARGET = 'admin.order-details.block.render';
@@ -45,27 +54,7 @@ function App() {
     setIsLoading(true);
     setError(null);
     try {
-      const query = `query Order($id: ID!) {
-        order(id: $id) {
-          currencyCode
-          lineItems(first: 50) {
-            edges {
-              node {
-                id
-                title
-                quantity
-                originalUnitPriceSet {
-                  shopMoney {
-                    amount
-                    currencyCode
-                  }
-                }
-              }
-            }
-          }
-        }
-      }`;
-      const response = await makeGraphQLQuery(query, { id });
+      const response = await makeGraphQLQuery(GET_ORDER_QUERY, { id });
       const fetchedCurrency = response.data?.order?.currencyCode || 'USD';
       const fetchedItems =
         response.data?.order?.lineItems?.edges?.map((edge: any) => edge.node) ||
@@ -96,18 +85,7 @@ function App() {
     try {
       // 1. Begin Order Edit
       console.log('Step 1: Begin Order Edit');
-      const beginMutation = `mutation orderEditBegin($id: ID!) {
-        orderEditBegin(id: $id) {
-          calculatedOrder {
-            id
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`;
-      const beginRes = await makeGraphQLQuery(beginMutation, { id: orderId });
+      const beginRes = await makeGraphQLQuery(ORDER_EDIT_BEGIN_MUTATION, { id: orderId });
       if (beginRes.data?.orderEditBegin?.userErrors?.length) {
         throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
       }
@@ -120,34 +98,7 @@ function App() {
         price: itemPrice,
         currency: currencyCode,
       });
-      const addMutation = `mutation orderEditAddCustomItem($id: ID!, $title: String!, $price: MoneyInput!, $quantity: Int!) {
-        orderEditAddCustomItem(id: $id, title: $title, price: $price, quantity: $quantity) {
-          calculatedOrder {
-            id
-            lineItems(first: 10) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
-            addedLineItems(first: 5) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`;
-      const addRes = await makeGraphQLQuery(addMutation, {
+      const addRes = await makeGraphQLQuery(ORDER_EDIT_ADD_CUSTOM_ITEM_MUTATION, {
         id: calculatedOrderId,
         title: itemTitle,
         price: { amount: itemPrice, currencyCode: currencyCode },
@@ -161,26 +112,7 @@ function App() {
 
       // 3. Commit Order Edit
       console.log('Step 3: Commit Order Edit');
-      const commitMutation = `mutation orderEditCommit($id: ID!) {
-        orderEditCommit(id: $id) {
-          order {
-            id
-            lineItems(first: 10) {
-              edges {
-                node {
-                  id
-                  title
-                }
-              }
-            }
-          }
-          userErrors {
-            field
-            message
-          }
-        }
-      }`;
-      const commitRes = await makeGraphQLQuery(commitMutation, {
+      const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
         id: calculatedOrderId,
       });
       if (commitRes.data?.orderEditCommit?.userErrors?.length) {
@@ -204,13 +136,60 @@ function App() {
     }
   }
 
-  async function makeGraphQLQuery(query: string, variables: any) {
-    const res = await fetch('shopify:admin/api/graphql.json', {
-      method: 'POST',
-      body: JSON.stringify({ query, variables }),
-    });
-    if (!res.ok) throw new Error('Network error');
-    return await res.json();
+  async function handleRemoveItem(lineItemId: string) {
+    setIsSaving(true);
+    setError(null);
+    setSuccess(null);
+
+    console.log('Starting handleRemoveItem for order:', orderId);
+
+    try {
+      // 1. Begin Order Edit
+      console.log('Step 1: Begin Order Edit');
+      const beginRes = await makeGraphQLQuery(ORDER_EDIT_BEGIN_MUTATION, { id: orderId });
+      console.log('Step 1 Response:', JSON.stringify(beginRes, null, 2));
+
+      if (beginRes.data?.orderEditBegin?.userErrors?.length) {
+        throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
+      }
+      const calculatedOrderId = beginRes.data?.orderEditBegin?.calculatedOrder?.id;
+      console.log('Calculated Order ID:', calculatedOrderId);
+
+      // 2. Set Quantity to 0 (Remove Item)
+      console.log('Step 2: Set Quantity to 0 (Remove Item)', { lineItemId });
+      const setQuantityRes = await makeGraphQLQuery(ORDER_EDIT_SET_QUANTITY_MUTATION, {
+        id: calculatedOrderId,
+        lineItemId: lineItemId,
+        quantity: 0,
+        restock: true,
+      });
+      console.log('Step 2 Response:', JSON.stringify(setQuantityRes, null, 2));
+
+      if (setQuantityRes.data?.orderEditSetQuantity?.userErrors?.length) {
+        throw new Error(setQuantityRes.data.orderEditSetQuantity.userErrors[0].message);
+      }
+
+      // 3. Commit Order Edit
+      console.log('Step 3: Commit Order Edit');
+      const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
+        id: calculatedOrderId,
+      });
+      if (commitRes.data?.orderEditCommit?.userErrors?.length) {
+        throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
+      }
+
+      setSuccess('Item removed successfully');
+
+      // Refresh order data
+      await fetchOrderData(orderId);
+
+      setTimeout(() => setSuccess(null), 3000);
+    } catch (err: any) {
+      console.error('Error in handleRemoveItem:', err);
+      setError(err.message || 'Failed to remove item');
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -230,6 +209,13 @@ function App() {
                 {item.originalUnitPriceSet?.shopMoney?.amount}{' '}
                 {item.originalUnitPriceSet?.shopMoney?.currencyCode}
               </Text>
+              <Button
+                tone="critical"
+                onPress={() => handleRemoveItem(item.id)}
+                disabled={isSaving}
+              >
+                Remove
+              </Button>
             </InlineStack>
           ))}
         </BlockStack>
