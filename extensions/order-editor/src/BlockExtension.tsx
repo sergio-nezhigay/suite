@@ -67,7 +67,9 @@ function App() {
       }`;
       const response = await makeGraphQLQuery(query, { id });
       const fetchedCurrency = response.data?.order?.currencyCode || 'USD';
-      const fetchedItems = response.data?.order?.lineItems?.edges?.map((edge: any) => edge.node) || [];
+      const fetchedItems =
+        response.data?.order?.lineItems?.edges?.map((edge: any) => edge.node) ||
+        [];
 
       setCurrencyCode(fetchedCurrency);
       setLineItems(fetchedItems);
@@ -109,10 +111,15 @@ function App() {
       if (beginRes.data?.orderEditBegin?.userErrors?.length) {
         throw new Error(beginRes.data.orderEditBegin.userErrors[0].message);
       }
-      const calculatedOrderId = beginRes.data?.orderEditBegin?.calculatedOrder?.id;
+      const calculatedOrderId =
+        beginRes.data?.orderEditBegin?.calculatedOrder?.id;
 
       // 2. Add Custom Item
-      console.log('Step 2: Add Custom Item', { title: itemTitle, price: itemPrice, currency: currencyCode });
+      console.log('Step 2: Add Custom Item', {
+        title: itemTitle,
+        price: itemPrice,
+        currency: currencyCode,
+      });
       const addMutation = `mutation orderEditAddCustomItem($id: ID!, $title: String!, $price: MoneyInput!, $quantity: Int!) {
         orderEditAddCustomItem(id: $id, title: $title, price: $price, quantity: $quantity) {
           calculatedOrder {
@@ -144,10 +151,12 @@ function App() {
         id: calculatedOrderId,
         title: itemTitle,
         price: { amount: itemPrice, currencyCode: currencyCode },
-        quantity: 1
+        quantity: 1,
       });
       if (addRes.data?.orderEditAddCustomItem?.userErrors?.length) {
-        throw new Error(addRes.data.orderEditAddCustomItem.userErrors[0].message);
+        throw new Error(
+          addRes.data.orderEditAddCustomItem.userErrors[0].message
+        );
       }
 
       // 3. Commit Order Edit
@@ -171,7 +180,9 @@ function App() {
           }
         }
       }`;
-      const commitRes = await makeGraphQLQuery(commitMutation, { id: calculatedOrderId });
+      const commitRes = await makeGraphQLQuery(commitMutation, {
+        id: calculatedOrderId,
+      });
       if (commitRes.data?.orderEditCommit?.userErrors?.length) {
         throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
       }
@@ -203,17 +214,22 @@ function App() {
   }
 
   return (
-    <AdminBlock title="Order Editor">
+    <AdminBlock title='Order Editor'>
       <BlockStack>
-        {error && <Banner tone="critical">{error}</Banner>}
-        {success && <Banner tone="success">{success}</Banner>}
+        {error && <Banner tone='critical'>{error}</Banner>}
+        {success && <Banner tone='success'>{success}</Banner>}
 
-        <Text fontWeight="bold">Line Items ({lineItems.length})</Text>
-        <BlockStack spacing="tight">
+        <Text fontWeight='bold'>Line Items ({lineItems.length})</Text>
+        <BlockStack>
           {lineItems.map((item) => (
-            <InlineStack key={item.id} inlineAlignment="space-between">
-              <Text>{item.title} (x{item.quantity})</Text>
-              <Text>{item.originalUnitPriceSet?.shopMoney?.amount} {item.originalUnitPriceSet?.shopMoney?.currencyCode}</Text>
+            <InlineStack key={item.id} inlineAlignment='space-between'>
+              <Text>
+                {item.title} (x{item.quantity})
+              </Text>
+              <Text>
+                {item.originalUnitPriceSet?.shopMoney?.amount}{' '}
+                {item.originalUnitPriceSet?.shopMoney?.currencyCode}
+              </Text>
             </InlineStack>
           ))}
         </BlockStack>
@@ -221,11 +237,11 @@ function App() {
         <Divider />
 
         <BlockStack>
-          <Text fontWeight="bold">Add Custom Item</Text>
+          <Text fontWeight='bold'>Add Custom Item</Text>
           {isAddingItem ? (
             <>
               <TextField
-                label="Title"
+                label='Title'
                 value={itemTitle}
                 onChange={setItemTitle}
                 disabled={isSaving}
@@ -236,17 +252,23 @@ function App() {
                 onChange={setItemPrice}
                 disabled={isSaving}
               />
-              <BlockStack inlineAlignment="start">
-                 <Button onPress={handleAddItem} disabled={isSaving}>
+              <BlockStack inlineAlignment='start'>
+                <Button onPress={handleAddItem} disabled={isSaving}>
                   {isSaving ? 'Adding...' : 'Add Item'}
                 </Button>
-                <Button onPress={() => setIsAddingItem(false)} disabled={isSaving}>
+                <Button
+                  onPress={() => setIsAddingItem(false)}
+                  disabled={isSaving}
+                >
                   Cancel
                 </Button>
               </BlockStack>
             </>
           ) : (
-            <Button onPress={() => setIsAddingItem(true)} disabled={isLoading || isSaving}>
+            <Button
+              onPress={() => setIsAddingItem(true)}
+              disabled={isLoading || isSaving}
+            >
               Add New Item
             </Button>
           )}
