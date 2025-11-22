@@ -27,8 +27,20 @@ export const ORDER_EDIT_BEGIN_MUTATION = `mutation orderEditBegin($id: ID!) {
         edges {
           node {
             id
+            title
             quantity
-  title
+            originalUnitPriceSet {
+              shopMoney {
+                amount
+                currencyCode
+              }
+            }
+            discountedUnitPriceSet {
+              shopMoney {
+                amount
+                currencyCode
+              }
+            }
           }
         }
       }
