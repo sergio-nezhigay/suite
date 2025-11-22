@@ -37,6 +37,7 @@ function App() {
   // New Item State
   const [newItemTitle, setNewItemTitle] = useState('');
   const [newItemPrice, setNewItemPrice] = useState('');
+  const [newItemQuantity, setNewItemQuantity] = useState('1');
   const [addingItem, setAddingItem] = useState(false);
 
   useEffect(() => {
@@ -132,14 +133,20 @@ function App() {
 
   async function handleAddCustomItem() {
     console.log('[Debug] handleAddCustomItem called');
-    console.log('[Debug] State:', { calculatedOrderId, newItemTitle, newItemPrice });
+    console.log('[Debug] State:', { calculatedOrderId, newItemTitle, newItemPrice, newItemQuantity });
 
     if (!calculatedOrderId) {
       setError('Internal Error: No calculated order ID. Please refresh.');
       return;
     }
-    if (!newItemTitle || !newItemPrice) {
-      setError('Please enter both title and price');
+    if (!newItemTitle || !newItemPrice || !newItemQuantity) {
+      setError('Please enter title, price, and quantity');
+      return;
+    }
+
+    const quantity = parseInt(newItemQuantity, 10);
+    if (isNaN(quantity) || quantity < 1) {
+      setError('Quantity must be a positive number');
       return;
     }
 
@@ -152,7 +159,7 @@ function App() {
         id: calculatedOrderId,
         title: newItemTitle,
         price: { amount: newItemPrice, currencyCode: currencyCode },
-        quantity: 1,
+        quantity: quantity,
       });
       console.log('[Debug] Add custom item response:', JSON.stringify(addRes));
 
@@ -173,6 +180,7 @@ function App() {
       // Clear inputs and refresh
       setNewItemTitle('');
       setNewItemPrice('');
+      setNewItemQuantity('1');
       await fetchItems();
 
     } catch (err: any) {
@@ -217,18 +225,24 @@ function App() {
                 label="Title"
                 value={newItemTitle}
                 onChange={setNewItemTitle}
-                autoComplete="off"
+
               />
               <TextField
                 label="Price"
                 value={newItemPrice}
                 onChange={setNewItemPrice}
-                autoComplete="off"
+
+              />
+              <TextField
+                label="Quantity"
+                value={newItemQuantity}
+                onChange={setNewItemQuantity}
+
               />
             </InlineStack>
             <Button
               onPress={handleAddCustomItem}
-              disabled={addingItem || !newItemTitle || !newItemPrice}
+              disabled={addingItem || !newItemTitle || !newItemPrice || !newItemQuantity}
             >
               {addingItem ? 'Adding...' : 'Add Item'}
             </Button>
