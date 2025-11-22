@@ -159,12 +159,14 @@ function App() {
 
       // 2. Set Quantity to 0 (Remove Item)
       console.log('Step 2: Set Quantity to 0 (Remove Item)', { lineItemId });
-      const setQuantityRes = await makeGraphQLQuery(ORDER_EDIT_SET_QUANTITY_MUTATION, {
+      const mutationVariables = {
         id: calculatedOrderId,
         lineItemId: lineItemId,
         quantity: 0,
         restock: true,
-      });
+      };
+      console.log('Step 2 Request Variables:', JSON.stringify(mutationVariables, null, 2));
+      const setQuantityRes = await makeGraphQLQuery(ORDER_EDIT_SET_QUANTITY_MUTATION, mutationVariables);
       console.log('Step 2 Response:', JSON.stringify(setQuantityRes, null, 2));
 
       if (setQuantityRes.errors?.length) {
