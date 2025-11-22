@@ -29,12 +29,6 @@ export const ORDER_EDIT_BEGIN_MUTATION = `mutation orderEditBegin($id: ID!) {
             id
             title
             quantity
-            originalUnitPriceSet {
-              shopMoney {
-                amount
-                currencyCode
-              }
-            }
             discountedUnitPriceSet {
               shopMoney {
                 amount
