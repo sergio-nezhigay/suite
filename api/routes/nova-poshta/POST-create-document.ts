@@ -149,6 +149,31 @@ const route: RouteHandler<{
     const isPrepaid = paymentMethod?.toLowerCase().includes('передплата безготівка');
     const enableCOD = !isPrepaid;
 
+    // ============================================
+    // Calculate OptionsSeat (required by Nova Poshta API)
+    // ============================================
+    const packageWidth = SENDER_CONFIG.DEFAULT_PACKAGE_WIDTH;
+    const packageHeight = SENDER_CONFIG.DEFAULT_PACKAGE_HEIGHT;
+    const packageLength = SENDER_CONFIG.DEFAULT_PACKAGE_LENGTH;
+
+    // Calculate volumetric volume: (width * height * length) / 4000
+    const volumetricVolume = (
+      parseFloat(packageWidth) *
+      parseFloat(packageHeight) *
+      parseFloat(packageLength) /
+      4000
+    ).toString();
+
+    // Create array of seats (one for each package)
+    const seatsCount = parseInt(documentSeats);
+    const optionsSeat = Array.from({ length: seatsCount }, () => ({
+      volumetricVolume,
+      volumetricWidth: packageWidth,
+      volumetricLength: packageLength,
+      volumetricHeight: packageHeight,
+      weight: documentWeight,
+    }));
+
     console.log('📋 Creating InternetDocument with params:', {
       sender: SENDER_CONFIG.SENDER_REF,
       senderWarehouse: SENDER_CONFIG.SENDER_WAREHOUSE_REF,
@@ -189,6 +214,9 @@ const route: RouteHandler<{
         Weight: documentWeight,
         SeatsAmount: documentSeats,
         Description: documentDescription,
+
+        // Package dimensions (REQUIRED by Nova Poshta API)
+        OptionsSeat: optionsSeat,
 
         // Cash on Delivery (COD) - Накладений платіж
         // Add backward delivery data when COD is enabled (not prepaid)

@@ -28,7 +28,8 @@
       "Bash(yarn ggt:*)",
       "mcp__ide__getDiagnostics",
       "Bash(curl:*)",
-      "Bash(test:*)"
+      "Bash(test:*)",
+      "Bash(npx cross-env:*)"
     ],
     "deny": [],
     "ask": []

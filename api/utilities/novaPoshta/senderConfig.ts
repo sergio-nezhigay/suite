@@ -106,6 +106,14 @@ export const SENDER_CONFIG = {
    * Default declared cost in UAH
    */
   DEFAULT_COST: '100',
+
+  /**
+   * Default package dimensions (in cm)
+   * Used to calculate volumetric weight for Nova Poshta
+   */
+  DEFAULT_PACKAGE_WIDTH: '10',
+  DEFAULT_PACKAGE_HEIGHT: '10',
+  DEFAULT_PACKAGE_LENGTH: '5',
 } as const;
 
 /**
