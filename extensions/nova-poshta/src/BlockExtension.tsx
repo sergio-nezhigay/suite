@@ -106,6 +106,8 @@ function App() {
   const calculatedCost = calculateUnfulfilledItemsCost(
     orderInfo?.orderDetails?.lineItems
   );
+  console.log('DEBUG: Order Details Line Items:', orderInfo?.orderDetails?.lineItems);
+  console.log('DEBUG: Calculated Cost Result:', calculatedCost);
   const packageDetails: PackageDetails = {
     weight: DEFAULT_PACKAGE_DETAILS.WEIGHT,
     cost: calculatedCost,

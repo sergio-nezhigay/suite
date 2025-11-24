@@ -23,6 +23,13 @@ export function calculateUnfulfilledItemsCost(
     const price = parseFloat(lineItem.discountedUnitPriceSet.shopMoney.amount);
     const quantity = lineItem.unfulfilledQuantity;
 
+    console.log('DEBUG: Processing Item:', {
+      title: lineItem.title,
+      price: price,
+      quantity: quantity,
+      unfulfilledQuantity: lineItem.unfulfilledQuantity,
+    });
+
     // Only count items with unfulfilled quantity
     if (quantity > 0 && !isNaN(price)) {
       return sum + price * quantity;
