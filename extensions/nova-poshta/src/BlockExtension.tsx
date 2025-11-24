@@ -43,9 +43,6 @@ function mapPaymentMethodToNovaPoshtaApi(paymentMethod: string | null): string {
 
   const method = paymentMethod.toLowerCase().trim();
 
-  console.log('Payment method original:', paymentMethod);
-  console.log('Payment method normalized:', method);
-
   // Check if it's cash on delivery (COD)
   // Накладений платіж = Cash on Delivery
   if (
@@ -56,7 +53,6 @@ function mapPaymentMethodToNovaPoshtaApi(paymentMethod: string | null): string {
     method.includes('платіж') ||
     method.includes('платеж')
   ) {
-    console.log('Matched as Cash');
     return 'Cash';
   }
 
@@ -68,12 +64,10 @@ function mapPaymentMethodToNovaPoshtaApi(paymentMethod: string | null): string {
     method.includes('prepay') ||
     method.includes('prepaid')
   ) {
-    console.log('Matched as NonCash');
     return 'NonCash';
   }
 
   // Default to Cash
-  console.log('No match, defaulting to Cash');
   return 'Cash';
 }
 
@@ -106,8 +100,6 @@ function App() {
   const calculatedCost = calculateUnfulfilledItemsCost(
     orderInfo?.orderDetails?.lineItems
   );
-  console.log('DEBUG: Order Details Line Items:', orderInfo?.orderDetails?.lineItems);
-  console.log('DEBUG: Calculated Cost Result:', calculatedCost);
   const packageDetails: PackageDetails = {
     weight: DEFAULT_PACKAGE_DETAILS.WEIGHT,
     cost: calculatedCost,
@@ -206,10 +198,6 @@ function App() {
       // Map payment method to Nova Poshta API format
       const novaPoshtaPaymentMethod =
         mapPaymentMethodToNovaPoshtaApi(paymentMethod);
-      console.log('Payment method mapping:', {
-        original: paymentMethod,
-        mapped: novaPoshtaPaymentMethod,
-      });
 
       const declaration = await createDeclaration({
         firstName,

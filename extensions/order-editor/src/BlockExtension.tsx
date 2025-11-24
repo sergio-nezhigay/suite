@@ -41,11 +41,10 @@ function App() {
   const [addingItem, setAddingItem] = useState(false);
 
   useEffect(() => {
-    console.log('[Debug] App mounted. Order ID:', orderId);
     if (orderId) {
       fetchItems();
     } else {
-      console.warn('[Debug] No order ID found in context');
+      console.warn('No order ID found in context');
     }
   }, [orderId]);
 
@@ -53,20 +52,17 @@ function App() {
     setLoading(true);
     setError(null);
     try {
-      console.log('[Debug] Fetching items for order:', orderId);
       const response = await makeGraphQLQuery(ORDER_EDIT_BEGIN_MUTATION, { id: orderId });
-      console.log('[Debug] Order edit begin response:', JSON.stringify(response));
 
       if (response.data?.orderEditBegin?.userErrors?.length > 0) {
         const errorMsg = response.data.orderEditBegin.userErrors[0].message;
-        console.error('[Debug] Order edit begin error:', errorMsg);
+        console.error('Order edit begin error:', errorMsg);
         setError(errorMsg);
         return;
       }
 
       const order = response.data?.orderEditBegin?.calculatedOrder;
       if (order) {
-        console.log('[Debug] Calculated Order ID:', order.id);
         setCalculatedOrderId(order.id);
         if (order.totalPriceSet?.shopMoney?.currencyCode) {
           setCurrencyCode(order.totalPriceSet.shopMoney.currencyCode);
@@ -74,7 +70,7 @@ function App() {
         const items = order.lineItems?.edges?.map((edge: any) => edge.node) || [];
         setLineItems(items);
       } else {
-        console.error('[Debug] No calculated order returned');
+        console.error('No calculated order returned');
       }
     } catch (err: any) {
       console.error('Failed to fetch order items:', err);
@@ -90,41 +86,33 @@ function App() {
     setLoading(true);
     setError(null);
 
-    console.log(`[Debug] Starting removal of item: ${lineItemId}`);
-
     try {
       // 1. Set Quantity to 0
-      console.log('[Debug] Setting quantity to 0...');
       const setQuantityRes = await makeGraphQLQuery(ORDER_EDIT_SET_QUANTITY_MUTATION, {
         id: calculatedOrderId,
         lineItemId,
         quantity: 0,
         restock: true,
       });
-      console.log('[Debug] Set quantity response:', JSON.stringify(setQuantityRes));
 
       if (setQuantityRes.data?.orderEditSetQuantity?.userErrors?.length > 0) {
         throw new Error(setQuantityRes.data.orderEditSetQuantity.userErrors[0].message);
       }
 
       // 2. Commit
-      console.log('[Debug] Committing changes...');
       const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
         id: calculatedOrderId,
       });
-      console.log('[Debug] Commit response:', JSON.stringify(commitRes));
 
       if (commitRes.data?.orderEditCommit?.userErrors?.length > 0) {
         throw new Error(commitRes.data.orderEditCommit.userErrors[0].message);
       }
 
       // 3. Refresh
-      console.log('[Debug] Refreshing items...');
       await fetchItems();
-      console.log('[Debug] Items refreshed');
 
     } catch (err: any) {
-      console.error('[Debug] Failed to remove item:', err);
+      console.error('Failed to remove item:', err);
       setError(err.message);
     } finally {
       setLoading(false);
@@ -132,9 +120,6 @@ function App() {
   }
 
   async function handleAddCustomItem() {
-    console.log('[Debug] handleAddCustomItem called');
-    console.log('[Debug] State:', { calculatedOrderId, newItemTitle, newItemPrice, newItemQuantity });
-
     if (!calculatedOrderId) {
       setError('Internal Error: No calculated order ID. Please refresh.');
       return;
@@ -154,21 +139,18 @@ function App() {
     setError(null);
 
     try {
-      console.log(`[Debug] Adding custom item with currency: ${currencyCode}...`);
       const addRes = await makeGraphQLQuery(ORDER_EDIT_ADD_CUSTOM_ITEM_MUTATION, {
         id: calculatedOrderId,
         title: newItemTitle,
         price: { amount: newItemPrice, currencyCode: currencyCode },
         quantity: quantity,
       });
-      console.log('[Debug] Add custom item response:', JSON.stringify(addRes));
 
       if (addRes.data?.orderEditAddCustomItem?.userErrors?.length > 0) {
         throw new Error(addRes.data.orderEditAddCustomItem.userErrors[0].message);
       }
 
       // Commit changes to save the new item
-      console.log('[Debug] Committing changes after add...');
       const commitRes = await makeGraphQLQuery(ORDER_EDIT_COMMIT_MUTATION, {
         id: calculatedOrderId,
       });
@@ -184,7 +166,7 @@ function App() {
       await fetchItems();
 
     } catch (err: any) {
-      console.error('[Debug] Failed to add custom item:', err);
+      console.error('Failed to add custom item:', err);
       setError(err.message);
     } finally {
       setAddingItem(false);
