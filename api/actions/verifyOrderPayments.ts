@@ -551,6 +551,9 @@ export const run = async ({ params, api, connections }: any) => {
               matchedOrderId: order.id,
             });
 
+            // CRITICAL: Add to set immediately to prevent duplicate matching in this run
+            matchedTransactionIds.add(txId);
+
             console.log(
               `[verifyOrderPayments] Updated bankTransaction ${txId} with matched order ${order.id}`,
               {
