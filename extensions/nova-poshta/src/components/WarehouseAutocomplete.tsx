@@ -21,7 +21,8 @@ import { sortWarehousesByNumber, filterWarehouses } from '../utils/warehouseUtil
  * - Sorts warehouses by number
  * - Displays filtered warehouses in dropdown
  * - Shows result count
- * - Auto-selects if only one warehouse available
+ * - Auto-selects first warehouse in filtered results
+ * - Maintains selection if current warehouse remains in filtered list
  *
  * @example
  * <WarehouseAutocomplete
@@ -62,13 +63,24 @@ export default function WarehouseAutocomplete({
     setLocalSelectedRef(undefined);
   }, [cityRef]);
 
-  // Auto-select if only one warehouse available (in filtered results)
+  // Auto-select first warehouse in filtered results
   useEffect(() => {
-    if (filteredWarehouses.length === 1 && !localSelectedRef) {
-      const warehouse = filteredWarehouses[0];
-      setLocalSelectedRef(warehouse.Ref);
-      onWarehouseSelect(warehouse.Ref, warehouse.Description);
+    if (filteredWarehouses.length > 0) {
+      // Check if currently selected warehouse is in filtered results
+      const isCurrentlySelectedInList = localSelectedRef
+        ? filteredWarehouses.some(w => w.Ref === localSelectedRef)
+        : false;
+
+      // Auto-select first warehouse if:
+      // 1. Nothing is currently selected, OR
+      // 2. Currently selected warehouse is not in filtered results
+      if (!isCurrentlySelectedInList) {
+        const firstWarehouse = filteredWarehouses[0];
+        setLocalSelectedRef(firstWarehouse.Ref);
+        onWarehouseSelect(firstWarehouse.Ref, firstWarehouse.Description);
+      }
     } else if (filteredWarehouses.length === 0 && !warehouseSearchQuery) {
+      // Clear selection if no results and no active search
       setLocalSelectedRef(undefined);
     }
   }, [filteredWarehouses, localSelectedRef, onWarehouseSelect, warehouseSearchQuery]);
