@@ -1,4 +1,4 @@
-import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable, Toast, Frame } from '@shopify/polaris';
+import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable, Toast, Frame, BlockStack, InlineStack } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGlobalAction } from '@gadgetinc/react';
@@ -12,6 +12,14 @@ interface UncoveredPayment {
   accountCode: string;
   daysAgo: number;
   transactionId: string;
+  // Status fields
+  status: string;
+  statusReason: string;
+  statusBadgeTone?: 'success' | 'warning' | 'info' | 'critical' | 'attention';
+  canIssueCheck: boolean;
+  // Optional fields
+  matchedOrderId?: string | null;
+  checkReceiptId?: string | null;
 }
 
 interface PreviewItem {
@@ -41,8 +49,8 @@ export default function Payments() {
   // Track which payment is being issued
   const [issuingPaymentId, setIssuingPaymentId] = useState<string | null>(null);
 
-  // Use Gadget hook to fetch uncovered payments
-  const [{ data, fetching, error }, getPayments] = useGlobalAction(api.getUncoveredPayments);
+  // Use Gadget hook to fetch all payments
+  const [{ data, fetching, error }, getPayments] = useGlobalAction(api.getAllPayments);
 
   // Use Gadget hook to preview check
   const [{ data: previewData, fetching: previewFetching, error: previewError }, previewCheck] = useGlobalAction(api.previewCheckForPayment);
@@ -207,28 +215,39 @@ export default function Payments() {
           <Badge tone="info">{payment.accountCode}</Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>
+          <Badge tone={payment.statusBadgeTone}>
+            {payment.statusReason}
+          </Badge>
+        </IndexTable.Cell>
+        <IndexTable.Cell>
           <Text variant="bodyMd" as="span">
             {payment.daysAgo} days ago
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>
-          <div style={{ display: 'flex', gap: '8px' }}>
-            <Button
-              size="slim"
-              onClick={() => handlePreview(payment)}
-              loading={previewFetching && currentPayment?.id === payment.id}
-            >
-              Preview
-            </Button>
-            <Button
-              size="slim"
-              variant="primary"
-              onClick={() => handleIssueCheck(payment)}
-              loading={issueFetching && issuingPaymentId === payment.id}
-            >
-              Issue Check
-            </Button>
-          </div>
+          {payment.canIssueCheck ? (
+            <div style={{ display: 'flex', gap: '8px' }}>
+              <Button
+                size="slim"
+                onClick={() => handlePreview(payment)}
+                loading={previewFetching && currentPayment?.id === payment.id}
+              >
+                Preview
+              </Button>
+              <Button
+                size="slim"
+                variant="primary"
+                onClick={() => handleIssueCheck(payment)}
+                loading={issueFetching && issuingPaymentId === payment.id}
+              >
+                Issue Check
+              </Button>
+            </div>
+          ) : (
+            <Text variant="bodySm" as="span" tone="subdued">
+              {payment.status === 'check_issued' ? 'Check issued' : 'Not applicable'}
+            </Text>
+          )}
         </IndexTable.Cell>
       </IndexTable.Row>
     ),
@@ -236,10 +255,10 @@ export default function Payments() {
 
   const emptyStateMarkup = (
     <EmptyState
-      heading="No uncovered payments"
+      heading="No payments found"
       image="https://cdn.shopify.com/s/files/1/0262/4071/2726/files/emptystate-files.png"
     >
-      <p>There are no payments requiring check issuance at this time.</p>
+      <p>There are no incoming payments in the last 7 days.</p>
     </EmptyState>
   );
 
@@ -269,10 +288,40 @@ export default function Payments() {
         <Layout.Section>
           <Card>
             <Text as="p" variant="bodyMd">
-              This page shows incoming payments from the last 7 days that require check issuance. Payments with account codes 2600, 2902, 2909, and 2920 are excluded as they don't require checks.
+              This page shows all incoming payments from the last 7 days. Status indicators show which payments require fiscal checks and why some are excluded.
             </Text>
           </Card>
         </Layout.Section>
+
+        {data?.summary && (
+          <Layout.Section>
+            <Card>
+              <BlockStack gap="200">
+                <Text variant="headingMd" as="h2">Summary</Text>
+                <InlineStack gap="200">
+                  {data.summary.needsCheck > 0 && (
+                    <Badge tone="critical">{`⏳ ${data.summary.needsCheck} Need Check`}</Badge>
+                  )}
+                  {data.summary.matchedOrder > 0 && (
+                    <Badge tone="info">{`📦 ${data.summary.matchedOrder} Matched`}</Badge>
+                  )}
+                  {data.summary.checkIssued > 0 && (
+                    <Badge tone="success">{`✅ ${data.summary.checkIssued} Issued`}</Badge>
+                  )}
+                  {data.summary.excludedCode > 0 && (
+                    <Badge tone="warning">{`⏭️ ${data.summary.excludedCode} Excluded`}</Badge>
+                  )}
+                  {data.summary.novaPostha > 0 && (
+                    <Badge tone="info">{`🚚 ${data.summary.novaPostha} Nova Poshta`}</Badge>
+                  )}
+                  {data.summary.skipped > 0 && (
+                    <Badge tone="attention">{`⏸️ ${data.summary.skipped} Skipped`}</Badge>
+                  )}
+                </InlineStack>
+              </BlockStack>
+            </Card>
+          </Layout.Section>
+        )}
 
         {errorMessage && (
           <Layout.Section>
@@ -295,10 +344,11 @@ export default function Payments() {
                 resourceName={resourceName}
                 itemCount={payments.length}
                 headings={[
-                  { title: 'Transaction Date' },
+                  { title: 'Date' },
                   { title: 'Amount' },
-                  { title: 'Counterparty Name' },
-                  { title: 'Account Code' },
+                  { title: 'Counterparty' },
+                  { title: 'Code' },
+                  { title: 'Status' },
                   { title: 'Days Ago' },
                   { title: 'Actions' },
                 ]}
