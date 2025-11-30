@@ -511,80 +511,69 @@ export const run = async ({ params, api, connections }: any) => {
         const timeDiff = Math.abs(txDateTime.getTime() - orderDate.getTime());
         const dateMatch = timeDiff < 7 * 24 * 60 * 60 * 1000;
 
-        return amountMatch && dateMatch;
+        // Skip already-matched transactions (prevents greedy first-order matching bug)
+        const notAlreadyMatched = !matchedTransactionIds.has(tx.id);
+
+        return amountMatch && dateMatch && notAlreadyMatched;
       });
 
       console.log(
         `Found ${matches.length} matching transactions for order ${order.name}`
       );
 
-      // Save new matches to database
+      // Match to first available transaction only (one-to-one matching)
       if (matches.length > 0) {
-        for (const match of matches) {
-          const txId = (match as any).id;
-          // Skip if this transaction is already matched to another order
-          if (matchedTransactionIds.has(txId)) {
-            console.log(
-              `Skipping duplicate match for bankTransactionId: ${txId} (already matched to another order)`
-            );
-            continue;
-          }
+        const firstMatch = matches[0];
+        const txId = firstMatch.id;
+        const txAmount = firstMatch.amount || 0;
+        const amountDiff = Math.abs(txAmount - orderAmount);
+        const txDateTime = firstMatch.transactionDateTime
+          ? new Date(firstMatch.transactionDateTime)
+          : new Date();
+        const daysDiff =
+          Math.abs(txDateTime.getTime() - orderDate.getTime()) /
+          (24 * 60 * 60 * 1000);
 
-          try {
-            const txAmount = (match as any).amount || 0;
-            const amountDiff = Math.abs(txAmount - orderAmount);
-            const txDateTime = (match as any).transactionDateTime
-              ? new Date((match as any).transactionDateTime)
-              : new Date();
-            const daysDiff =
-              Math.abs(txDateTime.getTime() - orderDate.getTime()) /
-              (24 * 60 * 60 * 1000);
+        // Calculate confidence score (100% for exact match, lower for differences)
+        let confidence = 100;
+        if (amountDiff > 0) confidence -= (amountDiff / orderAmount) * 10;
+        if (daysDiff > 1) confidence -= daysDiff * 2;
+        confidence = Math.max(50, Math.min(100, confidence));
 
-            // Calculate confidence score (100% for exact match, lower for differences)
-            let confidence = 100;
-            if (amountDiff > 0) confidence -= (amountDiff / orderAmount) * 10; // Reduce by amount difference
-            if (daysDiff > 1) confidence -= daysDiff * 2; // Reduce by days difference
-            confidence = Math.max(50, Math.min(100, confidence)); // Keep between 50-100
+        try {
+          // Update bank transaction with matched order
+          await api.bankTransaction.update(txId, {
+            matchedOrderId: order.id,
+          });
 
-            // Update bank transaction with matched order
-            await api.bankTransaction.update(txId, {
-              matchedOrderId: order.id,
-            });
+          // Mark as used immediately to prevent duplicate matching in this run
+          matchedTransactionIds.add(txId);
 
-            // CRITICAL: Add to set immediately to prevent duplicate matching in this run
-            matchedTransactionIds.add(txId);
-
-            console.log(
-              `[verifyOrderPayments] Updated bankTransaction ${txId} with matched order ${order.id}`,
-              {
-                confidence: Math.round(confidence),
-                amountDiff: amountDiff.toFixed(4),
-                daysDiff: daysDiff.toFixed(2),
-              }
-            );
-          } catch (saveError) {
-            console.error(
-              `  Failed to save match for order ${order.id}:`,
-              saveError
-            );
-          }
+          console.log(
+            `[verifyOrderPayments] Matched order ${order.id} to bankTransaction ${txId}`,
+            {
+              confidence: Math.round(confidence),
+              amountDiff: amountDiff.toFixed(4),
+              daysDiff: daysDiff.toFixed(2),
+            }
+          );
+        } catch (saveError) {
+          console.error(
+            `Failed to save match for order ${order.id}:`,
+            saveError
+          );
         }
 
-        // Update Shopify order after successful matches
+        // Update Shopify order after successful match
         try {
-          const matchDetails = matches
-            .map(
-              (match: any, index: number) =>
-                `${index + 1}. ₴${match.amount} on ${new Date(
-                  match.transactionDateTime
-                ).toLocaleDateString()}`
-            )
-            .join('\n');
+          const matchDetails = `₴${firstMatch.amount} on ${new Date(
+            firstMatch.transactionDateTime
+          ).toLocaleDateString()}`;
 
           await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-            note: `🔍 Payment Verification Complete\n${
-              matches.length
-            } matching transaction(s) found:\n${matchDetails}\n\nVerified at: ${currentTime.toISOString()}`,
+            note: `🔍 Payment Verification Complete\nMatching transaction found: ${matchDetails}\nConfidence: ${Math.round(
+              confidence
+            )}%\n\nVerified at: ${currentTime.toISOString()}`,
             markAsPaid: true,
           });
 
