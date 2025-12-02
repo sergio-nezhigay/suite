@@ -370,6 +370,7 @@ export const run = async ({ params, api, connections }: any) => {
       filter: {
         transactionDateTime: { greaterThan: tenDaysAgo },
         type: { equals: 'income' }, // Only incoming payments
+        matchedOrderId: { equals: null }, // Exclude already matched payments
       },
       sort: { transactionDateTime: 'Descending' }, // Most recent first
       first: 250,

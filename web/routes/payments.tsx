@@ -136,7 +136,7 @@ export default function Payments() {
   const fetchPayments = async () => {
     try {
       console.log('[Payments UI] Fetching uncovered payments...');
-      await getPayments({});
+      await getPayments({ includeMatched: true });
     } catch (err) {
       console.error('[Payments UI] Error:', err);
       setErrorMessage('Failed to fetch payments');

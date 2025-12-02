@@ -86,7 +86,13 @@ function determinePaymentStatus(transaction: any): {
   };
 }
 
-export const run: ActionRun = async ({ api, logger }) => {
+export const params = {
+  includeMatched: { type: 'boolean', default: true },
+};
+
+export const run: ActionRun = async ({ api, logger, params }) => {
+  const { includeMatched } = (params as any) || {};
+
   try {
     console.log('[getAllPayments] Starting to fetch all payments...');
 
@@ -97,13 +103,21 @@ export const run: ActionRun = async ({ api, logger }) => {
       sevenDaysAgo.toISOString()
     );
 
-    // Fetch all income transactions from last 7 days (filter out amounts > 10,000 UAH)
+    // Build filter object
+    const filter: any = {
+      transactionDateTime: { greaterThan: sevenDaysAgo },
+      type: { equals: 'income' },
+      amount: { lessThanOrEqual: 10000 },
+    };
+
+    // Only filter out matched orders if includeMatched is false
+    if (!includeMatched) {
+      filter.matchedOrderId = { equals: null };
+    }
+
+    // Fetch all income transactions from last 7 days
     const allTransactions = await api.bankTransaction.findMany({
-      filter: {
-        transactionDateTime: { greaterThan: sevenDaysAgo },
-        type: { equals: 'income' },
-        amount: { lessThanOrEqual: 10000 },
-      },
+      filter,
       select: {
         id: true,
         amount: true,
