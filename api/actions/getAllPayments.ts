@@ -97,11 +97,12 @@ export const run: ActionRun = async ({ api, logger }) => {
       sevenDaysAgo.toISOString()
     );
 
-    // Fetch all income transactions from last 7 days (no filters)
+    // Fetch all income transactions from last 7 days (filter out amounts > 10,000 UAH)
     const allTransactions = await api.bankTransaction.findMany({
       filter: {
         transactionDateTime: { greaterThan: sevenDaysAgo },
         type: { equals: 'income' },
+        amount: { lessThanOrEqual: 10000 },
       },
       select: {
         id: true,

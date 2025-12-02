@@ -220,29 +220,15 @@ export default function Payments() {
           </Badge>
         </IndexTable.Cell>
         <IndexTable.Cell>
-          <Text variant="bodyMd" as="span">
-            {payment.daysAgo} days ago
-          </Text>
-        </IndexTable.Cell>
-        <IndexTable.Cell>
           {payment.canIssueCheck ? (
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <Button
-                size="slim"
-                onClick={() => handlePreview(payment)}
-                loading={previewFetching && currentPayment?.id === payment.id}
-              >
-                Preview
-              </Button>
-              <Button
-                size="slim"
-                variant="primary"
-                onClick={() => handleIssueCheck(payment)}
-                loading={issueFetching && issuingPaymentId === payment.id}
-              >
-                Issue Check
-              </Button>
-            </div>
+            <Button
+              size="slim"
+              variant="primary"
+              onClick={() => handleIssueCheck(payment)}
+              loading={issueFetching && issuingPaymentId === payment.id}
+            >
+              Issue Check
+            </Button>
           ) : (
             <Text variant="bodySm" as="span" tone="subdued">
               {payment.status === 'check_issued' ? 'Check issued' : 'Not applicable'}
@@ -349,7 +335,6 @@ export default function Payments() {
                   { title: 'Counterparty' },
                   { title: 'Code' },
                   { title: 'Status' },
-                  { title: 'Days Ago' },
                   { title: 'Actions' },
                 ]}
                 selectable={false}
