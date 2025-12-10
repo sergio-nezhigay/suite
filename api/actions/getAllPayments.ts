@@ -3,6 +3,7 @@ import {
   EXCLUDED_PAYMENT_CODES,
   NOVA_POSHTA_ACCOUNT,
 } from '../utilities/fiscal/paymentConstants';
+import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -94,6 +95,15 @@ export const run: ActionRun = async ({ api, logger, params }) => {
   const { includeMatched } = (params as any) || {};
 
   try {
+    console.log('[getAllPayments] Starting to fetch all payments...');
+
+    // Refresh bank data to ensure we have the latest transactions
+    try {
+      await refreshBankDataSinceLastSync(api);
+    } catch (refreshError) {
+      console.warn('[getAllPayments] Bank data refresh failed:', refreshError);
+    }
+
     console.log('[getAllPayments] Starting to fetch all payments...');
 
     // Calculate date 7 days ago
