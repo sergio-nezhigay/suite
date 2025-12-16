@@ -336,10 +336,19 @@ class RozetkaProductProcessor {
     const matchingRule = ROZETKA_CONFIG.titleTransform.rules.find((rule) =>
       rule.condition(product)
     );
-    return (
+    const title =
       matchingRule?.transform(product) ||
-      ROZETKA_CONFIG.titleTransform.default(product)
-    );
+      ROZETKA_CONFIG.titleTransform.default(product);
+
+    if (
+      product.sku &&
+      /^\d{5}$/.test(product.sku) &&
+      !title.includes(product.sku)
+    ) {
+      return `${title} ${product.sku}`;
+    }
+
+    return title;
   }
 
   static getBrand(product: GenericProductFeed): string {
