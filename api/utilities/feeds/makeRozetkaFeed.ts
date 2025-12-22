@@ -340,12 +340,10 @@ class RozetkaProductProcessor {
       matchingRule?.transform(product) ||
       ROZETKA_CONFIG.titleTransform.default(product);
 
-    if (
-      product.sku &&
-      /^\d{5}$/.test(product.sku) &&
-      !title.includes(product.sku)
-    ) {
-      return `${title} ${product.sku}`;
+    const barcode = product.mpn;
+
+    if (barcode && !title.includes(barcode)) {
+      return `${title} ${barcode}`;
     }
 
     return title;
