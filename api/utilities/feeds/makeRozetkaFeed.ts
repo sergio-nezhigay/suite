@@ -84,7 +84,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабель/Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.17,
+        multiplier: 1.23,
       },
       {
         keywords: ['перехідники для зарядки ноутбуків та роутерів'],
@@ -117,7 +117,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Зарядний пристрій' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.18,
+        multiplier: 1.23,
       },
       {
         keywords: ['карти відеозахвату usb'],

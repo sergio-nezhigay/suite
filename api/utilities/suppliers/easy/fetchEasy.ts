@@ -52,7 +52,8 @@ export async function fetchEasy({ query, limit, page }: FetchingFunc) {
           (words.every((word) => title.includes(word)) ||
             words.every((word) => vendorCode.includes(word))) &&
           available &&
-          vendorCode
+          vendorCode &&
+          Number(offer.price) > 1000
         );
       }
     );
