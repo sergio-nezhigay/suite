@@ -45,7 +45,8 @@ export interface ShopifyProduct {
 }
 
 const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри', 'бо'];
-const hotlineSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'бо'];
+const hotlineSuppliers = ['щу', 'ии', 'че'];
+const rozetkaSuppliers = ['щу', 'ии', 'че'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
 const route: RouteHandler = async ({ reply, connections }) => {
@@ -65,7 +66,7 @@ const route: RouteHandler = async ({ reply, connections }) => {
     const remarketingFeed = makeRemarketingFeed(genericFeed);
     const remarketingFileContent = products2CSV(remarketingFeed);
 
-    const rozetkaFeedContent = makeRozetkaFeed(genericFeed);
+    const rozetkaFeedContent = makeRozetkaFeed(genericFeed, rozetkaSuppliers);
 
     await Promise.all([
       uploadFile(shopify, hotlineFileContent, 'hotline.csv'),

@@ -29,7 +29,6 @@ interface StateRule {
 
 const ROZETKA_CONFIG = {
   suppliers: {
-    allowed: ['щу', 'ии', 'че'] as string[],
     blocked: [
       'Kingston',
       'Samsung',
@@ -48,7 +47,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: "Оперативна пам'ять" },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1,
+        multiplier: 1.02,
       },
       {
         keywords: ['usb-rs232', 'rs485', 'rs232'],
@@ -57,7 +56,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.18,
+        multiplier: 1.25,
       },
       {
         keywords: ['оптичні аудіо перехідники'],
@@ -66,7 +65,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.2,
+        multiplier: 1.25,
       },
       {
         keywords: [
@@ -84,7 +83,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабель/Перехідник' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.23,
+        multiplier: 1.25,
       },
       {
         keywords: ['перехідники для зарядки ноутбуків та роутерів'],
@@ -99,7 +98,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Кабелі зарядки' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.5,
+        multiplier: 1.65,
       },
       {
         keywords: ['світлодіодні стрічки'],
@@ -108,7 +107,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'LED стрічка' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.22,
+        multiplier: 1.3,
       },
       {
         keywords: ['зарядні пристрої'],
@@ -117,7 +116,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Тип', paramValue: 'Зарядний пристрій' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.23,
+        multiplier: 1.25,
       },
       {
         keywords: ['карти відеозахвату usb'],
@@ -128,13 +127,13 @@ const ROZETKA_CONFIG = {
           { paramName: 'Сумісність', paramValue: 'ПК,Mac OS X' },
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
-        multiplier: 1.19,
+        multiplier: 1.25,
       },
     ] as CategoryRule[],
     fallback: {
       categoryId: 'c4670691',
       defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
-      multiplier: 1.26,
+      multiplier: 1.28,
     },
   },
 
@@ -231,12 +230,15 @@ const ROZETKA_CONFIG = {
 
 // Helper classes for better organization
 class RozetkaProductProcessor {
-  static isProductAllowed(product: GenericProductFeed): boolean {
+  static isProductAllowed(
+    product: GenericProductFeed,
+    allowedSuppliers: string[]
+  ): boolean {
     const supplier = product.sku.split('^')[1] || '';
 
     return (
       !ROZETKA_CONFIG.suppliers.blocked.includes(product.brand) &&
-      ROZETKA_CONFIG.suppliers.allowed.includes(supplier.toLowerCase())
+      allowedSuppliers.includes(supplier.toLowerCase())
     );
   }
 
@@ -444,12 +446,15 @@ class RozetkaFilterParser {
 }
 
 class RozetkaXMLGenerator {
-  static generateXML(products: GenericProductFeed[]): string {
+  static generateXML(
+    products: GenericProductFeed[],
+    allowedSuppliers: string[]
+  ): string {
     const date = new Date().toISOString().slice(0, 16).replace('T', ' ');
     const xmlHeader = `<?xml version="1.0" encoding="UTF-8"?>\n<yml_catalog date="${date}">\n`;
 
-    const filteredProducts = products.filter(
-      RozetkaProductProcessor.isProductAllowed
+    const filteredProducts = products.filter((p) =>
+      RozetkaProductProcessor.isProductAllowed(p, allowedSuppliers)
     );
     const categoryIds = [
       ...new Set(
@@ -536,6 +541,9 @@ class RozetkaXMLGenerator {
 }
 
 // Main export function - simplified and clean
-export const makeRozetkaFeed = (products: GenericProductFeed[]): string => {
-  return RozetkaXMLGenerator.generateXML(products);
+export const makeRozetkaFeed = (
+  products: GenericProductFeed[],
+  allowedSuppliers: string[]
+): string => {
+  return RozetkaXMLGenerator.generateXML(products, allowedSuppliers);
 };
