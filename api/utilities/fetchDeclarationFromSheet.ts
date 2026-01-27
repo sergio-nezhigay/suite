@@ -20,8 +20,8 @@ export async function fetchDeclarationFromSheet(
 ): Promise<string | null> {
   const {
     spreadsheetId,
-    sheetName = 'Аркуш1',
-    startRow = 7100,
+    sheetName = 'Баланс',
+    startRow = 9500,
     orderNameColumn = 4,
     declarationColumn = 14,
   } = declarationConfig;
@@ -32,7 +32,7 @@ export async function fetchDeclarationFromSheet(
     const sheets = google.sheets({ version: 'v4', auth });
     console.timeEnd(`[${orderName}] Step 1: Authorize & get sheets client`);
 
-    const range = `${sheetName}!A${startRow}:Z`;
+    const range = `${sheetName}!A${startRow}:Z${startRow + 10000}`;
 
     console.time(`[${orderName}] Step 2: Fetch & process spreadsheet data`);
     const response = await sheets.spreadsheets.values.get({

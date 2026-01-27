@@ -15,6 +15,7 @@ interface CategoryRule {
   categoryId: string;
   defaultParams?: RozetkaParam[];
   multiplier?: number;
+  sumToAdd?: number;
 }
 
 interface TitleRule {
@@ -48,6 +49,7 @@ const ROZETKA_CONFIG = {
           { paramName: 'Гарантія', paramValue: '12 місяців' },
         ],
         multiplier: 1.02,
+        sumToAdd: 1,
       },
       {
         keywords: ['usb-rs232', 'rs485', 'rs232'],
@@ -134,6 +136,7 @@ const ROZETKA_CONFIG = {
       categoryId: 'c4670691',
       defaultParams: [{ paramName: 'Гарантія', paramValue: '12 місяців' }],
       multiplier: 1.28,
+      sumToAdd: 0,
     },
   },
 
@@ -246,6 +249,7 @@ class RozetkaProductProcessor {
     categoryId: string;
     params: RozetkaParam[];
     multiplier?: number;
+    sumToAdd?: number;
   } {
     const lowerCaseCollection = product.collection.toLowerCase();
 
@@ -261,6 +265,7 @@ class RozetkaProductProcessor {
         categoryId: matchingRule.categoryId,
         params: [...(matchingRule.defaultParams || [])],
         multiplier: matchingRule.multiplier,
+        sumToAdd: matchingRule.sumToAdd,
       };
     }
 
@@ -269,6 +274,7 @@ class RozetkaProductProcessor {
       categoryId: ROZETKA_CONFIG.categories.fallback.categoryId,
       params: [...ROZETKA_CONFIG.categories.fallback.defaultParams],
       multiplier: ROZETKA_CONFIG.categories.fallback.multiplier,
+      sumToAdd: ROZETKA_CONFIG.categories.fallback.sumToAdd,
     };
   }
 
@@ -319,9 +325,11 @@ class RozetkaProductProcessor {
       ? categoryConfig.multiplier
       : undefined;
 
+    const sumToAdd = categoryConfig.sumToAdd || 0;
+
     const multiplier = isExcluded ? 1.08 : categoryMultiplier ?? 1.26;
 
-    const price = product.price * multiplier;
+    const price = product.price * multiplier + sumToAdd;
     const oldPrice = (price * 1.11).toFixed(2);
 
     return { price, oldPrice };
