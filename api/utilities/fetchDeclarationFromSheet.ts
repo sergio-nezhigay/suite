@@ -32,7 +32,7 @@ export async function fetchDeclarationFromSheet(
     const sheets = google.sheets({ version: 'v4', auth });
     console.timeEnd(`[${orderName}] Step 1: Authorize & get sheets client`);
 
-    const range = `${sheetName}!A${startRow}:Z${startRow + 10000}`;
+    const range = `${sheetName}!A${startRow}:Z`;
 
     console.time(`[${orderName}] Step 2: Fetch & process spreadsheet data`);
     const response = await sheets.spreadsheets.values.get({
@@ -76,7 +76,7 @@ export async function fetchNovaPoshtaDeclaration(
 ): Promise<string | null> {
   return fetchDeclarationFromSheet(orderName, config, {
     spreadsheetId: '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE',
-    sheetName: 'Аркуш1',
+    sheetName: 'Баланс',
     startRow: 7100,
     orderNameColumn: 4,
     declarationColumn: 14,
@@ -90,7 +90,7 @@ export async function fetchEeasybuyDeclaration(
   // TODO: Replace with actual eeasybuy spreadsheet ID and configuration
   return fetchDeclarationFromSheet(orderName, config, {
     spreadsheetId: '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE', // Placeholder
-    sheetName: 'Аркуш1',
+    sheetName: 'Баланс',
     startRow: 7100,
     orderNameColumn: 4,
     declarationColumn: 14,
