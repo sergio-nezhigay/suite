@@ -29,7 +29,11 @@
       "mcp__ide__getDiagnostics",
       "Bash(curl:*)",
       "Bash(test:*)",
-      "Bash(npx cross-env:*)"
+      "Bash(npx cross-env:*)",
+      "WebFetch(domain:api-seller.rozetka.com.ua)",
+      "WebFetch(domain:sellerhelp.rozetka.com.ua)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:1b.app)"
     ],
     "deny": [],
     "ask": []
