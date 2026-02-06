@@ -46,15 +46,20 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
   const maxPrice = 900;
   const items: PreviewItem[] = [];
   let remainingAmount = totalAmountUAH;
-
-  console.log(
-    '[previewCheckForPayment] Distributing amount:',
-    totalAmountUAH,
-    'UAH'
-  );
+  let iterationCount = 0;
+  const MAX_ITERATIONS = 1000; // Safety limit to prevent infinite loops
 
   // Generate items until remaining amount is covered
   while (remainingAmount > 0) {
+    iterationCount++;
+
+    // Safety check to prevent infinite loops
+    if (iterationCount > MAX_ITERATIONS) {
+      throw new Error(
+        `Distribution loop exceeded ${MAX_ITERATIONS} iterations. Remaining: ${remainingAmount} UAH. This indicates an infinite loop bug.`
+      );
+    }
+
     let itemPrice: number;
 
     if (remainingAmount <= maxPrice) {
@@ -82,8 +87,20 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
     // Round to nearest 10 for natural-looking prices
     itemPrice = Math.round(itemPrice / 10) * 10;
 
+    // CRITICAL FIX: Prevent zero prices that cause infinite loops
+    if (itemPrice === 0 && remainingAmount > 0) {
+      itemPrice = 10; // Minimum price of 10 UAH
+    }
+
     // Ensure we don't exceed remaining amount
     itemPrice = Math.min(itemPrice, remainingAmount);
+
+    // Final safety check
+    if (itemPrice <= 0) {
+      throw new Error(
+        `Invalid itemPrice: ${itemPrice}. This would cause an infinite loop.`
+      );
+    }
 
     items.push({
       name: productName,
@@ -93,13 +110,6 @@ function distributeAmount(totalAmountUAH: number): PreviewItem[] {
     });
 
     remainingAmount -= itemPrice;
-    console.log(
-      '[previewCheckForPayment] Added item:',
-      itemPrice,
-      'UAH, remaining:',
-      remainingAmount,
-      'UAH'
-    );
   }
 
   return items;
@@ -113,14 +123,6 @@ export const params = {
 export const run: ActionRun = async ({ params, api, logger }) => {
   try {
     const { transactionId, amount } = params;
-
-    console.log(
-      '[previewCheckForPayment] Previewing check for transaction:',
-      transactionId,
-      'amount:',
-      amount,
-      'UAH'
-    );
 
     if (!amount || amount <= 0) {
       throw new Error('Invalid amount for check preview');
@@ -142,10 +144,6 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     });
 
     if (!bankTransaction) {
-      console.error(
-        '[previewCheckForPayment] Bank transaction not found:',
-        transactionId
-      );
       return {
         success: false,
         error: 'Transaction not found',
@@ -154,9 +152,6 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     // Check if this is Nova Poshta account (excluded from checks)
     if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
-      console.log(
-        '[previewCheckForPayment] Nova Poshta account detected - check not allowed'
-      );
       throw new Error('Check preview not allowed for Nova Poshta payments');
     }
 
@@ -165,10 +160,6 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       bankTransaction.counterpartyAccount || ''
     );
     if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
-      console.log(
-        '[previewCheckForPayment] Excluded payment code detected:',
-        paymentCode
-      );
       throw new Error(
         `Check preview not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(
           ', '
@@ -178,12 +169,6 @@ export const run: ActionRun = async ({ params, api, logger }) => {
 
     // Check if check already issued (using bankTransaction only)
     if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
-      console.log(
-        '[previewCheckForPayment] Check already issued for transaction:',
-        transactionId,
-        'Receipt ID:',
-        bankTransaction.checkReceiptId
-      );
       return {
         success: false,
         error: 'Check already issued for this transaction',
@@ -198,22 +183,8 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     // Calculate total for verification
     const calculatedTotal = items.reduce((sum, item) => sum + item.totalUAH, 0);
 
-    console.log(
-      '[previewCheckForPayment] Generated',
-      items.length,
-      'items, total:',
-      calculatedTotal,
-      'UAH'
-    );
-
     // Verify total matches (allow 1 UAH rounding difference)
     if (Math.abs(calculatedTotal - amount) > 1) {
-      console.error(
-        '[previewCheckForPayment] Total mismatch! Expected:',
-        amount,
-        'Got:',
-        calculatedTotal
-      );
       throw new Error(
         `Total amount mismatch: expected ${amount} UAH, got ${calculatedTotal} UAH`
       );
@@ -235,7 +206,7 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       totalAmountKopecks: Math.round(calculatedTotal * 100),
     };
   } catch (error) {
-    console.error('[previewCheckForPayment] Error:', error);
+    logger.error({ error }, '[previewCheckForPayment] Error');
     throw error;
   }
 };
