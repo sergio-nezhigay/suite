@@ -166,6 +166,27 @@ export async function sendRozetkaOrderMessage(
       console.log(
         `[Rozetka] Successfully sent message to order ${orderName}`
       );
+
+      // Change order status to 47 ("Планується повторний дзвінок")
+      try {
+        await changeRozetkaOrderStatus(
+          parseInt(orderId),
+          47,
+          accessToken
+        );
+        console.log(
+          `[Rozetka] Status changed to 47 for order ${orderName}`
+        );
+      } catch (error) {
+        console.error(
+          `[Rozetka] Failed to change status to 47 for order ${orderName}:`,
+          {
+            error: error instanceof Error ? error.message : String(error),
+            response: axios.isAxiosError(error) ? error.response?.data : undefined,
+          }
+        );
+        // Don't throw - message was sent successfully, status change is secondary
+      }
     }
 
     return success;

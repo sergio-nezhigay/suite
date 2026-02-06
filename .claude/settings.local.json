@@ -33,7 +33,9 @@
       "WebFetch(domain:api-seller.rozetka.com.ua)",
       "WebFetch(domain:sellerhelp.rozetka.com.ua)",
       "WebFetch(domain:github.com)",
-      "WebFetch(domain:1b.app)"
+      "WebFetch(domain:1b.app)",
+      "Bash(yarn typecheck:*)",
+      "Bash(./node_modules/.bin/tsc:*)"
     ],
     "deny": [],
     "ask": []
