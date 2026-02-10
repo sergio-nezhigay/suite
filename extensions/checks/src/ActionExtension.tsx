@@ -13,6 +13,7 @@ import {
   Badge,
   Heading,
 } from '@shopify/ui-extensions-react/admin';
+import { updateOrdersTags } from '../../shared/shopifyOperations';
 
 // The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
 const TARGET = 'admin.order-index.selection-action.render';
@@ -299,6 +300,16 @@ function App() {
 
       const data = await response.json();
       setReceiptResults(data.results);
+
+      // Update successfully processed orders to "Завершені" stage
+      const successfulOrderIds = (data.results as ReceiptResult[])
+        .filter((r) => r.success)
+        .map((r) => r.orderId);
+
+      if (successfulOrderIds.length > 0) {
+        console.log('Updating order tags to Завершені for:', successfulOrderIds);
+        await updateOrdersTags({ value: 'Завершені', orderIds: successfulOrderIds });
+      }
 
       console.log('Checkbox receipts results:', data.results);
     } catch (error) {

@@ -35,7 +35,9 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:1b.app)",
       "Bash(yarn typecheck:*)",
-      "Bash(./node_modules/.bin/tsc:*)"
+      "Bash(./node_modules/.bin/tsc:*)",
+      "Bash(findstr:*)",
+      "Bash(npm install:*)"
     ],
     "deny": [],
     "ask": []

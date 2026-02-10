@@ -8,3 +8,4 @@ npm-cache/
 *.js.map
 **/.DS_Store
 .shopify
+nul

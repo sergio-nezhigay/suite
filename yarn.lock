@@ -429,10 +429,10 @@
     wonka "^6.3.2"
     ws "^8.18.2"
 
-"@gadgetinc/core@0.15.0":
-  version "0.15.0"
-  resolved "https://registry.yarnpkg.com/@gadgetinc/core/-/core-0.15.0.tgz#7bba9d6549b739974919169a925a2fb54fc23672"
-  integrity sha512-Ai+lx2wM/SKCsO7Oq/0H1HLadfqgeuv5WW/UKhI/vTuJvYqFQAmawjyNSqSL2q+YjUe3LV0309uIUZtdmKY4Yw==
+"@gadgetinc/core@0.15.1":
+  version "0.15.1"
+  resolved "https://registry.yarnpkg.com/@gadgetinc/core/-/core-0.15.1.tgz#7740035306c89e59b0ddf734f3ce3e6c1d87938f"
+  integrity sha512-MFvJ6FfSdcwMPoNhg/1t8O9K41GwIVEmflbbgU1nalTX6KBLcib58q04mFgLv9f/WEnwud9q7aOM9nRH4lNZ1w==
 
 "@gadgetinc/react-shopify-app-bridge@^0.16.3":
   version "0.16.3"
@@ -696,15 +696,6 @@
     "@remote-ui/react" "^5.0.2"
     "@types/react" ">=18.2.67"
 
-"@shopify/ui-extensions-react@2025.4.x":
-  version "2025.4.0"
-  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.4.0.tgz#5351169b7c612b0437936ce57748a99c6b6d725c"
-  integrity sha512-sFmoMHGgnKrok6wr8Db1xTyZUispON0J13HsGpkCWxneLVhBf0vH5mxHyFxBpnjR335DYqwlZph985SWh/Xyaw==
-  dependencies:
-    "@remote-ui/async-subscription" "^2.1.16"
-    "@remote-ui/react" "^5.0.6"
-    "@types/react" ">=18.2.67"
-
 "@shopify/ui-extensions-react@2025.7.x":
   version "2025.7.1"
   resolved "https://registry.yarnpkg.com/@shopify/ui-extensions-react/-/ui-extensions-react-2025.7.1.tgz#650a87be612fe4a3762b5efff1f0ecbcb5219296"
@@ -721,14 +712,6 @@
   dependencies:
     "@remote-ui/async-subscription" "^2.1.12"
     "@remote-ui/core" "^2.2.4"
-
-"@shopify/ui-extensions@2025.4.x":
-  version "2025.4.0"
-  resolved "https://registry.yarnpkg.com/@shopify/ui-extensions/-/ui-extensions-2025.4.0.tgz#8d967017ac6467aecea5c89291124cd926caed7f"
-  integrity sha512-i8LxM3EnEwLBjB7bXAWBYLKYnngYfY+PKg8a2s/ll5/hvgWr8XOHNLsXe2aej69tyXVei5QtO4McNiFDU8jBKw==
-  dependencies:
-    "@remote-ui/async-subscription" "^2.1.16"
-    "@remote-ui/core" "^2.2.5"
 
 "@shopify/ui-extensions@2025.7.x":
   version "2025.7.1"
