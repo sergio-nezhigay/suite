@@ -1,4 +1,5 @@
 import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
+import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 import { getRozetkaAccessToken } from 'api/utilities/rozetka/getRozetkaAccessToken';
 import { updateFulfillmentTracking } from 'api/utilities/shopify/api/orders/updateFulfillmentTracking';
 import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
@@ -132,7 +133,7 @@ export const onSuccess: ActionOnSuccess = async ({
   //    logWithOrder(orderName, 'Failed to fetch Rozetka access token');
   //    return;
   //  }
-  //  changeRozetkaOrderStatus(Number(rozetkaOrderNumber[0]), 61, accessToken);
+  //  changeRozetkaOrderStatus(Number(rozetkaOrderNumber[0]), ROZETKA_ORDER_STATUSES.RETURNED, accessToken);
 };
 
 export const options: ActionOptions = { actionType: 'update' };

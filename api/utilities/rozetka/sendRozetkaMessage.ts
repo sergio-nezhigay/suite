@@ -2,6 +2,7 @@ import axios from 'axios';
 import { ROZETKA_API_BASE_URL } from '../data/data';
 import { rozetkaTokenManager } from './tokenManager';
 import { changeRozetkaOrderStatus } from './changeRozetkaOrderStatus';
+import { ROZETKA_ORDER_STATUSES } from './rozetkaStatuses';
 
 interface OrderChatResponse {
   success: boolean;
@@ -171,7 +172,7 @@ export async function sendRozetkaOrderMessage(
       try {
         await changeRozetkaOrderStatus(
           parseInt(orderId),
-          47,
+          ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK,
           accessToken
         );
         console.log(

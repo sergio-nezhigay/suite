@@ -11,14 +11,7 @@ import { RozetkaOrder, ShopifyOrder } from 'types/*';
 import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
 import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
-
-const ORDER_STATUS_CODES = {
-  ALL: '1',
-  PROCESSING: '2',
-  COMPLETED: '3',
-  NEW: '4',
-  SHIPPING: '5',
-};
+import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 
 export const run: ActionRun = async ({ connections }) => {
   // Replace logger.info with console.log
@@ -174,7 +167,11 @@ async function processOrder(
     });
 
     console.log(`Order ${order.id} created successfully`, shopifyOrder);
-    await changeRozetkaOrderStatus(order.id, 26, accessToken);
+    await changeRozetkaOrderStatus(
+      order.id,
+      ROZETKA_ORDER_STATUSES.PROCESSING_BY_SELLER,
+      accessToken
+    );
 
     return { success: true, orderId: order.id };
   } catch (error) {
@@ -216,7 +213,7 @@ export const getNewOrders = async (
   const ROZETKA_ORDERS_API_URL = `${ROZETKA_API_BASE_URL}/orders/search`;
 
   const requestParams = {
-    types: ORDER_STATUS_CODES.NEW,
+    types: ROZETKA_ORDER_STATUSES.NEW,
     expand: 'purchases,delivery',
   };
 
