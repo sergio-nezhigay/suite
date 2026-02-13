@@ -98,7 +98,7 @@ function SendExtension() {
     recipientEmail = 'deni-ua@ukr.net';
     shouldAutoTag = true;
     shouldSendEmail = true;
-    tagStrategy = getEasySupplierTag;
+    tagStrategy = 'Декларації';
   } else if (firstOrderTag.includes('РІ')) {
     // Rizka supplier
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
