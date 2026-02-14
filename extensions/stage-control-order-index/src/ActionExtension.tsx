@@ -72,6 +72,18 @@ function App() {
         console.error('Failed to update order stage:', error);
         setError(`Save failed: ${errorMessage}`);
         setValue(previousValue);
+        try {
+          await Promise.all(
+            selectedIds.map((id) =>
+              addOrderNote({
+                orderId: id,
+                note: `Failed to change status to "${newValue}": ${errorMessage}`,
+              })
+            )
+          );
+        } catch (noteErr) {
+          console.error('Failed to add failure notes:', noteErr);
+        }
       } finally {
         setLoading(false);
       }

@@ -49,6 +49,14 @@ function App() {
       const message = err instanceof Error ? err.message : 'Failed to update';
       console.error('Update failed:', err);
       setError(message);
+      try {
+        await addOrderNote({
+          orderId,
+          note: `Failed to change status to "${newValue}": ${message}`,
+        });
+      } catch (noteErr) {
+        console.error('Failed to add failure note:', noteErr);
+      }
     } finally {
       setLoading(false);
     }
