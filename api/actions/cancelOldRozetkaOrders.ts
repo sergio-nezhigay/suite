@@ -3,6 +3,35 @@ import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
 import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 
+// Helper function to robustly parse Rozetka dates
+function parseRozetkaDate(dateStr: string): Date {
+  if (!dateStr) return new Date('Invalid');
+
+  // Try standard parsing first
+  let date = new Date(dateStr);
+  if (!isNaN(date.getTime())) {
+      return date;
+  }
+
+  // Handle "YYYY-MM-DD HH:mm:ss" format
+  const sqlFormat = /^(\d{4})-(\d{2})-(\d{2})\s(\d{2}):(\d{2}):(\d{2})$/;
+  const sqlMatch = dateStr.match(sqlFormat);
+  if (sqlMatch) {
+      const isoStr = `${sqlMatch[1]}-${sqlMatch[2]}-${sqlMatch[3]}T${sqlMatch[4]}:${sqlMatch[5]}:${sqlMatch[6]}`;
+      return new Date(isoStr);
+  }
+
+  // Handle "DD.MM.YYYY" format
+  const dotFormat = /^(\d{2})\.(\d{2})\.(\d{4})$/;
+  const dotMatch = dateStr.match(dotFormat);
+  if (dotMatch) {
+      const isoStr = `${dotMatch[3]}-${dotMatch[2]}-${dotMatch[1]}`;
+      return new Date(isoStr);
+  }
+  
+  return new Date('Invalid');
+}
+
 export const run: ActionRun = async () => {
   console.log('Starting old Rozetka orders check', {
     environment: process.env.NODE_ENV,
@@ -43,10 +72,12 @@ export const run: ActionRun = async () => {
     console.log(`Found ${oldOrders.length} orders older than 6 days:`);
     
     oldOrders.forEach(order => {
-      const ageInDays = calculateAgeInDays(order.created_at);
+      const createdDate = order.created || order.created_at;
+      const ageInDays = calculateAgeInDays(createdDate);
       console.log({
         orderId: order.id,
-        createdAt: order.created_at,
+        createdAtRaw: createdDate,
+        parsedDate: parseRozetkaDate(createdDate).toISOString(),
         ageInDays: ageInDays,
         recipientPhone: order.recipient_phone,
       });
@@ -72,13 +103,22 @@ export const run: ActionRun = async () => {
 
 async function getPlannedCallbackOrders(accessToken: string) {
   const ROZETKA_ORDERS_API_URL = `${ROZETKA_API_BASE_URL}/orders/search`;
+  
+  // Calculate date 6 days ago for filtering
+  const now = new Date();
+  const thresholdDate = new Date(now.getTime() - 6 * 24 * 60 * 60 * 1000);
+  const createdTo = thresholdDate.toISOString().split('T')[0]; // Format: YYYY-MM-DD
 
   const requestParams = {
-    types: ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK,
+    status: ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK, // Correct parameter based on docs
     expand: 'purchases,delivery',
+    created_to: createdTo // Filter orders created BEFORE 6 days ago
   };
 
-  console.log('[getPlannedCallbackOrders] Fetching orders with status 47');
+  console.log('[getPlannedCallbackOrders] Fetching orders with status 47 older than 6 days', {
+    status: ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK,
+    created_to: createdTo
+  });
 
   try {
     const response = await axios.get(ROZETKA_ORDERS_API_URL, {
@@ -90,14 +130,26 @@ async function getPlannedCallbackOrders(accessToken: string) {
     });
 
     if (response.data.success) {
-      console.log(`[getPlannedCallbackOrders] Successfully fetched ${response.data.content.orders.length} orders`);
-      return response.data.content.orders;
+      const allOrders = response.data.content.orders;
+      console.log(`[getPlannedCallbackOrders] Successfully fetched ${allOrders.length} orders`);
+      
+      // Log status distribution for debugging
+      const statusCounts: Record<string, number> = {};
+      allOrders.forEach((o: any) => {
+        const s = o.status;
+        statusCounts[s] = (statusCounts[s] || 0) + 1;
+      });
+      console.log('[getPlannedCallbackOrders] Fetched orders status distribution:', statusCounts);
+
+      // Client-side filtering just in case, though API should handle it now
+      return allOrders.filter((o: any) => o.status === ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK);
     } else {
       console.error('[getPlannedCallbackOrders] API returned success=false', {
         responseData: response.data,
       });
       return null;
     }
+
   } catch (error: any) {
     console.error('[getPlannedCallbackOrders] Request failed', {
       error: error.message,
@@ -113,14 +165,33 @@ function filterOldOrders(orders: any[], daysThreshold: number) {
   const thresholdDate = new Date(now.getTime() - daysThreshold * 24 * 60 * 60 * 1000);
 
   return orders.filter(order => {
-    const createdAt = new Date(order.created_at);
-    return createdAt < thresholdDate;
+    // The field is 'created', not 'created_at' based on logs
+    const dateStr = order.created || order.created_at; 
+    const createdAt = parseRozetkaDate(dateStr);
+    
+    const isOld = createdAt < thresholdDate;
+
+    // Log every order check to verify date parsing and comparison
+    console.log(`[filterOldOrders] Order ${order.id}:`, {
+        dateStr,
+        parsed: !isNaN(createdAt.getTime()) ? createdAt.toISOString() : 'Invalid',
+        threshold: thresholdDate.toISOString(),
+        isOld
+    });
+
+    if (isNaN(createdAt.getTime())) {
+      console.warn(`[filterOldOrders] Failed to parse date for order ${order.id}: ${dateStr}`);
+      return false;
+    }
+    return isOld;
   });
 }
 
 function calculateAgeInDays(createdAt: string): number {
   const now = new Date();
-  const created = new Date(createdAt);
+  const created = parseRozetkaDate(createdAt);
+  if (isNaN(created.getTime())) return -1;
+  
   const diffInMs = now.getTime() - created.getTime();
   const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
   return diffInDays;
