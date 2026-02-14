@@ -4,6 +4,8 @@ import {
   useApi,
   AdminBlock,
   Select,
+  Text,
+  Badge,
 } from '@shopify/ui-extensions-react/admin';
 
 import {
@@ -20,6 +22,7 @@ export default reactExtension(TARGET, () => <App />);
 function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const { data } = useApi(TARGET);
 
   const orderId = data.selected[0].id;
@@ -36,12 +39,20 @@ function App() {
 
   const onSelect = useCallback(async (newValue: string) => {
     setLoading(true);
-    await updateOrdersTags({ value: newValue, orderIds: [orderId] });
-    setValue(newValue);
-    const note = `Stage updated to "${newValue}. "`;
-    await addOrderNote({ orderId, note });
-    setLoading(false);
-  }, []);
+    setError(null);
+    try {
+      await updateOrdersTags({ value: newValue, orderIds: [orderId] });
+      setValue(newValue);
+      const note = `Stage updated to "${newValue}. "`;
+      await addOrderNote({ orderId, note });
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to update';
+      console.error('Update failed:', err);
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
+  }, [orderId]);
 
   return (
     <AdminBlock>
@@ -52,6 +63,11 @@ function App() {
         options={stages}
         disabled={loading}
       />
+      {error && (
+        <Badge tone='critical'>
+          {error}
+        </Badge>
+      )}
     </AdminBlock>
   );
 }

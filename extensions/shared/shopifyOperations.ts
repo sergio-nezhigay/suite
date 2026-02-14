@@ -224,6 +224,35 @@ export async function updateOrdersTags({
     orderIds
   );
 
+  if (value === 'Перевірити оплату') {
+    const orderPromises = orderIds.map(async (id) => {
+      const query = `#graphql
+        query Order($id: ID!) {
+          order(id: $id) {
+            paymentMethod: metafield(namespace: "custom", key: "payment_method") {
+              value
+            }
+          }
+        }`;
+      return makeGraphQLQuery<{ order: { paymentMethod: { value: string } } }>(
+        query,
+        { id }
+      );
+    });
+
+    const orderResults = await Promise.all(orderPromises);
+    for (const res of orderResults) {
+      const paymentMethod = res.data?.order?.paymentMethod?.value;
+      if (paymentMethod !== 'Передплата безготівка') {
+        throw new Error(
+          `Status "Перевірити оплату" is only allowed for "Передплата безготівка" payment method. Current: "${
+            paymentMethod || 'None'
+          }"`
+        );
+      }
+    }
+  }
+
   const currentTags = await getOrdersTags(orderIds);
   console.log('Current tags for the orders:', currentTags);
 
