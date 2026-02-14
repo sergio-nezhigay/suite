@@ -2,6 +2,7 @@ import axios from 'axios';
 import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
 import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
+import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
 
 // Helper function to robustly parse Rozetka dates
 function parseRozetkaDate(dateStr: string): Date {
@@ -77,15 +78,24 @@ export const run: ActionRun = async () => {
       console.log({
         orderId: order.id,
         createdAtRaw: createdDate,
-        parsedDate: parseRozetkaDate(createdDate).toISOString(),
         ageInDays: ageInDays,
         recipientPhone: order.recipient_phone,
       });
     });
 
-    // TODO: Add status update logic here
-    // For each old order, update status to 18 (CANCELLED) with comment:
-    // await changeRozetkaOrderStatus(order.id, 18, accessToken, 'Не вдалося зв\'язатися');
+    // Update status to 18 (CANCELLED: Не вдалося зв'язатися з покупцем)
+    for (const order of oldOrders) {
+      try {
+        console.log(`Cancelling order ${order.id}...`);
+        await changeRozetkaOrderStatus(
+            order.id, 
+            ROZETKA_ORDER_STATUSES.CANCELLED, // 18 
+            accessToken
+        );
+      } catch (e: any) {
+        console.error(`Failed to cancel order ${order.id}: ${e.message}`);
+      }
+    }
 
     console.log('Old orders check completed', {
       totalOrders: orders.length,
@@ -133,15 +143,6 @@ async function getPlannedCallbackOrders(accessToken: string) {
       const allOrders = response.data.content.orders;
       console.log(`[getPlannedCallbackOrders] Successfully fetched ${allOrders.length} orders`);
       
-      // Log status distribution for debugging
-      const statusCounts: Record<string, number> = {};
-      allOrders.forEach((o: any) => {
-        const s = o.status;
-        statusCounts[s] = (statusCounts[s] || 0) + 1;
-      });
-      console.log('[getPlannedCallbackOrders] Fetched orders status distribution:', statusCounts);
-
-      // Client-side filtering just in case, though API should handle it now
       return allOrders.filter((o: any) => o.status === ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK);
     } else {
       console.error('[getPlannedCallbackOrders] API returned success=false', {
@@ -170,14 +171,6 @@ function filterOldOrders(orders: any[], daysThreshold: number) {
     const createdAt = parseRozetkaDate(dateStr);
     
     const isOld = createdAt < thresholdDate;
-
-    // Log every order check to verify date parsing and comparison
-    console.log(`[filterOldOrders] Order ${order.id}:`, {
-        dateStr,
-        parsed: !isNaN(createdAt.getTime()) ? createdAt.toISOString() : 'Invalid',
-        threshold: thresholdDate.toISOString(),
-        isOld
-    });
 
     if (isNaN(createdAt.getTime())) {
       console.warn(`[filterOldOrders] Failed to parse date for order ${order.id}: ${dateStr}`);
