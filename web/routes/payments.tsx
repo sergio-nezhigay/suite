@@ -1,8 +1,9 @@
-import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable, Toast, Frame, BlockStack, InlineStack } from '@shopify/polaris';
+import { Page, Layout, Card, Text, IndexTable, Button, Badge, EmptyState, Banner, Modal, DataTable, Toast, Frame, BlockStack, InlineStack, Tooltip } from '@shopify/polaris';
 import { useNavigate } from 'react-router-dom';
 import { useState, useEffect } from 'react';
 import { useGlobalAction } from '@gadgetinc/react';
 import { api } from '../api';
+import { abbreviateUkrainianCompanyName } from '../utilities/abbreviateUkrainianCompanyName';
 
 interface UncoveredPayment {
   id: string;
@@ -207,9 +208,13 @@ export default function Payments() {
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>
-          <Text variant="bodyMd" as="span">
-            {payment.counterpartyName}
-          </Text>
+          <Tooltip content={payment.counterpartyName} preferredPosition="above">
+            <div style={{ maxWidth: '300px' }}>
+              <Text variant="bodyMd" as="span" truncate>
+                {abbreviateUkrainianCompanyName(payment.counterpartyName)}
+              </Text>
+            </div>
+          </Tooltip>
         </IndexTable.Cell>
         <IndexTable.Cell>
           <Badge tone="info">{payment.accountCode}</Badge>
