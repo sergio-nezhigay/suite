@@ -1,4 +1,4 @@
-export const stages = [
+const labels = [
   'Очікують оплати',
   'На утриманні',
   'Завершені',
@@ -17,7 +17,25 @@ export const stages = [
   'Відправлено',
   'Декларації',
   'Скасовано',
-].map((label) => ({
-  value: label,
-  label,
-}));
+];
+
+export const STAGE_NAMES = {
+  RI: 'Оформити РІ',
+  CHE: 'Оформити Че',
+  ME: 'Оформити Ме',
+  II: 'Оформити Ии',
+} as const;
+
+export type StageOption = { value: string; label: string };
+export type StagesType = StageOption[] & typeof STAGE_NAMES;
+
+export const stages: StagesType = Object.assign(
+  labels.map((label) => ({
+    value: label,
+    label,
+  })),
+  STAGE_NAMES
+);
+
+
+

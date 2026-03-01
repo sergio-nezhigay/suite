@@ -15,6 +15,8 @@ import {
 
 const TARGET = 'admin.order-index.selection-action.render';
 
+import { stages } from '../../shared/stages';
+
 export default reactExtension(TARGET, () => <App />);
 
 interface LineItem {
@@ -76,6 +78,21 @@ interface VerificationResponse {
     ordersWithMatches: number;
   };
   error?: string;
+}
+
+function supplierCode2orderTag(supplierCode: string) {
+  switch (supplierCode) {
+    case 'РИ':
+      return stages.RI;
+    case 'ЧЕ':
+      return stages.CHE;
+    case 'Ме':
+      return stages.ME;
+    case 'ИИ':
+      return stages.II;
+    default:
+      return 'Невідомий постачальник';
+  }
 }
 
 function App() {
@@ -363,7 +380,7 @@ function App() {
 
             {orders.map((order, index) => (
               <BlockStack key={order.id}>
-                <Section heading={order.name + "->" + order.lineItems.nodes[0].variant?.sku?.split('^')[1] || ""}> {/*supplier code*/}
+                <Section heading={order.name + "->" + supplierCode2orderTag(order.lineItems.nodes[0].variant?.sku?.split('^')[1] || "")}> {/*supplier code*/}
                   <BlockStack>
                     {/* Line Items */}
                     {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {
