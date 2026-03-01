@@ -23,6 +23,7 @@ interface LineItem {
   currentQuantity: number;
   variant?: {
     title: string;
+    sku: string;
   };
   discountedUnitPriceSet: {
     shopMoney: {
@@ -115,6 +116,7 @@ function App() {
                   currentQuantity
                   variant {
                     title
+                    sku
                   }
                   discountedUnitPriceSet {
                     shopMoney {
@@ -332,6 +334,7 @@ function App() {
     }
   };
 
+
   return (
     <AdminAction
       title={`Payment Verification for ${selectedOrderIds.length} order${
@@ -355,9 +358,12 @@ function App() {
         ) : (
           <BlockStack>
             <Text fontWeight='bold'>📦 Order Preview</Text>
+            {/* TODO: Add here also 1st order's sku */}
+
+
             {orders.map((order, index) => (
               <BlockStack key={order.id}>
-                <Section heading={order.name}>
+                <Section heading={order.name + "->" + order.lineItems.nodes[0].variant?.sku?.split('^')[1] || ""}> {/*supplier code*/}
                   <BlockStack>
                     {/* Line Items */}
                     {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {

@@ -333,7 +333,7 @@ const transformOrderToShopifyVariables = async (
   if (!order) throw new Error('Order is required');
 
   const mapPurchaseToLineItem = async (purchase: any) => {
-    const { barcode, cost, handle, alternativeTitle } =
+    const { barcode, cost, handle, alternativeTitle, sku } =
       await getPropertiesFromOfferId(purchase.item.price_offer_id, shopify);
 
     return {
@@ -358,6 +358,7 @@ const transformOrderToShopifyVariables = async (
           name: '_product_handle',
           value: handle,
         },
+        { name: '_sku', value: sku },
         { name: '_alternative_title', value: alternativeTitle },
       ],
     };
@@ -528,6 +529,7 @@ interface Properties {
   barcode: string;
   cost: string;
   handle: string;
+  sku: string;
   alternativeTitle: string;
 }
 
@@ -537,7 +539,7 @@ export const getPropertiesByProductId = async (
 ): Promise<Properties> => {
   if (!productId) {
     console.warn(`[fetchBarcodeByProductId] No productId provided`);
-    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
+    return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
   }
 
   console.log(
@@ -553,6 +555,7 @@ export const getPropertiesByProductId = async (
             variants(first: 1) {
               edges {
                 node {
+                  sku
                   barcode
                   inventoryItem {
                       unitCost {
@@ -571,6 +574,7 @@ export const getPropertiesByProductId = async (
     const response = await shopify.graphql(query, { id: productId });
     const variantNode = response?.product?.variants?.edges?.[0]?.node;
     const barcode = variantNode?.barcode || '';
+    const sku = variantNode?.sku || '';
     const cost = variantNode?.inventoryItem?.unitCost?.amount
       ? String(variantNode.inventoryItem.unitCost.amount)
       : '';
@@ -589,13 +593,13 @@ export const getPropertiesByProductId = async (
       );
     }
 
-    return { barcode, cost, handle, alternativeTitle };
+    return { barcode, cost, handle, sku, alternativeTitle };
   } catch (error) {
     console.error(
       `[fetchBarcodeByProductId] Error fetching product data:`,
       error
     );
-    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
+    return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
   }
 };
 
@@ -605,7 +609,7 @@ export const getPropertiesFromOfferId = async (
 ): Promise<Properties> => {
   const productId = await getShopifyProductIdByOfferId(offerId, shopify);
   if (!productId)
-    return { barcode: '', cost: '', handle: '', alternativeTitle: '' };
+    return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
 
   return getPropertiesByProductId(productId, shopify);
 };

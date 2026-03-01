@@ -49,6 +49,9 @@ export type OrderDetails = {
   lineItems?: {
     title: string;
     unfulfilledQuantity: number;
+    variant: {
+      sku: string;
+    } | null;
     discountedUnitPriceSet: {
       shopMoney: {
         amount: string;
@@ -106,17 +109,23 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         novaposhtaDeclarationRef: metafield(namespace: \"nova_poshta\", key: \"declaration_ref\") {
             value
         }
-        lineItems(first: 10) {
-          nodes {
-            title
-            unfulfilledQuantity
-            discountedUnitPriceSet {
-              shopMoney {
-                amount
+            lineItems(first: 10) {
+              nodes {
+                title
+                unfulfilledQuantity
+                variant {
+                  sku
+                }
+                product {
+                  id
+                }
+                discountedUnitPriceSet {
+                  shopMoney {
+                    amount
+                  }
+                }
               }
             }
-          }
-        }
       }
     }`;
   const { data } = await makeGraphQLQuery<{
@@ -146,6 +155,12 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
         nodes: {
           title: string;
           unfulfilledQuantity: number;
+          variant: {
+            sku: string;
+          } | null;
+          product: {
+            id: string;
+          };
           discountedUnitPriceSet: {
             shopMoney: {
               amount: string;
@@ -172,6 +187,15 @@ export async function getOrderInfo(orderId: string): Promise<OrderInfo> {
       novaposhtaDeclarationRef,
       lineItems,
     } = data?.order;
+
+    for (const item of lineItems.nodes) {
+      if (!item.variant && item.product?.id) {
+        const variantDetails = await fetchVariantDetails(item.product.id);
+        if (variantDetails) {
+          item.variant = variantDetails;
+        }
+      }
+    }
 
     const zip =
       shippingAddress?.zip !== '12345' ? `${shippingAddress?.zip}` : '';
