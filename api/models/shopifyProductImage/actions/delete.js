@@ -1,4 +1,4 @@
-import { deleteRecord, ActionOptions } from "gadget-server";
+import { deleteRecord } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
 
 /** @type { ActionRun } */
@@ -13,7 +13,7 @@ export const onSuccess = async ({ params, record, logger, api, connections }) =>
 };
 
 /** @type { ActionOptions } */
-export const options: ActionOptions = {
+export const options = {
   actionType: "delete",
   triggers: {
     api: true,

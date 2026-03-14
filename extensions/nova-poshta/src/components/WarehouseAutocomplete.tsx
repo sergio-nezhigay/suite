@@ -76,8 +76,12 @@ export default function WarehouseAutocomplete({
       // 2. Currently selected warehouse is not in filtered results
       if (!isCurrentlySelectedInList) {
         const firstWarehouse = filteredWarehouses[0];
-        setLocalSelectedRef(firstWarehouse.Ref);
-        onWarehouseSelect(firstWarehouse.Ref, firstWarehouse.Description);
+        const firstWarehouseRef = firstWarehouse.Ref ?? undefined;
+
+        if (firstWarehouseRef) {
+          setLocalSelectedRef(firstWarehouseRef);
+          onWarehouseSelect(firstWarehouseRef, firstWarehouse.Description);
+        }
       }
     } else if (filteredWarehouses.length === 0 && !warehouseSearchQuery) {
       // Clear selection if no results and no active search
@@ -132,10 +136,12 @@ export default function WarehouseAutocomplete({
               <Text>Знайдено відділень: {filteredWarehouses.length}</Text>
               <Select
                 label={label}
-                options={filteredWarehouses.map((warehouse) => ({
-                  value: warehouse.Ref,
-                  label: warehouse.Description,
-                }))}
+                options={filteredWarehouses
+                  .filter((warehouse) => Boolean(warehouse.Ref))
+                  .map((warehouse) => ({
+                    value: warehouse.Ref ?? '',
+                    label: warehouse.Description,
+                  }))}
                 value={localSelectedRef}
                 onChange={handleWarehouseChange}
                 disabled={disabled}

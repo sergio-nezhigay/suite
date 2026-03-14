@@ -43,8 +43,12 @@ export default function CityAutocomplete({
   useEffect(() => {
     if (cities.length > 0 && !selectedCityRef) {
       const firstCity = cities[0];
-      setSelectedCityRef(firstCity.Ref);
-      onCitySelect(firstCity.Ref, firstCity.Description);
+      const firstCityRef = firstCity.Ref ?? undefined;
+
+      if (firstCityRef) {
+        setSelectedCityRef(firstCityRef);
+        onCitySelect(firstCityRef, firstCity.Description);
+      }
     } else if (cities.length === 0) {
       setSelectedCityRef(undefined);
     }
@@ -91,10 +95,12 @@ export default function CityAutocomplete({
       {!isLoading && cities.length > 0 && (
         <Select
           label="Оберіть місто"
-          options={cities.map((city) => ({
-            value: city.Ref,
-            label: formatCityLabel(city),
-          }))}
+          options={cities
+            .filter((city) => Boolean(city.Ref))
+            .map((city) => ({
+              value: city.Ref ?? '',
+              label: formatCityLabel(city),
+            }))}
           onChange={handleCityChange}
           value={selectedCityRef ?? undefined}
         />
