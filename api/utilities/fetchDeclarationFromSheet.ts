@@ -62,7 +62,14 @@ export async function fetchDeclarationFromSheet(
     }
 
     console.timeEnd(`[${orderName}] Step 2: Fetch & process spreadsheet data`);
-    return matchingRow[declarationColumn] ?? null;
+    const rawValue = matchingRow[declarationColumn];
+    if (!rawValue) {
+      return null;
+    }
+
+    // Parse declaration number from string like "Відправлення: 20451388805185 Плановий час доставки: ..."
+    const match = rawValue.match(/Відправлення:\s*(\d+)/);
+    return match ? match[1] : null;
   } catch (error) {
     console.error(`[${orderName}] Error in fetchDeclarationFromSheet:`, error);
     return null;
@@ -76,23 +83,11 @@ export async function fetchNovaPoshtaDeclaration(
 ): Promise<string | null> {
   return fetchDeclarationFromSheet(orderName, config, {
     spreadsheetId: '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE',
-    sheetName: 'Баланс',
-    startRow: 7100,
+    sheetName: '2026',
+    startRow: 2,
     orderNameColumn: 4,
-    declarationColumn: 14,
+    declarationColumn: 23,
   });
 }
 
-export async function fetchEeasybuyDeclaration(
-  orderName: string,
-  config: any
-): Promise<string | null> {
-  // TODO: Replace with actual eeasybuy spreadsheet ID and configuration
-  return fetchDeclarationFromSheet(orderName, config, {
-    spreadsheetId: '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE', // Placeholder
-    sheetName: 'Баланс',
-    startRow: 7100,
-    orderNameColumn: 4,
-    declarationColumn: 14,
-  });
-}
+
