@@ -222,7 +222,12 @@ Reason: Payment verified and order marked as paid`;
       receiptUrl: receipt.receipt_url,
     };
   } catch (error) {
-    console.error(`Failed to create check for order ${order.name}:`, error);
+    console.error(`[DEBUG-PAYMENTS] Failed to create check for order ${order.name}:`, error);
+    if (error instanceof Error) {
+       console.error(`[DEBUG-PAYMENTS] Error stack:`, error.stack);
+    } else {
+       console.error(`[DEBUG-PAYMENTS] Non-error thrown:`, JSON.stringify(error));
+    }
 
     // Add error note to order but don't fail the payment verification
     try {
@@ -297,11 +302,6 @@ export const run = async ({ params, api, connections }: any) => {
       );
     });
 
-    // Create a map of already verified orders
-    const verifiedOrderIds = new Set(
-      existingMatches.map((match: { matchedOrderId: any }) => match.matchedOrderId)
-    );
-
     // Fetch selected orders
     const orders = await api.shopifyOrder.findMany({
       filter: { id: { in: numericOrderIds } },
@@ -344,7 +344,6 @@ export const run = async ({ params, api, connections }: any) => {
 
     // Simple matching logic: exact amount + within 7 days
     const results = [];
-    const currentTime = new Date();
 
     for (const order of orders) {
       // Use currentTotalPriceSet which excludes deleted/refunded items
@@ -359,104 +358,43 @@ export const run = async ({ params, api, connections }: any) => {
       );
 
       if (existingMatch) {
-        console.log(`Order ${order.name} already verified`);
-
         const hasCheck = !!(existingMatch.checkReceiptId || existingMatch.checkIssuedAt);
         const isSkipped = !!existingMatch.checkSkipReason;
 
-        // Check if we need to create a check for this previously verified order
+        // Retry check only if matched but check previously failed (not skipped, not issued)
         if (autoCreateChecks && !hasCheck && !isSkipped) {
-          console.log(
-            `Attempting to create check for previously verified order ${order.name} (ID: ${order.id})`
+          console.log(`[DEBUG-PAYMENTS] Retrying createAutomaticCheck for existing match order`, order.name);
+          const currentOrderData = orderData?.find(
+            (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
           );
-          console.log(
-            `Check status - hasCheck: ${hasCheck}, isSkipped: ${isSkipped}`
-          );
-
-          try {
-            // Find the corresponding orderData for this specific order
-            const currentOrderData = orderData?.find(
-              (od: any) =>
-                od.id === order.id ||
-                od.id === `gid://shopify/Order/${order.id}`
-            );
-
-            console.log(
-              `Found orderData for order ${order.name}:`,
-              currentOrderData ? 'YES' : 'NO'
-            );
-            if (currentOrderData) {
-              console.log(
-                `OrderData has ${
-                  currentOrderData.lineItems?.length || 0
-                } line items`
-              );
-            }
-
-            const checkResult = await createAutomaticCheck(
-              order,
-              connections,
-              api,
-              currentOrderData
-            );
-
-            if (checkResult?.success) {
-              console.log(
-                `Check created for previously verified order ${order.name}`
-              );
-            } else if (checkResult?.skipped) {
-              console.log(
-                `Check skipped for previously verified order ${order.name}: ${checkResult.reason}`
-              );
-            }
-          } catch (checkError) {
-            console.error(
-              `Check creation error for previously verified order ${order.name}:`,
-              checkError
-            );
-          }
-
-          // Fetch updated bank transaction info after check creation attempt
-          const updatedTransaction = await api.bankTransaction.findFirst({
+          const checkResult = await createAutomaticCheck(order, connections, api, currentOrderData);
+          console.log(`[DEBUG-PAYMENTS] createAutomaticCheck result (retry):`, JSON.stringify(checkResult));
+          
+          // Re-fetch updated check status
+          const updated = await api.bankTransaction.findFirst({
             filter: { matchedOrderId: { equals: order.id } },
-            select: {
-              checkIssuedAt: true,
-              checkReceiptId: true,
-              checkSkipReason: true,
-            },
+            select: { checkIssuedAt: true, checkReceiptId: true, checkSkipReason: true },
           });
-
-          if (updatedTransaction) {
-            existingMatch.checkIssuedAt = updatedTransaction.checkIssuedAt;
-            existingMatch.checkReceiptId = updatedTransaction.checkReceiptId;
-            existingMatch.checkSkipReason = updatedTransaction.checkSkipReason;
+          if (updated) {
+            existingMatch.checkIssuedAt = updated.checkIssuedAt;
+            existingMatch.checkReceiptId = updated.checkReceiptId;
+            existingMatch.checkSkipReason = updated.checkSkipReason;
           }
         }
 
         results.push({
           orderId: order.id,
           orderName: order.name || '',
-          orderAmount: orderAmount,
+          orderAmount,
           orderDate: order.createdAt,
           financialStatus: order.financialStatus || '',
           matchCount: 1,
-          alreadyVerified: true,
-          verifiedAt: null, // No longer tracked in bankTransaction
-          matchConfidence: null, // No longer tracked in bankTransaction
-          // Add check information
           checkIssued: !!(existingMatch.checkReceiptId || existingMatch.checkIssuedAt),
           checkIssuedAt: existingMatch.checkIssuedAt,
           checkReceiptId: existingMatch.checkReceiptId,
           checkSkipped: !!existingMatch.checkSkipReason,
           checkSkipReason: existingMatch.checkSkipReason,
-          matches: [
-            {
-              transactionId: existingMatch.id,
-              amount: orderAmount,
-              date: null,
-              description: 'Previously verified payment',
-            },
-          ],
+          matches: [{ transactionId: existingMatch.id, amount: orderAmount, date: null, description: 'Previously matched payment' }],
         });
         continue;
       }
@@ -534,25 +472,33 @@ export const run = async ({ params, api, connections }: any) => {
           await updateOrderPaymentStatus(connections, order.id, order.shopId, {
             note: `🔍 Payment Verification Complete\nMatching transaction found: ${matchDetails}\nConfidence: ${Math.round(
               confidence
-            )}%\n\nVerified at: ${currentTime.toISOString()}`,
+            )}%\n\nVerified at: ${new Date().toISOString()}`,
             markAsPaid: true,
           });
 
           console.log(`Successfully updated order ${order.name}`);
+          // 🔥 Fix: Instantly update the local object so the UI JSON response shows 'paid' immediately
+          // instead of returning the stale 'pending' status fetched at the start of the action.
+          order.financialStatus = 'paid';
 
           // Create automatic check for verified payment (if enabled)
           if (autoCreateChecks) {
             try {
               // Find the corresponding orderData for this specific order
               const currentOrderData = orderData?.find(
-                (od: any) => od.id === order.id
+                (od: any) =>
+                  od.id === order.id ||
+                  od.id === `gid://shopify/Order/${order.id}`
               );
+              console.log(`[DEBUG-PAYMENTS] Found currentOrderData:`, !!currentOrderData, 'for order', order.id);
+              console.log(`[DEBUG-PAYMENTS] Calling createAutomaticCheck (first match) for order`, order.name);
               const checkResult = await createAutomaticCheck(
                 order,
                 connections,
                 api,
                 currentOrderData
               );
+              console.log(`[DEBUG-PAYMENTS] createAutomaticCheck result (first match):`, JSON.stringify(checkResult));
 
               if (checkResult?.success) {
                 console.log(`Check created for order ${order.name}`);
@@ -637,8 +583,6 @@ export const run = async ({ params, api, connections }: any) => {
         orderDate: order.createdAt,
         financialStatus: order.financialStatus || '',
         matchCount: matches.length,
-        alreadyVerified: false,
-        verifiedAt: matches.length > 0 ? currentTime : null,
         // Add check information
         checkIssued: checkInfo.checkIssued,
         checkIssuedAt: checkInfo.checkIssuedAt,

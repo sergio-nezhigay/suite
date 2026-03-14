@@ -50,9 +50,6 @@ interface VerificationResult {
   orderDate: string;
   financialStatus: string;
   matchCount: number;
-  alreadyVerified?: boolean;
-  verifiedAt?: string;
-  matchConfidence?: number;
   // Check information
   checkIssued?: boolean;
   checkIssuedAt?: string;
@@ -64,7 +61,7 @@ interface VerificationResult {
   matches: Array<{
     transactionId: string;
     amount: number;
-    date: string;
+    date: string | null;
     description: string;
   }>;
 }
@@ -309,15 +306,9 @@ function App() {
   };
 
   const getPaymentStatusBadge = (result: VerificationResult) => {
-    if (result.alreadyVerified) {
+    if (result.matchCount > 0) {
       return (
-        <Badge tone='info'>
-          🔒 Previously Verified ({result.matchConfidence}%)
-        </Badge>
-      );
-    } else if (result.matchCount > 0) {
-      return (
-        <Badge tone='success'>✅ Payment Found ({result.matchCount})</Badge>
+        <Badge tone='success'>✅ Payment Found</Badge>
       );
     } else {
       return <Badge tone='critical'>❌ No Payment</Badge>;
@@ -455,16 +446,6 @@ function App() {
                     {result.financialStatus}
                   </Text>
 
-                  {result.verifiedAt && (
-                    <Text>
-                      🕒{' '}
-                      {result.alreadyVerified
-                        ? 'Previously verified'
-                        : 'Just verified'}
-                      : {formatVerificationTime(result.verifiedAt)}
-                    </Text>
-                  )}
-
                   {result.checkIssued && (
                     <BlockStack>
                       <Text fontWeight='bold'>🧾 Fiscal Check Details:</Text>
@@ -494,25 +475,16 @@ function App() {
 
                   {result.matches.length > 0 && (
                     <BlockStack>
-                      <Text fontWeight='bold'>
-                        {result.alreadyVerified
-                          ? '🔒 Previously Matched Transactions:'
-                          : '✅ Matching Transactions:'}
-                      </Text>
+                      <Text fontWeight='bold'>✅ Matching Transactions:</Text>
                       {result.matches.map((match) => (
                         <BlockStack key={match.transactionId}>
                           <Text>
                             💰 ₴{match.amount.toFixed(2)} on{' '}
-                            {new Date(match.date).toLocaleDateString()}
+                            {match.date ? new Date(match.date).toLocaleDateString() : '—'}
                           </Text>
                           <Text>
-                            📝 {match.description.substring(0, 50)}...
+                            📝 {match.description.substring(0, 50)}
                           </Text>
-                          {result.alreadyVerified && (
-                            <Text>
-                              📊 Confidence: {result.matchConfidence}%
-                            </Text>
-                          )}
                         </BlockStack>
                       ))}
                     </BlockStack>
