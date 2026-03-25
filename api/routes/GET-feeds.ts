@@ -45,7 +45,7 @@ export interface ShopifyProduct {
 }
 
 const genericSuppliers = ['щу', 'ии', 'че', 'ме', 'б', 'ри', 'бо'];
-const hotlineSuppliers = ['щу', 'ии', 'че'];
+const hotlineSuppliers = ['щу', 'ии', 'че', 'ри'];
 const rozetkaSuppliers = ['щу', 'ии', 'че'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
