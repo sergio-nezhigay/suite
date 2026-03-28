@@ -193,12 +193,19 @@ export const run = async ({
         } else if (transaction.reference) {
           externalId = transaction.reference;
         } else {
-          // Create unique fallback ID with timestamp, random component, and counter
-          const timestamp = Date.now();
-          const randomHash = crypto.randomBytes(4).toString('hex');
-          externalId = `privatbank_${timestamp}_${randomHash}_${totalProcessed}`;
+          // Create deterministic composite key from stable transaction fields
+          // so the same real-world transaction always produces the same externalId
+          const datePart   = transaction.date || 'nodate';
+          const timePart   = transaction.time || 'notime';
+          const amountPart = transaction.amount.toString();
+          const acctPart   = (transaction.counterpartyAccount || 'noacct').replace(/\s/g, '');
+          const descHash   = crypto.createHash('md5')
+                                   .update(transaction.description || '')
+                                   .digest('hex')
+                                   .substring(0, 8);
+          externalId = `privatbank_${datePart}_${timePart}_${amountPart}_${acctPart}_${descHash}`;
 
-          const warningMsg = `Generated fallback externalId for transaction: ${externalId}`;
+          const warningMsg = `Generated deterministic fallback externalId for transaction: ${externalId}`;
           logger.warn(warningMsg);
           warnings.push(warningMsg);
         }
@@ -449,11 +456,22 @@ export const run = async ({
           );
           totalCreated++;
         } catch (createError) {
-          const errorMsg = `Failed to create transaction record for ${externalId}: ${
-            createError instanceof Error
-              ? createError.message
-              : String(createError)
-          }`;
+          const createErrorMessage = createError instanceof Error
+            ? createError.message
+            : String(createError);
+
+          // Treat unique-constraint violations as duplicates (race condition between syncs)
+          if (
+            createErrorMessage.toLowerCase().includes('unique') ||
+            createErrorMessage.toLowerCase().includes('duplicate') ||
+            createErrorMessage.toLowerCase().includes('already exists')
+          ) {
+            logger.warn(`Skipping duplicate on create (unique constraint) for externalId: ${externalId}`);
+            totalDuplicates++;
+            continue;
+          }
+
+          const errorMsg = `Failed to create transaction record for ${externalId}: ${createErrorMessage}`;
           logger.error(errorMsg, {
             externalId,
             transactionData: {
