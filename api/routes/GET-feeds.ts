@@ -13,6 +13,8 @@ export interface ProductVariant {
   sku: string;
   title: string;
   inventoryQuantity: number;
+  inventoryPolicy?: 'CONTINUE' | 'DENY' | string;
+  availableForSale?: boolean;
   barcode: string;
   inventoryItem: {
     unitCost: {
@@ -117,6 +119,8 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
       (variant: { price: any }) => variant.price
     );
     const cost = firstVariantWithPrice?.inventoryItem?.unitCost?.amount || 0;
+    const continueSellingWhenOutOfStock =
+      firstVariantWithPrice?.inventoryPolicy === 'CONTINUE';
 
     const imageURLs = product.variants
       .filter(
@@ -131,7 +135,10 @@ function makeGenericFeed(products: any[]): GenericProductFeed[] {
     );
     const collectionName = collectionVariant?.title || '';
     const inventoryQuantity = firstVariantWithPrice?.inventoryQuantity || 0;
-    const availability = inventoryQuantity > 0 ? IN_STOCK : OUT_OF_STOCK;
+    const availability =
+      inventoryQuantity > 0 || continueSellingWhenOutOfStock
+        ? IN_STOCK
+        : OUT_OF_STOCK;
     const price = Math.floor(Number(firstVariantWithPrice?.price) || 0);
 
     return {
