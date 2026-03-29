@@ -571,13 +571,10 @@ export const params = {
 
 export const options = {
   triggers: {
-scheduler: [
-  { cron: '0 7 * * *' },  // 9:00 AM Ukraine time (7:00 UTC)
-  { cron: '0 10 * * *' }, // 12:00 PM Ukraine time (10:00 UTC)
-  { cron: '0 12 * * *' }, // 2:00 PM Ukraine time (12:00 UTC)
-  { cron: '0 14 * * *' }, // 4:00 PM Ukraine time (14:00 UTC)
-  { cron: '0 15 * * *' }, // 5:00 PM Ukraine time (15:00 UTC)
-  { cron: '0 16 * * *' }, // 6:00 PM Ukraine time (15:00 UTC)
-],
+    scheduler: [
+      { cron: '0 10 * * *' }, // 13:00 Ukraine time (10:00 UTC)
+      { cron: '0 12 * * *' }, // 15:00 Ukraine time (12:00 UTC)
+      { cron: '0 14 * * *' }, // 17:00 Ukraine time (14:00 UTC)
+    ],
   },
 };
