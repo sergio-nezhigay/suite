@@ -22,10 +22,8 @@ export const settings: GadgetSettings = {
           "shopifyOrderLineItem",
           "shopifyOrderTransaction",
           "shopifyProduct",
-          "shopifyProductMedia",
           "shopifyProductOption",
           "shopifyProductVariant",
-          "shopifyProductVariantMedia",
         ],
         type: "partner",
         scopes: [
