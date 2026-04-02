@@ -123,6 +123,19 @@ export const run = async ({
     const transactions = fetchResult.transactions || [];
     logger.info(`Fetched ${transactions.length} transactions from PrivatBank`);
 
+    // Load ALL existing externalIds for the sync period in ONE query
+    const existingRecords = await api.bankTransaction.findMany({
+      filter: {
+        transactionDateTime: { greaterThanOrEqual: syncStartDate.toISOString() },
+      },
+      select: { externalId: true },
+      first: 250,
+    });
+    const existingExternalIds = new Set(
+      existingRecords.map((r: any) => r.externalId)
+    );
+    logger.info(`Loaded ${existingExternalIds.size} existing externalIds from DB in one query`);
+
     // Debug: Show transaction date distribution
     if (transactions.length > 0) {
       const transactionsByDate = transactions.reduce(
@@ -219,65 +232,8 @@ export const run = async ({
           continue;
         }
 
-        // 2. Check for duplicates with proper handling of "no data" response
-        let existingTransaction = null;
-        let shouldSkipTransaction = false;
-
-        try {
-          // Verify the API method exists before calling
-          if (
-            !api.bankTransaction ||
-            typeof api.bankTransaction.findFirst !== 'function'
-          ) {
-            throw new Error(
-              'bankTransaction.findFirst method not available in API'
-            );
-          }
-
-          existingTransaction = await api.bankTransaction.findFirst({
-            filter: { externalId: { equals: externalId.trim() } },
-          });
-
-          logger.debug(
-            `Duplicate check completed for externalId: ${externalId} - found: ${!!existingTransaction}`
-          );
-        } catch (duplicateCheckError) {
-          const errorMessage =
-            duplicateCheckError instanceof Error
-              ? duplicateCheckError.message
-              : String(duplicateCheckError);
-
-          // Handle the specific "no data" case - this means no duplicates found, which is good!
-          if (
-            errorMessage.includes('Gadget API returned no data') ||
-            errorMessage.includes('Record Not Found Error')
-          ) {
-            logger.debug(
-              `No existing transaction found for externalId: ${externalId} - proceeding with creation`
-            );
-            existingTransaction = null; // Explicitly set to null to proceed
-          } else {
-            // This is a real error that we should handle
-            const errorMsg = `Failed to check for duplicate transaction ${externalId}: ${errorMessage}`;
-            logger.error(errorMsg, {
-              externalId,
-              apiAvailable: !!api.bankTransaction,
-              findFirstAvailable: !!(
-                api.bankTransaction &&
-                typeof api.bankTransaction.findFirst === 'function'
-              ),
-            });
-            errors.push(errorMsg);
-            totalErrors++;
-            shouldSkipTransaction = true;
-          }
-        }
-
-        if (shouldSkipTransaction) {
-          continue; // Skip this transaction due to real error
-        }
-
-        if (existingTransaction) {
+        // 2. Check for duplicates using in-memory Set (no DB query per transaction)
+        if (existingExternalIds.has(externalId.trim())) {
           logger.debug(`Skipping duplicate transaction: ${externalId}`);
           totalDuplicates++;
           continue;
