@@ -463,9 +463,14 @@ const logAndReturnError = (error: unknown, context: string): null => {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '0 6-15 * * *' }],
+    scheduler: [
+      { cron: '0 7,9,11,13,14 * * 1-5' }, // Weekdays: 10:00 12:00 14:00 16:00 17:00 Kyiv
+      { cron: '0 7,10 * * 6' }, // Saturday: 10:00 and 13:00 Kyiv only
+      // Sunday: off
+    ],
   },
 };
+
 
 export const getShopifyProductIdByOfferId = async (
   offerId: string,
