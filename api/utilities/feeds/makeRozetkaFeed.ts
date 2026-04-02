@@ -1,3 +1,4 @@
+import { IN_STOCK, OUT_OF_STOCK } from 'api/utilities/data/stockStatus';
 import { GenericProductFeed } from 'api/routes/GET-feeds';
 
 interface RozetkaParam {
@@ -212,8 +213,7 @@ const ROZETKA_CONFIG = {
   // Stock status handling
   stockStatus: {
     getAvailability: (product: GenericProductFeed) => {
-      const quantity = product.inventoryQuantity || 0;
-      return quantity > 0 ? 'true' : 'false';
+      return product.availability === IN_STOCK ? 'true' : 'false';
     },
     getStockQuantity: (product: GenericProductFeed) => {
       return Math.max(0, product.inventoryQuantity || 0);
@@ -415,7 +415,7 @@ class RozetkaFilterParser {
     params = [
       ...params.filter((param) =>
         dynamicParams.every(
-          (dynamicParam) => dynamicParam.paramName !== param.paramName
+            (dynamicParam) => dynamicParam.paramName !== param.paramName
         )
       ),
       ...dynamicParams,
