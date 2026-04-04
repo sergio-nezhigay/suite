@@ -13,7 +13,7 @@ export const run = async ({ connections, config, params }: any) => {
       );
     }
 
-    const ipResponse = await axios.get('https://api.ipify.org?format=json');
+
     // Get days back parameter (default to 1 for better coverage)
     const daysBack = Number(params?.daysBack) || 1;
 
@@ -66,11 +66,6 @@ export const run = async ({ connections, config, params }: any) => {
         timeout: 30000, // 30 second timeout
       }
     );
-
-    // Debug: Log incoming response details
-    // Debug: Log response data structure
-    // Debug: Log full raw response data (first few characters for structure inspection)
-
 
     if (!response.data) {
       throw new Error('No data received from PrivatBank API');

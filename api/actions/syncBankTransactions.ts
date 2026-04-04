@@ -173,6 +173,16 @@ export const run = async ({
       `${validTransactions.length} transactions passed structure validation`
     );
 
+    // Verify the API create method exists once before processing
+    if (
+      !api.bankTransaction ||
+      typeof api.bankTransaction.create !== 'function'
+    ) {
+      throw new Error(
+        'bankTransaction.create method not available in API'
+      );
+    }
+
     // Process each valid transaction
     for (const transaction of validTransactions) {
       try {
@@ -359,16 +369,6 @@ export const run = async ({
 
         // 7. Create the bank transaction record with proper error handling
         try {
-          // Verify the API create method exists
-          if (
-            !api.bankTransaction ||
-            typeof api.bankTransaction.create !== 'function'
-          ) {
-            throw new Error(
-              'bankTransaction.create method not available in API'
-            );
-          }
-
           const newTransaction = await api.bankTransaction.create({
             externalId: externalId.trim(),
             transactionDateTime: transactionDateTime,
