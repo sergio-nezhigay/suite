@@ -42,7 +42,6 @@ export async function fetchDeclarationFromSheet(
     const data = response.data.values;
 
     if (!data?.length) {
-      console.log('No data found in the specified range.');
       console.timeEnd(
         `[${orderName}] Step 2: Fetch & process spreadsheet data`
       );
@@ -54,7 +53,6 @@ export async function fetchDeclarationFromSheet(
     );
 
     if (!matchingRow) {
-      console.log(`orderName ${orderName} not found in rows ${startRow}+.`);
       console.timeEnd(
         `[${orderName}] Step 2: Fetch & process spreadsheet data`
       );

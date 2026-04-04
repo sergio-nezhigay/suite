@@ -9,8 +9,6 @@ export default async function route({
   api,
   connections,
 }: RouteContext) {
-  console.log('Checkbox receipts creation request received');
-
   try {
     const body = request.body as any;
     const { orders } = body;
@@ -18,9 +16,6 @@ export default async function route({
     if (!orders?.length) {
       return reply.code(400).send({ error: 'Orders data required' });
     }
-
-    console.log(`Processing ${orders.length} orders:`, orders.map((o: any) => o.orderId));
-
     const checkboxService = new CheckboxService();
 
     // Step 1: Authenticate
@@ -38,12 +33,9 @@ export default async function route({
       // Add delay between requests (except for the first one)
       if (i > 0) {
         await new Promise(resolve => setTimeout(resolve, 800)); // 800ms delay
-        console.log(`Waiting 800ms before processing next order...`);
       }
       try {
         const { orderId, trackingNumber, customer, lineItems } = orderData;
-        console.log(`Processing order: ${orderId}`);
-
         // Extract numeric ID from Shopify Global ID if needed
         const numericOrderId = orderId.includes('gid://shopify/Order/')
           ? orderId.split('/').pop()
@@ -64,11 +56,6 @@ export default async function route({
           results.push({ orderId: orderData.orderId, error: 'Order not found' });
           continue;
         }
-
-        console.log(
-          `Found ETTN: ${trackingNumber} for order ${(order as any).name}`
-        );
-
         // Transform order to Checkbox format using frontend data
         const receiptBody = OrderToReceiptTransformer.transformOrderFromData(
           orderData,
@@ -94,11 +81,6 @@ Created: ${new Date().toISOString()}`;
             note: receiptNote,
           }
         );
-
-        console.log(
-          `Receipt ${receipt.id} created and saved to notes for order ${orderData.orderId}`
-        );
-
         results.push({
           orderId: orderData.orderId,
           orderName: (order as any).name,
@@ -107,10 +89,6 @@ Created: ${new Date().toISOString()}`;
           fiscalCode: receipt.fiscal_code,
           ettnNumber: trackingNumber,
         });
-
-        console.log(
-          `Successfully created receipt for order ${(order as any).name}`
-        );
       } catch (error) {
         console.error(`Error processing order ${orderData.orderId}:`, error);
         results.push({
@@ -119,8 +97,6 @@ Created: ${new Date().toISOString()}`;
         });
       }
     }
-
-    console.log('Checkbox receipts processing completed:', results);
     return reply.send({ results });
   } catch (error) {
     console.error('Checkbox service error:', error);
@@ -131,38 +107,27 @@ Created: ${new Date().toISOString()}`;
 }
 
 function extractETTNFromOrder(order: any): string | null {
-  console.log('DEBUG: Order structure for ETTN extraction:', {
-    orderId: order.id,
-    orderName: order.name,
-    fulfillments: order.fulfillments,
-    fulfillmentCount: order.fulfillments?.length || 0
-  });
-
   // Extract from fulfillment tracking info
   const trackingNumber = order.fulfillments?.[0]?.trackingInfo?.[0]?.number;
 
   if (trackingNumber) {
-    console.log('Found tracking number in trackingInfo:', trackingNumber);
     return trackingNumber;
   }
 
   // Fallback: check if trackingInfo is stored differently
   const fulfillment = order.fulfillments?.[0];
   if (fulfillment?.trackingNumber) {
-    console.log('Found tracking number in trackingNumber field:', fulfillment.trackingNumber);
     return fulfillment.trackingNumber;
   }
 
   // Additional checks for different tracking number locations
   if (fulfillment?.tracking_number) {
-    console.log('Found tracking number in tracking_number field:', fulfillment.tracking_number);
     return fulfillment.tracking_number;
   }
 
   // Check if tracking info is stored as an array of objects
   if (fulfillment?.trackingInfo?.length > 0) {
     const firstTracking = fulfillment.trackingInfo[0];
-    console.log('Tracking info structure:', firstTracking);
     if (firstTracking?.number) {
       return firstTracking.number;
     }
@@ -170,7 +135,5 @@ function extractETTNFromOrder(order: any): string | null {
       return firstTracking.trackingNumber;
     }
   }
-
-  console.log('No ETTN found in order fulfillments. Full fulfillment data:', JSON.stringify(order.fulfillments, null, 2));
   return null;
 }

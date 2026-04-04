@@ -14,8 +14,6 @@ export async function fetchChatGPT({
       messages: [{ role: 'user', content: prompt }],
       response_format: { type: 'json_object' },
     });
-
-    console.log('response:', JSON.stringify(response, null, 4));
     return response.choices[0].message.content;
   } catch (error) {
     console.error(`Error in fetchWithRetry for prompt "${prompt}":`, error);

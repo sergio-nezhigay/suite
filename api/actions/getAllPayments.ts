@@ -95,24 +95,14 @@ export const run: ActionRun = async ({ api, logger, params }) => {
   const { includeMatched } = (params as any) || {};
 
   try {
-    console.log('[getAllPayments] Starting to fetch all payments...');
-
     // Refresh bank data to ensure we have the latest transactions
     try {
       await refreshBankDataSinceLastSync(api);
     } catch (refreshError) {
       console.warn('[getAllPayments] Bank data refresh failed:', refreshError);
     }
-
-    console.log('[getAllPayments] Starting to fetch all payments...');
-
     // Calculate date 7 days ago
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    console.log(
-      '[getAllPayments] Fetching transactions since:',
-      sevenDaysAgo.toISOString()
-    );
-
     // Build filter object
     const filter: any = {
       transactionDateTime: { greaterThan: sevenDaysAgo },
@@ -145,12 +135,6 @@ export const run: ActionRun = async ({ api, logger, params }) => {
       sort: { transactionDateTime: 'Descending' },
       first: 250,
     });
-
-    console.log(
-      '[getAllPayments] Found total income transactions:',
-      allTransactions.length
-    );
-
     // Process all transactions and add status
     const allPayments = [];
     const summary = {
@@ -165,20 +149,11 @@ export const run: ActionRun = async ({ api, logger, params }) => {
     for (const transaction of allTransactions) {
       // Skip transactions without valid date
       if (!transaction.transactionDateTime) {
-        console.log(
-          '[getAllPayments] Skipping transaction without date:',
-          transaction.id
-        );
         continue;
       }
 
       // Skip transactions without valid amount
       if (!transaction.amount || transaction.amount <= 0) {
-        console.log(
-          '[getAllPayments] Skipping transaction without valid amount:',
-          transaction.id,
-          transaction.amount
-        );
         continue;
       }
 
@@ -225,10 +200,6 @@ export const run: ActionRun = async ({ api, logger, params }) => {
           : null,
       });
     }
-
-    console.log('[getAllPayments] Total payments to display:', allPayments.length);
-    console.log('[getAllPayments] Summary:', summary);
-
     return {
       success: true,
       payments: allPayments,

@@ -4,11 +4,6 @@ import { applyParams, save, ActionOptions } from 'gadget-server';
 export const run = async ({ params, record, api, connections }) => {
   applyParams(params, record);
   // Structured log for update action
-  console.log('[lastSKU/update] Info', {
-    params,
-    record,
-    timestamp: new Date().toISOString(),
-  });
   await save(record);
 };
 

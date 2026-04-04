@@ -34,11 +34,6 @@ function parseRozetkaDate(dateStr: string): Date {
 }
 
 export const run: ActionRun = async () => {
-  console.log('Starting old Rozetka orders check', {
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString(),
-  });
-
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
     console.warn('Skipping old orders check - not in production environment');
@@ -56,37 +51,22 @@ export const run: ActionRun = async () => {
     // Fetch orders with PLANNED_CALLBACK status
     const orders = await getPlannedCallbackOrders(accessToken);
     if (!orders || orders.length === 0) {
-      console.log('No orders with PLANNED_CALLBACK status found');
       return;
     }
-
-    console.log(`Found ${orders.length} orders with PLANNED_CALLBACK status`);
-
     // Filter and log old orders (6+ days)
     const oldOrders = filterOldOrders(orders, 6);
     
     if (oldOrders.length === 0) {
-      console.log('No orders older than 6 days found');
       return;
     }
-
-    console.log(`Found ${oldOrders.length} orders older than 6 days:`);
-    
     oldOrders.forEach(order => {
       const createdDate = order.created || order.created_at;
       const ageInDays = calculateAgeInDays(createdDate);
-      console.log({
-        orderId: order.id,
-        createdAtRaw: createdDate,
-        ageInDays: ageInDays,
-        recipientPhone: order.recipient_phone,
-      });
     });
 
     // Update status to 18 (CANCELLED: Не вдалося зв'язатися з покупцем)
     for (const order of oldOrders) {
       try {
-        console.log(`Cancelling order ${order.id}...`);
         await changeRozetkaOrderStatus(
             order.id, 
             ROZETKA_ORDER_STATUSES.CANCELLED, // 18 
@@ -96,12 +76,6 @@ export const run: ActionRun = async () => {
         console.error(`Failed to cancel order ${order.id}: ${e.message}`);
       }
     }
-
-    console.log('Old orders check completed', {
-      totalOrders: orders.length,
-      oldOrders: oldOrders.length,
-    });
-
   } catch (error: any) {
     console.error('Old Rozetka orders check failed', {
       error: error.message,
@@ -124,12 +98,6 @@ async function getPlannedCallbackOrders(accessToken: string) {
     expand: 'purchases,delivery',
     created_to: createdTo // Filter orders created BEFORE 6 days ago
   };
-
-  console.log('[getPlannedCallbackOrders] Fetching orders with status 47 older than 6 days', {
-    status: ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK,
-    created_to: createdTo
-  });
-
   try {
     const response = await axios.get(ROZETKA_ORDERS_API_URL, {
       headers: {
@@ -141,8 +109,6 @@ async function getPlannedCallbackOrders(accessToken: string) {
 
     if (response.data.success) {
       const allOrders = response.data.content.orders;
-      console.log(`[getPlannedCallbackOrders] Successfully fetched ${allOrders.length} orders`);
-      
       return allOrders.filter((o: any) => o.status === ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK);
     } else {
       console.error('[getPlannedCallbackOrders] API returned success=false', {

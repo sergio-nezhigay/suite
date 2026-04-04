@@ -25,10 +25,6 @@ export const changeRozetkaOrderStatus = async (
     );
 
     if (response.data.success) {
-      console.log(
-        `Status updated to ${status} for Rozetka order ${orderId}` +
-          (ttn ? ` with TTN ${ttn}` : '')
-      );
     } else {
       console.error(`Failed to update status for order ${orderId}`);
     }

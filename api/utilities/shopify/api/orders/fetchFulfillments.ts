@@ -52,12 +52,6 @@ export async function fetchFulfillments(
 
   try {
     const response = await shopify.graphql(query, variables);
-    console.log('variables: ', JSON.stringify(variables, null, 2));
-    console.log(
-      'response  of order id: ',
-      orderId,
-      JSON.stringify(response, null, 2)
-    );
     return response?.order?.fulfillments || [];
   } catch (error) {
     console.error('Error fetching fulfillments:', error);

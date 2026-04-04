@@ -78,29 +78,7 @@ export const run = async ({
     const today = new Date();
     const syncStartDate = new Date();
     syncStartDate.setDate(syncStartDate.getDate() - daysBack);
-
-    console.log(
-      `DEBUG - Sync range: ${syncStartDate.toISOString().split('T')[0]} to ${
-        today.toISOString().split('T')[0]
-      }`
-    );
-
     // Debug: Log sync action details
-    console.log('DEBUG - Sync Action Details:');
-    console.log('  Days back requested:', daysBack);
-    console.log('  Sync start time:', syncStartTime.toISOString());
-    console.log('  Current environment:', config.NODE_ENV);
-    console.log('  API methods available:', {
-      fetchPrivatBankTransactions: !!api.fetchPrivatBankTransactions,
-      bankTransaction: !!api.bankTransaction,
-      bankTransactionCreate: !!(
-        api.bankTransaction && api.bankTransaction.create
-      ),
-      bankTransactionFindFirst: !!(
-        api.bankTransaction && api.bankTransaction.findFirst
-      ),
-    });
-
     // Call the existing fetchPrivatBankTransactions action
     const fetchResult = await api.fetchPrivatBankTransactions({ daysBack });
 
@@ -234,7 +212,6 @@ export const run = async ({
 
         // 2. Check for duplicates using in-memory Set (no DB query per transaction)
         if (existingExternalIds.has(externalId.trim())) {
-          logger.debug(`Skipping duplicate transaction: ${externalId}`);
           totalDuplicates++;
           continue;
         }
@@ -406,10 +383,6 @@ export const run = async ({
             status: 'processed',
             syncedAt: syncStartTime,
           });
-
-          logger.debug(
-            `Created transaction record: ${newTransaction.id} (${externalId})`
-          );
           totalCreated++;
         } catch (createError) {
           const createErrorMessage = createError instanceof Error

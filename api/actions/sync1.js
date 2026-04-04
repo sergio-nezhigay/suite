@@ -13,17 +13,12 @@ export const run = async ({ api }) => {
       descriptionEmbedding: { equals: null },
     },
   });
-  console.log('🚀 ~ records:', records);
-
   allRecords.push(...records);
 
   while (records.hasNextPage) {
-    console.log('Pausing before fetching the next batch...');
     await new Promise((resolve) => setTimeout(resolve, pauseDuration));
 
     records = await records.nextPage();
     allRecords.push(...records);
   }
-
-  console.log('All records have been processed.', allRecords.length);
 };

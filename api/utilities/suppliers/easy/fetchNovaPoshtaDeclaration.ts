@@ -23,7 +23,6 @@ export async function fetchNovaPoshtaDeclaration(
     });
     const data = response.data.values;
     if (!data?.length) {
-      console.log('No data found in the specified range.');
       console.timeEnd(
         `[${orderName}] Step 2: Fetch & process spreadsheet data`
       );
@@ -31,7 +30,6 @@ export async function fetchNovaPoshtaDeclaration(
     }
     const matchingRow = data.find((row) => row?.[4] === orderName);
     if (!matchingRow) {
-      console.log(`orderName ${orderName} not found in rows ${startRow}+.`);
       console.timeEnd(
         `[${orderName}] Step 2: Fetch & process spreadsheet data`
       );

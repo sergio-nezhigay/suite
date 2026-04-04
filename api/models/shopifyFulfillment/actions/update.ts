@@ -47,12 +47,7 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-/**
- * Helper to prefix logs with order number
- */
-function logWithOrder(orderName: string, ...args: any[]) {
-  console.log(`Create fulfillment action log. [Order: ${orderName}]`, ...args);
-}
+
 
 /**
  * On success: sync with Google Sheets & update fulfillment tracking
@@ -63,13 +58,6 @@ export const onSuccess: ActionOnSuccess = async ({
   config,
 }) => {
   const orderName = record.name?.split('.')[0] ?? '';
-
-  logWithOrder(
-    orderName,
-    '✅ onSuccess - Record shopifyfullfillment s updated successfully:',
-    JSON.stringify(record, null, 2)
-  );
-
   //  const trackingNumbers = record.trackingNumbers as string[] | undefined;
   //  const currentTrackingNumber = trackingNumbers?.[0] ?? '';
 

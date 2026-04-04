@@ -84,20 +84,7 @@ export async function updateFulfillmentTracking({
 
   while (attempt < maxRetries) {
     try {
-      console.log(
-        'updateFulfillmentTracking variables',
-        JSON.stringify(variables, null, 2)
-      );
-      console.log(
-        'updateFulfillmentTracking mutation',
-        JSON.stringify(mutation, null, 2)
-      );
       const response = await shopify.graphql(mutation, variables);
-
-      console.log(
-        'updateFulfillmentTracking response',
-        JSON.stringify(response, null, 2)
-      );
       const result = response?.fulfillmentTrackingInfoUpdate || {
         userErrors: [{ message: 'Unknown error' }],
       };
@@ -108,10 +95,6 @@ export async function updateFulfillmentTracking({
         result.userErrors.length > 0 &&
         attempt < maxRetries - 1
       ) {
-        console.warn(
-          `User errors encountered on attempt ${attempt + 1}:`,
-          JSON.stringify(result.userErrors, null, 2)
-        );
         attempt++;
         await new Promise((res) => setTimeout(res, 1000 * attempt)); // Exponential backoff
         continue;

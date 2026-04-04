@@ -207,8 +207,6 @@ function formatLineItem(
   item: OrderResponse['nodes'][number]['lineItems']['nodes'][number]
 ) {
   try {
-    console.log('item=', JSON.stringify(item, null, 2));
-
     const quantity = item.unfulfilledQuantity;
     const price = parseFloat(item.discountedUnitPriceSet.shopMoney.amount);
 

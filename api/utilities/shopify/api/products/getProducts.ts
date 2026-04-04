@@ -9,66 +9,24 @@ export async function getProducts(
   shopifyConnection: Shopify
 ): Promise<ShopifyProduct[]> {
   const startTime = Date.now();
-
-  console.log('Stage 1: Initiating bulk product query', {
-    stage: 'bulk_query_start',
-    timestamp: startTime,
-  });
-  console.log('bulkMutation', JSON.stringify(bulkMutation, null, 2));
   const { bulkOperationRunQuery } = await shopifyConnection.graphql(
     bulkMutation
-  );
-
-  console.log(
-    'bulkOperationRunQuery',
-    JSON.stringify(bulkOperationRunQuery, null, 2)
   );
   const { bulkOperation, userErrors } = bulkOperationRunQuery;
 
   if (userErrors.length > 0) {
     const errorMsg = userErrors.map((e: UserError) => e.message).join(', ');
-    console.log('Stage 2: Bulk query user errors', {
-      stage: 'bulk_query_error',
-      duration_ms: Date.now() - startTime,
-      success: false,
-      error: errorMsg,
-    });
     throw new Error(`Error: ${errorMsg}`);
   }
-
-  console.log('Stage 2: Bulk query submitted successfully', {
-    stage: 'bulk_query_submitted',
-    duration_ms: Date.now() - startTime,
-    success: true,
-  });
-
   const bulkOperationStatus = await pollBulkOperationStatus(
     shopifyConnection,
     bulkOperation
   );
 
   if (bulkOperationStatus.url) {
-    console.log('Stage 3: Bulk operation completed, fetching results', {
-      stage: 'bulk_query_completed',
-      duration_ms: Date.now() - startTime,
-      success: true,
-      url: bulkOperationStatus.url,
-    });
     const products = await fetchBulkOperationResults(bulkOperationStatus.url);
-    console.log('Stage 4: Products fetched and parsed', {
-      stage: 'products_fetched',
-      duration_ms: Date.now() - startTime,
-      success: true,
-      product_count: products.length,
-    });
     return products;
   }
-
-  console.log('Stage 3: No bulk result URL found', {
-    stage: 'bulk_query_no_url',
-    duration_ms: Date.now() - startTime,
-    success: false,
-  });
   throw new Error('No bulk result URL found');
 }
 

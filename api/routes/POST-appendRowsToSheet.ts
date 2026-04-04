@@ -31,9 +31,6 @@ const route: RouteHandler<{
   }
 
   const range = `${sheetName}!A1`;
-
-  console.log('Received rows for Google Sheets append', { rows, spreadsheetId, sheetName });
-
   try {
     const auth = await authorize(config);
     const sheets = google.sheets({ version: 'v4', auth });
@@ -47,9 +44,6 @@ const route: RouteHandler<{
     });
 
     const responseData: sheets_v4.Schema$AppendValuesResponse = response.data;
-
-    console.log('Rows appended successfully to Google Sheets', { responseData });
-
     await reply.send({
       success: true,
       addedRows: rows.length,

@@ -38,8 +38,6 @@ async function getOrderChat(
   accessToken: string
 ): Promise<OrderChatResponse['content'] | null> {
   try {
-    console.log(`[Rozetka] Getting chat info for order ${orderId}`);
-
     const response = await axios.get<OrderChatResponse>(
       `${ROZETKA_API_BASE_URL}/messages/${orderId}/order-chat`,
       {
@@ -51,10 +49,6 @@ async function getOrderChat(
     );
 
     if (response.data.success) {
-      console.log(`[Rozetka] Chat info retrieved for order ${orderId}:`, {
-        chatId: response.data.content.id,
-        receiverId: response.data.content.user.id,
-      });
       return response.data.content;
     } else {
       console.error(
@@ -82,8 +76,6 @@ async function createMessage(
   accessToken: string
 ): Promise<boolean> {
   try {
-    console.log(`[Rozetka] Sending message to chat ${chatId}`);
-
     const response = await axios.post<CreateMessageResponse>(
       `${ROZETKA_API_BASE_URL}/messages/create`,
       {
@@ -100,9 +92,6 @@ async function createMessage(
     );
 
     if (response.data.success) {
-      console.log(`[Rozetka] Message sent successfully to chat ${chatId}:`, {
-        messageId: response.data.content.id,
-      });
       return true;
     } else {
       console.error(
@@ -139,8 +128,6 @@ export async function sendRozetkaOrderMessage(
     }
 
     const orderId = orderIdMatch[0];
-    console.log(`[Rozetka] Processing message for order: ${orderName} (ID: ${orderId})`);
-
     // Get access token
     const accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {
@@ -164,19 +151,12 @@ export async function sendRozetkaOrderMessage(
     );
 
     if (success) {
-      console.log(
-        `[Rozetka] Successfully sent message to order ${orderName}`
-      );
-
       // Change order status to 47 ("Планується повторний дзвінок")
       try {
         await changeRozetkaOrderStatus(
           parseInt(orderId),
           ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK,
           accessToken
-        );
-        console.log(
-          `[Rozetka] Status changed to 47 for order ${orderName}`
         );
       } catch (error) {
         console.error(

@@ -38,7 +38,6 @@ async function getDefaultImageUrl(title: string): Promise<string> {
       if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) {
         return imageUrl;
       }
-      console.log('Invalid image URL scheme:', imageUrl);
     }
 
     return fallbackImage;
@@ -59,7 +58,6 @@ export async function createProducts({
   try {
     const shopify = getShopifyClient(connections);
     for (const product of products) {
-      console.log('product', JSON.stringify(product, null, 2));
       const handle = transliterate(product.title);
       const prompt = preparePrompt(product.title, product.description);
       const response = (await fetchChatGPT({ prompt, connections })) || '';
@@ -92,17 +90,12 @@ export async function createProducts({
         },
         media,
       };
-      console.log(
-        'createProductVariables',
-        JSON.stringify(createProductVariables, null, 2)
-      );
       const { productCreate } = await shopify.graphql(
         createProductQuery,
         createProductVariables
       );
 
       if (productCreate?.userErrors && productCreate?.userErrors.length > 0) {
-        console.log('🚀 ~ productCreate userErrors:', productCreate.userErrors);
         throw new Error(
           'Failed to create a product' +
             JSON.stringify(productCreate.userErrors)

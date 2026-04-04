@@ -6,35 +6,9 @@ export const run = async () => {
   };
 
   // Step 1: Simple Message
-  console.log('[Step 1] Starting process');
   // Step 1 Debug: log user object
-  console.log('[Step 1] User object:', user);
-
   // Step 2: With Context Data
-  console.log('[Step 2] User logged in', {
-    user_id: user.id,
-    email: user.email,
-    timestamp: new Date().toISOString(),
-  });
   // Step 2 Debug: log structured log data
-  console.log('[Step 2] Structured log data:', {
-    user_id: user.id,
-    email: user.email,
-    timestamp: new Date().toISOString(),
-  });
-
   // Step 3: Stringify the object in the log message
-  console.log(
-    `[Step 3] User logged in: ${JSON.stringify({
-      user_id: user.id,
-      email: user.email,
-      timestamp: new Date().toISOString(),
-    })}`
-  );
-
   // Step 4: Separate log entries for each piece of information
-  console.log('[Step 4] User logged in');
-  console.log(`[Step 4] User ID: ${user.id}`);
-  console.log(`[Step 4] Email: ${user.email}`);
-  console.log(`[Step 4] Timestamp: ${new Date().toISOString()}`);
 };

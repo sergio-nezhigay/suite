@@ -24,20 +24,12 @@ export const run = async ({ api }) => {
   //  records = await records.nextPage();
   //  allRecords.push(...records);
   //}
-
-  console.log(`Fetched a total of ${allRecords.length} records.`);
-
   for (const product of allRecords) {
     if (product.title && product.body && !product.descriptionEmbedding) {
-      console.log('🚀 ~ Enqueuing:', product.title);
       await api.enqueue(api.shopifyProduct.createEmbedding, {
         id: product.id,
       });
-
-      console.log('Pausing after enqueuing...');
       await new Promise((resolve) => setTimeout(resolve, pauseDuration));
     }
   }
-
-  console.log('All records have been processed.');
 };

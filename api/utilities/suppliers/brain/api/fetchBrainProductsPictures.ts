@@ -8,7 +8,6 @@ export async function fetchBrainProductsPictures({
   limit,
   page,
 }: FetchingFunc) {
-  console.log('🚀 ~ fetchBrainProductsPictures:', { query, limit, page });
   const categoryID = '7936';
 
   const { result } = await brainRequest({
@@ -19,7 +18,5 @@ export async function fetchBrainProductsPictures({
       offset: page,
     },
   });
-  console.log('🚀 ~ result:', result);
-
   return { result };
 }

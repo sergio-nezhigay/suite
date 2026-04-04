@@ -227,9 +227,6 @@ const processOrder = async (
           'Завершені',
           order.name
         );
-        console.log(
-          `Successfully updated tag for order ${order.name}: Декларації → Завершені`
-        );
       } catch (error) {
         console.error(
           `Failed to update tag for order ${order.name}:`,
@@ -281,6 +278,6 @@ export const run = async ({ api, connections, config }: any) => {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '11 1,7,13,19 * * *' }],
+    scheduler: [{ cron: '0 8 * * *' }],
   },
 };

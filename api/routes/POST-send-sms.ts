@@ -8,8 +8,6 @@ const route: RouteHandler = async (request, reply) => {
     message: string;
     orderName?: string;
   };
-  console.log('🚀 ~ RouteHandler...:', to, message, orderName);
-
   if (!to || !message) {
     return await reply
       .status(400)
@@ -18,8 +16,6 @@ const route: RouteHandler = async (request, reply) => {
 
   try {
     const smsResponse = await smsClient(to, message);
-    console.log('🚀 ~ smsResponse:', smsResponse);
-
     // Check if we should send a Rozetka message
     const shouldSendRozetkaMessage =
       orderName &&
@@ -27,10 +23,6 @@ const route: RouteHandler = async (request, reply) => {
       message.toLowerCase().includes('peredzvonit');
 
     if (shouldSendRozetkaMessage) {
-      console.log(
-        `[SMS Route] Detected Rozetka order with "Peredzvonit" SMS. Sending Rozetka message for order: ${orderName}`
-      );
-
       // Send Rozetka message asynchronously (don't block SMS response)
       sendRozetkaOrderMessage(orderName).catch((error) => {
         console.error('[SMS Route] Failed to send Rozetka message:', {
@@ -42,7 +34,6 @@ const route: RouteHandler = async (request, reply) => {
 
     await reply.send({ status: 'SMS sent successfully', smsResponse });
   } catch (error) {
-    console.log('🚀 ~ error:', error);
     await reply.status(500).send({
       error: `An error occurred while sending SMS: ${
         error instanceof Error ? error.message : String(error)

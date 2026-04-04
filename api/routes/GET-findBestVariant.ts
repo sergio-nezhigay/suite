@@ -22,7 +22,6 @@ const route: RouteHandler<{
       bestVariant
     });
   } catch (error) {
-    console.log('Error in findBestVariant route:', error);
     return reply.status(500).send({
       error: 'Internal server error'
     });

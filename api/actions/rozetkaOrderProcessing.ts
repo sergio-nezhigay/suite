@@ -15,11 +15,6 @@ import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 
 export const run: ActionRun = async ({ connections }) => {
   // Replace logger.info with console.log
-  console.log('Starting Rozetka order processing', {
-    environment: process.env.NODE_ENV,
-    timestamp: new Date().toISOString(),
-  });
-
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
     // Replace logger.warn with console.warn
@@ -38,12 +33,6 @@ export const run: ActionRun = async ({ connections }) => {
     const tokenEnd = Date.now();
 
     // Replace logger.info with console.log
-    console.log('Stage 1: Fetch Rozetka access token completed', {
-      stage: 'token_fetch',
-      duration_ms: tokenEnd - tokenStart,
-      success: !!accessTokenRozetka,
-    });
-
     if (!accessTokenRozetka) {
       const error = new Error('Failed to fetch access token');
       // Replace logger.error with console.error
@@ -60,15 +49,8 @@ export const run: ActionRun = async ({ connections }) => {
     const ordersEnd = Date.now();
 
     // Replace logger.info with console.log
-    console.log('Stage 2: Fetch new orders completed', {
-      stage: 'fetch_orders',
-      duration_ms: ordersEnd - ordersStart,
-      orders_count: rozOrders?.length || 0,
-    });
-
     if (!rozOrders || !rozOrders.length) {
       // Replace logger.info with console.log
-      console.log('No new orders to process', { stage: 'fetch_orders' });
       return;
     }
 
@@ -89,12 +71,6 @@ export const run: ActionRun = async ({ connections }) => {
     const processEnd = Date.now();
 
     // Replace logger.info with console.log
-    console.log('Stage 3: Process orders completed', {
-      stage: 'process_orders',
-      duration_ms: processEnd - processStart,
-      total_orders: rozOrders.length,
-    });
-
     const endTime = Date.now();
     const logData = {
       total_duration_ms: endTime - startTime,
@@ -102,10 +78,6 @@ export const run: ActionRun = async ({ connections }) => {
       stages_completed: 3,
     };
     // Replace logger.info with console.log
-    console.log('Rozetka order processing completed successfully', logData);
-    console.log('Additional debug info:', {
-      debugData: JSON.stringify(logData),
-    });
   } catch (error: any) {
     // Replace logger.error with console.error
     console.error('Rozetka order processing failed', {
@@ -140,7 +112,6 @@ async function processOrdersConcurrently(
     results.forEach((result, index) => {
       const order = chunk[index];
       if (result.status === 'fulfilled') {
-        console.log(`Order ${order.id} processed successfully`);
       } else {
         console.error(`Order ${order.id} failed:`, result.reason);
       }
@@ -155,8 +126,6 @@ async function processOrder(
 ) {
   try {
     const customer = await findOrCreateShopifyCustomer(shopify, order);
-    console.log(`Customer ready for order ${order.id}`, customer);
-
     const orderVariables = await transformOrderToShopifyVariables(
       order,
       shopify
@@ -165,8 +134,6 @@ async function processOrder(
       shopify,
       variables: orderVariables,
     });
-
-    console.log(`Order ${order.id} created successfully`, shopifyOrder);
     await changeRozetkaOrderStatus(
       order.id,
       ROZETKA_ORDER_STATUSES.PROCESSING_BY_SELLER,
@@ -190,7 +157,6 @@ async function findOrCreateShopifyCustomer(
     });
 
     if (foundCustomer) {
-      console.log('Found existing customer:', foundCustomer);
       return foundCustomer;
     }
 
@@ -199,7 +165,6 @@ async function findOrCreateShopifyCustomer(
       shopify,
       variables: customerVariables,
     });
-    console.log('Created new customer:', createdCustomer);
     return createdCustomer;
   } catch (error) {
     throw new Error(`Failed to get/create customer: ${error}`);
@@ -216,15 +181,6 @@ export const getNewOrders = async (
     types: ROZETKA_ORDER_STATUSES.NEW,
     expand: 'purchases,delivery',
   };
-
-  console.log('[getNewOrders] Making API request', {
-    url: ROZETKA_ORDERS_API_URL,
-    params: requestParams,
-    tokenPreview: `${accessToken.substring(0, 8)}...`,
-    tokenLength: accessToken.length,
-    isRetry,
-  });
-
   try {
     const response = await axios.get(ROZETKA_ORDERS_API_URL, {
       headers: {
@@ -233,59 +189,22 @@ export const getNewOrders = async (
       },
       params: requestParams,
     });
-
-    console.log('[getNewOrders] API response received', {
-      status: response.status,
-      statusText: response.statusText,
-      success: response.data?.success,
-      hasContent: !!response.data?.content,
-      ordersCount: response.data?.content?.orders?.length || 0,
-    });
-
     if (response.data.success) {
-      console.log('[getNewOrders] Successfully fetched orders', {
-        ordersCount: response.data.content.orders.length,
-        orderIds: response.data.content.orders.map((o: any) => o.id),
-      });
       return response.data.content.orders;
     } else {
       // Check if this is an invalid token error (error code 1020)
       const errorCode = response.data?.errors?.code;
       const errorMessage = response.data?.errors?.message;
-
-      console.error('[getNewOrders] API returned success=false', {
-        responseData: JSON.stringify(response.data, null, 2),
-        message: errorMessage || 'No error message provided',
-        errorCode: errorCode || 'No error code',
-        content: response.data?.content || 'No content',
-      });
-
       // Handle incorrect_access_token error (code 1020)
       if (
         errorCode === 1020 &&
         errorMessage === 'incorrect_access_token' &&
         !isRetry
       ) {
-        console.log(
-          '[getNewOrders] Detected invalid token error, invalidating cached token and retrying...'
-        );
-
         // Invalidate the cached token
         await rozetkaTokenManager.invalidateToken();
-        console.log(
-          '[getNewOrders] Token invalidated, fetching fresh token...'
-        );
-
         // Get a fresh token
         const freshToken = await rozetkaTokenManager.getValidToken();
-        console.log(
-          '[getNewOrders] Fresh token obtained, retrying API request',
-          {
-            tokenPreview: `${freshToken.substring(0, 8)}...`,
-            tokenLength: freshToken.length,
-          }
-        );
-
         // Retry with the fresh token (pass isRetry=true to prevent infinite loop)
         return getNewOrders(freshToken, true);
       }
@@ -300,17 +219,6 @@ export const getNewOrders = async (
       );
     }
   } catch (error: any) {
-    console.error('[getNewOrders] Exception caught', {
-      errorMessage: error.message,
-      errorName: error.name,
-      responseStatus: error.response?.status,
-      responseStatusText: error.response?.statusText,
-      responseData: error.response?.data
-        ? JSON.stringify(error.response.data, null, 2)
-        : 'No response data',
-      requestUrl: error.config?.url,
-      requestParams: error.config?.params,
-    });
     return logAndReturnError(error, 'getNewOrders');
   }
 };
@@ -452,12 +360,6 @@ const logAndReturnError = (error: unknown, context: string): null => {
       : undefined,
     stack: err?.stack,
   };
-
-  console.error(
-    `[${context}] Detailed error information:`,
-    JSON.stringify(errorDetails, null, 2)
-  );
-
   return null;
 };
 
@@ -482,14 +384,8 @@ export const getShopifyProductIdByOfferId = async (
   }
 
   if (offerId.includes('gid://shopify/Product/')) {
-    console.log(
-      `[fetchProductIdByOfferId] offerId is already a Shopify GID: ${offerId}`
-    );
     return offerId;
   }
-
-  console.log(`[fetchProductIdByOfferId] Searching for product ID...`);
-
   const query = `
         query getProducts($query: String!) {
           products(first: 1, query: $query) {
@@ -511,9 +407,6 @@ export const getShopifyProductIdByOfferId = async (
     const productId = response?.products?.edges?.[0]?.node?.id || null;
 
     if (productId) {
-      console.log(
-        `[fetchProductIdByOfferId] Found Shopify product ID: ${productId}`
-      );
     } else {
       console.warn(
         `[fetchProductIdByOfferId] No product found for offerId: ${offerId}`
@@ -546,10 +439,6 @@ export const getPropertiesByProductId = async (
     console.warn(`[fetchBarcodeByProductId] No productId provided`);
     return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
   }
-
-  console.log(
-    `[fetchBarcodeByProductId] Fetching barcode and metafield for product ID: ${productId}`
-  );
   const query = `
         query getProductBarcodeAndMetafield($id: ID!) {
           product(id: $id) {
@@ -587,11 +476,6 @@ export const getPropertiesByProductId = async (
     const alternativeTitle = response?.product?.metafield?.value || '';
 
     if (barcode || alternativeTitle) {
-      console.log(`[fetchBarcodeByProductId] Found data`, {
-        barcode,
-        handle,
-        alternativeTitle,
-      });
     } else {
       console.warn(
         `[fetchBarcodeByProductId] No barcode/metafield found for product ID: ${productId}`

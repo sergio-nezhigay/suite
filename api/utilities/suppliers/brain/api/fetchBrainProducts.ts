@@ -120,7 +120,6 @@ export async function fetchBrainProducts({
 
     return { products: mappedProducts, count };
   } catch (error) {
-    console.log('error:', error);
     return { products: [], count: 0, error: error };
   }
 }

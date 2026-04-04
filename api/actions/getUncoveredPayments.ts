@@ -19,17 +19,8 @@ function extractPaymentCodeFromAccount(account: string): string | null {
 
 export const run: ActionRun = async ({ api, logger }) => {
   try {
-    console.log(
-      '[getUncoveredPayments] Starting to fetch uncovered payments...'
-    );
-
     // Calculate date 7 days ago
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-    console.log(
-      '[getUncoveredPayments] Fetching transactions since:',
-      sevenDaysAgo.toISOString()
-    );
-
     // Fetch all income transactions from last 7 days
     const allTransactions = await api.bankTransaction.findMany({
       filter: {
@@ -53,12 +44,6 @@ export const run: ActionRun = async ({ api, logger }) => {
       sort: { transactionDateTime: 'Descending' },
       first: 250,
     });
-
-    console.log(
-      '[getUncoveredPayments] Found total income transactions:',
-      allTransactions.length
-    );
-
     // Filter transactions - exclude payments with codes that don't need checks
     const filteredTransactions = allTransactions.filter((transaction) => {
       const counterpartyAccount = transaction.counterpartyAccount || '';
@@ -72,14 +57,6 @@ export const run: ActionRun = async ({ api, logger }) => {
       // Include transactions where code is NOT in excluded list
       return paymentCode && !EXCLUDED_PAYMENT_CODES.includes(paymentCode);
     });
-
-    console.log(
-      `[getUncoveredPayments] Transactions requiring checks (excluding codes ${EXCLUDED_PAYMENT_CODES.join(
-        ', '
-      )} and Nova Poshta):`,
-      filteredTransactions.length
-    );
-
     // Check each transaction using only bankTransaction fields
     const uncoveredPayments = [];
 
@@ -92,20 +69,11 @@ export const run: ActionRun = async ({ api, logger }) => {
       if (!hasCheck && !isSkipped) {
         // Skip transactions without a valid date
         if (!transaction.transactionDateTime) {
-          console.log(
-            '[getUncoveredPayments] Skipping transaction without date:',
-            transaction.id
-          );
           continue;
         }
 
         // Skip transactions without a valid amount
         if (!transaction.amount || transaction.amount <= 0) {
-          console.log(
-            '[getUncoveredPayments] Skipping transaction without valid amount:',
-            transaction.id,
-            transaction.amount
-          );
           continue;
         }
 
@@ -130,18 +98,8 @@ export const run: ActionRun = async ({ api, logger }) => {
           description: transaction.description || '',
         });
       } else {
-        console.log(
-          `[getUncoveredPayments] Skipping transaction ${transaction.id}: ` +
-            `hasCheck=${hasCheck}, isSkipped=${isSkipped}`
-        );
       }
     }
-
-    console.log(
-      '[getUncoveredPayments] Uncovered payments found:',
-      uncoveredPayments.length
-    );
-
     return {
       success: true,
       payments: uncoveredPayments,

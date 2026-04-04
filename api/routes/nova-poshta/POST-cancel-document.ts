@@ -24,8 +24,6 @@ const route: RouteHandler<{
 
   try {
     const response = await npClient(payload);
-    console.log('🚀 ~ Cancel document response:', JSON.stringify(response));
-
     if (response.success) {
       await reply.send({
         message: 'Declaration successfully canceled',

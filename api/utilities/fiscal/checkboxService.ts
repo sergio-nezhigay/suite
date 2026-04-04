@@ -45,7 +45,6 @@ export class CheckboxService {
         }
 
         const delayMs = baseDelay * Math.pow(2, attempt);
-        console.log(`Rate limit hit, retrying in ${delayMs}ms (attempt ${attempt + 1}/${maxRetries})...`);
         await this.delay(delayMs);
       }
     }
@@ -54,8 +53,6 @@ export class CheckboxService {
   }
 
   async signIn(): Promise<string> {
-    console.log('Signing in to Checkbox API...');
-
     const response = await fetch(`${this.baseUrl}/cashier/signin`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -71,13 +68,10 @@ export class CheckboxService {
 
     const data: CheckboxAuthResponse = await response.json();
     this.token = data.access_token;
-    console.log('Successfully authenticated with Checkbox');
     return this.token;
   }
 
   async openShift(): Promise<CheckboxShift> {
-    console.log('Opening new shift...');
-
     const shiftId = crypto.randomUUID();
     const response = await fetch(`${this.baseUrl}/shifts`, {
       method: 'POST',
@@ -94,7 +88,6 @@ export class CheckboxService {
     }
 
     const shift = await response.json();
-    console.log('Shift opened successfully:', shift.id);
     return shift;
   }
 
@@ -117,8 +110,6 @@ export class CheckboxService {
   async createETTNReceipt(
     receiptBody: CheckboxReceiptBody
   ): Promise<CheckboxReceiptResponse> {
-    console.log('Creating ETTN receipt...');
-
     return this.retryWithBackoff(async () => {
       const response = await fetch(`${this.baseUrl}/np/ettn`, {
         method: 'POST',
@@ -144,8 +135,6 @@ export class CheckboxService {
       if (receipt.status && receipt.status.toUpperCase() !== 'CREATED') {
         throw new Error(`Receipt creation failed with status: ${receipt.status}`);
       }
-
-      console.log('Receipt created successfully:', receipt.id);
       return receipt;
     });
   }
@@ -153,10 +142,8 @@ export class CheckboxService {
   async ensureShiftOpen(): Promise<CheckboxShift> {
     try {
       const shift = await this.checkShift();
-      console.log('Active shift found:', shift.id);
       return shift;
     } catch {
-      console.log('No active shift, opening new one...');
       return await this.openShift();
     }
   }
@@ -164,8 +151,6 @@ export class CheckboxService {
   async createSellReceipt(
     receiptBody: CheckboxSellReceiptBody
   ): Promise<CheckboxReceiptResponse> {
-    console.log('Creating sell receipt without TTN...');
-
     return this.retryWithBackoff(async () => {
       const response = await fetch(`${this.baseUrl}/receipts/sell`, {
         method: 'POST',
@@ -193,8 +178,6 @@ export class CheckboxService {
           `Sell receipt creation failed with status: ${receipt.status}`
         );
       }
-
-      console.log('Sell receipt created successfully:', receipt.id);
       return receipt;
     });
   }

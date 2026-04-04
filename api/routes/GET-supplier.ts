@@ -28,14 +28,6 @@ const route: RouteHandler<{
       supplierId,
       categoryId,
     } = getUrlParams(request);
-
-    console.log('route { supplierId,query, limit, page, categoryId } ', {
-      supplierId,
-      query,
-      limit,
-      page,
-      categoryId,
-    });
     let products = [],
       count = 0,
       productsWithExistingFlag;

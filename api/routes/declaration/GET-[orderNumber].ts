@@ -9,8 +9,6 @@ const route: RouteHandler<{ Params: RouteParams }> = async ({
   reply,
 }) => {
   const orderNumber = request.params.orderNumber;
-
-  console.log('Order number:', orderNumber);
   const declarationNumber = await order2declarationNumber(orderNumber);
 
   await reply.send({ status: 'success', declarationNumber });

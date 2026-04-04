@@ -26,29 +26,7 @@ interface FindBestWarehouseResult {
 
 const GADGET_APP_URL = 'https://novaposhta.gadget.app';
 
-function logWithOrderId({
-  message,
-  orderId,
-}: {
-  message: string | object;
-  orderId: string;
-}) {
-  const timestamp = new Date().toISOString();
-  const logData = { orderId, timestamp };
 
-  if (typeof message === 'object' && message !== null) {
-    const typeName = message.constructor?.name || 'Object';
-    const fieldNames = Object.keys(message).join(', ');
-    console.log('[shopifyOrder/create] Info', {
-      ...logData,
-      typeName,
-      fieldNames,
-      ...message,
-    });
-  } else {
-    console.log('[shopifyOrder/create] Info', { message, ...logData });
-  }
-}
 
 export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
@@ -57,36 +35,16 @@ export const run: ActionRun = async ({ params, record }) => {
 };
 
 export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
-  logWithOrderId({
-    message: record,
-    orderId: record.id,
-  });
-  logWithOrderId({
-    message: 'onSuccess triggered for record',
-    orderId: record.id,
-  });
-
   try {
     const orderId = `gid://shopify/Order/${record.id}`;
 
     // Step 1: Log before extracting payment method
-    logWithOrderId({
-      message: 'Extracting payment method',
-      orderId: record.id,
-    });
-
     const fullOrder = await api.shopifyOrder.findOne(record.id, {
       select: {
         id: true,
         paymentGatewayNames: true,
       },
     });
-
-    console.log(
-      'fullOrder.paymentGatewayNames=',
-      fullOrder.paymentGatewayNames
-    );
-
     // Extract payment method
 
     const gateways = Array.isArray(fullOrder.paymentGatewayNames)
@@ -102,17 +60,9 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
           gateway.toLowerCase().includes('переказ') ||
           gateway.toLowerCase().includes('prepay'))
     );
-    console.log('isPrepaid', JSON.stringify(isPrepaid, null, 2));
-
     const paymentMethod = isPrepaid
       ? 'Передплата безготівка'
       : 'Накладений платіж';
-
-    logWithOrderId({
-      message: { paymentMethod, gateways },
-      orderId: record.id,
-    });
-
     // Process shipping address if available
     const address = record.shippingAddress;
     let metafieldsToUpdate = [
@@ -164,17 +114,7 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
     }
 
     // Step 2: Log after preparing metafields
-    logWithOrderId({
-      message: 'Prepared metafields for update',
-      orderId: record.id,
-    });
-
     // Step 3: Log before enqueuing metafields update
-    logWithOrderId({
-      message: 'Enqueuing metafields update',
-      orderId: record.id,
-    });
-
     await api.enqueue(api.writeToShopify, {
       shopId: record.shopId,
       mutation: `
@@ -197,11 +137,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
       variables: {
         metafields: metafieldsToUpdate,
       },
-    });
-
-    logWithOrderId({
-      message: 'Metafields enqueued for update',
-      orderId: record.id,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);

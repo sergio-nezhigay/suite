@@ -27,14 +27,8 @@ export async function rateLimitedRequest({
 
   if (lastRequestTime && currentTime - lastRequestTime < TIME_INTERVAL) {
     const delay = TIME_INTERVAL - (currentTime - lastRequestTime);
-    console.log(`Rate-limited. Waiting ${delay} ms`);
     await new Promise((resolve) => setTimeout(resolve, delay));
   }
-  console.log(
-    '===== LOG START =====',
-    new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-  );
-  console.log('rateLimitedRequest urlObj:', JSON.stringify(urlObj, null, 4));
   try {
     let response;
     if (method === 'GET') {

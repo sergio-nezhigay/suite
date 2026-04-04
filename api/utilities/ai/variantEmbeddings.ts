@@ -65,9 +65,6 @@ export const generateVariantEmbeddings = async (connections: AppConnections): Pr
   if (variantEmbeddingsCache) {
     return variantEmbeddingsCache;
   }
-
-  console.log('Generating embeddings for product variants...');
-
   try {
     const variantEmbeddings: VariantEmbedding[] = [];
 
@@ -81,13 +78,9 @@ export const generateVariantEmbeddings = async (connections: AppConnections): Pr
         embedding,
         description: variant.description,
       });
-
-      console.log(`Generated embedding for: ${variant.title}`);
     }
 
     variantEmbeddingsCache = variantEmbeddings;
-    console.log(`Successfully cached ${variantEmbeddings.length} variant embeddings`);
-
     return variantEmbeddings;
   } catch (error) {
     console.error('Error generating variant embeddings:', error);
@@ -147,15 +140,11 @@ export const findBestVariantWithEmbeddings = async (
 
     // If confidence is too low, return default
     if (bestScore < confidenceThreshold) {
-      console.log(`Low confidence match: "${productTitle}" -> using default (confidence: ${bestScore.toFixed(3)})`);
       return {
         variant: 'Кабель USB консольний', // Default fallback
         confidence: bestScore,
       };
     }
-
-    console.log(`Embedding match: "${productTitle}" -> "${bestMatch.title}" (confidence: ${bestScore.toFixed(3)})`);
-
     return {
       variant: bestMatch.title,
       confidence: bestScore,
@@ -175,5 +164,4 @@ export const findBestVariantWithEmbeddings = async (
  */
 export const clearVariantEmbeddingsCache = (): void => {
   variantEmbeddingsCache = null;
-  console.log('Variant embeddings cache cleared');
 };

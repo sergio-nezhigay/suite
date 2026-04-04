@@ -14,20 +14,12 @@ export async function refreshBankDataSinceLastSync(api: any) {
       (now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60 * 24)
     );
     const daysToFetch = Math.max(1, Math.min(daysSinceSync, 10));
-
-    console.log(
-      `Refreshing bank data: last sync ${lastSyncTime.toISOString()}, fetching ${daysToFetch} days`
-    );
-
     // Trigger sync for the gap period
     const syncResult = await api.syncBankTransactions({
       daysBack: daysToFetch,
     });
 
     if (syncResult.success) {
-      console.log(
-        `Bank refresh completed: ${syncResult.summary.created} new, ${syncResult.summary.duplicates} duplicates`
-      );
     } else {
       console.warn(`Bank refresh failed: ${syncResult.error}`);
     }

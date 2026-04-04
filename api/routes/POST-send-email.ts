@@ -54,14 +54,6 @@ const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
 
     // Send the email
     await emails.sendMail(emailOptions);
-
-    console.log('Email sent successfully', {
-        recipientEmail,
-        subject,
-        cc: cc || null,
-        attachmentCount: attachments?.length || 0,
-      });
-
     await reply.code(200).send({
       success: true,
       message: 'Email sent successfully',

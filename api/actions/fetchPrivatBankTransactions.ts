@@ -14,8 +14,6 @@ export const run = async ({ connections, config, params }: any) => {
     }
 
     const ipResponse = await axios.get('https://api.ipify.org?format=json');
-    console.log('Gadget server outbound IP:', ipResponse.data.ip);
-
     // Get days back parameter (default to 1 for better coverage)
     const daysBack = Number(params?.daysBack) || 1;
 
@@ -34,22 +32,7 @@ export const run = async ({ connections, config, params }: any) => {
 
     const startDateFormatted = formatDate(startDate);
     const endDateFormatted = formatDate(endDate);
-
-    console.info(
-      `Fetching PrivatBank transactions from ${startDateFormatted} to ${endDateFormatted} (${daysBack} days back)`
-    );
-
     // Debug: Log today's date and calculated dates
-    console.log(`DEBUG - Today: ${endDate.toISOString().split('T')[0]}`);
-    console.log(
-      `DEBUG - Start date: ${
-        startDate.toISOString().split('T')[0]
-      } (${daysBack} days ago)`
-    );
-    console.log(
-      `DEBUG - Date range for API: ${startDateFormatted} to ${endDateFormatted}`
-    );
-
     // Debug: Log outgoing request details
     const requestConfig = {
       url: 'https://acp.privatbank.ua/api/statements/transactions',
@@ -66,13 +49,6 @@ export const run = async ({ connections, config, params }: any) => {
       },
       timeout: 30000,
     };
-
-    console.log('DEBUG - Outgoing PrivatBank API Request:');
-    console.log('  URL:', requestConfig.url);
-    console.log('  Headers:', JSON.stringify(requestConfig.headers, null, 2));
-    console.log('  Params:', JSON.stringify(requestConfig.params, null, 2));
-    console.log('  Timeout:', requestConfig.timeout);
-
     // Make API request to PrivatBank
     const response = await axios.get(
       'https://acp.privatbank.ua/api/statements/transactions',
@@ -92,56 +68,18 @@ export const run = async ({ connections, config, params }: any) => {
     );
 
     // Debug: Log incoming response details
-    console.log('DEBUG - PrivatBank API Response Details:');
-    console.log('  Response Status:', response.status);
-    console.log('  Response StatusText:', response.statusText);
-    console.log(
-      '  Response Headers:',
-      JSON.stringify(response.headers, null, 2)
-    );
-
     // Debug: Log response data structure
-    console.log('  Response Data Structure:');
-    console.log('    status:', response.data?.status);
-    console.log('    type:', response.data?.type);
-    console.log('    message:', response.data?.message);
-    console.log(
-      '    transactions (array length):',
-      response.data?.transactions?.length || 0
-    );
-
     // Debug: Log full raw response data (first few characters for structure inspection)
-    const responseStr = JSON.stringify(response.data);
-    console.log(
-      '  Raw Response Data (first 500 chars):',
-      responseStr.substring(0, 500)
-    );
-    if (responseStr.length > 500) {
-      console.log(
-        '  ... (response truncated, total length:',
-        responseStr.length,
-        'chars)'
-      );
-    }
+
 
     if (!response.data) {
       throw new Error('No data received from PrivatBank API');
     }
-
-    console.info(
-      `API Response contains ${
-        response.data.transactions?.length || 0
-      } transactions`
-    );
-
     // Parse the API response correctly
     const apiResponse = response.data;
     const rawTransactions = Array.isArray(apiResponse?.transactions)
       ? apiResponse.transactions
       : [];
-
-    console.info(`Raw transactions count: ${rawTransactions.length}`);
-
     // Simple transaction processing - basic info only
     interface PrivatBankRawTransaction {
       ID?: string;
@@ -177,11 +115,6 @@ export const run = async ({ connections, config, params }: any) => {
       const amount = Math.abs(parseFloat(tx.SUM ?? '0') || 0);
 
       // Debug logging for each raw transaction
-      console.log(
-        `DEBUG - Raw Transaction ${index + 1}:`,
-        JSON.stringify(tx, null, 2)
-      );
-
       // Debug logging for processed transaction
       const processed: PrivatBankTransaction = {
         id: tx.ID ?? tx.REF,
@@ -195,28 +128,14 @@ export const run = async ({ connections, config, params }: any) => {
         counterpartyAccount: tx.AUT_CNTR_ACC,
         counterpartyName: tx.AUT_CNTR_NAM,
       };
-      console.log(
-        `DEBUG - Processed Transaction ${index + 1}:`,
-        JSON.stringify(processed, null, 2)
-      );
-
       return processed;
     });
-
-    console.info(`Processed ${transactions.length} transactions`);
-
     // Debug: Show date range of retrieved transactions
     if (transactions.length > 0) {
       const dates = transactions
         .map((t) => t.date)
         .filter((d) => d)
         .sort();
-      console.log(
-        `DEBUG - Transaction date range: ${dates[0]} to ${
-          dates[dates.length - 1]
-        }`
-      );
-
       // Show most recent transactions
       const recentTransactions = transactions
         .filter((t) => t.date)
@@ -224,31 +143,16 @@ export const run = async ({ connections, config, params }: any) => {
           (b.date! + (b.time || '')).localeCompare(a.date! + (a.time || ''))
         )
         .slice(0, 3);
-
-      console.log('DEBUG - Most recent transactions:');
       recentTransactions.forEach((tx, i) => {
-        console.log(
-          `  ${i + 1}. ${tx.date} ${tx.time || ''} - ${tx.amount} ${
-            tx.currency
-          } (${tx.type}) - ${tx.description.substring(0, 50)}...`
-        );
       });
 
       // Debug: Show all transaction dates for pattern analysis
-      console.log('DEBUG - All transaction dates found:');
       const allDates = transactions.map((t) => t.date).filter((d) => d);
       const dateCount = allDates.reduce((acc, date) => {
         acc[date!] = (acc[date!] || 0) + 1;
         return acc;
       }, {} as Record<string, number>);
-      console.log('  Date distribution:', JSON.stringify(dateCount, null, 2));
     } else {
-      console.log('DEBUG - No transactions found in the date range!');
-      console.log('  This could mean:');
-      console.log('    - No transactions in the specified period');
-      console.log('    - API authentication issues');
-      console.log('    - API rate limiting');
-      console.log('    - Date format issues');
     }
 
     return {
@@ -263,13 +167,6 @@ export const run = async ({ connections, config, params }: any) => {
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
     const errorStack = error instanceof Error ? error.stack : undefined;
-
-    console.error('Error fetching PrivatBank transactions:', {
-      errorMessage: errorMessage,
-      errorStack: errorStack,
-      params: JSON.stringify(params),
-    });
-
     // Handle specific error types (for axios errors)
     if (error && typeof error === 'object' && 'response' in error) {
       const axiosError = error as any;

@@ -195,11 +195,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
           productType: prod.productType!,
           filters: prod.filters || [],
         });
-        console.log(
-          `Successfully enqueued product update for ${prod.id} with type: ${
-            prod.productType
-          } and ${prod.filters?.length || 0} filters`
-        );
       });
     }
 
@@ -303,14 +298,8 @@ ${filterDescriptions}
 
     const content = response.choices[0].message.content || '{}';
     const analysis = JSON.parse(content) as OpenAIAnalysisResult;
-
-    console.log('OpenAI Analysis Result:', JSON.stringify(analysis, null, 2));
-
     // Validate product type
     if (!availableTypes.includes(analysis.product_type)) {
-      console.log(
-        `OpenAI returned unexpected type "${analysis.product_type}", falling back to first available type`
-      );
       analysis.product_type = availableTypes[0] || 'General';
     }
 
@@ -334,9 +323,6 @@ ${filterDescriptions}
         ) {
           validatedFilters.push(filter);
         } else {
-          console.log(
-            `Invalid filter: ${filter.namespace}.${filter.key} = ${filter.value}`
-          );
         }
       }
     }
@@ -346,7 +332,6 @@ ${filterDescriptions}
       filters: validatedFilters,
     };
   } catch (error) {
-    console.log('Error calling OpenAI API:', error);
     return {
       product_type: 'fallback-type-error',
       filters: [],

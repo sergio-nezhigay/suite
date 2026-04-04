@@ -3,9 +3,7 @@ import { fetchNovaPoshtaDeclaration } from 'api/utilities/fetchDeclarationFromSh
 import { applyParams, save, ActionOptions } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 
-function logWithOrder(orderName: string, ...args: any[]) {
-  console.log(`Create fulfillment action. [Order: ${orderName}]`, ...args);
-}
+
 
 export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
@@ -20,14 +18,10 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
   } else {
     console.warn('record.name is missing or empty:', record.name);
   }
-
-  logWithOrder(orderName, '✅ onSuccess - Record created successfully');
-
   const trackingNumbers = record.trackingNumbers as string[] | undefined;
   const currentTrackingNumber = trackingNumbers?.[0] ?? '';
 
   if (currentTrackingNumber) {
-    logWithOrder(orderName, '⚠️ Tracking number already exists, skipping...');
     return;
   }
 
@@ -38,10 +32,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
   if (!novaPoshtaDeclaration) {
     return;
   }
-  console.log(
-    `orderName ${orderName} has Nova Poshta declaration: ${novaPoshtaDeclaration}`
-  );
-
   await api.enqueue(api.writeToShopify, {
     shopId: record.shopId,
     mutation: `
@@ -61,8 +51,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
       },
     },
   });
-
-  logWithOrder(orderName, '✅ Background actions enqueued successfully');
 };
 
 export const options: ActionOptions = { actionType: 'create' };

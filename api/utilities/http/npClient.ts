@@ -11,8 +11,6 @@ export const npClient = async (payload: object) => {
     const data = await res.json();
 
     if (!data.success) {
-      console.log('🚀 ~ Nova Poshta API Response:', data);
-
       const errors =
         Object.values(data.errors || {}).join('; ') || 'Unknown error';
       const errorCodes = Object.values(data.errorCodes || {}).join(', ');
@@ -23,7 +21,6 @@ export const npClient = async (payload: object) => {
     }
     return data;
   } catch (error: any) {
-    console.log('🚀 ~ error:', error);
     throw new Error(`sendRequestNP Error: ${error.message}`);
   }
 };

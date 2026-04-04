@@ -30,9 +30,6 @@ export class OrderToReceiptTransformer {
     const totalAmount = goods.reduce((sum, good) =>
       sum + (good.good.price * good.quantity / 1000), 0
     );
-
-    console.log(`Transforming order ${order.name}: ${goods.length} items, total: ${totalAmount} kopecks`);
-
     return {
       goods,
       payments: [{
@@ -65,9 +62,6 @@ export class OrderToReceiptTransformer {
     const totalAmount = goods.reduce((sum, good) =>
       sum + (good.good.price * good.quantity / 1000), 0
     );
-
-    console.log(`Transforming order ${order.name}: ${goods.length} items, total: ${totalAmount} kopecks`);
-
     return {
       goods,
       payments: [{
@@ -82,7 +76,6 @@ export class OrderToReceiptTransformer {
 
   private static mapProductVariant(productTitle: string): string {
     const bestMatch = resolveBestVariant(productTitle).variant;
-    console.log(`Mapped "${productTitle}" to "${bestMatch}"`);
     return bestMatch;
   }
 
@@ -114,9 +107,6 @@ export class OrderToReceiptTransformer {
     const totalAmount = goods.reduce((sum, good) =>
       sum + (good.good.price * good.quantity / 1000), 0
     );
-
-    console.log(`Transforming order ${order.name} for sell receipt: ${goods.length} items, total: ${totalAmount} kopecks`);
-
     return {
       goods,
       payments: [{
@@ -146,9 +136,6 @@ export class OrderToReceiptTransformer {
     const totalAmount = goods.reduce((sum, good) =>
       sum + (good.good.price * good.quantity / 1000), 0
     );
-
-    console.log(`Transforming order ${order.name} for sell receipt: ${goods.length} items, total: ${totalAmount} kopecks`);
-
     return {
       goods,
       payments: [{

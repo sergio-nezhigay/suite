@@ -67,10 +67,6 @@ const route: RouteHandler<{
 
   const configValidation = validateSenderConfig();
   if (!configValidation.valid) {
-    console.log(
-      '❌ Sender configuration validation failed:',
-      configValidation.errors
-    );
     return await reply.status(500).send({
       success: false,
       error:
@@ -83,14 +79,6 @@ const route: RouteHandler<{
     // ============================================
     // 3. Create Recipient Counterparty
     // ============================================
-
-    console.log('📦 Creating recipient counterparty:', {
-      firstName,
-      lastName,
-      phone,
-      email,
-    });
-
     const createCounterpartyPayload = {
       modelName: 'CounterpartyGeneral',
       calledMethod: 'save',
@@ -109,7 +97,6 @@ const route: RouteHandler<{
     )) as NovaPoshtaApiResponse<CounterpartyResponse[]>;
 
     if (!counterpartyResponse.success || !counterpartyResponse.data?.[0]) {
-      console.log('❌ Failed to create counterparty:', counterpartyResponse);
       return await reply.status(500).send({
         success: false,
         error: 'Failed to create recipient counterparty',
@@ -120,12 +107,6 @@ const route: RouteHandler<{
     const recipientRef = counterpartyResponse.data[0].Ref;
     const recipientContactRef =
       counterpartyResponse.data[0].ContactPerson.data[0].Ref;
-
-    console.log('✅ Recipient counterparty created:', {
-      recipientRef,
-      recipientContactRef,
-    });
-
     // ============================================
     // 4. Create InternetDocument (Declaration)
     // ============================================
@@ -173,17 +154,6 @@ const route: RouteHandler<{
       volumetricHeight: packageHeight,
       weight: documentWeight,
     }));
-
-    console.log('📋 Creating InternetDocument with params:', {
-      sender: SENDER_CONFIG.SENDER_REF,
-      senderWarehouse: SENDER_CONFIG.SENDER_WAREHOUSE_REF,
-      recipient: recipientRef,
-      recipientWarehouse: recipientWarehouseRef,
-      weight: documentWeight,
-      cost: documentCost,
-      seatsAmount: documentSeats,
-    });
-
     const createDocumentPayload = {
       modelName: 'InternetDocument',
       calledMethod: 'save',
@@ -231,7 +201,6 @@ const route: RouteHandler<{
     )) as NovaPoshtaApiResponse<InternetDocumentResponse[]>;
 
     if (!documentResponse.success || !documentResponse.data?.[0]) {
-      console.log('❌ Failed to create InternetDocument:', documentResponse);
       return await reply.status(500).send({
         success: false,
         error: 'Failed to create declaration',
@@ -240,13 +209,6 @@ const route: RouteHandler<{
     }
 
     const declaration = documentResponse.data[0];
-
-    console.log('✅ Declaration created successfully:', {
-      ref: declaration.Ref,
-      number: declaration.IntDocNumber,
-      estimatedDelivery: declaration.EstimatedDeliveryDate,
-    });
-
     // ============================================
     // 5. Return Success Response
     // ============================================
@@ -265,7 +227,6 @@ const route: RouteHandler<{
 
     return await reply.status(200).send(response);
   } catch (error: any) {
-    console.log('❌ Error creating declaration:', error);
     return await reply.status(500).send({
       success: false,
       error: error.message || 'Internal server error',

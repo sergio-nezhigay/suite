@@ -15,11 +15,6 @@ const route: RouteHandler<{ Body: { orderIds: string[]; autoCreateChecks?: boole
       });
       return;
     }
-
-    console.log('Backend route received orderIds:', orderIds);
-    console.log('Auto create checks enabled:', autoCreateChecks);
-    console.log('Order data with variants:', orderData);
-
     const result = await (api.verifyOrderPayments as any)({
       orderIds: orderIds,
       autoCreateChecks: autoCreateChecks,
