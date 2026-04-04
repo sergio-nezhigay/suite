@@ -1,7 +1,25 @@
-import { ActionOptions } from 'gadget-server';
 import axios from 'axios';
 
-export const run = async ({ connections, config, params }: any) => {
+export interface PrivatBankTransaction {
+  id: string | undefined;
+  date: string | undefined;
+  time: string | undefined;
+  amount: number;
+  currency: string;
+  type: 'income' | 'expense';
+  description: string;
+  reference: string | undefined;
+  counterpartyAccount: string | undefined;
+  counterpartyName: string | undefined;
+}
+
+export const fetchPrivatBankTransactions = async ({
+  config,
+  daysBack = 1,
+}: {
+  config: any;
+  daysBack?: number;
+}) => {
   try {
     // Get credentials from environment variables
     const privatBankId = config.PRIVATBANK_ID;
@@ -12,10 +30,6 @@ export const run = async ({ connections, config, params }: any) => {
         'PrivatBank credentials not configured. Please set PRIVATBANK_ID and PRIVATBANK_TOKEN environment variables.'
       );
     }
-
-
-    // Get days back parameter (default to 1 for better coverage)
-    const daysBack = Number(params?.daysBack) || 1;
 
     // Calculate date range
     const endDate = new Date();
@@ -32,29 +46,12 @@ export const run = async ({ connections, config, params }: any) => {
 
     const startDateFormatted = formatDate(startDate);
     const endDateFormatted = formatDate(endDate);
-    // Debug: Log today's date and calculated dates
-    // Debug: Log outgoing request details
-    const requestConfig = {
-      url: 'https://acp.privatbank.ua/api/statements/transactions',
-      headers: {
-        // Id: privatBankId,
-        Token:
-          privatBankToken.substring(0, 10) + '...' + privatBankToken.slice(-4), // Mask token for security
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      params: {
-        startDate: startDateFormatted,
-        endDate: endDateFormatted,
-        limit: 100,
-      },
-      timeout: 30000,
-    };
+
     // Make API request to PrivatBank
     const response = await axios.get(
       'https://acp.privatbank.ua/api/statements/transactions',
       {
         headers: {
-          //  Id: privatBankId,
           Token: privatBankToken,
           'Content-Type': 'application/json; charset=utf-8',
         },
@@ -90,27 +87,12 @@ export const run = async ({ connections, config, params }: any) => {
       [key: string]: any;
     }
 
-    interface PrivatBankTransaction {
-      id: string | undefined;
-      date: string | undefined;
-      time: string | undefined;
-      amount: number;
-      currency: string;
-      type: 'income' | 'expense';
-      description: string;
-      reference: string | undefined;
-      counterpartyAccount: string | undefined;
-      counterpartyName: string | undefined;
-    }
-
     const transactions: PrivatBankTransaction[] = (
       rawTransactions as PrivatBankRawTransaction[]
     ).map((tx, index) => {
       const isIncome = tx.TRANTYPE === 'C';
       const amount = Math.abs(parseFloat(tx.SUM ?? '0') || 0);
 
-      // Debug logging for each raw transaction
-      // Debug logging for processed transaction
       const processed: PrivatBankTransaction = {
         id: tx.ID ?? tx.REF,
         date: tx.DAT_OD,
@@ -125,30 +107,6 @@ export const run = async ({ connections, config, params }: any) => {
       };
       return processed;
     });
-    // Debug: Show date range of retrieved transactions
-    if (transactions.length > 0) {
-      const dates = transactions
-        .map((t) => t.date)
-        .filter((d) => d)
-        .sort();
-      // Show most recent transactions
-      const recentTransactions = transactions
-        .filter((t) => t.date)
-        .sort((a, b) =>
-          (b.date! + (b.time || '')).localeCompare(a.date! + (a.time || ''))
-        )
-        .slice(0, 3);
-      recentTransactions.forEach((tx, i) => {
-      });
-
-      // Debug: Show all transaction dates for pattern analysis
-      const allDates = transactions.map((t) => t.date).filter((d) => d);
-      const dateCount = allDates.reduce((acc, date) => {
-        acc[date!] = (acc[date!] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
-    } else {
-    }
 
     return {
       success: true,
@@ -161,7 +119,7 @@ export const run = async ({ connections, config, params }: any) => {
     };
   } catch (error: unknown) {
     const errorMessage = error instanceof Error ? error.message : String(error);
-    const errorStack = error instanceof Error ? error.stack : undefined;
+    
     // Handle specific error types (for axios errors)
     if (error && typeof error === 'object' && 'response' in error) {
       const axiosError = error as any;
@@ -200,7 +158,9 @@ export const run = async ({ connections, config, params }: any) => {
       } else {
         return {
           success: false,
-          message: `API error: ${status} - ${data?.message || 'Unknown error'}`,
+          message: `API error: ${status} - ${
+            data?.message || 'Unknown error'
+          }`,
           error: 'API_ERROR',
         };
       }
@@ -230,12 +190,4 @@ export const run = async ({ connections, config, params }: any) => {
       error: 'UNKNOWN_ERROR',
     };
   }
-};
-
-export const params = {
-  daysBack: { type: 'number', default: 2 },
-};
-
-export const options: ActionOptions = {
-  actionType: 'custom',
 };

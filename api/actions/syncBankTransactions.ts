@@ -1,19 +1,6 @@
 import { ActionOptions } from 'gadget-server';
 import * as crypto from 'crypto';
-
-// Define the interface to match what fetchPrivatBankTransactions returns
-interface PrivatBankTransaction {
-  id: string | undefined;
-  date: string | undefined;
-  time: string | undefined;
-  amount: number;
-  currency: string;
-  type: 'income' | 'expense';
-  description: string;
-  reference: string | undefined;
-  counterpartyAccount: string | undefined; // NEW
-  counterpartyName: string | undefined; // NEW
-}
+import { fetchPrivatBankTransactions, PrivatBankTransaction } from '../utilities/bank/fetchPrivatBankTransactions';
 
 export const run = async ({
   params,
@@ -48,17 +35,7 @@ export const run = async ({
   }
 
   const syncStartTime = new Date();
-  logger.info('Starting bank transaction sync process');
 
-  // Diagnostic logging for API availability
-  logger.info('API diagnostic info', {
-    apiAvailable: !!api,
-    bankTransactionAvailable: !!api?.bankTransaction,
-    bankTransactionMethods: api?.bankTransaction
-      ? Object.keys(api.bankTransaction)
-      : [],
-    apiKeys: api ? Object.keys(api).filter((key) => key.includes('bank')) : [],
-  });
 
   let totalProcessed = 0;
   let totalCreated = 0;
@@ -79,8 +56,8 @@ export const run = async ({
     const syncStartDate = new Date();
     syncStartDate.setDate(syncStartDate.getDate() - daysBack);
     // Debug: Log sync action details
-    // Call the existing fetchPrivatBankTransactions action
-    const fetchResult = await api.fetchPrivatBankTransactions({ daysBack });
+    // Call the shared utility function instead of a separate action
+    const fetchResult = await fetchPrivatBankTransactions({ config, daysBack });
 
     if (!fetchResult.success) {
       const errorMsg = `Failed to fetch transactions: ${fetchResult.message}`;
