@@ -16,12 +16,5 @@ export const run = async ({ params, record }: any) => {
   await save(record);
 };
 
-export const onSuccess = async ({
-  record,
-  params,
-  config,
-  connections,
-}: any) => {
-  // Order update processing logic can be added here
-};
+
 export const options: ActionOptions = { actionType: 'update' };
