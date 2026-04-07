@@ -242,8 +242,9 @@ const transformOrderToShopifyVariables = async (
   if (!order) throw new Error('Order is required');
 
   const mapPurchaseToLineItem = async (purchase: any) => {
-    const { barcode, cost, handle, alternativeTitle, sku } =
-      await getPropertiesFromOfferId(purchase.item.price_offer_id, shopify);
+    // Disabled to save CPU time by avoiding extra Shopify GraphQL lookups per line item.
+    // const { barcode, cost, handle, alternativeTitle, sku } =
+    //   await getPropertiesFromOfferId(purchase.item.price_offer_id, shopify);
 
     return {
       title: purchase.item_name,
@@ -254,22 +255,14 @@ const transformOrderToShopifyVariables = async (
           currencyCode: 'UAH',
         },
       },
-      properties: [
-        {
-          name: '_barcode',
-          value: barcode,
-        },
-        {
-          name: '_cost',
-          value: cost,
-        },
-        {
-          name: '_product_handle',
-          value: handle,
-        },
-        { name: '_sku', value: sku },
-        { name: '_alternative_title', value: alternativeTitle },
-      ],
+      properties: [],
+      // properties: [
+      //   { name: '_barcode', value: barcode },
+      //   { name: '_cost', value: cost },
+      //   { name: '_product_handle', value: handle },
+      //   { name: '_sku', value: sku },
+      //   { name: '_alternative_title', value: alternativeTitle },
+      // ],
     };
   };
 
