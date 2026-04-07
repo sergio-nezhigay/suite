@@ -78,10 +78,14 @@ export const run = async ({
     const transactions = fetchResult.transactions || [];
     logger.info(`Fetched ${transactions.length} transactions from PrivatBank`);
 
-    // Load ALL existing externalIds for the sync period in ONE query
+    // Load ALL existing externalIds using a wider window (daysBack + 7)
+    // to catch transactions PrivatBank returns that fall slightly outside the sync window
+    const existingIdsLookbackDate = new Date();
+    existingIdsLookbackDate.setDate(existingIdsLookbackDate.getDate() - (daysBack + 7));
+
     const existingRecords = await api.bankTransaction.findMany({
       filter: {
-        transactionDateTime: { greaterThanOrEqual: syncStartDate.toISOString() },
+        transactionDateTime: { greaterThanOrEqual: existingIdsLookbackDate.toISOString() },
       },
       select: { externalId: true },
       first: 250,

@@ -151,14 +151,15 @@ async function findOrCreateShopifyCustomer(
   order: RozetkaOrder
 ) {
   try {
-    const foundCustomer = await findCustomer({
-      shopify,
-      phone: order.recipient_phone,
-    });
-
-    if (foundCustomer) {
-      return foundCustomer;
-    }
+    // Disabled to save CPU time by avoiding the Shopify customer search.
+    // const foundCustomer = await findCustomer({
+    //   shopify,
+    //   phone: order.recipient_phone,
+    // });
+    //
+    // if (foundCustomer) {
+    //   return foundCustomer;
+    // }
 
     const customerVariables = transformOrderToCustomerVariables(order);
     const createdCustomer = await createCustomer({

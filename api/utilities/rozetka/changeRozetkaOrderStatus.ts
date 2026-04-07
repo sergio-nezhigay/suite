@@ -24,11 +24,13 @@ export const changeRozetkaOrderStatus = async (
       }
     );
 
-    if (response.data.success) {
-    } else {
-      console.error(`Failed to update status for order ${orderId}`);
+    console.log(`Rozetka response for order ${orderId}:`, JSON.stringify(response.data, null, 2));
+
+    if (!response.data.success) {
+      throw new Error(`Failed to update Rozetka status for order ${orderId}. Response: ${JSON.stringify(response.data)}`);
     }
   } catch (error) {
     console.error(`Error updating status for order ${orderId}:`, error);
+    throw error;
   }
 };
