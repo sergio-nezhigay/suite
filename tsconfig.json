@@ -14,13 +14,15 @@
     "lib": ["es2020", "DOM"],
     "skipLibCheck": true,
     "jsx": "react-jsx",
-    "moduleResolution": "node",
+    "module": "Node16",
+    "moduleResolution": "node16",
+    "ignoreDeprecations": "6.0",
     "resolveJsonModule": true,
     "baseUrl": ".",
     "paths": {
       "utilities": ["api/utilities"],
-      "routes/*": ["api/routes"],
-      "types/*": ["api/types"]
+      "routes/*": ["api/routes/*"],
+      "types/*": ["api/types/*"]
     },
     "types": ["@shopify/app-bridge-types"]
   }

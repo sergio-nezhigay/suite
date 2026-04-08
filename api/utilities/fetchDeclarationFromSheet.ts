@@ -65,9 +65,7 @@ export async function fetchDeclarationFromSheet(
       return null;
     }
 
-    // Parse declaration number from string like "Відправлення: 20451388805185 Плановий час доставки: ..."
-    const match = rawValue.match(/Відправлення:\s*(\d+)/);
-    return match ? match[1] : null;
+    return String(rawValue).trim();
   } catch (error) {
     console.error(`[${orderName}] Error in fetchDeclarationFromSheet:`, error);
     return null;
@@ -84,7 +82,7 @@ export async function fetchNovaPoshtaDeclaration(
     sheetName: '2026',
     startRow: 2,
     orderNameColumn: 4,
-    declarationColumn: 23,
+    declarationColumn: 24,
   });
 }
 
