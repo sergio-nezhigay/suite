@@ -10,13 +10,13 @@ import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 // will be skipped — no DB write, no CPU cost.
 const RELEVANT_FIELDS = [
   // 'financialStatus',
-  'fulfillmentStatus',
+  // 'fulfillmentStatus',
   'tags',
   // 'note',
   // 'cancelledAt',
   // 'cancelReason',
   // 'closedAt',
-  'totalPrice',
+  // 'totalPrice',
   // 'paymentGatewayNames',
 ];
 

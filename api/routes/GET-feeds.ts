@@ -1,11 +1,5 @@
 import { IN_STOCK, OUT_OF_STOCK } from 'api/utilities/data/stockStatus';
 import { RouteHandler } from 'gadget-server';
-import {
-  getProducts,
-  uploadFile,
-  makeRozetkaFeed,
-  getShopifyConnection,
-} from 'utilities';
 
 export interface ProductVariant {
   id: string;
@@ -53,40 +47,10 @@ const rozetkaSuppliers = ['щу', 'ии', 'че'];
 const hotlineExcludedProducts = ['kf432s20ibk2/64/1', 'f4-3600c16d-32gvkc'];
 
 const route: RouteHandler = async ({ reply, connections }) => {
-  try {
-    const shopify = await getShopifyConnection(connections);
-    if (!shopify) throw new Error('No Shopify client found');
+  void connections;
 
-    const products = await getProducts(shopify);
-    const genericFeed = makeGenericFeed(products);
-
-    const hotlineFeed = makeHotlineFeed(genericFeed);
-    const hotlineFileContent = products2CSV(hotlineFeed);
-
-    const merchantFeed = makeMerchantFeed(genericFeed);
-    const merchantFileContent = products2CSV(merchantFeed);
-
-    const remarketingFeed = makeRemarketingFeed(genericFeed);
-    const remarketingFileContent = products2CSV(remarketingFeed);
-
-    const rozetkaFeedContent = makeRozetkaFeed(genericFeed, rozetkaSuppliers);
-
-    await Promise.all([
-      uploadFile(shopify, hotlineFileContent, 'hotline.csv'),
-      uploadFile(shopify, merchantFileContent, 'merchantfeed1.csv'),
-      uploadFile(shopify, remarketingFileContent, 'remarketing.csv'),
-      uploadFile(shopify, rozetkaFeedContent, 'rozetkaFeed.xml'),
-    ]);
-
-    return reply.send({ success: true, productsLength: products.length });
-  } catch (error) {
-    console.error('Error generating feed:', error);
-
-    return reply.code(500).send({
-      success: false,
-      message: 'Failed to make feed:' + JSON.stringify(error),
-    });
-  }
+  // Temporarily disabled while we keep /feeds safe and inert.
+  return reply.code(204).send();
 };
 
 export default route;

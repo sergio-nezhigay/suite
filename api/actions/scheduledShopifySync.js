@@ -27,12 +27,5 @@ export async function run({ params, logger, api, connections }) {
 
 /** @type { import('gadget-server').ActionOptions } */
 export const options = {
-  triggers: {
-    scheduler: [
-      {
-        every: 'day',
-        at: '08:01 UTC',
-      },
-    ],
-  },
+
 };
