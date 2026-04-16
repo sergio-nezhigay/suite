@@ -1,4 +1,4 @@
-import { ActionRun, GlobalActionOptions } from 'gadget-server';
+import { ActionOptions } from 'gadget-server';
 import { rozetkaTokenManager } from '../utilities/rozetka/tokenManager';
 
 export const run: ActionRun = async ({ logger }) => {
@@ -25,11 +25,11 @@ export const run: ActionRun = async ({ logger }) => {
   }
 };
 
-export const options: GlobalActionOptions = {
+export const options: ActionOptions = {
   triggers: {
     scheduler: [
       {
-        every: '6h', // Check every 6 hours to keep token warm
+        cron: '0 */6 * * *',
       },
     ],
   },

@@ -1,5 +1,5 @@
 import { logger } from 'gadget-server';
-import { GoogleSpreadsheet } from 'google-spreadsheet';
+
 import { JWT } from 'google-auth-library';
 
 import { FetchingFunc } from 'types/index';
@@ -27,6 +27,7 @@ export async function fetchFromSheet({
   tabId,
 }: FetchingFunc & { sheetId: string; tabId: number }) {
   try {
+    const { GoogleSpreadsheet } = await import('google-spreadsheet');
     const doc = new GoogleSpreadsheet(sheetId, serviceAccountAuth);
     await doc.loadInfo();
     const sheet = doc.sheetsById[tabId];

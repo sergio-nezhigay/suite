@@ -10,7 +10,7 @@ import {
   InlineGrid,
   Thumbnail,
 } from '@shopify/polaris';
-import { useAppBridge } from '@shopify/app-bridge-react';
+
 
 import CategorySelector from '../components/CategorySelector';
 
@@ -33,7 +33,7 @@ const itemsPerPage = 50;
 
 function Supplier() {
   const { supplierId } = useParams();
-  const shopify = useAppBridge();
+  const shopify = (window as any).shopify;
   const [searchParams, setSearchParams] = useSearchParams();
 
   const [selectedItems, setSelectedItems] = useState<string[]>([]);

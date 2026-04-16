@@ -8,7 +8,7 @@ import { ActionOptions } from 'gadget-server';
  * Keep: the record with checkReceiptId set, or the oldest record if none have a receipt
  * Delete: all other records in the group
  */
-export const run = async ({ api, logger }: any) => {
+export const run: ActionRun = async ({ api, logger }) => {
   logger.info('Starting bankTransaction deduplication...');
 
   let totalFetched = 0;
@@ -22,7 +22,7 @@ export const run = async ({ api, logger }: any) => {
   const allRecords: any[] = [];
 
   while (hasMore) {
-    const page = await api.bankTransaction.findMany({
+    const page:any = await api.bankTransaction.findMany({
       select: {
         id: true,
         externalId: true,
