@@ -44,6 +44,14 @@ async function updateTracking(
 export const run: ActionRun = async ({ params, record }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
+
+  // Only save if fields relevant to fulfillment tracking logic changed.
+  const RELEVANT_FIELDS = ['status', 'trackingNumbers', 'name', 'orderId', 'shipmentStatus'];
+  const hasRelevantChange = RELEVANT_FIELDS.some((field) => record.changed(field));
+  if (!hasRelevantChange) {
+    return;
+  }
+
   await save(record);
 };
 

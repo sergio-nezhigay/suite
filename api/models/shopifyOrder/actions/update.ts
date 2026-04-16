@@ -9,15 +9,12 @@ import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 // Any webhook update that doesn't touch at least one of these fields
 // will be skipped — no DB write, no CPU cost.
 const RELEVANT_FIELDS = [
-  // 'financialStatus',
-  // 'fulfillmentStatus',
   'tags',
-  // 'note',
-  // 'cancelledAt',
-  // 'cancelReason',
-  // 'closedAt',
-  // 'totalPrice',
-  // 'paymentGatewayNames',
+  'financialStatus',
+  'fulfillmentStatus',
+  'currentTotalPriceSet',
+  'note',
+  'cancelledAt',
 ];
 
 export const run = async ({ params, record, logger }: any) => {
