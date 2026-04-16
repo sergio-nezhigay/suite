@@ -72,7 +72,7 @@ export default function CityAutocomplete({
     return city.Description;
   };
 
-  const displayError = error || searchError;
+  const displayError = error ?? searchError ?? undefined;
 
   return (
     <BlockStack>

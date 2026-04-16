@@ -110,7 +110,7 @@ export default function WarehouseAutocomplete({
     );
   }
 
-  const displayError = error || searchError;
+  const displayError = error ?? searchError ?? undefined;
 
   return (
     <BlockStack>

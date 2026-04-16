@@ -87,12 +87,14 @@ function App() {
 
   // State for city/warehouse selection
   const [citySearchQuery, setCitySearchQuery] = useState('');
-  const [selectedCityRef, setSelectedCityRef] = useState<string | null>(null);
+  const [selectedCityRef, setSelectedCityRef] = useState<string | undefined>(
+    undefined
+  );
   const [selectedCityDescription, setSelectedCityDescription] =
     useState<string>('');
   const [selectedWarehouseRef, setSelectedWarehouseRef] = useState<
-    string | null
-  >(null);
+    string | undefined
+  >(undefined);
   const [selectedWarehouseDescription, setSelectedWarehouseDescription] =
     useState<string>('');
 
@@ -253,8 +255,8 @@ function App() {
         // Reset form
         setShowForm(false);
         setCitySearchQuery('');
-        setSelectedCityRef(null);
-        setSelectedWarehouseRef(null);
+        setSelectedCityRef(undefined);
+        setSelectedWarehouseRef(undefined);
 
         // Clear success message after 5 seconds
         setTimeout(() => setSuccessMessage(null), 5000);
@@ -382,7 +384,7 @@ function App() {
               onCitySelect={(ref, description) => {
                 setSelectedCityRef(ref);
                 setSelectedCityDescription(description);
-                setSelectedWarehouseRef(null); // Reset warehouse when city changes
+                setSelectedWarehouseRef(undefined); // Reset warehouse when city changes
               }}
               disabled={isCreating}
             />
@@ -413,8 +415,8 @@ function App() {
                 onPress={() => {
                   setShowForm(false);
                   setCitySearchQuery('');
-                  setSelectedCityRef(null);
-                  setSelectedWarehouseRef(null);
+                  setSelectedCityRef(undefined);
+                  setSelectedWarehouseRef(undefined);
                 }}
                 disabled={isCreating}
               >

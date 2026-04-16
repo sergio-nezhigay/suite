@@ -122,7 +122,7 @@ export function useCitySearch(
  * const { warehouses, isLoading, error } = useWarehouseSearch(selectedCityRef);
  */
 export function useWarehouseSearch(
-  cityRef: string | null
+  cityRef: string | undefined
 ): UseWarehouseSearchResult {
   const [warehouses, setWarehouses] = useState<NovaPoshtaWarehouse[]>([]);
   const [isLoading, setIsLoading] = useState(false);

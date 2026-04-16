@@ -53,8 +53,8 @@ export interface CityAutocompleteProps {
 
 export interface WarehouseAutocompleteProps {
   label: string;
-  cityRef: string | null;
-  selectedWarehouseRef: string | null;
+  cityRef: string | undefined;
+  selectedWarehouseRef: string | undefined;
   onWarehouseSelect: (warehouseRef: string, warehouseDescription: string) => void;
   error?: string;
   disabled?: boolean;
