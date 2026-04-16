@@ -8,6 +8,7 @@ export default async function route({
   reply,
   api,
   connections,
+  logger,
 }: RouteContext) {
   try {
     const body = request.body as any;
@@ -90,7 +91,7 @@ Created: ${new Date().toISOString()}`;
           ettnNumber: trackingNumber,
         });
       } catch (error) {
-        console.error(`Error processing order ${orderData.orderId}:`, error);
+        logger.error({ orderId: orderData.orderId, err: error }, 'Error processing order');
         results.push({
           orderId: orderData.orderId,
           error: error instanceof Error ? error.message : 'Unknown error',
@@ -99,7 +100,7 @@ Created: ${new Date().toISOString()}`;
     }
     return reply.send({ results });
   } catch (error) {
-    console.error('Checkbox service error:', error);
+    logger.error({ err: error }, 'Checkbox service error');
     return reply.code(500).send({
       error: error instanceof Error ? error.message : 'Service unavailable',
     });

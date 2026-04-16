@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from 'gadget-server';
 import { ROZETKA_API_BASE_URL } from '../data/data';
 
 export const getRozetkaAccessToken = async (): Promise<string | null> => {
@@ -18,22 +19,22 @@ export const getRozetkaAccessToken = async (): Promise<string | null> => {
       return token;
     } else {
       const errorMsg = 'Failed to get access token' + (response.data.message || '');
-      console.error('[getRozetkaAccessToken] API returned unsuccessful response:', {
+      logger.error({
         success: response.data?.success,
         message: response.data?.message,
-        fullResponse: response.data
-      });
+        fullResponse: response.data,
+      }, '[getRozetkaAccessToken] API returned unsuccessful response');
       throw new Error(errorMsg);
     }
   } catch (error: any) {
     const errorMsg = 'Failed to get access token' + (error.message || '');
-    console.error('[getRozetkaAccessToken] Error getting token from API:', {
+    logger.error({
       error: error.message,
       errorCode: error.code,
       responseStatus: error.response?.status,
       responseData: error.response?.data,
-      timestamp: new Date().toISOString()
-    });
+      timestamp: new Date().toISOString(),
+    }, '[getRozetkaAccessToken] Error getting token from API');
     throw new Error(errorMsg);
   }
 };

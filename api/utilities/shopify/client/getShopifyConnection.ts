@@ -1,4 +1,4 @@
-import { AppConnections } from 'gadget-server';
+import { AppConnections, logger } from 'gadget-server';
 
 export async function getShopifyConnection(connections: AppConnections) {
   const shopId =
@@ -6,7 +6,7 @@ export async function getShopifyConnection(connections: AppConnections) {
 
   const shopify = await connections.shopify.forShopId(shopId);
   if (!shopify) {
-    console.error('No Shopify connection available');
+    logger.error({ }, 'No Shopify connection available');
     return null;
   }
 

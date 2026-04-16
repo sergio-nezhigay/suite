@@ -4,6 +4,7 @@ const route: RouteHandler<{ Body: { orderIds: string[]; autoCreateChecks?: boole
   request,
   reply,
   api,
+  logger,
 }) => {
   try {
     const { orderIds, autoCreateChecks = true, orderData } = request.body;
@@ -23,7 +24,7 @@ const route: RouteHandler<{ Body: { orderIds: string[]; autoCreateChecks?: boole
 
     await reply.send(result);
   } catch (error) {
-    console.error('Error in verifyOrderPayments route:', error);
+    logger.error({ err: error }, 'Error in verifyOrderPayments route');
     await reply.code(500).send({
       success: false,
       error: error instanceof Error ? error.message : String(error),

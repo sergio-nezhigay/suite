@@ -1,3 +1,4 @@
+import { logger } from 'gadget-server';
 import { RequestParams } from 'api/types';
 import { getSID } from './getSID';
 import { rateLimitedRequest } from './rateLimitedRequest';
@@ -38,7 +39,7 @@ export async function brainRequest({
 
       return response;
     } catch (error: any) {
-      console.error(`Request to ${url} failed: ${error.message}`);
+      logger.error({ url, error: error.message }, 'Request failed');
       throw error;
     }
   }

@@ -1,4 +1,4 @@
-import { AppConnections } from 'gadget-server';
+import { AppConnections, logger } from 'gadget-server';
 import { orderUpdateMutation, orderMarkAsPaidMutation } from './queries';
 
 interface OrderUpdateOptions {
@@ -55,16 +55,13 @@ export async function updateOrderPaymentStatus(
           },
         });
         if (updateResponse.orderUpdate?.userErrors?.length > 0) {
-          console.error(
-            '❌ Order update errors:',
-            updateResponse.orderUpdate.userErrors
-          );
+          logger.error({ userErrors: updateResponse.orderUpdate.userErrors }, '❌ Order update errors');
           throw new Error(
             `Failed to update order: ${updateResponse.orderUpdate.userErrors[0].message}`
           );
         }
       } else {
-        console.error('❌ No order found in response');
+        logger.error({ }, '❌ No order found in response');
         throw new Error('Order not found');
       }
     }
@@ -77,14 +74,14 @@ export async function updateOrderPaymentStatus(
         }
       });
       if (markAsPaidResponse.orderMarkAsPaid?.userErrors?.length > 0) {
-        console.error('❌ Mark as paid errors:', markAsPaidResponse.orderMarkAsPaid.userErrors);
+        logger.error({ userErrors: markAsPaidResponse.orderMarkAsPaid.userErrors }, '❌ Mark as paid errors');
         // Don't throw - order update was successful, just marking as paid failed
       } else {
       }
     }
     return true;
   } catch (error) {
-    console.error(`Failed to update Shopify order ${orderId}:`, error);
+    logger.error({ orderId, err: error }, 'Failed to update Shopify order');
     throw error;
   }
 }

@@ -21,7 +21,7 @@ interface RequestBody {
 
 const route: RouteHandler<{
   Body: RequestBody;
-}> = async ({ reply, request, config }) => {
+}> = async ({ reply, request, config, logger }) => {
   const { rows, spreadsheetId, sheetName = 'Sheet2' } = request.body;
 
   if (!rows || !Array.isArray(rows) || rows.length === 0 || !spreadsheetId) {
@@ -50,7 +50,7 @@ const route: RouteHandler<{
       updates: responseData.updates,
     });
   } catch (error) {
-    console.error('Error appending rows to Google Sheets', { error });
+    logger.error({ err: error }, 'Error appending rows to Google Sheets');
     // Don't expose the actual error details in the response
     return reply
       .code(500)

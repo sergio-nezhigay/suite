@@ -111,7 +111,7 @@ export const run: ActionRun = async ({ api, logger }) => {
       },
     };
   } catch (error) {
-    console.error('[getUncoveredPayments] Error:', error);
+    logger.error({ err: error }, '[getUncoveredPayments] Error');
     throw error;
   }
 };

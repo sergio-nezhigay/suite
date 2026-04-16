@@ -3,7 +3,7 @@ import { openAIResponseStream } from 'gadget-server/ai';
 
 const route: RouteHandler<{
   Body: { message: string };
-}> = async ({ request, reply, api, connections }) => {
+}> = async ({ request, reply, api, connections, logger }) => {
   const { message } = request.body;
 
   const embeddingResponse = await connections.openai.embeddings.create({
@@ -90,15 +90,12 @@ const route: RouteHandler<{
       // });
     } catch (error) {
       // Log any errors that occur
-      console.error(
-        '[POST-chat] Error: Error occurred while handling the recommendedProducts field.',
-        {
-          error,
-          content,
-          products,
-          timestamp: new Date().toISOString(),
-        }
-      );
+      logger.error({
+        err: error,
+        content,
+        products,
+        timestamp: new Date().toISOString(),
+      }, '[POST-chat] Error: Error occurred while handling the recommendedProducts field.');
     }
   };
 

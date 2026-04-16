@@ -1,4 +1,4 @@
-import { AppConnections } from 'gadget-server';
+import { AppConnections, logger } from 'gadget-server';
 import { createEmbedding } from './createEmbedding';
 
 // Product variants with enhanced descriptions for better matching
@@ -83,7 +83,7 @@ export const generateVariantEmbeddings = async (connections: AppConnections): Pr
     variantEmbeddingsCache = variantEmbeddings;
     return variantEmbeddings;
   } catch (error) {
-    console.error('Error generating variant embeddings:', error);
+    logger.error({ err: error }, 'Error generating variant embeddings');
     throw error;
   }
 };
@@ -150,7 +150,7 @@ export const findBestVariantWithEmbeddings = async (
       confidence: bestScore,
     };
   } catch (error) {
-    console.error('Error in embedding-based variant matching:', error);
+    logger.error({ err: error }, 'Error in embedding-based variant matching');
     // Return default on error
     return {
       variant: 'Кабель USB консольний',

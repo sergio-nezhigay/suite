@@ -18,7 +18,7 @@ const route: RouteHandler<{
     supplierId?: string;
     categoryId?: string;
   };
-}> = async ({ request, reply, connections }) => {
+}> = async ({ request, reply, connections, logger }) => {
   try {
     const shopify = getShopifyClient(connections);
     const {
@@ -74,7 +74,7 @@ const route: RouteHandler<{
         }));
         break;
       default:
-        console.warn(`Unknown supplier: ${supplierId}`);
+        logger.warn({ supplierId }, 'Unknown supplier');
         ({ products, count } = { products: [], count: 0 });
     }
     productsWithExistingFlag = await flagExistingShopifyProducts(

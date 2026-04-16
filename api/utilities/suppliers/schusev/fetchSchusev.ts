@@ -1,4 +1,5 @@
 import { parse } from 'csv-parse/sync';
+import { logger } from 'gadget-server';
 import iconv from 'iconv-lite';
 
 import { getPaginatedData } from 'utilities';
@@ -44,7 +45,7 @@ export async function fetchSchusev({ query, limit, page }: FetchingFunc) {
       count: queriedData.length,
     };
   } catch (err) {
-    console.error('Error in fetching or parsing the CSV:', err);
+    logger.error({ err }, 'Error in fetching or parsing the CSV');
     throw err;
   }
 }

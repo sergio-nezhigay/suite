@@ -1,4 +1,4 @@
-import { api } from 'gadget-server';
+import { api, logger } from 'gadget-server';
 import { getRozetkaAccessToken } from './getRozetkaAccessToken';
 
 const PROVIDER = 'rozetka';
@@ -28,10 +28,10 @@ export class RozetkaTokenManager {
       const token = await this.getTokenFromDatabase();
       return token;
     } catch (error) {
-      console.warn('[RozetkaTokenManager] Database unavailable, getting fresh token from API', {
+      logger.warn({
         error: error instanceof Error ? error.message : String(error),
-        errorStack: error instanceof Error ? error.stack : undefined
-      });
+        errorStack: error instanceof Error ? error.stack : undefined,
+      }, '[RozetkaTokenManager] Database unavailable, getting fresh token from API');
       // Fallback: get fresh token directly from API
       const fallbackToken = await this.getFreshToken();
       return fallbackToken;
@@ -86,13 +86,13 @@ export class RozetkaTokenManager {
         await api.newApiToken.create(tokenData);
       }
     } catch (error) {
-      console.error('[RozetkaTokenManager] Failed to save token to database:', {
+      logger.error({
         error: error instanceof Error ? error.message : String(error),
         errorStack: error instanceof Error ? error.stack : undefined,
         operation: existingId ? 'UPDATE' : 'CREATE',
         existingId,
-        tokenPreview: `${token.substring(0, 20)}...`
-      });
+        tokenPreview: `${token.substring(0, 20)}...`,
+      }, '[RozetkaTokenManager] Failed to save token to database');
       throw error;
     }
   }
@@ -137,9 +137,9 @@ export class RozetkaTokenManager {
       } else {
       }
     } catch (error) {
-      console.warn('Failed to invalidate token from database', {
+      logger.warn({
         error: error instanceof Error ? error.message : String(error),
-      });
+      }, 'Failed to invalidate token from database');
     }
   }
 
@@ -173,9 +173,9 @@ export class RozetkaTokenManager {
         expiresInMs: expiresAt ? expiresAt.getTime() - now.getTime() : 0,
       };
     } catch (error) {
-      console.warn('Database not accessible for token info', {
+      logger.warn({
         error: error instanceof Error ? error.message : String(error),
-      });
+      }, 'Database not accessible for token info');
       return { hasToken: false, isValid: false };
     }
   }

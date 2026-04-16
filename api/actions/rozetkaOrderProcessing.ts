@@ -13,14 +13,10 @@ import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
 import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
 import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 
-export const run: ActionRun = async ({ connections }) => {
-  // Replace logger.info with console.log
+export const run: ActionRun = async ({ connections, logger }) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
-    // Replace logger.warn with console.warn
-    console.warn(
-      'Skipping Rozetka order processing - not in production environment'
-    );
+    logger.warn({ }, 'Skipping Rozetka order processing - not in production environment');
     return;
   }
 
@@ -31,15 +27,14 @@ export const run: ActionRun = async ({ connections }) => {
   try {
     const accessTokenRozetka = await rozetkaTokenManager.getValidToken();
     const tokenEnd = Date.now();
+    logger.info({ duration_ms: tokenEnd - tokenStart }, 'Stage 1: access token fetched');
 
-    // Replace logger.info with console.log
     if (!accessTokenRozetka) {
       const error = new Error('Failed to fetch access token');
-      // Replace logger.error with console.error
-      console.error('Token fetch failed', {
+      logger.error({
         stage: 'token_fetch',
         error: error.message,
-      });
+      }, 'Token fetch failed');
       return;
     }
 
@@ -47,10 +42,10 @@ export const run: ActionRun = async ({ connections }) => {
     const ordersStart = Date.now();
     const rozOrders = await getNewOrders(accessTokenRozetka);
     const ordersEnd = Date.now();
+    logger.info({ duration_ms: ordersEnd - ordersStart, count: rozOrders?.length ?? 0 }, 'Stage 2: orders fetched');
 
-    // Replace logger.info with console.log
     if (!rozOrders || !rozOrders.length) {
-      // Replace logger.info with console.log
+      logger.info({ }, 'No new Rozetka orders to process');
       return;
     }
 
@@ -59,32 +54,28 @@ export const run: ActionRun = async ({ connections }) => {
     const shopify = await getShopifyConnection(connections);
     if (!shopify) {
       const error = new Error('No Shopify connection available');
-      // Replace logger.error with console.error
-      console.error('Shopify connection failed', {
+      logger.error({
         stage: 'shopify_connection',
         error: error.message,
-      });
+      }, 'Shopify connection failed');
       return;
     }
 
-    await processOrdersConcurrently(rozOrders, shopify, accessTokenRozetka);
+    await processOrdersConcurrently(rozOrders, shopify, accessTokenRozetka, logger);
     const processEnd = Date.now();
 
-    // Replace logger.info with console.log
     const endTime = Date.now();
-    const logData = {
+    logger.info({
       total_duration_ms: endTime - startTime,
       orders_processed: rozOrders.length,
       stages_completed: 3,
-    };
-    // Replace logger.info with console.log
+    }, 'Rozetka order processing completed');
   } catch (error: any) {
-    // Replace logger.error with console.error
-    console.error('Rozetka order processing failed', {
+    logger.error({
       error: error.message,
       stack: error.stack,
       duration_ms: Date.now() - startTime,
-    });
+    }, 'Rozetka order processing failed');
     throw error;
   }
 };
@@ -94,7 +85,8 @@ const CONCURRENCY_LIMIT = 3;
 async function processOrdersConcurrently(
   orders: RozetkaOrder[],
   shopify: Shopify,
-  accessToken: string
+  accessToken: string,
+  logger: any
 ) {
   // Split orders into chunks to control concurrency
   const chunks = [];
@@ -113,7 +105,7 @@ async function processOrdersConcurrently(
       const order = chunk[index];
       if (result.status === 'fulfilled') {
       } else {
-        console.error(`Order ${order.id} failed:`, result.reason);
+        logger.error({ orderId: order.id, err: result.reason }, 'Order processing failed');
       }
     });
   }
@@ -370,10 +362,11 @@ export const options = {
 
 export const getShopifyProductIdByOfferId = async (
   offerId: string,
-  shopify: Shopify
+  shopify: Shopify,
+  logger?: any
 ): Promise<string | null> => {
   if (!offerId) {
-    console.warn(`[fetchProductIdByOfferId] No offerId provided`);
+    logger?.warn({ }, '[fetchProductIdByOfferId] No offerId provided');
     return null;
   }
 
@@ -402,17 +395,12 @@ export const getShopifyProductIdByOfferId = async (
 
     if (productId) {
     } else {
-      console.warn(
-        `[fetchProductIdByOfferId] No product found for offerId: ${offerId}`
-      );
+      logger?.warn({ offerId }, '[fetchProductIdByOfferId] No product found for offerId');
     }
 
     return productId;
   } catch (error) {
-    console.error(
-      `[fetchProductIdByOfferId] Error fetching product ID:`,
-      error
-    );
+    logger?.error({ err: error }, '[fetchProductIdByOfferId] Error fetching product ID');
     return null;
   }
 };
@@ -427,10 +415,11 @@ interface Properties {
 
 export const getPropertiesByProductId = async (
   productId: string,
-  shopify: Shopify
+  shopify: Shopify,
+  logger?: any
 ): Promise<Properties> => {
   if (!productId) {
-    console.warn(`[fetchBarcodeByProductId] No productId provided`);
+    logger?.warn({ }, '[fetchBarcodeByProductId] No productId provided');
     return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
   }
   const query = `
@@ -471,17 +460,12 @@ export const getPropertiesByProductId = async (
 
     if (barcode || alternativeTitle) {
     } else {
-      console.warn(
-        `[fetchBarcodeByProductId] No barcode/metafield found for product ID: ${productId}`
-      );
+      logger?.warn({ productId }, '[fetchBarcodeByProductId] No barcode/metafield found for product ID');
     }
 
     return { barcode, cost, handle, sku, alternativeTitle };
   } catch (error) {
-    console.error(
-      `[fetchBarcodeByProductId] Error fetching product data:`,
-      error
-    );
+    logger?.error({ err: error }, '[fetchBarcodeByProductId] Error fetching product data');
     return { barcode: '', cost: '', handle: '', sku: '', alternativeTitle: '' };
   }
 };

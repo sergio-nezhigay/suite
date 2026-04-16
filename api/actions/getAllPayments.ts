@@ -99,7 +99,7 @@ export const run: ActionRun = async ({ api, logger, params }) => {
     try {
       await refreshBankDataSinceLastSync(api);
     } catch (refreshError) {
-      console.warn('[getAllPayments] Bank data refresh failed:', refreshError);
+      logger.warn({ err: refreshError }, '[getAllPayments] Bank data refresh failed');
     }
     // Calculate date 7 days ago
     const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
@@ -211,7 +211,7 @@ export const run: ActionRun = async ({ api, logger, params }) => {
       },
     };
   } catch (error) {
-    console.error('[getAllPayments] Error:', error);
+    logger.error({ err: error }, '[getAllPayments] Error');
     throw error;
   }
 };

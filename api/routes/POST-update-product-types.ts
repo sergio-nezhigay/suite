@@ -52,6 +52,7 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
   reply,
   api,
   connections,
+  logger,
 }) => {
   try {
     const { products } = request.body;
@@ -203,7 +204,7 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
         id: prod.id,
         error: prod.error!,
       });
-      console.error(`Failed to analyze product ${prod.id}: ${prod.error}`);
+      logger.error({ productId: prod.id, error: prod.error }, 'Failed to analyze product');
     });
 
     await reply.send({
@@ -215,7 +216,7 @@ const route: RouteHandler<{ Body: RequestBody }> = async ({
       results: results,
     });
   } catch (error) {
-    console.error('Error processing product types and filters update:', error);
+    logger.error({ err: error }, 'Error processing product types and filters update');
     await reply.code(500).send({
       error: 'Internal server error while processing product analysis',
     });

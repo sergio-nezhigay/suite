@@ -1,3 +1,5 @@
+import { logger } from 'gadget-server';
+
 export async function refreshBankDataSinceLastSync(api: any) {
   try {
     // Get most recent sync timestamp
@@ -21,12 +23,12 @@ export async function refreshBankDataSinceLastSync(api: any) {
 
     if (syncResult.success) {
     } else {
-      console.warn(`Bank refresh failed: ${syncResult.error}`);
+      logger.warn({ error: syncResult.error }, 'Bank refresh failed');
     }
 
     return syncResult;
   } catch (error) {
-    console.error('Error in refreshBankDataSinceLastSync:', error);
+    logger.error({ err: error }, 'Error in refreshBankDataSinceLastSync');
     throw error;
   }
 }

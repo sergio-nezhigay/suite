@@ -33,10 +33,10 @@ function parseRozetkaDate(dateStr: string): Date {
   return new Date('Invalid');
 }
 
-export const run: ActionRun = async () => {
+export const run: ActionRun = async ({ logger }) => {
   const isProduction = process.env.NODE_ENV === 'production';
   if (!isProduction) {
-    console.warn('Skipping old orders check - not in production environment');
+    logger.warn({ }, 'Skipping old orders check - not in production environment');
     return;
   }
 
@@ -44,18 +44,18 @@ export const run: ActionRun = async () => {
     // Get valid access token
     const accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {
-      console.error('Failed to fetch Rozetka access token');
+      logger.error({ }, 'Failed to fetch Rozetka access token');
       return;
     }
 
     // Fetch orders with PLANNED_CALLBACK status
-    const orders = await getPlannedCallbackOrders(accessToken);
+    const orders = await getPlannedCallbackOrders(accessToken, logger);
     if (!orders || orders.length === 0) {
       return;
     }
     // Filter and log old orders (6+ days)
-    const oldOrders = filterOldOrders(orders, 6);
-    
+    const oldOrders = filterOldOrders(orders, 6, logger);
+
     if (oldOrders.length === 0) {
       return;
     }
@@ -68,24 +68,24 @@ export const run: ActionRun = async () => {
     for (const order of oldOrders) {
       try {
         await changeRozetkaOrderStatus(
-            order.id, 
-            ROZETKA_ORDER_STATUSES.CANCELLED, // 18 
+            order.id,
+            ROZETKA_ORDER_STATUSES.CANCELLED, // 18
             accessToken
         );
       } catch (e: any) {
-        console.error(`Failed to cancel order ${order.id}: ${e.message}`);
+        logger.error({ orderId: order.id, error: e.message }, 'Failed to cancel order');
       }
     }
   } catch (error: any) {
-    console.error('Old Rozetka orders check failed', {
+    logger.error({
       error: error.message,
       stack: error.stack,
-    });
+    }, 'Old Rozetka orders check failed');
     throw error;
   }
 };
 
-async function getPlannedCallbackOrders(accessToken: string) {
+async function getPlannedCallbackOrders(accessToken: string, logger: any) {
   const ROZETKA_ORDERS_API_URL = `${ROZETKA_API_BASE_URL}/orders/search`;
   
   // Calculate date 6 days ago for filtering
@@ -111,23 +111,21 @@ async function getPlannedCallbackOrders(accessToken: string) {
       const allOrders = response.data.content.orders;
       return allOrders.filter((o: any) => o.status === ROZETKA_ORDER_STATUSES.PLANNED_CALLBACK);
     } else {
-      console.error('[getPlannedCallbackOrders] API returned success=false', {
-        responseData: response.data,
-      });
+      logger.error({ responseData: response.data }, '[getPlannedCallbackOrders] API returned success=false');
       return null;
     }
 
   } catch (error: any) {
-    console.error('[getPlannedCallbackOrders] Request failed', {
+    logger.error({
       error: error.message,
       responseStatus: error.response?.status,
       responseData: error.response?.data,
-    });
+    }, '[getPlannedCallbackOrders] Request failed');
     return null;
   }
 }
 
-function filterOldOrders(orders: any[], daysThreshold: number) {
+function filterOldOrders(orders: any[], daysThreshold: number, logger: any) {
   const now = new Date();
   const thresholdDate = new Date(now.getTime() - daysThreshold * 24 * 60 * 60 * 1000);
 
@@ -139,7 +137,7 @@ function filterOldOrders(orders: any[], daysThreshold: number) {
     const isOld = createdAt < thresholdDate;
 
     if (isNaN(createdAt.getTime())) {
-      console.warn(`[filterOldOrders] Failed to parse date for order ${order.id}: ${dateStr}`);
+      logger.warn({ orderId: order.id, dateStr }, '[filterOldOrders] Failed to parse date for order');
       return false;
     }
     return isOld;

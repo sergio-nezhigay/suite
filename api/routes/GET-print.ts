@@ -1,4 +1,4 @@
-import { RouteHandler } from 'gadget-server';
+import { RouteHandler, logger } from 'gadget-server';
 import { getShopifyClient, getUrlParams, UrlParams } from 'utilities';
 
 interface OrderResponse {
@@ -130,7 +130,7 @@ const route: RouteHandler<{ Querystring: UrlParams }> = async ({
 
     return reply.type('text/html').send(print);
   } catch (error) {
-    console.error('Error details:', error);
+    logger.error({ err: error }, 'Error details');
     return reply.status(500).send({
       error: error instanceof Error ? error.message : 'Unknown error',
     });
@@ -244,7 +244,7 @@ function formatLineItem(
       totalCost: cost * quantity,
     };
   } catch (error) {
-    console.error('Error processing line item:', error, item);
+    logger.error({ err: error, item }, 'Error processing line item');
     return {
       text: `\nError processing item: ${item.title}`,
       totalPrice: 0,

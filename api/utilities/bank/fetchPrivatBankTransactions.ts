@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from 'gadget-server';
 
 export interface PrivatBankTransaction {
   id: string | undefined;
@@ -128,19 +129,15 @@ export const fetchPrivatBankTransactions = async ({
       const data = axiosError.response?.data;
 
       // Debug logging for API errors
-      try {
-        console.error('PrivatBank API Error Response:', {
-          status,
-          statusText: axiosError.response?.statusText,
-          headers: axiosError.response?.headers,
-          data: data,
-          url: axiosError.config?.url,
-          method: axiosError.config?.method,
-          requestParams: axiosError.config?.params,
-        });
-      } catch (logError) {
-        console.error('Failed to log API error details:', String(logError));
-      }
+      logger.error({
+        status,
+        statusText: axiosError.response?.statusText,
+        headers: axiosError.response?.headers,
+        data: data,
+        url: axiosError.config?.url,
+        method: axiosError.config?.method,
+        requestParams: axiosError.config?.params,
+      }, 'PrivatBank API Error Response');
 
       if (status === 401 || status === 403) {
         return {

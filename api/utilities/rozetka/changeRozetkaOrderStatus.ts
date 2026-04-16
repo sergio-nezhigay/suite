@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from 'gadget-server';
 import { ROZETKA_API_BASE_URL } from '../data/data';
 
 export const changeRozetkaOrderStatus = async (
@@ -24,13 +25,13 @@ export const changeRozetkaOrderStatus = async (
       }
     );
 
-    console.log(`Rozetka response for order ${orderId}:`, JSON.stringify(response.data, null, 2));
+    logger.info({ orderId, data: response.data }, 'Rozetka response');
 
     if (!response.data.success) {
       throw new Error(`Failed to update Rozetka status for order ${orderId}. Response: ${JSON.stringify(response.data)}`);
     }
   } catch (error) {
-    console.error(`Error updating status for order ${orderId}:`, error);
+    logger.error({ orderId, err: error }, 'Error updating status for order');
     throw error;
   }
 };

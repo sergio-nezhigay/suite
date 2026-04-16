@@ -1,3 +1,4 @@
+import { logger } from 'gadget-server';
 import { GoogleSpreadsheet } from 'google-spreadsheet';
 import { JWT } from 'google-auth-library';
 
@@ -55,7 +56,7 @@ export async function fetchFromSheet({
       count: products.length,
     };
   } catch (error) {
-    console.error('Error fetching from sheet:', error);
+    logger.error({ err: error }, 'Error fetching from sheet');
     throw error;
   }
 }

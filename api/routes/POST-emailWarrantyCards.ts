@@ -1,4 +1,5 @@
 import type { RouteHandler } from 'fastify';
+import { logger } from 'gadget-server';
 import { createWarrantyPdf, sendWarrantyEmail } from 'utilities';
 
 interface ShopifyCustomer {
@@ -57,7 +58,7 @@ const route: RouteHandler<{ Body: RequestBody }> = async (context) => {
       .code(200)
       .send({ message: 'Гарантійні талони успішно надіслано!' });
   } catch (error) {
-    console.error('Помилка:', error);
+    logger.error({ err: error }, 'Помилка');
     await reply
       .code(500)
       .send({ error: 'Не вдалося надіслати гарантійні талони.' });

@@ -1,3 +1,4 @@
+import { logger } from 'gadget-server';
 import { google } from 'googleapis';
 import { authorize } from './suppliers/authorizeGoogle';
 
@@ -27,14 +28,14 @@ export async function fetchDeclarationFromSheet(
   } = declarationConfig;
 
   try {
-    console.time(`[${orderName}] Step 1: Authorize & get sheets client`);
+    const step1Start = Date.now();
     const auth = await authorize(config);
     const sheets = google.sheets({ version: 'v4', auth });
-    console.timeEnd(`[${orderName}] Step 1: Authorize & get sheets client`);
+    logger.info({ orderName, duration_ms: Date.now() - step1Start }, 'Step 1: Authorize & get sheets client');
 
     const range = `${sheetName}!A${startRow}:Z`;
 
-    console.time(`[${orderName}] Step 2: Fetch & process spreadsheet data`);
+    const step2Start = Date.now();
     const response = await sheets.spreadsheets.values.get({
       spreadsheetId,
       range,
@@ -42,9 +43,7 @@ export async function fetchDeclarationFromSheet(
     const data = response.data.values;
 
     if (!data?.length) {
-      console.timeEnd(
-        `[${orderName}] Step 2: Fetch & process spreadsheet data`
-      );
+      logger.info({ orderName, duration_ms: Date.now() - step2Start }, 'Step 2: Fetch & process spreadsheet data');
       return null;
     }
 
@@ -53,13 +52,11 @@ export async function fetchDeclarationFromSheet(
     );
 
     if (!matchingRow) {
-      console.timeEnd(
-        `[${orderName}] Step 2: Fetch & process spreadsheet data`
-      );
+      logger.info({ orderName, duration_ms: Date.now() - step2Start }, 'Step 2: Fetch & process spreadsheet data');
       return null;
     }
 
-    console.timeEnd(`[${orderName}] Step 2: Fetch & process spreadsheet data`);
+    logger.info({ orderName, duration_ms: Date.now() - step2Start }, 'Step 2: Fetch & process spreadsheet data');
     const rawValue = matchingRow[declarationColumn];
     if (!rawValue) {
       return null;
@@ -67,7 +64,7 @@ export async function fetchDeclarationFromSheet(
 
     return String(rawValue).trim();
   } catch (error) {
-    console.error(`[${orderName}] Error in fetchDeclarationFromSheet:`, error);
+    logger.error({ orderName, err: error }, 'Error in fetchDeclarationFromSheet');
     return null;
   }
 }

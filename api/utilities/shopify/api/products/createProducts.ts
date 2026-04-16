@@ -1,4 +1,4 @@
-import { AppConnections } from 'gadget-server';
+import { AppConnections, logger } from 'gadget-server';
 import axios from 'axios';
 
 import { Products, ProductOptions } from 'types/index';
@@ -42,7 +42,7 @@ async function getDefaultImageUrl(title: string): Promise<string> {
 
     return fallbackImage;
   } catch (error) {
-    console.error(error);
+    logger.error({ err: error }, 'Error fetching fallback image');
     return fallbackImage;
   }
 }
@@ -133,7 +133,7 @@ export async function createProducts({
       createdProducts,
     };
   } catch (error) {
-    console.error('Create/update Error:', error);
+    logger.error({ err: error }, 'Create/update Error');
     throw error;
   }
 }

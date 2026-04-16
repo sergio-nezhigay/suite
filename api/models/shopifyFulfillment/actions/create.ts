@@ -11,12 +11,12 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, api, config }) => {
+export const onSuccess: ActionOnSuccess = async ({ record, api, config, logger }) => {
   let orderName = '';
   if (typeof record.name === 'string' && record.name.length > 0) {
     orderName = record.name.split('.')[0];
   } else {
-    console.warn('record.name is missing or empty:', record.name);
+    logger.warn({ recordName: record.name }, 'record.name is missing or empty');
   }
   const trackingNumbers = record.trackingNumbers as string[] | undefined;
   const currentTrackingNumber = trackingNumbers?.[0] ?? '';

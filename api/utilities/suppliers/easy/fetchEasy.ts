@@ -1,3 +1,4 @@
+import { logger } from 'gadget-server';
 import { parseStringPromise } from 'xml2js';
 
 import { FetchingFunc } from 'types/index';
@@ -83,7 +84,7 @@ export async function fetchEasy({ query, limit, page }: FetchingFunc) {
       count: filteredOffers.length,
     };
   } catch (error) {
-    console.error('Error fetching or processing the XML:', error);
+    logger.error({ err: error }, 'Error fetching or processing the XML');
     throw error;
   }
 }

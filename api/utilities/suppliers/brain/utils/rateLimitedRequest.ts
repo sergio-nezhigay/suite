@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { api } from 'gadget-server';
+import { api, logger } from 'gadget-server';
 
 import { RequestParams } from 'api/types';
 
@@ -54,7 +54,7 @@ export async function rateLimitedRequest({
 
     return response?.data;
   } catch (error) {
-    console.error('Error in rate-limited request:', error);
+    logger.error({ err: error }, 'Error in rate-limited request');
     throw error;
   }
 }

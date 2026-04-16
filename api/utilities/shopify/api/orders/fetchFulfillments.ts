@@ -1,4 +1,5 @@
 import { getShopifyClient } from '../../client/getShopifyClient';
+import { logger } from 'gadget-server';
 import type { AppConnections } from 'gadget-server';
 
 interface TrackingInfo {
@@ -54,7 +55,7 @@ export async function fetchFulfillments(
     const response = await shopify.graphql(query, variables);
     return response?.order?.fulfillments || [];
   } catch (error) {
-    console.error('Error fetching fulfillments:', error);
+    logger.error({ err: error }, 'Error fetching fulfillments');
     return [];
   }
 }

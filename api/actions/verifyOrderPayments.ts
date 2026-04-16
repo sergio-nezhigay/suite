@@ -25,6 +25,7 @@ async function createAutomaticCheck(
   order: any,
   connections: any,
   api: any,
+  logger: any,
   orderData?: any
 ) {
   try {
@@ -174,11 +175,7 @@ Reason: Payment verified and order marked as paid`;
       receiptUrl: receipt.receipt_url,
     };
   } catch (error) {
-    console.error(`[DEBUG-PAYMENTS] Failed to create check for order ${order.name}:`, error);
-    if (error instanceof Error) {
-       console.error(`[DEBUG-PAYMENTS] Error stack:`, error.stack);
-    } else {
-    }
+    logger.error({ orderName: order.name, err: error }, '[DEBUG-PAYMENTS] Failed to create check for order');
 
     // Add error note to order but don't fail the payment verification
     try {
@@ -191,7 +188,7 @@ Note: Payment verification was successful, check creation can be done manually`;
         note: errorNote,
       });
     } catch (noteError) {
-      console.error(`Failed to add error note:`, noteError);
+      logger.error({ err: noteError }, 'Failed to add error note');
     }
 
     return {
@@ -203,7 +200,7 @@ Note: Payment verification was successful, check creation can be done manually`;
 
 import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
 
-export const run = async ({ params, api, connections }: any) => {
+export const run = async ({ params, api, connections, logger }: any) => {
   try {
     const { orderIds, autoCreateChecks = true, orderData } = params;
     if (orderData) {
@@ -261,7 +258,7 @@ export const run = async ({ params, api, connections }: any) => {
     try {
       await refreshBankDataSinceLastSync(api);
     } catch (refreshError) {
-      console.warn('Bank data refresh failed:', refreshError);
+      logger.warn({ err: refreshError }, 'Bank data refresh failed');
     }
 
     // Fetch recent bank transactions (last 10 days)
@@ -307,7 +304,7 @@ export const run = async ({ params, api, connections }: any) => {
           const currentOrderData = orderData?.find(
             (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
           );
-          const checkResult = await createAutomaticCheck(order, connections, api, currentOrderData);
+          const checkResult = await createAutomaticCheck(order, connections, api, logger, currentOrderData);
           // Re-fetch updated check status
           const updated = await api.bankTransaction.findFirst({
             filter: { matchedOrderId: { equals: order.id } },
@@ -381,10 +378,7 @@ export const run = async ({ params, api, connections }: any) => {
           // Mark as used immediately to prevent duplicate matching in this run
           matchedTransactionIds.add(txId);
         } catch (saveError) {
-          console.error(
-            `Failed to save match for order ${order.id}:`,
-            saveError
-          );
+          logger.error({ orderId: order.id, err: saveError }, 'Failed to save match for order');
         }
 
         // Update Shopify order after successful match
@@ -416,23 +410,18 @@ export const run = async ({ params, api, connections }: any) => {
                 order,
                 connections,
                 api,
+                logger,
                 currentOrderData
               );
               if (checkResult?.success) {
               } else if (checkResult?.skipped) {
               }
             } catch (checkError) {
-              console.error(
-                `Check creation error for order ${order.name}:`,
-                checkError
-              );
+              logger.error({ orderName: order.name, err: checkError }, 'Check creation error for order');
             }
           }
         } catch (shopifyError) {
-          console.error(
-            `Failed to update Shopify order ${order.id}:`,
-            shopifyError
-          );
+          logger.error({ orderId: order.id, err: shopifyError }, 'Failed to update Shopify order');
         }
       }
 
@@ -474,10 +463,7 @@ export const run = async ({ params, api, connections }: any) => {
           } else {
           }
         } catch (err) {
-          console.error(
-            `Error fetching check info for order ${order.id}:`,
-            err
-          );
+          logger.error({ orderId: order.id, err }, 'Error fetching check info for order');
         }
       }
 
@@ -513,7 +499,7 @@ export const run = async ({ params, api, connections }: any) => {
       },
     };
   } catch (error) {
-    console.error('Error in verifyOrderPayments:', error);
+    logger.error({ err: error }, 'Error in verifyOrderPayments');
     return {
       success: false,
       error: error instanceof Error ? error.message : String(error),

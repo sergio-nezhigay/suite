@@ -34,7 +34,7 @@ export const onSuccess: ActionOnSuccess = async ({
       shopifyProduct: { descriptionEmbedding: embedding },
     });
   } catch (error) {
-    console.error("error creating embedding", { error });
+    logger.error({ err: error }, "error creating embedding");
   }
 };
 

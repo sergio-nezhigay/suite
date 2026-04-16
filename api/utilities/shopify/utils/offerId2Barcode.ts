@@ -1,8 +1,9 @@
+import { logger } from 'gadget-server';
 import Shopify from 'shopify-api-node';
 
 export const offerId2Barcode = async (offerId: string, shopify: Shopify) => {
   if (!offerId) {
-    console.warn(`[offerId2Barcode] No offerId provided`);
+    logger.warn({ }, '[offerId2Barcode] No offerId provided');
     return '';
   }
   let productId = offerId;
@@ -29,13 +30,11 @@ export const offerId2Barcode = async (offerId: string, shopify: Shopify) => {
       if (response.products.edges.length > 0) {
         productId = response.products.edges[0].node.id;
       } else {
-        console.warn(
-          `[offerId2Barcode] No product found for offerId: ${offerId}`
-        );
+        logger.warn({ offerId }, '[offerId2Barcode] No product found for offerId');
         return '';
       }
     } catch (error) {
-      console.error(`[offerId2Barcode] Error fetching product ID:`, error);
+      logger.error({ err: error }, '[offerId2Barcode] Error fetching product ID');
       return '';
     }
   } else {
@@ -66,14 +65,12 @@ export const offerId2Barcode = async (offerId: string, shopify: Shopify) => {
 
     if (barcode) {
     } else {
-      console.warn(
-        `[offerId2Barcode] No barcode found for product ID: ${productId}`
-      );
+      logger.warn({ productId }, '[offerId2Barcode] No barcode found for product ID');
     }
 
     return barcode || 'test-barcode';
   } catch (error) {
-    console.error(`[offerId2Barcode] Error fetching barcode:`, error);
+    logger.error({ err: error }, '[offerId2Barcode] Error fetching barcode');
     return '';
   }
 };

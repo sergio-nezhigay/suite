@@ -56,7 +56,8 @@ const replaceOrderTag = async (
   orderId: string,
   oldTag: string,
   newTag: string,
-  orderName: string
+  orderName: string,
+  logger: any
 ): Promise<void> => {
   // Remove old tag
   const removeTagMutation = `
@@ -76,10 +77,7 @@ const replaceOrderTag = async (
   });
 
   if (removeResponse.tagsRemove?.userErrors?.length > 0) {
-    console.error(
-      `Tag removal errors for order ${orderName}:`,
-      removeResponse.tagsRemove.userErrors
-    );
+    logger.error({ orderName, userErrors: removeResponse.tagsRemove.userErrors }, 'Tag removal errors for order');
   }
 
   // Add new tag
@@ -100,10 +98,7 @@ const replaceOrderTag = async (
   });
 
   if (addResponse.tagsAdd?.userErrors?.length > 0) {
-    console.error(
-      `Tag addition errors for order ${orderName}:`,
-      addResponse.tagsAdd.userErrors
-    );
+    logger.error({ orderName, userErrors: addResponse.tagsAdd.userErrors }, 'Tag addition errors for order');
   }
 };
 
@@ -112,7 +107,8 @@ const createFulfillment = async (
   shopifyClient: any,
   fulfillmentOrderId: string,
   trackingNumber: string,
-  orderName: string
+  orderName: string,
+  logger: any
 ): Promise<boolean> => {
   const fulfillmentResponse = await shopifyClient.graphql(
     `
@@ -156,10 +152,7 @@ const createFulfillment = async (
   );
 
   if (fulfillmentResponse.fulfillmentCreate.userErrors?.length > 0) {
-    console.error(
-      `Fulfillment creation errors for order ${orderName}:`,
-      fulfillmentResponse.fulfillmentCreate.userErrors
-    );
+    logger.error({ orderName, userErrors: fulfillmentResponse.fulfillmentCreate.userErrors }, 'Fulfillment creation errors for order');
     return false;
   }
 
@@ -170,7 +163,8 @@ const createFulfillment = async (
 const processFulfillment = async (
   shopifyClient: any,
   order: Order,
-  declaration: string
+  declaration: string,
+  logger: any
 ): Promise<boolean> => {
   const fulfillmentOrders = await getFulfillmentOrders(shopifyClient, order.id);
 
@@ -185,7 +179,8 @@ const processFulfillment = async (
       shopifyClient,
       fulfillmentOrderEdge.node.id,
       declaration,
-      order.name
+      order.name,
+      logger
     );
     if (!result) {
       allSuccessful = false;
@@ -199,7 +194,8 @@ const processFulfillment = async (
 const processOrder = async (
   order: Order,
   shopifyClient: any,
-  config: any
+  config: any,
+  logger: any
 ): Promise<void> => {
   if (!validateOrder(order)) {
     return;
@@ -214,7 +210,8 @@ const processOrder = async (
     const fulfillmentSuccess = await processFulfillment(
       shopifyClient,
       order,
-      novaPoshtaDeclaration
+      novaPoshtaDeclaration,
+      logger
     );
 
     // Replace order tag if fulfillment was successful
@@ -225,19 +222,17 @@ const processOrder = async (
           order.id,
           'Декларації',
           'Завершені',
-          order.name
+          order.name,
+          logger
         );
       } catch (error) {
-        console.error(
-          `Failed to update tag for order ${order.name}:`,
-          error
-        );
+        logger.error({ orderName: order.name, err: error }, 'Failed to update tag for order');
       }
     }
   }
 };
 
-export const run = async ({ api, connections, config }: any) => {
+export const run = async ({ api, connections, config, logger }: any) => {
   // Only run in production environment
   if (process.env.NODE_ENV !== 'production') {
     return;
@@ -266,13 +261,13 @@ export const run = async ({ api, connections, config }: any) => {
     // Process each order
     for (const order of orders) {
       try {
-        await processOrder(order, shopifyClient, config);
+        await processOrder(order, shopifyClient, config, logger);
       } catch (error) {
-        console.error(`Error processing order ${order.name}:`, error);
+        logger.error({ orderName: order.name, err: error }, 'Error processing order');
       }
     }
   } catch (error) {
-    console.error('Error in processDeclarationOrders:', error);
+    logger.error({ err: error }, 'Error in processDeclarationOrders');
   }
 };
 

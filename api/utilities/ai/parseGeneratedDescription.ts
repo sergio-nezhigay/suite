@@ -1,3 +1,5 @@
+import { logger } from 'gadget-server';
+
 export function parseGeneratedDescription(jsonResponse: string) {
   try {
     if (jsonResponse.startsWith('```json')) {
@@ -17,7 +19,7 @@ export function parseGeneratedDescription(jsonResponse: string) {
 
     return parsed;
   } catch (error) {
-    console.error('Error parsing JSON response:', error);
+    logger.error({ err: error }, 'Error parsing JSON response');
     throw new Error('Failed to parse the product description JSON.');
   }
 }

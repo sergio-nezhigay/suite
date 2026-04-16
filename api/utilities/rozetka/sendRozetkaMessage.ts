@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { logger } from 'gadget-server';
 import { ROZETKA_API_BASE_URL } from '../data/data';
 import { rozetkaTokenManager } from './tokenManager';
 import { changeRozetkaOrderStatus } from './changeRozetkaOrderStatus';
@@ -51,17 +52,15 @@ async function getOrderChat(
     if (response.data.success) {
       return response.data.content;
     } else {
-      console.error(
-        `[Rozetka] Failed to get chat info for order ${orderId}:`,
-        response.data
-      );
+      logger.error({ orderId, responseData: response.data }, '[Rozetka] Failed to get chat info for order');
       return null;
     }
   } catch (error) {
-    console.error(`[Rozetka] Error getting chat info for order ${orderId}:`, {
+    logger.error({
+      orderId,
       error: error instanceof Error ? error.message : String(error),
       response: axios.isAxiosError(error) ? error.response?.data : undefined,
-    });
+    }, '[Rozetka] Error getting chat info for order');
     return null;
   }
 }
@@ -94,17 +93,15 @@ async function createMessage(
     if (response.data.success) {
       return true;
     } else {
-      console.error(
-        `[Rozetka] Failed to send message to chat ${chatId}:`,
-        response.data
-      );
+      logger.error({ chatId, responseData: response.data }, '[Rozetka] Failed to send message to chat');
       return false;
     }
   } catch (error) {
-    console.error(`[Rozetka] Error sending message to chat ${chatId}:`, {
+    logger.error({
+      chatId,
       error: error instanceof Error ? error.message : String(error),
       response: axios.isAxiosError(error) ? error.response?.data : undefined,
-    });
+    }, '[Rozetka] Error sending message to chat');
     return false;
   }
 }
@@ -121,9 +118,7 @@ export async function sendRozetkaOrderMessage(
     // Extract numeric order ID from order name (e.g., "№865770877" -> "865770877")
     const orderIdMatch = orderName.match(/\d{9}/);
     if (!orderIdMatch) {
-      console.error(
-        `[Rozetka] Invalid order name format: ${orderName}. Expected format: №XXXXXXXXX`
-      );
+      logger.error({ orderName }, '[Rozetka] Invalid order name format. Expected format: №XXXXXXXXX');
       return false;
     }
 
@@ -131,14 +126,14 @@ export async function sendRozetkaOrderMessage(
     // Get access token
     const accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {
-      console.error('[Rozetka] Failed to get access token');
+      logger.error({ }, '[Rozetka] Failed to get access token');
       return false;
     }
 
     // Get chat information
     const chatInfo = await getOrderChat(orderId, accessToken);
     if (!chatInfo) {
-      console.error(`[Rozetka] Failed to get chat info for order ${orderId}`);
+      logger.error({ orderId }, '[Rozetka] Failed to get chat info for order');
       return false;
     }
 
@@ -159,23 +154,21 @@ export async function sendRozetkaOrderMessage(
           accessToken
         );
       } catch (error) {
-        console.error(
-          `[Rozetka] Failed to change status to 47 for order ${orderName}:`,
-          {
-            error: error instanceof Error ? error.message : String(error),
-            response: axios.isAxiosError(error) ? error.response?.data : undefined,
-          }
-        );
+        logger.error({
+          orderName,
+          error: error instanceof Error ? error.message : String(error),
+          response: axios.isAxiosError(error) ? error.response?.data : undefined,
+        }, '[Rozetka] Failed to change status to 47 for order');
         // Don't throw - message was sent successfully, status change is secondary
       }
     }
 
     return success;
   } catch (error) {
-    console.error(`[Rozetka] Error in sendRozetkaOrderMessage:`, {
+    logger.error({
       orderName,
       error: error instanceof Error ? error.message : String(error),
-    });
+    }, '[Rozetka] Error in sendRozetkaOrderMessage');
     return false;
   }
 }

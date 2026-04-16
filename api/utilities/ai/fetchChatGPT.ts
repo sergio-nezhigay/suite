@@ -1,4 +1,4 @@
-import { AppConnections } from 'gadget-server';
+import { AppConnections, logger } from 'gadget-server';
 
 export async function fetchChatGPT({
   prompt,
@@ -16,7 +16,7 @@ export async function fetchChatGPT({
     });
     return response.choices[0].message.content;
   } catch (error) {
-    console.error(`Error in fetchWithRetry for prompt "${prompt}":`, error);
+    logger.error({ prompt, err: error }, 'Error in fetchWithRetry');
     throw error;
   }
 }

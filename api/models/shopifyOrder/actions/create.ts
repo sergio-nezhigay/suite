@@ -34,7 +34,7 @@ export const run: ActionRun = async ({ params, record }) => {
   await save(record);
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
+export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
   try {
     const orderId = `gid://shopify/Order/${record.id}`;
 
@@ -141,12 +141,12 @@ export const onSuccess: ActionOnSuccess = async ({ record, api }) => {
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
     const stack = error instanceof Error ? error.stack : undefined;
-    console.error('[shopifyOrder/create] Error processing order metafields', {
+    logger.error({
       orderId: record.id,
       message,
       stack,
       timestamp: new Date().toISOString(),
-    });
+    }, '[shopifyOrder/create] Error processing order metafields');
   }
 };
 

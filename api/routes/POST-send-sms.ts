@@ -1,4 +1,5 @@
 import type { RouteHandler } from 'fastify';
+import { logger } from 'gadget-server';
 import { smsClient } from 'utilities';
 import { sendRozetkaOrderMessage } from '../utilities/rozetka/sendRozetkaMessage';
 
@@ -25,10 +26,10 @@ const route: RouteHandler = async (request, reply) => {
     if (shouldSendRozetkaMessage) {
       // Send Rozetka message asynchronously (don't block SMS response)
       sendRozetkaOrderMessage(orderName).catch((error) => {
-        console.error('[SMS Route] Failed to send Rozetka message:', {
+        logger.error({
           orderName,
           error: error instanceof Error ? error.message : String(error),
-        });
+        }, '[SMS Route] Failed to send Rozetka message');
       });
     }
 

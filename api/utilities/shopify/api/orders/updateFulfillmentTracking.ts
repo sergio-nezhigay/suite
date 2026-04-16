@@ -1,3 +1,4 @@
+import { logger } from 'gadget-server';
 import { AppConnections } from '.gadget/server/dist-cjs';
 import { getShopifyClient } from '../../client/getShopifyClient';
 
@@ -102,7 +103,7 @@ export async function updateFulfillmentTracking({
 
       return result;
     } catch (error) {
-      console.error('Error updating fulfillment tracking:', error);
+      logger.error({ err: error }, 'Error updating fulfillment tracking');
       if (attempt >= maxRetries - 1) {
         return { userErrors: [{ message: String(error) }] };
       }
