@@ -1,4 +1,5 @@
 import { fetchNovaPoshtaDeclaration } from '../utilities/fetchDeclarationFromSheet';
+import { timeIt } from 'api/utilities/timeIt';
 
 interface Order {
   id: string;
@@ -166,7 +167,8 @@ const processFulfillment = async (
   declaration: string,
   logger: any
 ): Promise<boolean> => {
-  const fulfillmentOrders = await getFulfillmentOrders(shopifyClient, order.id);
+  const fulfillmentOrders = await timeIt('get_fulfillment_orders',
+    () => getFulfillmentOrders(shopifyClient, order.id), logger, { orderId: order.id });
 
   if (fulfillmentOrders.length === 0) {
     return false;
@@ -175,12 +177,10 @@ const processFulfillment = async (
   let allSuccessful = true;
 
   for (const fulfillmentOrderEdge of fulfillmentOrders) {
-    const result = await createFulfillment(
-      shopifyClient,
-      fulfillmentOrderEdge.node.id,
-      declaration,
-      order.name,
-      logger
+    const result = await timeIt('create_fulfillment',
+      () => createFulfillment(shopifyClient, fulfillmentOrderEdge.node.id, declaration, order.name, logger),
+      logger,
+      { orderId: order.id, fulfillmentOrderId: fulfillmentOrderEdge.node.id }
     );
     if (!result) {
       allSuccessful = false;
@@ -201,10 +201,8 @@ const processOrder = async (
     return;
   }
 
-  const novaPoshtaDeclaration = await fetchNovaPoshtaDeclaration(
-    order.name,
-    config
-  );
+  const novaPoshtaDeclaration = await timeIt('fetch_nova_poshta_declaration',
+    () => fetchNovaPoshtaDeclaration(order.name, config), logger, { orderName: order.name });
 
   if (novaPoshtaDeclaration) {
     const fulfillmentSuccess = await processFulfillment(
@@ -217,13 +215,10 @@ const processOrder = async (
     // Replace order tag if fulfillment was successful
     if (fulfillmentSuccess) {
       try {
-        await replaceOrderTag(
-          shopifyClient,
-          order.id,
-          'Декларації',
-          'Завершені',
-          order.name,
-          logger
+        await timeIt('replace_order_tag',
+          () => replaceOrderTag(shopifyClient, order.id, 'Декларації', 'Завершені', order.name, logger),
+          logger,
+          { orderName: order.name }
         );
       } catch (error) {
         logger.error({ orderName: order.name, err: error }, 'Failed to update tag for order');
@@ -238,21 +233,28 @@ export const run = async ({ api, connections, config, logger }: any) => {
     return;
   }
 
+  const actionStart = performance.now();
+  let orders_fulfilled = 0;
+  let orders_skipped = 0;
+
   try {
     // Find unfulfilled orders with "Декларації" tag
-    const orders = await api.shopifyOrder.findMany({
-      filter: {
-        //fulfillmentStatus: { notEquals: 'fulfilled' },
-        tags: { matches: 'Декларації' },
-      },
-      select: {
-        id: true,
-        name: true,
-        fulfillmentStatus: true,
-        tags: true,
-        shopId: true,
-      },
-    });
+    const orders = await timeIt<any[]>('query_orders_with_declaration_tag',
+      () => api.shopifyOrder.findMany({
+        filter: {
+          //fulfillmentStatus: { notEquals: 'fulfilled' },
+          tags: { matches: 'Декларації' },
+        },
+        select: {
+          id: true,
+          name: true,
+          fulfillmentStatus: true,
+          tags: true,
+          shopId: true,
+        },
+      }),
+      logger
+    );
 
     if (orders.length === 0) return;
 
@@ -262,10 +264,20 @@ export const run = async ({ api, connections, config, logger }: any) => {
     for (const order of orders) {
       try {
         await processOrder(order, shopifyClient, config, logger);
+        orders_fulfilled++;
       } catch (error) {
         logger.error({ orderName: order.name, err: error }, 'Error processing order');
+        orders_skipped++;
       }
     }
+
+    logger.info({
+      stage: 'declaration_processing_summary',
+      orders_found: orders.length,
+      orders_fulfilled,
+      orders_skipped,
+      total_duration_ms: Math.round(performance.now() - actionStart),
+    }, 'Declaration processing summary');
   } catch (error) {
     logger.error({ err: error }, 'Error in processDeclarationOrders');
   }

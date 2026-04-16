@@ -12,6 +12,7 @@ import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrd
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';
 import { rozetkaTokenManager } from 'api/utilities/rozetka/tokenManager';
 import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
+import { timeIt } from 'api/utilities/timeIt';
 
 export const run: ActionRun = async ({ connections, logger }) => {
   const isProduction = process.env.NODE_ENV === 'production';
@@ -61,7 +62,12 @@ export const run: ActionRun = async ({ connections, logger }) => {
       return;
     }
 
-    await processOrdersConcurrently(rozOrders, shopify, accessTokenRozetka, logger);
+    await timeIt(
+      'all_orders_processing',
+      () => processOrdersConcurrently(rozOrders, shopify, accessTokenRozetka, logger),
+      logger,
+      { order_count: rozOrders.length }
+    );
     const processEnd = Date.now();
 
     const endTime = Date.now();
@@ -94,10 +100,14 @@ async function processOrdersConcurrently(
     chunks.push(orders.slice(i, i + CONCURRENCY_LIMIT));
   }
 
+  const batchStart = performance.now();
+
   // Process each chunk concurrently
   for (const chunk of chunks) {
     const results = await Promise.allSettled(
-      chunk.map((order) => processOrder(order, shopify, accessToken))
+      chunk.map((order) =>
+        timeIt('single_order', () => processOrder(order, shopify, accessToken, logger), logger, { orderId: order.id })
+      )
     );
 
     // Log results for each chunk
@@ -109,28 +119,32 @@ async function processOrdersConcurrently(
       }
     });
   }
+
+  const batchEnd = performance.now();
+  logger.info({
+    stage: 'batch_summary',
+    total_orders: orders.length,
+    total_duration_ms: Math.round(batchEnd - batchStart),
+    avg_ms_per_order: orders.length > 0 ? Math.round((batchEnd - batchStart) / orders.length) : 0,
+  }, 'Batch processing summary');
 }
 
 async function processOrder(
   order: RozetkaOrder,
   shopify: Shopify,
-  accessToken: string
+  accessToken: string,
+  logger: any
 ) {
   try {
-    const customer = await findOrCreateShopifyCustomer(shopify, order);
-    const orderVariables = await transformOrderToShopifyVariables(
-      order,
-      shopify
-    );
-    const shopifyOrder = await createOrder({
-      shopify,
-      variables: orderVariables,
-    });
-    await changeRozetkaOrderStatus(
-      order.id,
-      ROZETKA_ORDER_STATUSES.PROCESSING_BY_SELLER,
-      accessToken
-    );
+    const customer = await timeIt('find_or_create_customer',
+      () => findOrCreateShopifyCustomer(shopify, order), logger, { orderId: order.id });
+    const orderVariables = await timeIt('transform_order',
+      () => transformOrderToShopifyVariables(order, shopify), logger, { orderId: order.id });
+    const shopifyOrder = await timeIt('shopify_create_order',
+      () => createOrder({ shopify, variables: orderVariables }), logger, { orderId: order.id });
+    await timeIt('rozetka_status_update',
+      () => changeRozetkaOrderStatus(order.id, ROZETKA_ORDER_STATUSES.PROCESSING_BY_SELLER, accessToken),
+      logger, { orderId: order.id });
 
     return { success: true, orderId: order.id };
   } catch (error) {

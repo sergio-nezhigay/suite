@@ -28,10 +28,16 @@ const GADGET_APP_URL = 'https://novaposhta.gadget.app';
 
 
 
-export const run: ActionRun = async ({ params, record }) => {
-  applyParams(params, record);
-  await preventCrossShopDataAccess(params, record);
-  await save(record);
+export const run: ActionRun = async ({ params, record, logger }: any) => {
+  const start = performance.now();
+  try {
+    applyParams(params, record);
+    await preventCrossShopDataAccess(params, record);
+    await save(record);
+  } finally {
+    const duration_ms = Math.round(performance.now() - start);
+    logger?.info({ stage: 'shopify_order_create', duration_ms, orderId: record.id }, 'shopify_order_create completed');
+  }
 };
 
 export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {

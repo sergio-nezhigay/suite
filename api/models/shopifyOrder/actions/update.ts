@@ -20,20 +20,26 @@ const RELEVANT_FIELDS = [
   // 'paymentGatewayNames',
 ];
 
-export const run = async ({ params, record }: any) => {
-  applyParams(params, record);
-  await preventCrossShopDataAccess(params, record);
+export const run = async ({ params, record, logger }: any) => {
+  const start = performance.now();
+  try {
+    applyParams(params, record);
+    await preventCrossShopDataAccess(params, record);
 
-  // Skip the DB write if none of the relevant fields changed
-  const hasRelevantChange = RELEVANT_FIELDS.some((field) =>
-    record.changed(field)
-  );
+    // Skip the DB write if none of the relevant fields changed
+    const hasRelevantChange = RELEVANT_FIELDS.some((field) =>
+      record.changed(field)
+    );
 
-  if (!hasRelevantChange) {
-    return;
+    if (!hasRelevantChange) {
+      return;
+    }
+
+    await save(record);
+  } finally {
+    const duration_ms = Math.round(performance.now() - start);
+    logger?.info({ stage: 'shopify_order_update', duration_ms, orderId: record.id }, 'shopify_order_update completed');
   }
-
-  await save(record);
 };
 
 export const options: ActionOptions = { actionType: 'update' };

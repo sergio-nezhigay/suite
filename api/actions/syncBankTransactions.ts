@@ -1,6 +1,7 @@
 import { ActionOptions } from 'gadget-server';
 import * as crypto from 'crypto';
 import { fetchPrivatBankTransactions, PrivatBankTransaction } from '../utilities/bank/fetchPrivatBankTransactions';
+import { timeIt } from 'api/utilities/timeIt';
 
 export const run = async ({
   params,
@@ -57,7 +58,12 @@ export const run = async ({
     syncStartDate.setDate(syncStartDate.getDate() - daysBack);
     // Debug: Log sync action details
     // Call the shared utility function instead of a separate action
-    const fetchResult = await fetchPrivatBankTransactions({ config, daysBack });
+    const fetchResult = await timeIt(
+      'fetch_bank_transactions',
+      () => fetchPrivatBankTransactions({ config, daysBack }),
+      logger,
+      { days_back: daysBack }
+    );
 
     if (!fetchResult.success) {
       const errorMsg = `Failed to fetch transactions: ${fetchResult.message}`;
@@ -165,6 +171,9 @@ export const run = async ({
     }
 
     // Process each valid transaction
+    let totalDbWriteMs = 0;
+    const loopStart = performance.now();
+    await timeIt('process_transactions_loop', async () => {
     for (const transaction of validTransactions) {
       try {
         // 1. Create robust external ID
@@ -350,7 +359,8 @@ export const run = async ({
 
         // 7. Create the bank transaction record with proper error handling
         try {
-          const newTransaction = await api.bankTransaction.create({
+          const dbWriteStart = performance.now();
+          const newTransaction = await timeIt('db_write_transaction', () => api.bankTransaction.create({
             externalId: externalId.trim(),
             transactionDateTime: transactionDateTime,
             amount: amount,
@@ -363,7 +373,8 @@ export const run = async ({
             rawData: transaction, // Store the complete original transaction data
             status: 'processed',
             syncedAt: syncStartTime,
-          });
+          }), logger, { externalId });
+          totalDbWriteMs += Math.round(performance.now() - dbWriteStart);
           totalCreated++;
         } catch (createError) {
           const createErrorMessage = createError instanceof Error
@@ -422,6 +433,8 @@ export const run = async ({
         totalErrors++;
       }
     }
+    }, logger, { total_fetched: validTransactions.length });
+    const loop_duration_ms = Math.round(performance.now() - loopStart);
 
     const syncEndTime = new Date();
     const syncDuration = syncEndTime.getTime() - syncStartTime.getTime();
@@ -436,6 +449,15 @@ export const run = async ({
       duration: `${syncDuration}ms`,
       period: fetchResult.period,
     };
+
+    logger.info({
+      stage: 'sync_summary',
+      total_processed: totalProcessed,
+      total_created: totalCreated,
+      total_duplicates: totalDuplicates,
+      loop_duration_ms,
+      avg_db_write_ms: totalCreated > 0 ? Math.round(totalDbWriteMs / totalCreated) : 0,
+    }, 'Sync summary');
 
     logger.info('Bank transaction sync completed', summary);
 

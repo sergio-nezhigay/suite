@@ -6,6 +6,7 @@ import {
   EXCLUDED_PAYMENT_CODES,
   NOVA_POSHTA_ACCOUNT,
 } from '../utilities/fiscal/paymentConstants';
+import { timeIt } from 'api/utilities/timeIt';
 
 // Helper function to extract payment code from counterparty account
 function extractPaymentCodeFromAccount(account: string): string | null {
@@ -128,8 +129,8 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     }
     // Initialize Checkbox service
     const checkboxService = new CheckboxService();
-    await checkboxService.signIn();
-    await checkboxService.ensureShiftOpen();
+    await timeIt('checkbox_signin', () => checkboxService.signIn(), logger);
+    await timeIt('checkbox_ensure_shift', () => checkboxService.ensureShiftOpen(), logger);
 
     // Require orderData for automatic check creation
     // The frontend provides orderData with pre-calculated AI variants
@@ -149,7 +150,8 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     );
 
     // Create the sell receipt
-    const receipt = await checkboxService.createSellReceipt(receiptBody);
+    const receipt = await timeIt('checkbox_create_receipt',
+      () => checkboxService.createSellReceipt(receiptBody), logger, { orderId: order.id });
     // Update bank transaction with check information
     const checkIssuedAt = new Date();
     await api.bankTransaction.update(bankTransaction.id, {
@@ -201,6 +203,7 @@ Note: Payment verification was successful, check creation can be done manually`;
 import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
 
 export const run = async ({ params, api, connections, logger }: any) => {
+  const actionStart = performance.now();
   try {
     const { orderIds, autoCreateChecks = true, orderData } = params;
     if (orderData) {
@@ -220,16 +223,20 @@ export const run = async ({ params, api, connections, logger }: any) => {
     });
 
     // Check for existing verifications using bankTransaction.matchedOrderId
-    const existingMatches = await api.bankTransaction.findMany({
-      filter: { matchedOrderId: { in: numericOrderIds } },
-      select: {
-        id: true,
-        matchedOrderId: true,
-        checkIssuedAt: true,
-        checkReceiptId: true,
-        checkSkipReason: true,
-      },
-    });
+    const existingMatches = await timeIt<any[]>('query_existing_matches',
+      () => api.bankTransaction.findMany({
+        filter: { matchedOrderId: { in: numericOrderIds } },
+        select: {
+          id: true,
+          matchedOrderId: true,
+          checkIssuedAt: true,
+          checkReceiptId: true,
+          checkSkipReason: true,
+        },
+      }),
+      logger,
+      { order_count: orderIds.length }
+    );
 
     // Create a set of already matched bankTransactionIds to avoid duplicates
     const matchedTransactionIds = new Set(
@@ -241,22 +248,25 @@ export const run = async ({ params, api, connections, logger }: any) => {
     });
 
     // Fetch selected orders
-    const orders = await api.shopifyOrder.findMany({
-      filter: { id: { in: numericOrderIds } },
-      select: {
-        id: true,
-        name: true,
-        totalPriceSet: true,
-        currentTotalPriceSet: true,
-        createdAt: true,
-        financialStatus: true,
-        shopId: true,
-      },
-    });
+    const orders = await timeIt<any[]>('query_shopify_orders',
+      () => api.shopifyOrder.findMany({
+        filter: { id: { in: numericOrderIds } },
+        select: {
+          id: true,
+          name: true,
+          totalPriceSet: true,
+          currentTotalPriceSet: true,
+          createdAt: true,
+          financialStatus: true,
+          shopId: true,
+        },
+      }),
+      logger
+    );
 
     // Refresh bank data since last sync, then fetch recent transactions
     try {
-      await refreshBankDataSinceLastSync(api);
+      await timeIt('refresh_bank_data', () => refreshBankDataSinceLastSync(api), logger);
     } catch (refreshError) {
       logger.warn({ err: refreshError }, 'Bank data refresh failed');
     }
@@ -264,25 +274,29 @@ export const run = async ({ params, api, connections, logger }: any) => {
     // Fetch recent bank transactions (last 10 days)
     const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
 
-    const transactions = await api.bankTransaction.findMany({
-      filter: {
-        transactionDateTime: { greaterThan: tenDaysAgo },
-        type: { equals: 'income' }, // Only incoming payments
-        matchedOrderId: { equals: null }, // Exclude already matched payments
-      },
-      sort: { transactionDateTime: 'Descending' }, // Most recent first
-      first: 250,
-      select: {
-        id: true,
-        amount: true,
-        transactionDateTime: true,
-        description: true,
-      },
-    });
+    const transactions = await timeIt<any[]>('query_bank_transactions',
+      () => api.bankTransaction.findMany({
+        filter: {
+          transactionDateTime: { greaterThan: tenDaysAgo },
+          type: { equals: 'income' }, // Only incoming payments
+          matchedOrderId: { equals: null }, // Exclude already matched payments
+        },
+        sort: { transactionDateTime: 'Descending' }, // Most recent first
+        first: 250,
+        select: {
+          id: true,
+          amount: true,
+          transactionDateTime: true,
+          description: true,
+        },
+      }),
+      logger
+    );
 
     // Simple matching logic: exact amount + within 7 days
-    const results = [];
+    const results: any[] = [];
 
+    await timeIt('order_matching_loop', async () => {
     for (const order of orders) {
       // Use currentTotalPriceSet which excludes deleted/refunded items
       const orderAmount = parseFloat(
@@ -488,6 +502,16 @@ export const run = async ({ params, api, connections, logger }: any) => {
         })),
       });
     }
+    }, logger, { orders_count: orders.length, transactions_count: transactions.length });
+
+    logger.info({
+      stage: 'verify_summary',
+      orders_checked: orders.length,
+      orders_matched: results.filter((r: any) => r.matchCount > 0).length,
+      checks_created: results.filter((r: any) => r.checkIssued).length,
+      checks_skipped: results.filter((r: any) => r.checkSkipped).length,
+      total_duration_ms: Math.round(performance.now() - actionStart),
+    }, 'Verify summary');
 
     return {
       success: true,
