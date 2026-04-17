@@ -18,8 +18,8 @@ export async function run({ params, logger, api, connections }) {
     //models: syncOnlyModels,
     models: [
       'shopifyFulfillment',
-      'shopifyFulfillmentEvent',
-      'shopifyFulfillmentLineItem',
+      // 'shopifyFulfillmentEvent',
+      // 'shopifyFulfillmentLineItem',
       'shopifyOrder',
     ],
   });
