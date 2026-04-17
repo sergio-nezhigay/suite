@@ -1,4 +1,4 @@
-import { applyParams, save, ActionOptions, UpdateShopifyCustomerAddressActionContext } from "gadget-server";
+import { applyParams, ActionOptions, UpdateShopifyCustomerAddressActionContext } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
 
 /**
@@ -7,7 +7,6 @@ import { preventCrossShopDataAccess } from "gadget-server/shopify";
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
-  await save(record);
 };
 
 /**

@@ -7,6 +7,9 @@ import { preventCrossShopDataAccess } from "gadget-server/shopify";
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
+  const RELEVANT_FIELDS = ['firstName', 'lastName', 'email', 'phone'];
+  const hasRelevantChange = RELEVANT_FIELDS.some(field => record.changed(field));
+  if (!hasRelevantChange) return;
   await save(record);
 };
 
