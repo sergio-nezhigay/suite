@@ -1,13 +1,5 @@
-import { applyParams, ActionOptions } from "gadget-server";
-import { preventCrossShopDataAccess } from "gadget-server/shopify";
+import { ActionOptions } from "gadget-server";
 
-export const run: ActionRun = async ({ params, record, logger, api, connections }) => {
-  applyParams(params, record);
-  await preventCrossShopDataAccess(params, record);
-};
-
-export const onSuccess: ActionOnSuccess = async ({ params, record, logger, api, connections }) => {
-  // Your logic goes here
-};
+export const run: ActionRun = async () => {};
 
 export const options: ActionOptions = { actionType: "update" };
