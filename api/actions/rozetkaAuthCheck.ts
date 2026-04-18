@@ -27,10 +27,6 @@ export const run: ActionRun = async ({ logger }) => {
 
 export const options: ActionOptions = {
   triggers: {
-    scheduler: [
-      {
-        cron: '0 */6 * * *',
-      },
-    ],
+    scheduler: [],
   },
 };

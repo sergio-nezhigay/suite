@@ -42,67 +42,6 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
-        shopifyCompany: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCompanyAddress: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCompanyContact: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCompanyContactRole: {
-          read: true,
-          actions: {
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCompanyContactRoleAssignment: {
-          read: true,
-          actions: {
-            create: true,
-          },
-        },
-        shopifyCompanyLocation: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCustomer: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyCustomerAddress: {
-          read: true,
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
         shopifyFile: {
           read: {
             filter: "accessControl/filters/shopify/shopifyFile.gelly",
@@ -146,28 +85,6 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
-        shopifyFulfillmentOrder: {
-          read: {
-            filter:
-              "accessControl/filters/shopify/shopifyFulfillmentOrder.gelly",
-          },
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-        shopifyFulfillmentOrderLineItem: {
-          read: {
-            filter:
-              "accessControl/filters/shopify/shopifyFulfillmentOrderLineItem.gelly",
-          },
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
         shopifyGdprRequest: {
           read: {
             filter:
@@ -176,12 +93,6 @@ export const permissions: GadgetPermissions = {
           actions: {
             create: true,
             update: true,
-          },
-        },
-        shopifyLocation: {
-          read: {
-            filter:
-              "accessControl/filters/shopify/shopifyLocation.gelly",
           },
         },
         shopifyOrder: {
