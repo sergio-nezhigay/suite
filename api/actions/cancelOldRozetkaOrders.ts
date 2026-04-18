@@ -156,6 +156,6 @@ function calculateAgeInDays(createdAt: string): number {
 
 export const options = {
   triggers: {
-    scheduler: [{ cron: '0 10 * * *' }], // Runs daily at 10 AM
+    api: true,
   },
 };

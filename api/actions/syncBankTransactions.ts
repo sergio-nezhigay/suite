@@ -503,10 +503,6 @@ export const params = {
 
 export const options = {
   triggers: {
-    scheduler: [
-      { cron: '0 10 * * *' }, // 13:00 Ukraine time (10:00 UTC)
-      { cron: '0 12 * * *' }, // 15:00 Ukraine time (12:00 UTC)
-      { cron: '0 14 * * *' }, // 17:00 Ukraine time (14:00 UTC)
-    ],
+    api: true,
   },
 };
