@@ -323,15 +323,6 @@ export const permissions: GadgetPermissions = {
     },
     "shopify-storefront-customers": {
       storageKey: "Role-Shopify-Customer",
-      models: {
-        shopifyCustomerAddress: {
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
-      },
       actions: {
         getAllPayments: true,
       },

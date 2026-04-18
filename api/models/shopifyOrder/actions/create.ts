@@ -4,29 +4,6 @@ import {
   save,
   ActionOptions,
 } from 'gadget-server';
-import { getShopifyClient, updateMetafield } from 'utilities';
-
-interface Address {
-  address1: string;
-  city: string;
-}
-
-interface Warehouse {
-  description: string;
-  cityDescription: string;
-  ref: string;
-  cityRef: string;
-  settlementAreaDescription?: string;
-}
-
-interface FindBestWarehouseResult {
-  bestWarehouse: Warehouse;
-  matchProbability: number;
-}
-
-const GADGET_APP_URL = 'https://novaposhta.gadget.app';
-
-
 
 export const run: ActionRun = async ({ params, record, logger }: any) => {
   const start = performance.now();
@@ -45,16 +22,8 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
     const orderId = `gid://shopify/Order/${record.id}`;
 
     // Step 1: Log before extracting payment method
-    const fullOrder = await api.shopifyOrder.findOne(record.id, {
-      select: {
-        id: true,
-        paymentGatewayNames: true,
-      },
-    });
-    // Extract payment method
-
-    const gateways = Array.isArray(fullOrder.paymentGatewayNames)
-      ? fullOrder.paymentGatewayNames
+    const gateways = Array.isArray(record.paymentGatewayNames)
+      ? record.paymentGatewayNames
       : [];
 
     // Check if any gateway contains prepayment indicators
@@ -69,8 +38,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
     const paymentMethod = isPrepaid
       ? 'Передплата безготівка'
       : 'Накладений платіж';
-    // Process shipping address if available
-    const address = record.shippingAddress;
     let metafieldsToUpdate = [
       {
         ownerId: orderId,
@@ -80,44 +47,6 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
         type: 'single_line_text_field',
       },
     ];
-
-    if (address && typeof address === 'object' && !Array.isArray(address)) {
-      const typedAddress = address as any;
-      const shippingAddressString = `${typedAddress.address1 || ''}, ${
-        typedAddress.city || ''
-      }`;
-
-      // Find best warehouse (your existing logic)
-      const { bestWarehouse, matchProbability } = await findBestWarehouse({
-        shippingAddress: typedAddress,
-      });
-
-      // Add warehouse metafield
-      metafieldsToUpdate.push({
-        ownerId: orderId,
-        namespace: 'nova_poshta',
-        key: 'recepient_warehouse',
-        value: JSON.stringify({
-          warehouseDescription: bestWarehouse.description,
-          cityDescription: bestWarehouse.cityDescription,
-          warehouseRef: bestWarehouse.ref,
-          cityRef: bestWarehouse.cityRef,
-          settlementAreaDescription:
-            bestWarehouse.settlementAreaDescription || '',
-          matchProbability,
-        }),
-        type: 'json',
-      });
-
-      // Add shipping address as a separate metafield
-      metafieldsToUpdate.push({
-        ownerId: orderId,
-        namespace: 'custom',
-        key: 'processed_shipping_address',
-        value: shippingAddressString,
-        type: 'single_line_text_field',
-      });
-    }
 
     // Step 2: Log after preparing metafields
     // Step 3: Log before enqueuing metafields update
@@ -159,20 +88,3 @@ export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
 export const options: ActionOptions = {
   actionType: 'create',
 };
-
-async function findBestWarehouse({
-  shippingAddress,
-}: {
-  shippingAddress: Address;
-}): Promise<FindBestWarehouseResult> {
-  return {
-    bestWarehouse: {
-      description: 'Unknown Warehouse',
-      cityDescription: shippingAddress.city || 'Unknown City',
-      ref: 'N/A',
-      cityRef: 'N/A',
-      settlementAreaDescription: 'N/A',
-    },
-    matchProbability: 0,
-  };
-}
