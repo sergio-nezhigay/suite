@@ -42,16 +42,6 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
-        shopifyFile: {
-          read: {
-            filter: "accessControl/filters/shopify/shopifyFile.gelly",
-          },
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
         shopifyFulfillment: {
           read: {
             filter:
@@ -241,16 +231,6 @@ export const permissions: GadgetPermissions = {
     unauthenticated: {
       storageKey: "unauthenticated",
       models: {
-        shopifyFile: {
-          read: {
-            filter: "accessControl/filters/shopify/shopifyFile.gelly",
-          },
-          actions: {
-            create: true,
-            delete: true,
-            update: true,
-          },
-        },
         smsTemplates: {
           read: true,
           actions: {
