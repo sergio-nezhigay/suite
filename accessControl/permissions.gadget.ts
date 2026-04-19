@@ -28,6 +28,14 @@ export const permissions: GadgetPermissions = {
             update: true,
           },
         },
+        feedFile: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         shopifyBulkOperation: {
           read: {
             filter:
@@ -224,6 +232,16 @@ export const permissions: GadgetPermissions = {
     },
     "shopify-storefront-customers": {
       storageKey: "Role-Shopify-Customer",
+      models: {
+        feedFile: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+      },
       actions: {
         getAllPayments: true,
       },
@@ -231,7 +249,28 @@ export const permissions: GadgetPermissions = {
     unauthenticated: {
       storageKey: "unauthenticated",
       models: {
+        feedFile: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
         smsTemplates: {
+          read: true,
+          actions: {
+            create: true,
+            delete: true,
+            update: true,
+          },
+        },
+      },
+    },
+    "Role A": {
+      storageKey: "DmAj5tWOkOKQ",
+      models: {
+        feedFile: {
           read: true,
           actions: {
             create: true,
