@@ -4,7 +4,11 @@ const route: RouteHandler<{ Params: { name: string } }> = async ({ request, repl
   const { name } = request.params;
 
   const feeds: Record<string, string> = {
+    // https://admin-action-block.gadget.app/feed-files/merchantfeed1.csv
     "merchantfeed1.csv": "https://cdn.shopify.com/s/files/1/0868/0462/7772/files/merchantfeed1.csv",
+    // https://admin-action-block.gadget.app/feed-files/remarketing.csv
+    "remarketing.csv":   "https://cdn.shopify.com/s/files/1/0868/0462/7772/files/remarketing.csv",
+    // https://admin-action-block.gadget.app/feed-files/rozetkaFeed.xml
     "rozetkaFeed.xml":   "https://cdn.shopify.com/s/files/1/0868/0462/7772/files/rozetkaFeed.xml",
   };
 
