@@ -98,7 +98,7 @@ function SendExtension() {
     recipientEmail = 'deni-ua@ukr.net';
     shouldAutoTag = true;
     shouldSendEmail = true;
-    tagStrategy = 'Декларації';
+    tagStrategy = COMPLETED_TAG;
   } else if (firstOrderTag.includes('РІ')) {
     // Rizka supplier
     spreadsheetId = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
@@ -455,11 +455,6 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
 
 // Tag strategies
 const COMPLETED_TAG = 'Завершені';
-
-function getEasySupplierTag(order: OrderResponse['nodes'][number]): string {
-  const matchesPattern = /^№\d{9}$/.test(order.name);
-  return matchesPattern ? 'Декларації' : 'Завершені';
-}
 
 // Reusable auto-tagging function
 async function autoTagProcessedOrders(
