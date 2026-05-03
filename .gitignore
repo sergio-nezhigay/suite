@@ -9,3 +9,5 @@ npm-cache/
 **/.DS_Store
 .shopify
 nul
+extensions/*/dist/
+.shopify-cli-home/
