@@ -20,7 +20,7 @@ const route: RouteHandler = async (request, reply) => {
     // Check if we should send a Rozetka message
     const shouldSendRozetkaMessage =
       orderName &&
-      /^№\d{9}$/.test(orderName) &&
+      /^\d{9}$/.test(orderName.trim()) &&
       message.toLowerCase().includes('peredzvonit');
 
     if (shouldSendRozetkaMessage) {

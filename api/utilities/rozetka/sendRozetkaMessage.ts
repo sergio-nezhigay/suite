@@ -108,21 +108,21 @@ async function createMessage(
 
 /**
  * Send a predefined message to a Rozetka order chat
- * @param orderName - The order name (e.g., "№865770877")
+ * @param orderName - The order name (e.g., "865770877")
  * @returns Promise<boolean> - True if message was sent successfully
  */
 export async function sendRozetkaOrderMessage(
   orderName: string
 ): Promise<boolean> {
   try {
-    // Extract numeric order ID from order name (e.g., "№865770877" -> "865770877")
-    const orderIdMatch = orderName.match(/\d{9}/);
-    if (!orderIdMatch) {
-      logger.error({ orderName }, '[Rozetka] Invalid order name format. Expected format: №XXXXXXXXX');
+    const normalizedOrderName = orderName.trim();
+    // Require exact 9-digit Rozetka order ID format
+    if (!/^\d{9}$/.test(normalizedOrderName)) {
+      logger.error({ orderName }, '[Rozetka] Invalid order name format. Expected format: XXXXXXXXX');
       return false;
     }
 
-    const orderId = orderIdMatch[0];
+    const orderId = normalizedOrderName;
     // Get access token
     const accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {
