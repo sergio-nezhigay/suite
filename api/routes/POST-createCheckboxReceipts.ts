@@ -6,7 +6,6 @@ import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/update
 export default async function route({
   request,
   reply,
-  api,
   connections,
   logger,
 }: RouteContext) {
@@ -24,6 +23,11 @@ export default async function route({
 
     // Step 2: Ensure shift is open
     await checkboxService.ensureShiftOpen();
+
+    const shopId = connections.shopify.currentShopId?.toString();
+    if (!shopId) {
+      return reply.code(400).send({ error: 'Shop not authenticated' });
+    }
 
     const results = [];
 
@@ -48,19 +52,10 @@ export default async function route({
           continue;
         }
 
-        // Fetch basic order details for shop ID
-        const order = await api.shopifyOrder.findFirst({
-          filter: { id: { equals: numericOrderId } },
-        });
-
-        if (!order) {
-          results.push({ orderId: orderData.orderId, error: 'Order not found' });
-          continue;
-        }
-        // Transform order to Checkbox format using frontend data
+        // Transform order to Checkbox format using frontend data (no Gadget shopifyOrder query needed)
         const receiptBody = OrderToReceiptTransformer.transformOrderFromData(
           orderData,
-          order,
+          null,
           trackingNumber
         );
 
@@ -77,14 +72,14 @@ Created: ${new Date().toISOString()}`;
         await updateOrderPaymentStatus(
           connections,
           numericOrderId,
-          (order as any).shopId,
+          shopId,
           {
             note: receiptNote,
           }
         );
         results.push({
           orderId: orderData.orderId,
-          orderName: (order as any).name,
+          orderName: orderData.orderName || orderData.orderId,
           success: true,
           receiptId: receipt.id,
           fiscalCode: receipt.fiscal_code,

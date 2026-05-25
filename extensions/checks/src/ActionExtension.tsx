@@ -274,6 +274,7 @@ function App() {
       // Prepare order data with tracking numbers and product variants
       const orderData = orders.map(order => ({
         orderId: order.id,
+        orderName: order.name,
         trackingNumber: getTrackingNumber(order.fulfillments),
         customer: order.customer?.displayName,
         lineItems: order.lineItems.nodes.map(item => ({
