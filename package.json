@@ -9,7 +9,7 @@
     "dev": "shopify app dev",
     "info": "shopify app info",
     "generate": "shopify app generate",
-    "deploy": "shopify app deploy --force -c shopify.app.toml",
+    "deploy": "shopify app deploy -c shopify.app.toml",
     "ggt": "npx ggt dev ./ --app=admin-action-block --env=development",
     "build": "NODE_ENV=production vite build"
   },

@@ -38,6 +38,12 @@ interface LineItem {
 interface Order {
   id: string;
   name: string;
+  createdAt: string;
+  currentTotalPriceSet: {
+    shopMoney: {
+      amount: string;
+    };
+  };
   lineItems: {
     nodes: LineItem[];
   };
@@ -48,7 +54,6 @@ interface VerificationResult {
   orderName: string;
   orderAmount: number;
   orderDate: string;
-  financialStatus: string;
   matchCount: number;
   // Check information
   checkIssued?: boolean;
@@ -123,6 +128,12 @@ function App() {
             ... on Order {
               id
               name
+              createdAt
+              currentTotalPriceSet {
+                shopMoney {
+                  amount
+                }
+              }
               lineItems(first: 10) {
                 nodes {
                   id
@@ -258,17 +269,18 @@ function App() {
     try {
       console.log('Verifying payments for orders:', selectedOrderIds);
 
-      // Prepare order data with pre-calculated variants (same as checks extension)
       const orderData = orders.map(order => ({
         id: order.id,
         name: order.name,
+        createdAt: order.createdAt,
+        totalAmount: parseFloat(order.currentTotalPriceSet?.shopMoney?.amount || '0'),
         lineItems: order.lineItems.nodes.map(item => ({
           id: item.id,
           title: item.title,
           quantity: item.currentQuantity,
           price: formatPrice(item.discountedUnitPriceSet.shopMoney.amount),
-          variant: bestVariants[item.title] || item.title // Use title as key, not id
-        }))
+          variant: bestVariants[item.title] || item.title,
+        })),
       }));
 
       console.log('Sending order data with variants:', orderData);
@@ -351,9 +363,9 @@ function App() {
       primaryAction={
         <Button
           onPress={handleVerifyPayments}
-          disabled={isVerifying || selectedOrderIds.length === 0 || loading || variantsLoading}
+          disabled={isVerifying || selectedOrderIds.length === 0 || loading}
         >
-          {isVerifying ? 'Verifying...' : variantsLoading ? 'Loading variants...' : 'Check Payments'}
+          {isVerifying ? 'Verifying...' : 'Check Payments'}
         </Button>
       }
       secondaryAction={<Button onPress={close}>Close</Button>}
@@ -441,10 +453,7 @@ function App() {
                     {getCheckStatusBadge(result)}
                   </InlineStack>
 
-                  <Text>
-                    Amount: ₴{result.orderAmount.toFixed(2)} | Status:{' '}
-                    {result.financialStatus}
-                  </Text>
+                  <Text>Amount: ₴{result.orderAmount.toFixed(2)}</Text>
 
                   {result.checkIssued && (
                     <BlockStack>

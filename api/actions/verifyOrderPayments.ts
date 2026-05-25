@@ -206,21 +206,19 @@ export const run = async ({ params, api, connections, logger }: any) => {
   const actionStart = performance.now();
   try {
     const { orderIds, autoCreateChecks = true, orderData } = params;
-    if (orderData) {
-    }
 
     if (!orderIds || !Array.isArray(orderIds)) {
       throw new Error('orderIds parameter is required and must be an array');
     }
+    if (!orderData || !Array.isArray(orderData) || orderData.length === 0) {
+      throw new Error('orderData parameter is required');
+    }
 
-    // Extract numeric IDs from Shopify GID format
-    // Convert "gid://shopify/Order/123456" to "123456"
-    const numericOrderIds = orderIds.map((id: string) => {
-      if (id.startsWith('gid://shopify/Order/')) {
-        return id.split('/').pop(); // Extract the last part after the last '/'
-      }
-      return id; // If it's already numeric, return as-is
-    });
+    const numericOrderIds = orderIds.map((id: string) =>
+      id.startsWith('gid://shopify/Order/') ? id.split('/').pop() : id
+    );
+
+    logger.info({ numericOrderIds, orderDataCount: orderData.length }, '[DEBUG] verifyOrderPayments received');
 
     // Check for existing verifications using bankTransaction.matchedOrderId
     const existingMatches = await timeIt<any[]>('query_existing_matches',
@@ -247,21 +245,28 @@ export const run = async ({ params, api, connections, logger }: any) => {
     existingMatches.forEach((match: any) => {
     });
 
-    // Fetch selected orders
-    const orders = await timeIt<any[]>('query_shopify_orders',
-      () => api.shopifyOrder.findMany({
-        filter: { id: { in: numericOrderIds } },
-        select: {
-          id: true,
-          name: true,
-          totalPriceSet: true,
-          currentTotalPriceSet: true,
-          createdAt: true,
-          financialStatus: true,
-          shopId: true,
-        },
-      }),
-      logger
+    // Use shopifyShop to get the shopId (route handler has no Shopify session)
+    const shop = await api.shopifyShop.findFirst({ select: { id: true } });
+    const shopId = shop?.id;
+    logger.info({ shopId }, '[DEBUG] resolved shopId');
+
+    // Build orders from frontend-provided data (avoids multi-tenant isolation issue
+    // where api.shopifyOrder.findMany returns 0 results without a Shopify session)
+    const orders = orderData.map((od: any) => {
+      const numericId = od.id?.startsWith('gid://shopify/Order/')
+        ? od.id.split('/').pop()
+        : od.id;
+      return {
+        id: numericId,
+        name: od.name,
+        createdAt: od.createdAt,
+        orderAmount: od.totalAmount ?? 0,
+        shopId,
+      };
+    });
+    logger.info(
+      { orders: orders.map((o: any) => ({ id: o.id, amount: o.orderAmount })) },
+      '[DEBUG] orders built from frontend data'
     );
 
     // Refresh bank data since last sync, then fetch recent transactions
@@ -293,16 +298,19 @@ export const run = async ({ params, api, connections, logger }: any) => {
       logger
     );
 
+    logger.info(
+      { txCount: transactions.length, sampleAmounts: transactions.slice(0, 5).map((t: any) => t.amount) },
+      '[DEBUG] transactions fetched'
+    );
+
     // Simple matching logic: exact amount + within 7 days
     const results: any[] = [];
 
     await timeIt('order_matching_loop', async () => {
     for (const order of orders) {
-      // Use currentTotalPriceSet which excludes deleted/refunded items
-      const orderAmount = parseFloat(
-        order.currentTotalPriceSet?.shop_money?.amount || '0'
-      );
+      const orderAmount = order.orderAmount;
       const orderDate = new Date(order.createdAt);
+      logger.info({ orderId: order.id, orderName: order.name, orderAmount }, '[DEBUG] processing order');
 
       // Check if this order is already verified (has a matched bank transaction)
       const existingMatch = existingMatches.find(
@@ -336,7 +344,6 @@ export const run = async ({ params, api, connections, logger }: any) => {
           orderName: order.name || '',
           orderAmount,
           orderDate: order.createdAt,
-          financialStatus: order.financialStatus || '',
           matchCount: 1,
           checkIssued: !!(existingMatch.checkReceiptId || existingMatch.checkIssuedAt),
           checkIssuedAt: existingMatch.checkIssuedAt,
@@ -407,9 +414,6 @@ export const run = async ({ params, api, connections, logger }: any) => {
             )}%\n\nVerified at: ${new Date().toISOString()}`,
             markAsPaid: true,
           });
-          // 🔥 Fix: Instantly update the local object so the UI JSON response shows 'paid' immediately
-          // instead of returning the stale 'pending' status fetched at the start of the action.
-          order.financialStatus = 'paid';
 
           // Create automatic check for verified payment (if enabled)
           if (autoCreateChecks) {
@@ -486,7 +490,6 @@ export const run = async ({ params, api, connections, logger }: any) => {
         orderName: order.name || '',
         orderAmount: orderAmount,
         orderDate: order.createdAt,
-        financialStatus: order.financialStatus || '',
         matchCount: matches.length,
         // Add check information
         checkIssued: checkInfo.checkIssued,
@@ -536,11 +539,14 @@ export const params = {
   autoCreateChecks: { type: 'boolean', default: true, required: false },
   orderData: {
     type: 'array',
+    required: true,
     items: {
       type: 'object',
       properties: {
         id: { type: 'string' },
         name: { type: 'string' },
+        createdAt: { type: 'string' },
+        totalAmount: { type: 'number' },
         lineItems: {
           type: 'array',
           items: {
@@ -556,7 +562,6 @@ export const params = {
         },
       },
     },
-    required: false,
   },
 };
 
