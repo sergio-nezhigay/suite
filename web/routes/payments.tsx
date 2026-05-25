@@ -279,7 +279,7 @@ export default function Payments() {
         <Layout.Section>
           <Card>
             <Text as="p" variant="bodyMd">
-              This page shows all incoming payments from the last 7 days. Status indicators show which payments require fiscal checks and why some are excluded.
+              This page shows all incoming payments from the last 7 days. Status indicators show which payments require fiscal checks and why some are excluded
             </Text>
           </Card>
         </Layout.Section>

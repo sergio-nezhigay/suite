@@ -95,7 +95,7 @@ function App() {
     <BlockStack gap='large'>
       <Text>
         {customerPhone
-          ? `Телефон клієнта: ${customerPhone}`
+          ? `Телефон клієнта:: ${customerPhone}`
           : 'Телефон клієнта не знайдено'}
       </Text>
 

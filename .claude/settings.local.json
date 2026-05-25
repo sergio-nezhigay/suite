@@ -37,7 +37,14 @@
       "Bash(yarn typecheck:*)",
       "Bash(./node_modules/.bin/tsc:*)",
       "Bash(findstr:*)",
-      "Bash(npm install:*)"
+      "Bash(npm install:*)",
+      "Bash(npx shopify *)",
+      "Bash(awk '{print $1}')",
+      "Bash(xargs -I{} git show {}:extensions/sms-center/shopify.extension.toml)",
+      "Bash(xargs -I{} git show {}:extensions/send/shopify.extension.toml)",
+      "Bash(python -c \"import sys,json; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d, indent=2\\)\\)\")",
+      "Bash(yarn add *)",
+      "Bash(Remove-Item \"C:/projects/suite/shopify.app.admin-action-block.toml\" -ErrorAction SilentlyContinue)"
     ],
     "deny": [],
     "ask": []
