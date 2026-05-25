@@ -4,7 +4,7 @@ api_version = "2025-07"
 # Change the merchant-facing name of the extension in locales/en.default.json
 name = "t:name"
 handle = "send"
-uid = "8cfe8c51-a4e6-60d8-6e09-eb5fbca847ac1ee1bfeb"
+uid = "36077fa5-75ab-4a44-b3e4-88bac05ce49f"
 type = "ui_extension"
 
 

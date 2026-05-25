@@ -5,7 +5,7 @@ api_version = "2025-07"
 name = "t:name"
 handle = "nova-poshta"
 type = "ui_extension"
-uid = "d3bbee44-c5d6-85a3-9a4d-b9c75f9940434291457b"
+uid = "a06bbc41-af4c-47d4-bf53-f4696b7f35fe"
 
 # Only 1 target can be specified for each Admin block extension
 [[extensions.targeting]]

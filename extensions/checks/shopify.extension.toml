@@ -5,7 +5,7 @@ api_version = "2025-07"
 name = "t:name"
 handle = "Checks"
 type = "ui_extension"
-uid = "ac484b72-c0f6-1523-d893-b8d3e3bed5719b4beb14"
+uid = "ac484b72-c0f6-1523-d893-b8d3e3bed571"
 
 # Only 1 target can be specified for each Admin action extension
 [[extensions.targeting]]

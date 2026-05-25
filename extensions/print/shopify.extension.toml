@@ -3,7 +3,7 @@ api_version = "2025-07"
 [[extensions]]
 name = "print"
 handle = "print"
-uid = "26eab53e-5bcc-98f8-8d4e-53667e1bf67ceb5be4e8"
+uid = "78940e62-0e11-42c4-b17e-a530c6d4db06"
 type = "ui_extension"
 
 

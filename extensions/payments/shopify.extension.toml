@@ -5,7 +5,7 @@ api_version = "2025-07"
 name = "t:name"
 handle = "payments"
 type = "ui_extension"
-uid = "0f9c4d43-60ae-f68f-f9df-11b5fc9ac96a53435887"
+uid = "0f9c4d43-60ae-f68f-f9df-11b5fc9ac96a"
 
 # Only 1 target can be specified for each Admin action extension
 [[extensions.targeting]]
