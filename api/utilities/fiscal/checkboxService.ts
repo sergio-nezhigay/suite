@@ -142,7 +142,10 @@ export class CheckboxService {
   async ensureShiftOpen(): Promise<CheckboxShift> {
     try {
       const shift = await this.checkShift();
-      return shift;
+      if (shift.status === 'OPENED') {
+        return shift;
+      }
+      return await this.openShift();
     } catch {
       return await this.openShift();
     }
