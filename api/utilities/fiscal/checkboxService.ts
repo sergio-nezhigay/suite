@@ -111,7 +111,7 @@ export class CheckboxService {
     receiptBody: CheckboxReceiptBody
   ): Promise<CheckboxReceiptResponse> {
     return this.retryWithBackoff(async () => {
-      const response = await fetch(`${this.baseUrl}/np/ettn`, {
+      const response = await fetch(`${this.baseUrl}/ettn`, {
         method: 'POST',
         headers: {
           'X-License-Key': this.licenseKey,

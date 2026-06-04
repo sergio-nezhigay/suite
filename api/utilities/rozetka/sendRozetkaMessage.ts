@@ -31,13 +31,15 @@ interface CreateMessageResponse {
 const ROZETKA_MESSAGE_TEXT =
   'Не змогли додзвонитись до вас для підтвердження замовлення. Чи актуальне замовлення та указаний номер телефону ?';
 
+const AUTH_ERROR = Symbol('auth_error');
+
 /**
  * Get chat information for a Rozetka order
  */
 async function getOrderChat(
   orderId: string,
   accessToken: string
-): Promise<OrderChatResponse['content'] | null> {
+): Promise<OrderChatResponse['content'] | null | typeof AUTH_ERROR> {
   try {
     const response = await axios.get<OrderChatResponse>(
       `${ROZETKA_API_BASE_URL}/messages/${orderId}/order-chat`,
@@ -52,6 +54,9 @@ async function getOrderChat(
     if (response.data.success) {
       return response.data.content;
     } else {
+      if ((response.data as any).errors?.code === '1020') {
+        return AUTH_ERROR;
+      }
       logger.error({ orderId, responseData: response.data }, '[Rozetka] Failed to get chat info for order');
       return null;
     }
@@ -124,15 +129,21 @@ export async function sendRozetkaOrderMessage(
 
     const orderId = normalizedOrderName;
     // Get access token
-    const accessToken = await rozetkaTokenManager.getValidToken();
+    let accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {
       logger.error({ }, '[Rozetka] Failed to get access token');
       return false;
     }
 
     // Get chat information
-    const chatInfo = await getOrderChat(orderId, accessToken);
-    if (!chatInfo) {
+    let chatInfo = await getOrderChat(orderId, accessToken);
+    if (chatInfo === AUTH_ERROR) {
+      logger.warn({ orderId }, '[Rozetka] Token rejected (1020), refreshing and retrying');
+      await rozetkaTokenManager.invalidateToken();
+      accessToken = await rozetkaTokenManager.getValidToken();
+      chatInfo = await getOrderChat(orderId, accessToken);
+    }
+    if (!chatInfo || chatInfo === AUTH_ERROR) {
       logger.error({ orderId }, '[Rozetka] Failed to get chat info for order');
       return false;
     }
