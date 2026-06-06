@@ -6,15 +6,10 @@ export const settings: GadgetSettings = {
   plugins: {
     connections: {
       shopify: {
-        apiVersion: "2025-07",
+        apiVersion: "2026-04",
         enabledModels: [],
         type: "partner",
-        scopes: [
-          "write_orders",
-          "write_products",
-          "read_orders",
-          "read_products",
-        ],
+        scopes: ["write_orders", "write_products"],
         customerAuthenticationEnabled: false,
       },
       openai: true,

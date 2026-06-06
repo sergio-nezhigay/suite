@@ -18,6 +18,7 @@ export const schema: GadgetModel = {
   },
   shopify: {
     fields: [
+      "billingAddress",
       "buyerExperienceConfiguration",
       "company",
       "currency",

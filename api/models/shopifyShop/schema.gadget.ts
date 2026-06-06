@@ -131,6 +131,7 @@ export const schema: GadgetModel = {
       "richTextEditorUrl",
       "setupRequired",
       "shipsToCountries",
+      "shopAddress",
       "shopOwner",
       "shopifyCreatedAt",
       "shopifyUpdatedAt",

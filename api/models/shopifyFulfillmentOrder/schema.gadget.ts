@@ -7,6 +7,11 @@ export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-FulfillmentOrder",
   fields: {
+    assignedLocation: {
+      type: "json",
+      storageKey:
+        "ModelField-DataModel-Shopify-FulfillmentOrder-assigned_location::FieldStorageEpoch-DataModel-Shopify-FulfillmentOrder-assigned_location-initial",
+    },
     deliveryMethod: {
       type: "json",
       storageKey:
@@ -40,7 +45,6 @@ export const schema: GadgetModel = {
   },
   shopify: {
     fields: [
-      "assignedLocation",
       "fulfillAt",
       "fulfillBy",
       "fulfillmentOrderLineItems",
@@ -49,6 +53,7 @@ export const schema: GadgetModel = {
       "order",
       "orderName",
       "orderProcessedAt",
+      "remainingLineItemsWeight",
       "requestStatus",
       "shop",
       "shopifyCreatedAt",
