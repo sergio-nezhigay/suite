@@ -9,6 +9,7 @@ type StagedTarget = {
 type FileNode = {
   id: string;
   alt: string | null;
+  url?: string;
 };
 
 export async function uploadFile(
@@ -137,6 +138,9 @@ async function createFileInShopify(
           files {
             id
             alt
+            ... on GenericFile {
+              url
+            }
           }
           userErrors {
             message

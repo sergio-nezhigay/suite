@@ -10,7 +10,7 @@ handle = "admin-64"
 dev_store_url = "c2da09-15.myshopify.com"
 
 [webhooks]
-api_version = "2025-07"
+api_version = "2026-04"
 
 [access_scopes]
 # Learn more at https://shopify.dev/docs/apps/tools/cli/configuration#access_scopes

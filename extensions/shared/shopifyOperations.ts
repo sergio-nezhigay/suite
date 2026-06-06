@@ -241,13 +241,6 @@ export async function updateOrdersTags({
   value: string;
   orderIds: string[];
 }): Promise<string[]> {
-  console.log(
-    'Starting updateOrdersTags with value:',
-    value,
-    'and orderIds:',
-    orderIds
-  );
-
   if (value === 'Перевірити оплату') {
     const orderPromises = orderIds.map(async (id) => {
       const query = `#graphql
@@ -278,10 +271,8 @@ export async function updateOrdersTags({
   }
 
   const currentTags = await getOrdersTags(orderIds);
-  console.log('Current tags for the orders:', currentTags);
 
   if (currentTags.length > 0) {
-    console.log('Removing current tags from orders...');
     const removeTagsPromises = orderIds.map((id) => {
       const removeTagsMutation = `#graphql
           mutation RemoveTags($id: ID!, $tags: [String!]!) {
@@ -292,7 +283,6 @@ export async function updateOrdersTags({
               }
             }
           }`;
-      console.log(`Removing tags for order ${id}:`, currentTags);
       return makeGraphQLQuery(removeTagsMutation, {
         id,
         tags: currentTags,
@@ -300,14 +290,12 @@ export async function updateOrdersTags({
     });
 
     try {
-      const removeTagsResults = await Promise.all(removeTagsPromises);
-      console.log('Remove tags results:', removeTagsResults);
+      await Promise.all(removeTagsPromises);
     } catch (error) {
       console.error('Error removing tags:', error);
     }
   }
 
-  console.log('Adding new tags to orders...');
   const addTagsPromises = orderIds.map((id) => {
     const addTagsMutation = `#graphql
         mutation AddTags($id: ID!, $tags: [String!]!) {
@@ -321,7 +309,6 @@ export async function updateOrdersTags({
             }
           }
         }`;
-    console.log(`Adding tag '${value}' to order ${id}`);
     return makeGraphQLQuery(addTagsMutation, {
       id,
       tags: [value],
@@ -329,13 +316,11 @@ export async function updateOrdersTags({
   });
 
   try {
-    const addTagsResults = await Promise.all(addTagsPromises);
-    console.log('Add tags results:', addTagsResults);
+    await Promise.all(addTagsPromises);
   } catch (error) {
     console.error('Error adding tags:', error);
   }
 
-  console.log('Tags successfully updated for all orders.');
   return [value];
 }
 
@@ -365,7 +350,6 @@ export async function addOrderNote({
   orderId: string;
   note: string;
 }) {
-  console.log('🚀 ~ addOrderNote:', note, orderId);
   if (!orderId) {
     throw new Error(`Order ID is required but was not provided`);
   }
@@ -417,8 +401,6 @@ export async function updateWarehouse({
   warehouse: NovaPoshtaWarehouse;
   orderId: string;
 }) {
-  console.log('🚀 ~ warehouse:', warehouse);
-  console.log('🚀 ~ orderId:', orderId);
   const metafieldMutation = `#graphql
             mutation UpdateMetafield($metafields: [MetafieldsSetInput!]!) {
               metafieldsSet(metafields: $metafields) {
@@ -474,11 +456,6 @@ export async function saveDeclaration({
     createdAt: string;
   };
 }) {
-  console.log('💾 Saving declaration to order metafields:', {
-    orderId,
-    declarationNumber: declaration.declarationNumber,
-  });
-
   const metafieldMutation = `#graphql
     mutation UpdateMetafield($metafields: [MetafieldsSetInput!]!) {
       metafieldsSet(metafields: $metafields) {
@@ -535,7 +512,6 @@ export async function saveDeclaration({
     throw new Error('Failed to save declaration to order');
   }
 
-  console.log('✅ Declaration saved successfully');
   return response;
 }
 
