@@ -134,7 +134,9 @@ export class RozetkaTokenManager {
 
       if (existingToken && existingToken.id) {
         await api.newApiToken.delete(existingToken.id);
+        logger.info({ provider: PROVIDER }, '[RozetkaTokenManager] Token invalidated from database');
       } else {
+        logger.warn({ provider: PROVIDER }, '[RozetkaTokenManager] invalidateToken called but no token found in database');
       }
     } catch (error) {
       logger.warn({

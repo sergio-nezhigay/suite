@@ -15,7 +15,13 @@ export const getRozetkaAccessToken = async (): Promise<string | null> => {
       }
     );
     if (response.data.success) {
-      const token = response.data.content.access_token;
+      const content = response.data.content;
+      logger.info({
+        contentKeys: Object.keys(content),
+        expiresIn: (content as any).expires_in,
+        tokenPreview: content.access_token?.substring(0, 20),
+      }, '[getRozetkaAccessToken] Token obtained — checking for expires_in');
+      const token = content.access_token;
       return token;
     } else {
       const errorMsg = 'Failed to get access token' + (response.data.message || '');
