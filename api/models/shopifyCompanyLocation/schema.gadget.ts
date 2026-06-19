@@ -6,16 +6,7 @@ import type { GadgetModel } from "gadget-server";
 export const schema: GadgetModel = {
   type: "gadget/model-schema/v1",
   storageKey: "DataModel-Shopify-CompanyLocation",
-  fields: {
-    billingAddress: {
-      type: "hasOne",
-      child: {
-        model: "shopifyCompanyAddress",
-        belongsToField: "companyBillingLocation",
-      },
-      storageKey: "AD3ywgAoHIAJ",
-    },
-  },
+  fields: {},
   shopify: {
     fields: [
       "billingAddress",
