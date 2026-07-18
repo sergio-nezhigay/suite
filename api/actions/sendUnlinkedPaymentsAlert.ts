@@ -17,9 +17,6 @@ export const run: ActionRun = async ({ api, logger, config }) => {
   const CHAT_ID = config.CHAT_ID;
   const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
-  await sendTelegram(url, CHAT_ID, "Hello from your daily script!");
-  logger.info("Message sent!");
-
   const cutoff = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
 
   const recentIncome = await api.bankTransaction.findMany({
@@ -58,7 +55,7 @@ export const options: ActionOptions = {
   triggers: {
     scheduler: [
       {
-        cron: "0 8 * * *", // ~10:00 Kyiv time
+        cron: "0 9 * * *", 
       },
     ],
   },
