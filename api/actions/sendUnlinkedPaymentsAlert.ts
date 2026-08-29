@@ -1,21 +1,9 @@
 import { ActionOptions } from "gadget-server";
-
-async function sendTelegram(url: string, chatId: string, text: string): Promise<void> {
-  const res = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ chat_id: chatId, text }),
-  });
-  const data = await res.json();
-  if (!data.ok) {
-    throw new Error(`Failed to send Telegram message: ${data.description}`);
-  }
-}
+import { sendTelegramMessage } from "api/utilities/http/telegramClient";
 
 export const run: ActionRun = async ({ api, logger, config }) => {
   const BOT_TOKEN = config.BOT_TOKEN;
   const CHAT_ID = config.CHAT_ID;
-  const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
 
   const cutoff = new Date(Date.now() - 4 * 24 * 60 * 60 * 1000);
 
@@ -46,7 +34,7 @@ export const run: ActionRun = async ({ api, logger, config }) => {
       return `📌 ${date} | ${t.amount} ${t.currency} | ${t.counterpartyName || "Unknown"}`;
     });
     const alertText = `⚠️ Непов'язані платежі (4 дні): ${unlinked.length}\n\n${lines.join("\n")}`;
-    await sendTelegram(url, CHAT_ID, alertText);
+    await sendTelegramMessage({ botToken: BOT_TOKEN!, chatId: CHAT_ID!, text: alertText });
     logger.info({ count: unlinked.length }, "Unlinked payments alert sent");
   }
 };

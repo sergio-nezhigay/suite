@@ -27,6 +27,7 @@ export * from './suppliers/fetchFromSheet';
 export * from './http/getUrlParams';
 export * from './http/smsClient';
 export * from './http/npClient';
+export * from './http/telegramClient';
 export * from './ai/createEmbedding';
 export * from './data/getPaginatedData';
 export * from './pdf/warrantyPdfUtils';
