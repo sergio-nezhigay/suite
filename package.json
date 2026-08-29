@@ -11,6 +11,7 @@
     "generate": "shopify app generate",
     "deploy": "shopify app deploy -c shopify.app.toml",
     "ggt": "npx ggt dev ./ --app=admin-action-block --env=development",
+    "ggt:deploy": "npx ggt deploy ./ --app=admin-action-block --env=development",
     "build": "NODE_ENV=production vite build"
   },
   "dependencies": {
