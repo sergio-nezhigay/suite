@@ -40,7 +40,7 @@ export async function fetchDeclarationFromSheet(
       spreadsheetId,
       range,
     });
-    const data = response.data.values;
+    const data: string[][] | undefined = response.data.values as string[][] | undefined;
 
     if (!data?.length) {
       logger.info({ orderName, duration_ms: Date.now() - step2Start }, 'Step 2: Fetch & process spreadsheet data');

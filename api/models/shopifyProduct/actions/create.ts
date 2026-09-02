@@ -9,9 +9,6 @@ import { getShopifyClient, updateMetafield } from 'utilities';
 export const run: ActionRun = async ({ params, record, trigger }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
-  if (trigger.type === 'shopify_sync') {
-    return;
-  }
   await save(record);
 };
 
