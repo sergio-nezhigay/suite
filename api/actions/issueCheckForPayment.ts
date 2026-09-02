@@ -8,20 +8,8 @@ import {
 import {
   EXCLUDED_PAYMENT_CODES,
   NOVA_POSHTA_ACCOUNT,
+  extractPaymentCodeFromAccount,
 } from '../utilities/fiscal/paymentConstants';
-
-// Helper function to extract payment code from counterparty account
-function extractPaymentCodeFromAccount(account: string): string | null {
-  if (!account) return null;
-
-  // Extract the 4-digit payment code from positions 15-19 of the account
-  // Example: UA293052990000029023866100110 -> account.substring(15, 19) -> "2902"
-  if (account.length >= 19) {
-    return account.substring(15, 19);
-  }
-
-  return null;
-}
 
 interface PreviewItem {
   name: string;
