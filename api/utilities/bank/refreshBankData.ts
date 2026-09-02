@@ -1,5 +1,9 @@
 import { logger } from 'gadget-server';
 
+// Skip a fresh sync if one ran this recently. Collapses the React.StrictMode
+// double-invoke on /payments and back-to-back reloads / re-clicks into one sync.
+const RECENT_SYNC_MS = 3 * 60 * 1000;
+
 export async function refreshBankDataSinceLastSync(api: any) {
   try {
     // Get most recent sync timestamp
@@ -12,6 +16,18 @@ export async function refreshBankDataSinceLastSync(api: any) {
       lastSyncedTransaction?.syncedAt ||
       new Date(Date.now() - 24 * 60 * 60 * 1000);
     const now = new Date();
+
+    if (
+      lastSyncedTransaction?.syncedAt &&
+      now.getTime() - lastSyncTime.getTime() < RECENT_SYNC_MS
+    ) {
+      logger.info(
+        { lastSyncTime: lastSyncTime.toISOString() },
+        'Bank refresh skipped - a sync ran within the last 3 minutes'
+      );
+      return { success: true, skipped: true, reason: 'recent-sync' };
+    }
+
     const daysSinceSync = Math.ceil(
       (now.getTime() - lastSyncTime.getTime()) / (1000 * 60 * 60 * 24)
     );

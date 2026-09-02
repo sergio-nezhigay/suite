@@ -1,6 +1,6 @@
 import { ActionOptions } from 'gadget-server';
-import * as crypto from 'crypto';
 import { fetchPrivatBankTransactions, PrivatBankTransaction } from '../utilities/bank/fetchPrivatBankTransactions';
+import { deriveExternalId } from '../utilities/bank/transactionIdentity';
 import { timeIt } from 'api/utilities/timeIt';
 
 export const run = async ({
@@ -40,6 +40,7 @@ export const run = async ({
 
   let totalProcessed = 0;
   let totalCreated = 0;
+  let totalUpdated = 0;
   let totalDuplicates = 0;
   let totalSkipped = 0;
   let totalErrors = 0;
@@ -89,17 +90,33 @@ export const run = async ({
     const existingIdsLookbackDate = new Date();
     existingIdsLookbackDate.setDate(existingIdsLookbackDate.getDate() - (daysBack + 7));
 
-    const existingRecords = await api.bankTransaction.findMany({
+    // Map every existing row in the window under BOTH its stored externalId and
+    // its REF-based key, so a transaction PrivatBank re-sends with a renumbered
+    // ID resolves to the row we already have (and gets updated, not duplicated).
+    const existingByKey = new Map<
+      string,
+      { id: string; externalId: string; amount: number | null }
+    >();
+    const existingRows: any[] = [];
+    let existingPage: any = await api.bankTransaction.findMany({
       filter: {
         transactionDateTime: { greaterThanOrEqual: existingIdsLookbackDate.toISOString() },
       },
-      select: { externalId: true },
+      select: { id: true, externalId: true, reference: true, amount: true },
       first: 250,
     });
-    const existingExternalIds = new Set(
-      existingRecords.map((r: any) => r.externalId)
-    );
-    logger.info(`Loaded ${existingExternalIds.size} existing externalIds from DB in one query`);
+    existingRows.push(...existingPage);
+    while (existingPage.hasNextPage) {
+      existingPage = await existingPage.nextPage();
+      existingRows.push(...existingPage);
+    }
+    for (const r of existingRows) {
+      const row = { id: r.id, externalId: r.externalId, amount: r.amount ?? null };
+      if (r.externalId) existingByKey.set(r.externalId, row);
+      const refKey = deriveExternalId({ reference: r.reference, id: r.externalId });
+      if (refKey) existingByKey.set(refKey, row);
+    }
+    logger.info(`Indexed ${existingByKey.size} existing transaction keys from DB`);
 
     // Debug: Show transaction date distribution
     if (transactions.length > 0) {
@@ -176,45 +193,16 @@ export const run = async ({
     await timeIt('process_transactions_loop', async () => {
     for (const transaction of validTransactions) {
       try {
-        // 1. Create robust external ID
-        let externalId: string;
-
-        if (transaction.id) {
-          externalId = transaction.id;
-        } else if (transaction.reference) {
-          externalId = transaction.reference;
-        } else {
-          // Create deterministic composite key from stable transaction fields
-          // so the same real-world transaction always produces the same externalId
-          const datePart   = transaction.date || 'nodate';
-          const timePart   = transaction.time || 'notime';
-          const amountPart = transaction.amount.toString();
-          const acctPart   = (transaction.counterpartyAccount || 'noacct').replace(/\s/g, '');
-          const descHash   = crypto.createHash('md5')
-                                   .update(transaction.description || '')
-                                   .digest('hex')
-                                   .substring(0, 8);
-          externalId = `privatbank_${datePart}_${timePart}_${amountPart}_${acctPart}_${descHash}`;
-
-          const warningMsg = `Generated deterministic fallback externalId for transaction: ${externalId}`;
+        // 1. Stable identity (REF-based; falls back to ID, then a composite).
+        const externalId = deriveExternalId(transaction);
+        if (externalId.startsWith('privatbank_')) {
+          const warningMsg = `No REF/ID on transaction, using composite externalId: ${externalId}`;
           logger.warn(warningMsg);
           warnings.push(warningMsg);
         }
 
-        // Validate externalId
-        if (!externalId || externalId.trim() === '') {
-          const errorMsg = `Empty externalId for transaction at position ${totalProcessed}`;
-          logger.error(errorMsg);
-          errors.push(errorMsg);
-          totalErrors++;
-          continue;
-        }
-
-        // 2. Check for duplicates using in-memory Set (no DB query per transaction)
-        if (existingExternalIds.has(externalId.trim())) {
-          totalDuplicates++;
-          continue;
-        }
+        // 2. Is this a transaction we already have (same REF or same stored id)?
+        let existing = existingByKey.get(externalId);
 
         // 3. Validate and parse date/time
         let transactionDateTime: Date;
@@ -357,38 +345,92 @@ export const run = async ({
           ? transaction.counterpartyName.trim().substring(0, 255)
           : '';
 
-        // 7. Create the bank transaction record with proper error handling
+        // A different amount under the same key means this is NOT the same
+        // transaction (e.g. a second leg sharing one REF). Never merge those —
+        // fall through to create, and make the collision visible.
+        if (
+          existing &&
+          existing.amount != null &&
+          Math.abs(existing.amount - amount) > 0.01
+        ) {
+          const warningMsg = `Key ${externalId} already on a row with amount ${existing.amount}, incoming amount ${amount} — creating a separate row`;
+          logger.warn(warningMsg);
+          warnings.push(warningMsg);
+          existing = undefined;
+        }
+
+        // 7. Write the record: update the row we already have, else create it.
+        //    On update we only refresh descriptive fields + syncedAt — never
+        //    amount, account, matchedOrderId or any check/skip state.
+        const rawData = (transaction as any).raw ?? transaction;
         try {
           const dbWriteStart = performance.now();
-          const newTransaction = await timeIt('db_write_transaction', () => api.bankTransaction.create({
-            externalId: externalId.trim(),
-            transactionDateTime: transactionDateTime,
-            amount: amount,
-            currency: currency,
-            type: transaction.type,
-            description: description,
-            reference: reference,
-            counterpartyAccount: counterpartyAccount, // NEW
-            counterpartyName: counterpartyName, // NEW
-            rawData: transaction, // Store the complete original transaction data
-            status: 'processed',
-            syncedAt: syncStartTime,
-          }), logger, { externalId });
+          if (existing) {
+            await timeIt('db_write_transaction', () => api.bankTransaction.update(existing.id, {
+              externalId: externalId.trim(),
+              transactionDateTime: transactionDateTime,
+              description: description,
+              reference: reference,
+              counterpartyName: counterpartyName,
+              rawData: rawData,
+              syncedAt: syncStartTime,
+            }), logger, { externalId });
+            totalUpdated++;
+          } else {
+            await timeIt('db_write_transaction', () => api.bankTransaction.create({
+              externalId: externalId.trim(),
+              transactionDateTime: transactionDateTime,
+              amount: amount,
+              currency: currency,
+              type: transaction.type,
+              description: description,
+              reference: reference,
+              counterpartyAccount: counterpartyAccount,
+              counterpartyName: counterpartyName,
+              rawData: rawData,
+              status: 'processed',
+              syncedAt: syncStartTime,
+            }), logger, { externalId });
+            totalCreated++;
+          }
           totalDbWriteMs += Math.round(performance.now() - dbWriteStart);
-          totalCreated++;
         } catch (createError) {
           const createErrorMessage = createError instanceof Error
             ? createError.message
             : String(createError);
 
-          // Treat unique-constraint violations as duplicates (race condition between syncs)
+          // Lost a race with a concurrent sync — the row now exists; update it.
           if (
             createErrorMessage.toLowerCase().includes('unique') ||
             createErrorMessage.toLowerCase().includes('duplicate') ||
             createErrorMessage.toLowerCase().includes('already exists')
           ) {
-            logger.warn(`Skipping duplicate on create (unique constraint) for externalId: ${externalId}`);
-            totalDuplicates++;
+            try {
+              const row = await api.bankTransaction.findFirst({
+                filter: { externalId: { equals: externalId.trim() } },
+                select: { id: true },
+              });
+              if (row) {
+                await api.bankTransaction.update(row.id, {
+                  transactionDateTime,
+                  description,
+                  reference,
+                  counterpartyName,
+                  rawData,
+                  syncedAt: syncStartTime,
+                });
+                totalUpdated++;
+              } else {
+                totalDuplicates++;
+              }
+            } catch (retryError) {
+              logger.warn(
+                `Duplicate on create for ${externalId}, and update retry failed: ${
+                  retryError instanceof Error ? retryError.message : String(retryError)
+                }`
+              );
+              totalDuplicates++;
+            }
             continue;
           }
 
@@ -442,6 +484,7 @@ export const run = async ({
     const summary = {
       processed: totalProcessed,
       created: totalCreated,
+      updated: totalUpdated,
       duplicates: totalDuplicates,
       skipped: totalSkipped,
       errors: totalErrors,
@@ -454,16 +497,20 @@ export const run = async ({
       stage: 'sync_summary',
       total_processed: totalProcessed,
       total_created: totalCreated,
+      total_updated: totalUpdated,
       total_duplicates: totalDuplicates,
       loop_duration_ms,
-      avg_db_write_ms: totalCreated > 0 ? Math.round(totalDbWriteMs / totalCreated) : 0,
+      avg_db_write_ms:
+        totalCreated + totalUpdated > 0
+          ? Math.round(totalDbWriteMs / (totalCreated + totalUpdated))
+          : 0,
     }, 'Sync summary');
 
     logger.info('Bank transaction sync completed', summary);
 
     return {
       success: true,
-      message: `Sync completed: ${totalCreated} new transactions created, ${totalDuplicates} duplicates skipped, ${totalErrors} errors, ${warnings.length} warnings`,
+      message: `Sync completed: ${totalCreated} created, ${totalUpdated} updated, ${totalDuplicates} duplicates skipped, ${totalErrors} errors, ${warnings.length} warnings`,
       summary,
       errors: errors.length > 0 ? errors : undefined,
       warnings: warnings.length > 0 ? warnings : undefined,

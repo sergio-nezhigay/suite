@@ -15,22 +15,21 @@ async function createAutomaticCheck(
   connections: any,
   api: any,
   logger: any,
-  orderData?: any
+  orderData: any,
+  // The matched bank transaction row, passed in by the caller. We do NOT re-read
+  // it here: this function runs in the same request that just wrote matchedOrderId
+  // (and, on the issue path, checkReceiptId), so a findFirst would race that write
+  // and is the reason "Check Payments" needed two presses.
+  bankTransaction: {
+    id: string;
+    counterpartyAccount?: string | null;
+    counterpartyName?: string | null;
+    checkIssuedAt?: Date | null;
+    checkReceiptId?: string | null;
+    checkSkipReason?: string | null;
+  }
 ) {
   try {
-    // Find the bank transaction matched to this order
-    const bankTransaction = await api.bankTransaction.findFirst({
-      filter: { matchedOrderId: { equals: order.id } },
-      select: {
-        id: true,
-        counterpartyAccount: true,
-        counterpartyName: true,
-        checkIssuedAt: true,
-        checkReceiptId: true,
-        checkSkipReason: true,
-      },
-    });
-
     if (!bankTransaction) {
       return {
         success: false,
@@ -87,6 +86,7 @@ Note: This payment code (2600, 2902, 2909, or 2920) is excluded from automatic c
         success: false,
         skipped: true,
         reason: skipReason,
+        checkSkipReason: skipReason,
       };
     }
 
@@ -113,6 +113,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
         success: false,
         skipped: true,
         reason: skipReason,
+        checkSkipReason: skipReason,
       };
     }
     // Initialize Checkbox service
@@ -163,6 +164,8 @@ Reason: Payment verified and order marked as paid`;
       receiptId: receipt.id,
       fiscalCode: receipt.fiscal_code,
       receiptUrl: receipt.receipt_url,
+      checkReceiptId: receipt.id,
+      checkIssuedAt,
     };
   } catch (error) {
     logger.error({ orderName: order.name, err: error }, '[DEBUG-PAYMENTS] Failed to create check for order');
@@ -215,6 +218,8 @@ export const run = async ({ params, api, connections, logger }: any) => {
         select: {
           id: true,
           matchedOrderId: true,
+          counterpartyAccount: true,
+          counterpartyName: true,
           checkIssuedAt: true,
           checkReceiptId: true,
           checkSkipReason: true,
@@ -281,6 +286,8 @@ export const run = async ({ params, api, connections, logger }: any) => {
           amount: true,
           transactionDateTime: true,
           description: true,
+          counterpartyAccount: true,
+          counterpartyName: true,
         },
       }),
       logger
@@ -314,17 +321,18 @@ export const run = async ({ params, api, connections, logger }: any) => {
           const currentOrderData = orderData?.find(
             (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
           );
-          const checkResult = await createAutomaticCheck(order, connections, api, logger, currentOrderData);
-          // Re-fetch updated check status
-          const updated = await api.bankTransaction.findFirst({
-            filter: { matchedOrderId: { equals: order.id } },
-            select: { checkIssuedAt: true, checkReceiptId: true, checkSkipReason: true },
-          });
-          if (updated) {
-            existingMatch.checkIssuedAt = updated.checkIssuedAt;
-            existingMatch.checkReceiptId = updated.checkReceiptId;
-            existingMatch.checkSkipReason = updated.checkSkipReason;
-          }
+          const checkResult = await createAutomaticCheck(
+            order,
+            connections,
+            api,
+            logger,
+            currentOrderData,
+            existingMatch
+          );
+          // Apply the outcome locally instead of re-reading a row we just wrote
+          if (checkResult?.checkReceiptId) existingMatch.checkReceiptId = checkResult.checkReceiptId;
+          if (checkResult?.checkIssuedAt) existingMatch.checkIssuedAt = checkResult.checkIssuedAt;
+          if (checkResult?.checkSkipReason) existingMatch.checkSkipReason = checkResult.checkSkipReason;
         }
 
         results.push({
@@ -360,6 +368,7 @@ export const run = async ({ params, api, connections, logger }: any) => {
         return amountMatch && dateMatch && notAlreadyMatched;
       });
       // Match to first available transaction only (one-to-one matching)
+      let checkResult: any = null;
       if (matches.length > 0) {
         const firstMatch = matches[0];
         const txId = firstMatch.id;
@@ -412,16 +421,22 @@ export const run = async ({ params, api, connections, logger }: any) => {
                   od.id === order.id ||
                   od.id === `gid://shopify/Order/${order.id}`
               );
-              const checkResult = await createAutomaticCheck(
+              // Pass the just-matched transaction straight through — no re-read.
+              checkResult = await createAutomaticCheck(
                 order,
                 connections,
                 api,
                 logger,
-                currentOrderData
+                currentOrderData,
+                {
+                  id: txId,
+                  counterpartyAccount: firstMatch.counterpartyAccount ?? null,
+                  counterpartyName: firstMatch.counterpartyName ?? null,
+                  checkIssuedAt: null,
+                  checkReceiptId: null,
+                  checkSkipReason: null,
+                }
               );
-              if (checkResult?.success) {
-              } else if (checkResult?.skipped) {
-              }
             } catch (checkError) {
               logger.error({ orderName: order.name, err: checkError }, 'Check creation error for order');
             }
@@ -431,7 +446,7 @@ export const run = async ({ params, api, connections, logger }: any) => {
         }
       }
 
-      // Fetch check information for newly verified orders (from bankTransaction only)
+      // Check information for newly verified orders, taken from the createAutomaticCheck result
       let checkInfo = {
         checkIssued: false,
         checkIssuedAt: null as Date | null,
@@ -440,36 +455,17 @@ export const run = async ({ params, api, connections, logger }: any) => {
         checkSkipReason: null as string | null,
       };
 
-      if (matches.length > 0) {
-        try {
-          // Find the bank transaction matched to this order
-          const bankTransaction = await api.bankTransaction.findFirst({
-            filter: { matchedOrderId: { equals: order.id } },
-            select: {
-              id: true,
-              checkIssuedAt: true,
-              checkReceiptId: true,
-              checkSkipReason: true,
-            },
-          });
-
-          if (bankTransaction) {
-            // Check if check issued
-            if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
-              checkInfo.checkIssued = true;
-              checkInfo.checkIssuedAt = bankTransaction.checkIssuedAt;
-              checkInfo.checkReceiptId = bankTransaction.checkReceiptId;
-            }
-
-            // Check if skipped
-            if (bankTransaction.checkSkipReason) {
-              checkInfo.checkSkipped = true;
-              checkInfo.checkSkipReason = bankTransaction.checkSkipReason;
-            }
-          } else {
-          }
-        } catch (err) {
-          logger.error({ orderId: order.id, err }, 'Error fetching check info for order');
+      if (matches.length > 0 && checkResult) {
+        // Build from the value createAutomaticCheck just returned — it already
+        // holds these locally, so we don't re-read the row we just wrote.
+        if (checkResult.checkReceiptId || checkResult.checkIssuedAt) {
+          checkInfo.checkIssued = true;
+          checkInfo.checkIssuedAt = checkResult.checkIssuedAt ?? null;
+          checkInfo.checkReceiptId = checkResult.checkReceiptId ?? null;
+        }
+        if (checkResult.checkSkipReason) {
+          checkInfo.checkSkipped = true;
+          checkInfo.checkSkipReason = checkResult.checkSkipReason;
         }
       }
 

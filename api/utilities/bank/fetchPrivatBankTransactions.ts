@@ -12,6 +12,8 @@ export interface PrivatBankTransaction {
   reference: string | undefined;
   counterpartyAccount: string | undefined;
   counterpartyName: string | undefined;
+  /** Untouched original PrivatBank transaction object, for dedupe/identity logic and diagnostics. */
+  raw?: Record<string, any>;
 }
 
 export const fetchPrivatBankTransactions = async ({
@@ -105,6 +107,7 @@ export const fetchPrivatBankTransactions = async ({
         reference: tx.REF,
         counterpartyAccount: tx.AUT_CNTR_ACC,
         counterpartyName: tx.AUT_CNTR_NAM,
+        raw: tx,
       };
       return processed;
     });

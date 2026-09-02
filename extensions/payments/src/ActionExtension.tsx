@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import {
   reactExtension,
   useApi,
@@ -363,7 +363,12 @@ function App() {
       primaryAction={
         <Button
           onPress={handleVerifyPayments}
-          disabled={isVerifying || selectedOrderIds.length === 0 || loading}
+          disabled={
+            isVerifying ||
+            selectedOrderIds.length === 0 ||
+            loading ||
+            variantsLoading
+          }
         >
           {isVerifying ? 'Verifying...' : 'Check Payments'}
         </Button>
