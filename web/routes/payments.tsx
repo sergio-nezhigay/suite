@@ -10,6 +10,13 @@ interface UncoveredPayment {
   date: string;
   amount: number;
   counterpartyName: string;
+  description?: string;
+  payerName: string;
+  payerRole: 'direct_payer' | 'transit_with_payer' | 'settlement_intermediary' | 'internal_transfer' | 'unknown';
+  payerEvidenceSource: 'counterparty' | 'description' | 'none';
+  payerConfidence: 'high' | 'medium' | 'low';
+  payerExplanation: string;
+  payerIdentifier?: string | null;
   accountCode: string;
   daysAgo: number;
   transactionId: string;
@@ -208,10 +215,13 @@ export default function Payments() {
           </Text>
         </IndexTable.Cell>
         <IndexTable.Cell>
-          <Tooltip content={payment.counterpartyName} preferredPosition="above">
+          <Tooltip
+            content={`${payment.payerExplanation}${payment.counterpartyName ? ` Bank counterparty: ${payment.counterpartyName}.` : ''}${payment.description ? ` Description: ${payment.description}` : ''}`}
+            preferredPosition="above"
+          >
             <div style={{ maxWidth: '300px' }}>
               <Text variant="bodyMd" as="span" truncate>
-                {abbreviateUkrainianCompanyName(payment.counterpartyName)}
+                {abbreviateUkrainianCompanyName(payment.payerName)}
               </Text>
             </div>
           </Tooltip>
@@ -337,7 +347,7 @@ export default function Payments() {
                 headings={[
                   { title: 'Date' },
                   { title: 'Amount' },
-                  { title: 'Counterparty' },
+                  { title: 'Payer / source' },
                   { title: 'Code' },
                   { title: 'Status' },
                   { title: 'Actions' },

@@ -5,6 +5,7 @@ import {
   extractPaymentCodeFromAccount,
 } from '../utilities/fiscal/paymentConstants';
 import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
+import { resolvePaymentPayer } from '../utilities/bank/resolvePaymentPayer';
 
 // Status determination function with priority order
 function determinePaymentStatus(transaction: any): {
@@ -159,6 +160,10 @@ export const run: ActionRun = async ({ api, logger, params }) => {
       const paymentCode = extractPaymentCodeFromAccount(
         transaction.counterpartyAccount || ''
       );
+      const payer = resolvePaymentPayer(
+        transaction.counterpartyName,
+        transaction.description,
+      );
       const transactionDate = new Date(transaction.transactionDateTime);
       const now = new Date();
       const daysAgo = Math.floor(
@@ -170,8 +175,14 @@ export const run: ActionRun = async ({ api, logger, params }) => {
         transactionId: transaction.externalId || '',
         date: transactionDate.toISOString().split('T')[0], // YYYY-MM-DD format
         amount: transaction.amount,
-        counterpartyName: transaction.counterpartyName || 'Unknown',
+        counterpartyName: transaction.counterpartyName || '',
         counterpartyAccount: transaction.counterpartyAccount || '',
+        payerName: payer.displayName,
+        payerRole: payer.role,
+        payerEvidenceSource: payer.evidenceSource,
+        payerConfidence: payer.confidence,
+        payerExplanation: payer.explanation,
+        payerIdentifier: payer.identifier,
         accountCode: paymentCode || 'N/A',
         daysAgo,
         description: transaction.description || '',
