@@ -231,7 +231,7 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     };
 
     // Initialize Checkbox service
-    const checkboxService = new CheckboxService();
+    const checkboxService = new CheckboxService(logger);
     await checkboxService.signIn();
     await checkboxService.ensureShiftOpen();
 

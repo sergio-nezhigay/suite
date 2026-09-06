@@ -12,11 +12,13 @@ export class CheckboxService {
   private login: string;
   private password: string;
   private token?: string;
+  private logger?: any;
 
-  constructor() {
+  constructor(logger?: any) {
     this.licenseKey = process.env.CHECKBOX_LICENSE_KEY!;
     this.login = process.env.CHECKBOX_LOGIN!;
     this.password = process.env.CHECKBOX_PASSWORD!;
+    this.logger = logger;
   }
 
   private async delay(ms: number): Promise<void> {
@@ -63,16 +65,32 @@ export class CheckboxService {
     });
 
     if (!response.ok) {
+      this.logger?.error(
+        { stage: 'checkbox_signin', httpStatus: response.status },
+        '[Checkbox] signIn failed'
+      );
       throw new Error(`Authentication failed: ${response.status}`);
     }
 
     const data: CheckboxAuthResponse = await response.json();
     this.token = data.access_token;
+    this.logger?.info(
+      {
+        stage: 'checkbox_signin',
+        hasToken: !!this.token,
+        expiresIn: data.expires_in,
+      },
+      '[Checkbox] signIn ok'
+    );
     return this.token;
   }
 
   async openShift(): Promise<CheckboxShift> {
     const shiftId = crypto.randomUUID();
+    this.logger?.info(
+      { stage: 'checkbox_open_shift', shiftId },
+      '[Checkbox] openShift: requesting new shift'
+    );
     const response = await fetch(`${this.baseUrl}/shifts`, {
       method: 'POST',
       headers: {
@@ -84,10 +102,28 @@ export class CheckboxService {
     });
 
     if (!response.ok) {
-      throw new Error(`Failed to open shift: ${response.status}`);
+      const errorText = await response.text().catch(() => '');
+      this.logger?.error(
+        {
+          stage: 'checkbox_open_shift',
+          shiftId,
+          httpStatus: response.status,
+          errorText,
+        },
+        '[Checkbox] openShift request failed'
+      );
+      throw new Error(`Failed to open shift: ${response.status} - ${errorText}`);
     }
 
     const shift = await response.json();
+    this.logger?.info(
+      {
+        stage: 'checkbox_open_shift',
+        shiftId: shift?.id,
+        shiftStatus: shift?.status,
+      },
+      '[Checkbox] openShift response received'
+    );
     return shift;
   }
 
@@ -101,10 +137,23 @@ export class CheckboxService {
     });
 
     if (!response.ok) {
+      this.logger?.warn(
+        { stage: 'checkbox_check_shift', httpStatus: response.status },
+        '[Checkbox] checkShift request failed'
+      );
       throw new Error(`Failed to check shift: ${response.status}`);
     }
 
-    return response.json();
+    const shift = await response.json();
+    this.logger?.info(
+      {
+        stage: 'checkbox_check_shift',
+        shiftId: shift?.id,
+        shiftStatus: shift?.status,
+      },
+      '[Checkbox] checkShift result'
+    );
+    return shift;
   }
 
   async createETTNReceipt(
@@ -140,15 +189,62 @@ export class CheckboxService {
   }
 
   async ensureShiftOpen(): Promise<CheckboxShift> {
+    let shift: CheckboxShift;
     try {
-      const shift = await this.checkShift();
-      if (shift.status === 'OPENED') {
-        return shift;
+      const existing = await this.checkShift();
+      if (existing.status === 'OPENED') {
+        this.logger?.info(
+          {
+            stage: 'checkbox_ensure_shift',
+            branch: 'reuse-existing',
+            shiftId: existing.id,
+            shiftStatus: existing.status,
+          },
+          '[Checkbox] ensureShiftOpen: reusing already-open shift'
+        );
+        return existing;
       }
-      return await this.openShift();
-    } catch {
-      return await this.openShift();
+      this.logger?.info(
+        {
+          stage: 'checkbox_ensure_shift',
+          branch: 'open-after-non-opened',
+          previousStatus: existing.status,
+        },
+        '[Checkbox] ensureShiftOpen: existing shift not OPENED, opening a new one'
+      );
+      shift = await this.openShift();
+    } catch (error) {
+      this.logger?.warn(
+        {
+          stage: 'checkbox_ensure_shift',
+          branch: 'open-after-checkshift-error',
+          err: error,
+        },
+        '[Checkbox] ensureShiftOpen: checkShift failed, opening a new shift'
+      );
+      shift = await this.openShift();
     }
+
+    if (shift?.status !== 'OPENED') {
+      this.logger?.warn(
+        {
+          stage: 'checkbox_ensure_shift',
+          shiftId: shift?.id,
+          shiftStatus: shift?.status,
+        },
+        '[Checkbox] ensureShiftOpen: shift is NOT OPENED yet after openShift (receipt calls may fail with "Shift is not opened")'
+      );
+    } else {
+      this.logger?.info(
+        {
+          stage: 'checkbox_ensure_shift',
+          shiftId: shift?.id,
+          shiftStatus: shift?.status,
+        },
+        '[Checkbox] ensureShiftOpen: shift opened'
+      );
+    }
+    return shift;
   }
 
   async createSellReceipt(

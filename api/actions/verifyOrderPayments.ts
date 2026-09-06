@@ -117,7 +117,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
       };
     }
     // Initialize Checkbox service
-    const checkboxService = new CheckboxService();
+    const checkboxService = new CheckboxService(logger);
     await timeIt('checkbox_signin', () => checkboxService.signIn(), logger);
     await timeIt('checkbox_ensure_shift', () => checkboxService.ensureShiftOpen(), logger);
 

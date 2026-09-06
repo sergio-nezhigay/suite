@@ -16,7 +16,7 @@ export default async function route({
     if (!orders?.length) {
       return reply.code(400).send({ error: 'Orders data required' });
     }
-    const checkboxService = new CheckboxService();
+    const checkboxService = new CheckboxService(logger);
 
     // Step 1: Authenticate
     await checkboxService.signIn();

@@ -3,7 +3,7 @@
 client_id = "a98e00674e00da851db776a56ac3150d"
 name = "suite-development"
 handle = "admin-action-block-1"
-application_url = "https://admin-action-block--development.gadget.app/"
+application_url = "https://admin-action-block.gadget.app/api/shopify/install-or-render"
 embedded = true
 
 [build]
@@ -16,7 +16,7 @@ scopes = "read_assigned_fulfillment_orders,read_customers,read_files,read_fulfil
 
 [auth]
 redirect_urls = [
-  "https://admin-action-block--development.gadget.app/api/connections/auth/shopify/callback"
+  "https://admin-action-block.gadget.app/api/connections/auth/shopify/callback"
 ]
 
 [webhooks]
