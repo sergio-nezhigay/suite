@@ -392,9 +392,7 @@ function App() {
                               <Box minInlineSize='25%'>
                                 {hasDiscount ? (
                                   <BlockStack>
-                                    <Text>
-                                      <s>{originalPrice}</s>
-                                    </Text>
+                                    <Text accessibilityRole="deletion">{originalPrice}</Text>
                                     <Badge tone="success">{discountedPrice}</Badge>
                                   </BlockStack>
                                 ) : (
