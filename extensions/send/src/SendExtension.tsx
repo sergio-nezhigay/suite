@@ -24,6 +24,11 @@ export default reactExtension(TARGET, () => <SendExtension />);
 function SendExtension() {
   const [loading, setLoading] = useState<boolean>(true);
   const [sent, setSent] = useState<boolean>(false);
+  const [sending, setSending] = useState<boolean>(false);
+  const [progress, setProgress] = useState<{
+    done: number;
+    total: number;
+  } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [ordersContent, setOrdersContent] = useState<
     OrderResponse['nodes'] | null
@@ -124,6 +129,10 @@ function SendExtension() {
   const getTitle = () => {
     if (error) return error;
     if (loading) return 'Loading orders...';
+    if (sending)
+      return `Sending… (${progress?.done ?? 0}/${
+        progress?.total ?? selectedIds.length
+      })`;
     if (sent) return `Orders sent (${selectedIds.length} processed)`;
 
     const baseTitle = firstOrderTag
@@ -140,6 +149,8 @@ function SendExtension() {
         <Button
           onPress={async () => {
             setError(null);
+            setSending(true);
+            setProgress({ done: 0, total: ordersContent!.length });
             try {
               const rows = convertOrdersToRows(ordersContent!);
 
@@ -175,7 +186,11 @@ function SendExtension() {
               // Auto-tag processed orders
               if (shouldAutoTag) {
                 try {
-                  await autoTagProcessedOrders(ordersContent!, tagStrategy);
+                  await autoTagProcessedOrders(
+                    ordersContent!,
+                    tagStrategy,
+                    (done, total) => setProgress({ done, total })
+                  );
                 } catch (tagError) {
                   console.error('Failed to auto-tag orders:', tagError);
                 }
@@ -189,15 +204,19 @@ function SendExtension() {
                   ? error.message
                   : 'Failed to send orders';
               setError(errorMessage);
+            } finally {
+              setSending(false);
+              setProgress(null);
             }
           }}
-          disabled={loading || !ordersContent || sent}
+          disabled={loading || !ordersContent || sent || sending}
         >
-          {sent ? 'Added' : 'Add to Google Sheet'}
+          {sent ? 'Added' : sending ? 'Sending…' : 'Add to Google Sheet'}
         </Button>
       }
     >
       <BlockStack>
+        {sending && <ProgressIndicator size='small-200' />}
         {loading ? (
           <ProgressIndicator size='small-200' />
         ) : ordersContent && ordersContent.length > 0 ? (
@@ -459,9 +478,11 @@ const COMPLETED_TAG = 'Завершені';
 // Reusable auto-tagging function
 async function autoTagProcessedOrders(
   orders: OrderResponse['nodes'],
-  tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string)
+  tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string),
+  onProgress?: (done: number, total: number) => void
 ): Promise<void> {
-  for (const order of orders) {
+  for (let i = 0; i < orders.length; i++) {
+    const order = orders[i];
     const newTag =
       typeof tagStrategy === 'function' ? tagStrategy(order) : tagStrategy;
 
@@ -481,5 +502,7 @@ async function autoTagProcessedOrders(
       console.error(`Failed to add note to order ${order.name}:`, error);
       // Don't throw - continue processing other orders
     }
+
+    onProgress?.(i + 1, orders.length);
   }
 }
