@@ -33,6 +33,12 @@ const ROZETKA_MESSAGE_TEXT =
 
 const AUTH_ERROR = Symbol('auth_error');
 
+// Rozetka's 1020 code has been observed not matching a strict `=== '1020'` string
+// compare (likely a type mismatch at runtime) - also check the stable message field.
+function isAuthTokenError(errors: any): boolean {
+  return String(errors?.code) === '1020' || errors?.message === 'incorrect_access_token';
+}
+
 /**
  * Get chat information for a Rozetka order
  */
@@ -54,7 +60,7 @@ async function getOrderChat(
     if (response.data.success) {
       return response.data.content;
     } else {
-      if ((response.data as any).errors?.code === '1020') {
+      if (isAuthTokenError((response.data as any).errors)) {
         return AUTH_ERROR;
       }
       logger.error({ orderId, responseData: response.data }, '[Rozetka] Failed to get chat info for order');
