@@ -2,6 +2,7 @@ import { ActionOptions } from 'gadget-server';
 import {
   EXCLUDED_PAYMENT_CODES,
   NOVA_POSHTA_ACCOUNT,
+  RECEIVING_ACCOUNT_SUFFIX,
   extractPaymentCodeFromAccount,
 } from '../utilities/fiscal/paymentConstants';
 import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
@@ -120,6 +121,7 @@ export const run: ActionRun = async ({ api, logger, params }) => {
         checkIssuedAt: true,
         checkReceiptId: true,
         checkSkipReason: true,
+        rawData: true,
       },
       sort: { transactionDateTime: 'Descending' },
       first: 250,
@@ -143,6 +145,20 @@ export const run: ActionRun = async ({ api, logger, params }) => {
 
       // Skip transactions without valid amount
       if (!transaction.amount || transaction.amount <= 0) {
+        continue;
+      }
+
+      // Only show payments received into the configured own account
+      const ownAccount = (transaction.rawData as any)?.AUT_MY_ACC as
+        | string
+        | undefined;
+      if (!ownAccount || !ownAccount.endsWith(RECEIVING_ACCOUNT_SUFFIX)) {
+        if (!ownAccount) {
+          logger.warn(
+            { externalId: transaction.externalId },
+            '[getAllPayments] Transaction missing AUT_MY_ACC in rawData, excluding'
+          );
+        }
         continue;
       }
 

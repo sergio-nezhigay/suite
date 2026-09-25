@@ -18,6 +18,13 @@ export const EXCLUDED_PAYMENT_CODES: readonly string[] = ['2600', '2902', '2909'
 export const NOVA_POSHTA_ACCOUNT: string = 'UA813005280000026548000000014';
 
 /**
+ * Only payments received into the PrivatBank account ending in this suffix
+ * (own account, PrivatBank's AUT_MY_ACC field) are shown on the Payment
+ * Verification page.
+ */
+export const RECEIVING_ACCOUNT_SUFFIX: string = '3737';
+
+/**
  * Extract the 4-digit balance-sheet account ("балансовий рахунок", e.g. 2600, 2620, 2902)
  * from a counterparty account string.
  *
