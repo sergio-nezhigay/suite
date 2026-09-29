@@ -1,6 +1,4 @@
 import { RouteHandler } from 'gadget-server';
-import { google } from 'googleapis';
-import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
 import {
   createFulfillment,
   getFulfillmentOrders,
@@ -8,14 +6,11 @@ import {
 
 // Called by the Gmail Apps Script (scripts/gmail-ttn-to-shopify.gs) when a
 // supplier replies with Nova Poshta TTNs. Runs only on demand, so no CPU cost
-// while nothing arrives.
-// Shopify hides customer phones from this app (protected customer data), so the
-// phone is first resolved to an order number via the Rizka sheet, which the
-// "send" extension fills with [date, order name, phone, ...] for every order sent.
+// while nothing arrives. Orders are matched by name (the "Order" column of the
+// supplier email); customer phones are hidden from this app by Shopify.
 
 interface Item {
-  orderName?: string;
-  phone?: string;
+  orderName: string;
   ttn: string;
 }
 
@@ -24,79 +19,31 @@ interface Body {
   items: Item[];
 }
 
-type Status = 'fulfilled' | 'already' | 'not_found' | 'ambiguous' | 'invalid' | 'error';
-
-interface ShopifyOrderNode {
-  legacyResourceId: string;
-  name: string;
-  phone: string | null;
-  displayFulfillmentStatus: string;
-  shippingAddress: { phone: string | null } | null;
-  customer: { phone: string | null } | null;
-}
+type Status = 'fulfilled' | 'already' | 'not_found' | 'invalid' | 'error';
 
 const SHOP_DOMAIN = 'c2da09-15.myshopify.com';
-// Rizka supplier sheet written by extensions/send (spreadsheetId + default sheet 'Sheet2')
-const RIZKA_SHEET_ID = '1Tb8YTGBhAONP0QXrsCohbsNF3TEN58zXQ785l20o7Ic';
-const RIZKA_SHEET_RANGE = 'Sheet2!B:C';
 const TTN_RE = /^(20|59)\d{12}$/;
-const LOOKBACK_DAYS = 21;
 const OPEN_STATUSES = ['OPEN', 'IN_PROGRESS'];
 
-const RECENT_ORDERS_QUERY = `
-  query RecentOrders($query: String!, $after: String) {
-    orders(first: 250, after: $after, query: $query, sortKey: CREATED_AT, reverse: true) {
+const ORDER_BY_NAME_QUERY = `
+  query OrderByName($query: String!) {
+    orders(first: 5, query: $query) {
       nodes {
         legacyResourceId
         name
-        phone
-        displayFulfillmentStatus
-        shippingAddress { phone }
-        customer { phone }
       }
-      pageInfo { hasNextPage endCursor }
     }
   }
 `;
 
-const phoneKey = (value?: string | null) => (value || '').replace(/\D/g, '').slice(-9);
-
-const orderPhoneKeys = (order: ShopifyOrderNode) =>
-  [order.phone, order.shippingAddress?.phone, order.customer?.phone].map(phoneKey).filter((k) => k.length === 9);
-
-const isFulfilled = (order: ShopifyOrderNode) => order.displayFulfillmentStatus === 'FULFILLED';
-
-const fetchRecentOrders = async (shopifyClient: any): Promise<ShopifyOrderNode[]> => {
-  const since = new Date(Date.now() - LOOKBACK_DAYS * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
-  const all: ShopifyOrderNode[] = [];
-  let after: string | null = null;
-  do {
-    const response: any = await shopifyClient.graphql(RECENT_ORDERS_QUERY, {
-      query: `created_at:>=${since}`,
-      after,
-    });
-    all.push(...response.orders.nodes);
-    after = response.orders.pageInfo.hasNextPage ? response.orders.pageInfo.endCursor : null;
-  } while (after);
-  return all;
-};
-
-// phone key -> order names, from the Rizka sheet (column B = order name, C = phone)
-const fetchSheetOrderNamesByPhone = async (config: any): Promise<Map<string, string[]>> => {
-  const auth = await authorize(config);
-  const sheets = google.sheets({ version: 'v4', auth });
-  const response = await sheets.spreadsheets.values.get({
-    spreadsheetId: RIZKA_SHEET_ID,
-    range: RIZKA_SHEET_RANGE,
+const findOrderByName = async (shopifyClient: any, orderName: string) => {
+  const response: any = await shopifyClient.graphql(ORDER_BY_NAME_QUERY, {
+    query: `name:"${orderName}"`,
   });
-  const map = new Map<string, string[]>();
-  for (const row of (response.data.values || []) as string[][]) {
-    const name = (row[0] || '').trim();
-    const key = phoneKey(row[1]);
-    if (!name || key.length !== 9) continue;
-    map.set(key, [...(map.get(key) || []), name]);
-  }
-  return map;
+  // Search is fuzzy; keep only the exact name
+  return (response.orders.nodes as Array<{ legacyResourceId: string; name: string }>).find(
+    (o) => o.name === orderName
+  );
 };
 
 const route: RouteHandler<{ Body: Body }> = async ({ request, reply, connections, config, logger }) => {
@@ -109,68 +56,29 @@ const route: RouteHandler<{ Body: Body }> = async ({ request, reply, connections
   }
 
   const shopifyClient = await connections.shopify.forShopDomain(SHOP_DOMAIN);
-  let recentOrders: ShopifyOrderNode[] | null = null;
-  let sheetNamesByPhone: Map<string, string[]> | null = null;
-  const results: Array<{ ttn: string; orderName?: string; phone?: string; status: Status }> = [];
+  const results: Array<{ ttn: string; orderName: string; status: Status }> = [];
 
   for (const item of items) {
     const ttn = String(item.ttn || '').trim();
-    const base = { ttn, orderName: item.orderName, phone: item.phone };
+    const orderName = String(item.orderName || '').trim();
 
-    if (!TTN_RE.test(ttn)) {
-      results.push({ ...base, status: 'invalid' });
+    if (!TTN_RE.test(ttn) || !orderName) {
+      results.push({ ttn, orderName, status: 'invalid' });
       continue;
     }
 
     try {
-      if (!recentOrders) {
-        recentOrders = await fetchRecentOrders(shopifyClient);
-        logger.info(
-          {
-            orders_fetched: recentOrders.length,
-            orders_with_phone: recentOrders.filter((o) => orderPhoneKeys(o).length > 0).length,
-          },
-          'Recent orders loaded for TTN matching'
-        );
-      }
-      const orders = recentOrders;
-
-      let matches: ShopifyOrderNode[] = [];
-      if (item.orderName) {
-        matches = orders.filter((o) => o.name === item.orderName!.trim());
-      }
-      const key = phoneKey(item.phone);
-      if (matches.length === 0 && key.length === 9) {
-        sheetNamesByPhone ??= await fetchSheetOrderNamesByPhone(config);
-        const names = sheetNamesByPhone.get(key) || [];
-        matches = orders.filter((o) => names.includes(o.name));
-      }
-      if (matches.length === 0 && key.length === 9) {
-        matches = orders.filter((o) => orderPhoneKeys(o).includes(key));
-      }
-
-      if (matches.length === 0) {
-        results.push({ ...base, status: 'not_found' });
+      const order = await findOrderByName(shopifyClient, orderName);
+      if (!order) {
+        results.push({ ttn, orderName, status: 'not_found' });
         continue;
       }
 
-      // The same customer may have older, already-shipped orders: target the unshipped one
-      const open = matches.filter((o) => !isFulfilled(o));
-      if (open.length === 0) {
-        results.push({ ...base, orderName: matches[0].name, status: 'already' });
-        continue;
-      }
-      if (open.length > 1) {
-        results.push({ ...base, status: 'ambiguous' });
-        continue;
-      }
-
-      const order = open[0];
       const fulfillmentOrders = await getFulfillmentOrders(shopifyClient, order.legacyResourceId);
       const openFulfillmentOrders = fulfillmentOrders.filter((edge) => OPEN_STATUSES.includes(edge.node.status));
 
       if (openFulfillmentOrders.length === 0) {
-        results.push({ ...base, orderName: order.name, status: 'already' });
+        results.push({ ttn, orderName, status: 'already' });
         continue;
       }
 
@@ -180,17 +88,17 @@ const route: RouteHandler<{ Body: Body }> = async ({ request, reply, connections
           shopifyClient,
           edge.node.id,
           ttn,
-          order.name,
+          orderName,
           logger,
           'ТТН з email постачальника'
         );
         ok &&= created;
       }
 
-      results.push({ ...base, orderName: order.name, status: ok ? 'fulfilled' : 'error' });
+      results.push({ ttn, orderName, status: ok ? 'fulfilled' : 'error' });
     } catch (error) {
-      logger.error({ ttn, orderName: item.orderName, err: error }, 'Failed to apply TTN from email');
-      results.push({ ...base, status: 'error' });
+      logger.error({ ttn, orderName, err: error }, 'Failed to apply TTN from email');
+      results.push({ ttn, orderName, status: 'error' });
     }
   }
 
@@ -211,10 +119,9 @@ route.options = {
             type: 'object',
             properties: {
               orderName: { type: 'string' },
-              phone: { type: 'string' },
               ttn: { type: 'string' },
             },
-            required: ['ttn'],
+            required: ['orderName', 'ttn'],
           },
         },
       },

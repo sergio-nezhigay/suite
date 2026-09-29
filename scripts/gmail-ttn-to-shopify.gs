@@ -8,12 +8,11 @@
  *   1. New Apps Script project → paste this file.
  *   2. Project Settings → Script Properties:
  *        SECRET   = same value as Gadget env var DECLARATION_EMAIL_SECRET
- *        ENDPOINT = (optional) defaults to production route below;
- *                   for testing use https://admin-action-block--development.gadget.app/declaration/from-email
+ *        ENDPOINT = (optional) defaults to the production route below
  *   3. Run testParse() once (check the log), then run install() once to create the 15-minute trigger.
  *
  * Threads get label "ttn-done" when every TTN was applied (or was already there),
- * or "ttn-check" when something needs a human look (unmatched counts, not found, ambiguous, error).
+ * or "ttn-check" when something needs a human look (no order number, unmatched counts, not found, error).
  */
 
 var SUPPLIER = 'asd1134@ukr.net';
@@ -22,7 +21,6 @@ var LABEL_DONE = 'ttn-done';
 var LABEL_CHECK = 'ttn-check';
 
 var TTN_RE = /(?:^|\D)((?:20|59)\d{12})(?!\d)/g;
-var PHONE_RE = /\+?(380\d{9})(?!\d)/;
 // Order № is the first column; a № later in the line is an address ("відділення №372")
 var ORDER_RE = /^[\s>|*]*№\s?(\d{3,})/;
 
@@ -88,30 +86,28 @@ function run() {
 }
 
 /**
- * Pairs each TTN with a customer row (a line containing a phone).
+ * Pairs each TTN with a customer row (a line starting with the order number, e.g. "№15791 +380...").
  * Handles both reply styles seen from the supplier:
  *   - TTN on top, then the quoted row(s)           → TTNs go to the following rows in order
  *   - quoted row, then its TTN on the next line    → TTN goes to the row just above it
+ * Replies without order numbers (or with unequal counts) return ok:false → label ttn-check.
  */
 function parse(body) {
   var rows = [];
   var pending = [];
 
   body.split(/\r?\n/).forEach(function (line) {
-    var phoneMatch = line.match(PHONE_RE);
-    if (phoneMatch) {
-      var orderMatch = line.match(ORDER_RE);
+    var orderMatch = line.match(ORDER_RE);
+    if (orderMatch) {
       rows.push({
-        phone: '+' + phoneMatch[1],
-        orderName: orderMatch ? '№' + orderMatch[1] : undefined,
+        orderName: '№' + orderMatch[1],
         ttn: pending.length ? pending.shift() : undefined,
       });
     }
 
-    var lineWithoutPhone = phoneMatch ? line.replace(phoneMatch[0], ' ') : line;
     var m;
     TTN_RE.lastIndex = 0;
-    while ((m = TTN_RE.exec(lineWithoutPhone)) !== null) {
+    while ((m = TTN_RE.exec(line)) !== null) {
       var ttn = m[1];
       var target = null;
       for (var i = rows.length - 1; i >= 0; i--) {
@@ -127,44 +123,38 @@ function parse(body) {
 
   return {
     ok: ok || (withTtn.length === 0 && pending.length === 0), // no TTNs at all is not an error, just nothing to do
-    items: ok ? withTtn.map(function (r) {
-      var item = { ttn: r.ttn, phone: r.phone };
-      if (r.orderName) item.orderName = r.orderName;
-      return item;
-    }) : [],
+    items: ok ? withTtn.map(function (r) { return { orderName: r.orderName, ttn: r.ttn }; }) : [],
   };
 }
 
 function testParse() {
+  // Real reply, single order: TTN on top
   var single =
-    '20451547485093\n\n' +
-    '28 сентября 2026, 17:51:03, От info@informatica.com.ua:\n' +
-    'Phone First Name Last Name City Address Product Barcode Qty Price Cost Delta Payment\n' +
-    '+380509764286 Павло Пронякін Київ 138 SODIMM DDR4 4GB 2133 MHz Hynix HMA451S6AFR8N-TF 1 920 800 120 Накладений платіж';
+    '20451548109010\n' +
+    '29 сентября 2026, 14:02:14, От info@informatica.com.ua:\n' +
+    'Order Phone First Name Last Name City Address Product Barcode Qty Price Cost Delta Payment\n' +
+    '№15791 +380934708808 Олександр Михальчук Харків НП 1 Kingston 8 GB (2x4GB) DDR3 1333 MHz Hype KHX1333C9D3B1K2/8G 1 946 700 246 Накладений платіж';
+  // Multi order: TTN under each row; "відділення №123" in an address must not count as an order
   var multi =
-    '28 сентября 2026, 11:43:40, От info@informatica.com.ua:\n' +
-    'Phone First Name Last Name City Address Product Barcode Qty Price Cost Delta Payment\n' +
-    '+380685390270 Сергій Зелінський Нетішин 2 Samsung 4 GB SODIMM DDR4 2400MHz PC-1920 M471A5244BB0-CRC 1 1172 850 322 Накладений платіж\n' +
+    'Order Phone First Name Last Name City Address Product Barcode Qty Price Cost Delta Payment\n' +
+    '№15801 +380685390270 Сергій Зелінський Нетішин 2 Samsung 4 GB SODIMM 1 1172 850 322 Накладений платіж\n' +
     '20451547447210\n' +
-    '+380987400318 Роман Гречаный Ізюм харківська область 3 SODIMM DDR4 8Gb 2400 MHz MICRON () CT8G4SFS824A 1 2395 2000 395 Накладений платіж\n' +
+    '№15802 +380987400318 Роман Гречаный Ізюм 3 SODIMM DDR4 8Gb 1 2395 2000 395 Накладений платіж\n' +
     '20451547450421\n' +
-    '+380507057153 Ірина Смалева Київ Нова Пошта відділення 123 SO-DIMM DDR4 8GB 3200MHz Samsung M471A1K43DB1-CWE 1 2596 2200 396 Накладений платіж\n' +
+    '№15803 +380507057153 Ірина Смалева Київ Нова Пошта відділення №123 SO-DIMM 1 2596 2200 396 Накладений платіж\n' +
     '20451547451638';
-  var withOrder =
+  // Old format without order numbers → ttn-check
+  var noOrder =
     '20451547485093\n' +
-    'Order Phone First Name ...\n' +
-    '№15795 +380509764286 Павло Пронякін Київ 138 SODIMM 1 920 800 120 Накладений платіж';
-  var addressNo =
-    '20451544410033\n' +
-    '+380674456969 Владислав Кіньов Київ відділення №372: вул. Вишняківська, 1 SODIMM 1 1880 1700 180 Накладений платіж';
+    '+380509764286 Павло Пронякін Київ 138 SODIMM 1 920 800 120 Накладений платіж';
+  // Two orders, one TTN → ttn-check
   var mismatch =
-    '+380685390270 Сергій ...\n20451547447210\n+380987400318 Роман ...';
+    '№15801 +380685390270 Сергій ...\n20451547447210\n№15802 +380987400318 Роман ...';
 
-  console.log(JSON.stringify(parse(single)));
-  console.log(JSON.stringify(parse(multi)));
-  console.log(JSON.stringify(parse(withOrder)));
-  console.log(JSON.stringify(parse(addressNo)));
-  console.log(JSON.stringify(parse(mismatch)));
+  console.log(JSON.stringify(parse(single)));   // ok, 1 item
+  console.log(JSON.stringify(parse(multi)));    // ok, 3 items
+  console.log(JSON.stringify(parse(noOrder)));  // ok:false
+  console.log(JSON.stringify(parse(mismatch))); // ok:false
 }
 
 // Allow running testParse() with Node for local checks
