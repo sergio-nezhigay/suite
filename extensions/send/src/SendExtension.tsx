@@ -401,6 +401,7 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
         );
         const delta = lineItem.unfulfilledQuantity * (price - cost);
         return {
+          orderName: index === 0 ? order.name : '',
           phone: index === 0 ? getOrderPhone(order) : '',
           firstName:
             index === 0
@@ -427,6 +428,7 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
     });
 
   const header = [
+    'Order',
     'Phone',
     'First Name',
     'Last Name',
@@ -443,6 +445,7 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
 
   // Create a mapping from header names to object properties
   const keyMap: { [key: string]: string } = {
+    Order: 'orderName',
     Phone: 'phone',
     'First Name': 'firstName',
     'Last Name': 'lastName',
