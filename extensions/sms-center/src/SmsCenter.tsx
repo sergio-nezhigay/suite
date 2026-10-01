@@ -1,15 +1,7 @@
-import { useEffect, useState } from 'react';
-import {
-  Badge,
-  BlockStack,
-  InlineStack,
-  Button,
-  reactExtension,
-  ProgressIndicator,
-  useApi,
-  Text,
-  Link,
-} from '@shopify/ui-extensions-react/admin';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 
 import { getOrderInfo, addOrderNote } from '../../shared/shopifyOperations';
 
@@ -17,12 +9,13 @@ import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
 
-const TARGET = 'admin.order-details.block.render';
-
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-details.block.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 function App() {
-  const { data } = useApi(TARGET);
+  const { data } = shopify;
   const [status, setStatus] = useState('Loading...');
   const [smsTemplates, setSmsTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
@@ -92,46 +85,46 @@ function App() {
   };
 
   return (
-    <BlockStack gap='large'>
-      <Text>
+    <s-stack gap='large'>
+      <s-text>
         {customerPhone
           ? `Телефон клієнта:: ${customerPhone}`
           : 'Телефон клієнта не знайдено'}
-      </Text>
+      </s-text>
 
       {customerPhone && (
-        <BlockStack gap='base'>
-          <InlineStack gap='base'>
-            <Link
+        <s-stack gap='base'>
+          <s-stack direction='inline' gap='base'>
+            <s-link
               href={`https://msng.link/o/?${customerPhone}=vi`}
               target='_blank'
-              tone='default'
+              tone='auto'
             >
               Viber
-            </Link>
-          </InlineStack>
-          <Text>Текст: "{generateContextMessage()}"</Text>
-        </BlockStack>
+            </s-link>
+          </s-stack>
+          <s-text>Текст: "{generateContextMessage()}"</s-text>
+        </s-stack>
       )}
 
-      <InlineStack inlineAlignment='center' blockAlignment='center' gap='large'>
+      <s-stack direction='inline' justifyContent='center' alignItems='center' gap='large'>
         {smsTemplates.map((template) => (
-          <Button
+          <s-button
             key={template.id}
-            onPress={() => handleSendSms(template.smsTextReplaced)}
+            onClick={() => handleSendSms(template.smsTextReplaced)}
             disabled={loading || status !== 'Ready to send SMS'}
             variant='primary'
-            tone='default'
+            tone='auto'
           >
             {template.title}
-          </Button>
+          </s-button>
         ))}
-      </InlineStack>
+      </s-stack>
 
-      <BlockStack>
-        <InlineStack>
-          {loading && <ProgressIndicator size='small-200' />}
-          <Badge
+      <s-stack>
+        <s-stack direction='inline'>
+          {loading && <s-spinner />}
+          <s-badge
             tone={
               status.startsWith('Success')
                 ? 'success'
@@ -139,12 +132,12 @@ function App() {
                 ? 'critical'
                 : undefined
             }
-            size='small-100'
+            size='base'
           >
             {status.slice(0, 90)}
-          </Badge>
-        </InlineStack>
-      </BlockStack>
-    </BlockStack>
+          </s-badge>
+        </s-stack>
+      </s-stack>
+    </s-stack>
   );
 }

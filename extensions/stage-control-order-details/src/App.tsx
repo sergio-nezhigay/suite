@@ -1,12 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  reactExtension,
-  useApi,
-  AdminBlock,
-  Select,
-  Text,
-  Badge,
-} from '@shopify/ui-extensions-react/admin';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useCallback, useEffect, useState } from 'preact/hooks';
 
 import {
   getOrdersTags,
@@ -15,15 +10,16 @@ import {
 } from '../../shared/shopifyOperations';
 import { stages } from '../../shared/stages';
 
-const TARGET = 'admin.order-details.block.render';
-
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-details.block.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const { data } = useApi(TARGET);
+  const { data } = shopify;
 
   const orderId = data.selected[0].id;
 
@@ -63,19 +59,20 @@ function App() {
   }, [orderId]);
 
   return (
-    <AdminBlock>
-      <Select
+    <s-admin-block>
+      <s-select
         label={`Order stage ${loading ? '(wait...)' : ''}`}
         value={value}
-        onChange={onSelect}
-        options={stages}
+        onChange={(event) => onSelect(event.currentTarget.value)}
         disabled={loading}
-      />
-      {error && (
-        <Badge tone='critical'>
-          {error}
-        </Badge>
-      )}
-    </AdminBlock>
+      >
+        {stages.map(({ value, label }) => (
+          <s-option key={value} value={value}>
+            {label}
+          </s-option>
+        ))}
+      </s-select>
+      {error && <s-badge tone='critical'>{error}</s-badge>}
+    </s-admin-block>
   );
 }

@@ -1,12 +1,7 @@
-import { useCallback, useEffect, useState } from 'react';
-import {
-  reactExtension,
-  useApi,
-  AdminAction,
-  BlockStack,
-  Button,
-  Select,
-} from '@shopify/ui-extensions-react/admin';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useCallback, useEffect, useState } from 'preact/hooks';
 import {
   addOrderNote,
   getOrdersTags,
@@ -14,9 +9,10 @@ import {
 } from '../../shared/shopifyOperations';
 import { stages } from '../../shared/stages';
 
-const TARGET = 'admin.order-index.selection-action.render';
-
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
@@ -24,7 +20,7 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [initialLoadComplete, setInitialLoadComplete] = useState(false);
 
-  const { close, data } = useApi(TARGET);
+  const { close, data } = shopify;
   const selectedOrders = data?.selected || [];
   const selectedIds = selectedOrders.map(({ id }) => id);
   const selectedIdsString = selectedIds.join(','); // Use string for dependency
@@ -98,30 +94,31 @@ function App() {
   };
 
   return (
-    <AdminAction
-      title={getTitle()}
-      loading={loading}
-      primaryAction={
-        <Button
-          onPress={async () => {
-            await onSelect(value || '');
-            close();
-          }}
-          disabled={loading}
-        >
-          Update
-        </Button>
-      }
-    >
-      <BlockStack>
-        <Select
+    <s-admin-action heading={getTitle()} loading={loading}>
+      <s-stack>
+        <s-select
           label={`Change order stage ${loading ? '(wait...)' : ''}`}
           value={value}
-          onChange={handleChange}
-          options={stages}
+          onChange={(event) => handleChange(event.currentTarget.value)}
           disabled={loading}
-        />
-      </BlockStack>
-    </AdminAction>
+        >
+          {stages.map(({ value, label }) => (
+            <s-option key={value} value={value}>
+              {label}
+            </s-option>
+          ))}
+        </s-select>
+      </s-stack>
+      <s-button
+        slot='primary-action'
+        onClick={async () => {
+          await onSelect(value || '');
+          close();
+        }}
+        disabled={loading}
+      >
+        Update
+      </s-button>
+    </s-admin-action>
   );
 }

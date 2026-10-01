@@ -1,17 +1,7 @@
-import {
-  reactExtension,
-  useApi,
-  AdminBlock,
-  BlockStack,
-  Text,
-  Button,
-  InlineStack,
-  Banner,
-  TextField,
-  Box,
-  Divider,
-} from '@shopify/ui-extensions-react/admin';
-import { useEffect, useState } from 'react';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import {
   makeGraphQLQuery,
   ORDER_EDIT_BEGIN_MUTATION,
@@ -20,13 +10,13 @@ import {
   ORDER_EDIT_ADD_CUSTOM_ITEM_MUTATION,
 } from './utils';
 
-// The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
-const TARGET = 'admin.order-details.block.render';
-
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-details.block.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 function App() {
-  const { data } = useApi(TARGET);
+  const { data } = shopify;
   const orderId = data.selected[0]?.id;
   const [lineItems, setLineItems] = useState<any[]>([]);
   const [calculatedOrderId, setCalculatedOrderId] = useState<string | null>(null);
@@ -174,63 +164,60 @@ function App() {
   }
 
   return (
-    <AdminBlock title='Order Editor'>
-      <BlockStack gap="base">
-        {error && <Banner tone="critical">{error}</Banner>}
+    <s-admin-block heading='Order Editor'>
+      <s-stack gap="base">
+        {error && <s-banner tone="critical">{error}</s-banner>}
 
         {/* Line Items List */}
-        {loading && <Text>Loading items...</Text>}
+        {loading && <s-text>Loading items...</s-text>}
 
         {!loading && lineItems.filter(item => item.quantity > 0).map((item) => (
-          <InlineStack key={item.id} inlineAlignment="space-between" blockAlignment="center">
-            <Text>
+          <s-stack direction='inline' key={item.id} justifyContent="space-between" alignItems="center">
+            <s-text>
               {item.title} - Qty: {item.quantity} - {item.discountedUnitPriceSet?.shopMoney?.amount}
-            </Text>
-            <Button onPress={() => handleRemoveItem(item.id)} tone="critical" variant="tertiary">
+            </s-text>
+            <s-button onClick={() => handleRemoveItem(item.id)} tone="critical" variant="tertiary">
               Remove
-            </Button>
-          </InlineStack>
+            </s-button>
+          </s-stack>
         ))}
 
         {!loading && lineItems.filter(item => item.quantity > 0).length === 0 && (
-          <Text>No items in this order.</Text>
+          <s-text>No items in this order.</s-text>
         )}
 
-        <Divider />
+        <s-divider />
 
         {/* Add Custom Item Section */}
-        <Box padding="base">
-          <BlockStack gap>
-            <Text fontWeight="bold">Add Custom Item</Text>
-            <InlineStack gap="base">
-              <TextField
+        <s-box padding="base">
+          <s-stack gap="base">
+            <s-text type="strong">Add Custom Item</s-text>
+            <s-stack direction='inline' gap="base">
+              <s-text-field
                 label="Title"
                 value={newItemTitle}
-                onChange={setNewItemTitle}
-
+                onChange={(event) => setNewItemTitle(event.currentTarget.value)}
               />
-              <TextField
+              <s-text-field
                 label="Price"
                 value={newItemPrice}
-                onChange={setNewItemPrice}
-
+                onChange={(event) => setNewItemPrice(event.currentTarget.value)}
               />
-              <TextField
+              <s-text-field
                 label="Quantity"
                 value={newItemQuantity}
-                onChange={setNewItemQuantity}
-
+                onChange={(event) => setNewItemQuantity(event.currentTarget.value)}
               />
-            </InlineStack>
-            <Button
-              onPress={handleAddCustomItem}
+            </s-stack>
+            <s-button
+              onClick={handleAddCustomItem}
               disabled={addingItem || !newItemTitle || !newItemPrice || !newItemQuantity}
             >
               {addingItem ? 'Adding...' : 'Add Item'}
-            </Button>
-          </BlockStack>
-        </Box>
-      </BlockStack>
-    </AdminBlock>
+            </s-button>
+          </s-stack>
+        </s-box>
+      </s-stack>
+    </s-admin-block>
   );
 }

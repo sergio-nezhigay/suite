@@ -1,13 +1,7 @@
-import { useEffect, useState, useMemo } from 'react';
-import {
-  reactExtension,
-  useApi,
-  AdminAction,
-  BlockStack,
-  Button,
-  Text,
-  ProgressIndicator,
-} from '@shopify/ui-extensions-react/admin';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useEffect, useState, useMemo } from 'preact/hooks';
 
 import {
   fetchOrdersData,
@@ -17,9 +11,10 @@ import {
 } from '../../shared/shopifyOperations';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
-const TARGET = 'admin.order-index.selection-action.render';
-
-export default reactExtension(TARGET, () => <SendExtension />);
+// Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<SendExtension />, document.body);
+};
 
 function SendExtension() {
   const [loading, setLoading] = useState<boolean>(true);
@@ -33,7 +28,7 @@ function SendExtension() {
   const [ordersContent, setOrdersContent] = useState<
     OrderResponse['nodes'] | null
   >(null);
-  const { data } = useApi(TARGET);
+  const { data } = shopify;
   const selectedOrders = data?.selected || [];
   const selectedIds = useMemo(
     () => selectedOrders.map(({ id }: { id: string }) => id),
@@ -142,85 +137,77 @@ function SendExtension() {
     return `${baseTitle} (${selectedIds.length} selected)`;
   };
 
-  return (
-    <AdminAction
-      title={getTitle()}
-      primaryAction={
-        <Button
-          onPress={async () => {
-            setError(null);
-            setSending(true);
-            setProgress({ done: 0, total: ordersContent!.length });
-            try {
-              const rows = convertOrdersToRows(ordersContent!);
+  const handleSend = async () => {
+    setError(null);
+    setSending(true);
+    setProgress({ done: 0, total: ordersContent!.length });
+    try {
+      const rows = convertOrdersToRows(ordersContent!);
 
-              const appendResponse = await fetch(
-                `${SHOPIFY_APP_URL}/appendRowsToSheet`,
-                {
-                  method: 'POST',
-                  body: JSON.stringify({ rows, spreadsheetId, sheetName }),
-                  headers: { 'Content-Type': 'application/json' },
-                }
-              );
-              if (!appendResponse.ok) throw new Error('Failed to send data');
+      const appendResponse = await fetch(
+        `${SHOPIFY_APP_URL}/appendRowsToSheet`,
+        {
+          method: 'POST',
+          body: JSON.stringify({ rows, spreadsheetId, sheetName }),
+          headers: { 'Content-Type': 'application/json' },
+        }
+      );
+      if (!appendResponse.ok) throw new Error('Failed to send data');
 
-              if (shouldSendEmail) {
-                const emailResponse = await fetch(
-                  `${SHOPIFY_APP_URL}/send-email`,
-                  {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      recipientEmail,
-                      cc: 'nezhihai@gmail.com',
-                      subject:
-                        'Замовлення, кількість: ' + ordersContent!.length,
-                      htmlContent: generateOrdersHtmlTable(ordersContent!),
-                    }),
-                  }
-                );
-                if (!emailResponse.ok) throw new Error('Failed to send email');
-                if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
-              }
-
-              // Auto-tag processed orders
-              if (shouldAutoTag) {
-                try {
-                  await autoTagProcessedOrders(
-                    ordersContent!,
-                    tagStrategy,
-                    (done, total) => setProgress({ done, total })
-                  );
-                } catch (tagError) {
-                  console.error('Failed to auto-tag orders:', tagError);
-                }
-              }
-
-              setSent(true);
-            } catch (error) {
-              console.error('Error sending orders:', error);
-              const errorMessage =
-                error instanceof Error
-                  ? error.message
-                  : 'Failed to send orders';
-              setError(errorMessage);
-            } finally {
-              setSending(false);
-              setProgress(null);
-            }
-          }}
-          disabled={loading || !ordersContent || sent || sending}
-        >
-          {sent ? 'Added' : sending ? 'Sending…' : 'Add to Google Sheet'}
-        </Button>
+      if (shouldSendEmail) {
+        const emailResponse = await fetch(
+          `${SHOPIFY_APP_URL}/send-email`,
+          {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              recipientEmail,
+              cc: 'nezhihai@gmail.com',
+              subject:
+                'Замовлення, кількість: ' + ordersContent!.length,
+              htmlContent: generateOrdersHtmlTable(ordersContent!),
+            }),
+          }
+        );
+        if (!emailResponse.ok) throw new Error('Failed to send email');
+        if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
       }
-    >
-      <BlockStack>
-        {sending && <ProgressIndicator size='small-200' />}
+
+      // Auto-tag processed orders
+      if (shouldAutoTag) {
+        try {
+          await autoTagProcessedOrders(
+            ordersContent!,
+            tagStrategy,
+            (done, total) => setProgress({ done, total })
+          );
+        } catch (tagError) {
+          console.error('Failed to auto-tag orders:', tagError);
+        }
+      }
+
+      setSent(true);
+    } catch (error) {
+      console.error('Error sending orders:', error);
+      const errorMessage =
+        error instanceof Error
+          ? error.message
+          : 'Failed to send orders';
+      setError(errorMessage);
+    } finally {
+      setSending(false);
+      setProgress(null);
+    }
+  };
+
+  return (
+    <s-admin-action heading={getTitle()}>
+      <s-stack>
+        {sending && <s-spinner />}
         {loading ? (
-          <ProgressIndicator size='small-200' />
+          <s-spinner />
         ) : ordersContent && ordersContent.length > 0 ? (
-          <BlockStack>
+          <s-stack>
             {ordersContent.map((order, orderIndex) => (
               <OrderDetails
                 key={order.id}
@@ -229,12 +216,19 @@ function SendExtension() {
                 ordersContent={ordersContent}
               />
             ))}
-          </BlockStack>
+          </s-stack>
         ) : (
-          <Text>No orders content available</Text>
+          <s-text>No orders content available</s-text>
         )}
-      </BlockStack>
-    </AdminAction>
+      </s-stack>
+      <s-button
+        slot='primary-action'
+        onClick={handleSend}
+        disabled={loading || !ordersContent || sent || sending}
+      >
+        {sent ? 'Added' : sending ? 'Sending…' : 'Add to Google Sheet'}
+      </s-button>
+    </s-admin-action>
   );
 }
 
@@ -252,10 +246,10 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
   }, 0);
 
   return (
-    <BlockStack gap='base'>
-      <Text>
+    <s-stack gap='base'>
+      <s-text>
         {order.paymentMetafield?.value}: {totalSum.toFixed(0)}
-      </Text>
+      </s-text>
       {order.lineItems.nodes.map((lineItem, index) => {
         const { barcode, cost } = getBarcodeAndCost(lineItem);
         const price = parseFloat(
@@ -268,8 +262,8 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
         );
 
         return (
-          <BlockStack key={index}>
-            <Text>
+          <s-stack key={index}>
+            <s-text>
               {formatOrderDetails(
                 title,
                 barcode,
@@ -278,19 +272,19 @@ function OrderDetails({ order, orderIndex, ordersContent }: OrderDetailsProps) {
                 cost,
                 delta
               )}
-            </Text>
-          </BlockStack>
+            </s-text>
+          </s-stack>
         );
       })}
-      <Text>
+      <s-text>
         т. {phone},{' '}
         {order.shippingAddress?.firstName || order.customer.firstName}{' '}
         {order.shippingAddress?.lastName || order.customer.lastName},
         {order.shippingAddress?.city}, {order.shippingAddress?.address1}
-      </Text>
+      </s-text>
 
-      {orderIndex < ordersContent.length - 1 && <Text>_________</Text>}
-    </BlockStack>
+      {orderIndex < ordersContent.length - 1 && <s-text>_________</s-text>}
+    </s-stack>
   );
 }
 

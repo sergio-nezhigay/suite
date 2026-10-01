@@ -1,23 +1,14 @@
-import { useState, useEffect, useMemo } from 'react';
-import {
-  reactExtension,
-  useApi,
-  AdminAction,
-  BlockStack,
-  Button,
-  Text,
-  InlineStack,
-  Badge,
-  Box,
-  Section,
-  Divider,
-} from '@shopify/ui-extensions-react/admin';
-
-const TARGET = 'admin.order-index.selection-action.render';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useState, useEffect, useMemo } from 'preact/hooks';
 
 import { stages } from '../../shared/stages';
 
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 interface LineItem {
   id: string;
@@ -98,7 +89,7 @@ function supplierCode2orderTag(supplierCode: string) {
 }
 
 function App() {
-  const { close, data } = useApi(TARGET);
+  const { close, data } = shopify;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [isVerifying, setIsVerifying] = useState(false);
@@ -320,20 +311,20 @@ function App() {
   const getPaymentStatusBadge = (result: VerificationResult) => {
     if (result.matchCount > 0) {
       return (
-        <Badge tone='success'>✅ Payment Found</Badge>
+        <s-badge tone='success'>✅ Payment Found</s-badge>
       );
     } else {
-      return <Badge tone='critical'>❌ No Payment</Badge>;
+      return <s-badge tone='critical'>❌ No Payment</s-badge>;
     }
   };
 
   const getCheckStatusBadge = (result: VerificationResult) => {
     if (result.checkIssued) {
-      return <Badge tone='success'>🧾 Check Issued</Badge>;
+      return <s-badge tone='success'>🧾 Check Issued</s-badge>;
     } else if (result.checkSkipped) {
-      return <Badge tone='warning'>⏭️ Check Skipped</Badge>;
+      return <s-badge tone='warning'>⏭️ Check Skipped</s-badge>;
     } else if (result.matchCount > 0) {
-      return <Badge tone='warning'>⏳ Check Pending</Badge>;
+      return <s-badge tone='warning'>⏳ Check Pending</s-badge>;
     }
     return null;
   };
@@ -356,159 +347,160 @@ function App() {
 
 
   return (
-    <AdminAction
-      title={`Payment Verification for ${selectedOrderIds.length} order${
+    <s-admin-action
+      heading={`Payment Verification for ${selectedOrderIds.length} order${
         selectedOrderIds.length === 1 ? '' : 's'
       }`}
-      primaryAction={
-        <Button
-          onPress={handleVerifyPayments}
-          disabled={
-            isVerifying ||
-            selectedOrderIds.length === 0 ||
-            loading ||
-            variantsLoading
-          }
-        >
-          {isVerifying ? 'Verifying...' : 'Check Payments'}
-        </Button>
-      }
-      secondaryAction={<Button onPress={close}>Close</Button>}
     >
-      <BlockStack>
+      <s-stack>
         {loading ? (
-          <Text>Loading order details...</Text>
+          <s-text>Loading order details...</s-text>
         ) : orders.length === 0 ? (
-          <Text>No orders found</Text>
+          <s-text>No orders found</s-text>
         ) : (
-          <BlockStack>
-            <Text fontWeight='bold'>📦 Order Preview</Text>
+          <s-stack>
+            <s-text type="strong">📦 Order Preview</s-text>
             {/* TODO: Add here also 1st order's sku */}
 
 
             {orders.map((order, index) => (
-              <BlockStack key={order.id}>
-                <Section heading={order.name + "->" + supplierCode2orderTag(order.lineItems.nodes[0].variant?.sku?.split('^')[1] || "")}> {/*supplier code*/}
-                  <BlockStack>
+              <s-stack key={order.id}>
+                <s-section heading={order.name + "->" + supplierCode2orderTag(order.lineItems.nodes[0].variant?.sku?.split('^')[1] || "")}> {/*supplier code*/}
+                  <s-stack>
                     {/* Line Items */}
                     {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {
                       const price = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
 
                       return (
-                        <Box key={itemIndex}>
-                          <InlineStack>
-                            <Box minInlineSize='45%'>
-                              <Text>{truncateProductName(item.title)}</Text>
-                            </Box>
-                            <Box minInlineSize='20%'>
-                              <Text>{bestVariants[item.title] || '...'}</Text>
-                            </Box>
-                            <Box minInlineSize='15%'>
-                              <Badge>{item.currentQuantity}</Badge>
-                            </Box>
-                            <Box minInlineSize='20%'>
-                              <Text>₴{price}</Text>
-                            </Box>
-                          </InlineStack>
-                        </Box>
+                        <s-box key={itemIndex}>
+                          <s-stack direction='inline'>
+                            <s-box minInlineSize='45%'>
+                              <s-text>{truncateProductName(item.title)}</s-text>
+                            </s-box>
+                            <s-box minInlineSize='20%'>
+                              <s-text>{bestVariants[item.title] || '...'}</s-text>
+                            </s-box>
+                            <s-box minInlineSize='15%'>
+                              <s-badge>{item.currentQuantity}</s-badge>
+                            </s-box>
+                            <s-box minInlineSize='20%'>
+                              <s-text>₴{price}</s-text>
+                            </s-box>
+                          </s-stack>
+                        </s-box>
                       );
                     })}
                     {order.lineItems.nodes.length > 5 && (
-                      <Box>
-                        <Text>
+                      <s-box>
+                        <s-text>
                           ...and {order.lineItems.nodes.length - 5} more items
-                        </Text>
-                      </Box>
+                        </s-text>
+                      </s-box>
                     )}
-                  </BlockStack>
-                </Section>
-                {index < orders.length - 1 && <Divider />}
-              </BlockStack>
+                  </s-stack>
+                </s-section>
+                {index < orders.length - 1 && <s-divider />}
+              </s-stack>
             ))}
-          </BlockStack>
+          </s-stack>
         )}
 
-        {error && <Text>❌ Error: {error}</Text>}
+        {error && <s-text>❌ Error: {error}</s-text>}
 
         {isVerifying && (
-          <Text>🔄 Checking payments against recent bank transactions...</Text>
+          <s-text>🔄 Checking payments against recent bank transactions...</s-text>
         )}
 
         {verificationResults && (
-          <BlockStack>
-            <Text fontWeight='bold'>📊 Verification Summary</Text>
-            <Text>
+          <s-stack>
+            <s-text type="strong">📊 Verification Summary</s-text>
+            <s-text>
               Orders Checked: {verificationResults.summary.ordersChecked}
-            </Text>
-            <Text>
+            </s-text>
+            <s-text>
               Transactions Scanned:{' '}
               {verificationResults.summary.transactionsScanned}
-            </Text>
-            <Text>
+            </s-text>
+            <s-text>
               Matches Found: {verificationResults.summary.ordersWithMatches}
-            </Text>
+            </s-text>
 
-            <Text fontWeight='bold'>📋 Results by Order</Text>
-            <BlockStack>
+            <s-text type="strong">📋 Results by Order</s-text>
+            <s-stack>
               {verificationResults.results.map((result) => (
-                <BlockStack key={result.orderId}>
-                  <InlineStack>
-                    <Text fontWeight='bold'>{result.orderName}</Text>
+                <s-stack key={result.orderId}>
+                  <s-stack direction='inline'>
+                    <s-text type="strong">{result.orderName}</s-text>
                     {getPaymentStatusBadge(result)}
                     {getCheckStatusBadge(result)}
-                  </InlineStack>
+                  </s-stack>
 
-                  <Text>Amount: ₴{result.orderAmount.toFixed(2)}</Text>
+                  <s-text>Amount: ₴{result.orderAmount.toFixed(2)}</s-text>
 
                   {result.checkIssued && (
-                    <BlockStack>
-                      <Text fontWeight='bold'>🧾 Fiscal Check Details:</Text>
+                    <s-stack>
+                      <s-text type="strong">🧾 Fiscal Check Details:</s-text>
                       {result.checkReceiptId && (
-                        <Text>Receipt ID: {result.checkReceiptId}</Text>
+                        <s-text>Receipt ID: {result.checkReceiptId}</s-text>
                       )}
                       {result.checkFiscalCode && result.checkFiscalCode !== 'N/A' && (
-                        <Text>Fiscal Code: {result.checkFiscalCode}</Text>
+                        <s-text>Fiscal Code: {result.checkFiscalCode}</s-text>
                       )}
                       {result.checkReceiptUrl && result.checkReceiptUrl !== 'N/A' && (
-                        <Text>URL: {result.checkReceiptUrl}</Text>
+                        <s-text>URL: {result.checkReceiptUrl}</s-text>
                       )}
                       {result.checkIssuedAt && (
-                        <Text>
+                        <s-text>
                           Issued: {formatVerificationTime(result.checkIssuedAt)}
-                        </Text>
+                        </s-text>
                       )}
-                    </BlockStack>
+                    </s-stack>
                   )}
 
                   {result.checkSkipped && (
-                    <BlockStack>
-                      <Text>⏭️ Check Creation Skipped</Text>
-                      <Text>Reason: {result.checkSkipReason}</Text>
-                    </BlockStack>
+                    <s-stack>
+                      <s-text>⏭️ Check Creation Skipped</s-text>
+                      <s-text>Reason: {result.checkSkipReason}</s-text>
+                    </s-stack>
                   )}
 
                   {result.matches.length > 0 && (
-                    <BlockStack>
-                      <Text fontWeight='bold'>✅ Matching Transactions:</Text>
+                    <s-stack>
+                      <s-text type="strong">✅ Matching Transactions:</s-text>
                       {result.matches.map((match) => (
-                        <BlockStack key={match.transactionId}>
-                          <Text>
+                        <s-stack key={match.transactionId}>
+                          <s-text>
                             💰 ₴{match.amount.toFixed(2)} on{' '}
                             {match.date ? new Date(match.date).toLocaleDateString() : '—'}
-                          </Text>
-                          <Text>
+                          </s-text>
+                          <s-text>
                             📝 {match.description.substring(0, 50)}
-                          </Text>
-                        </BlockStack>
+                          </s-text>
+                        </s-stack>
                       ))}
-                    </BlockStack>
+                    </s-stack>
                   )}
-                </BlockStack>
+                </s-stack>
               ))}
-            </BlockStack>
-          </BlockStack>
+            </s-stack>
+          </s-stack>
         )}
-      </BlockStack>
-    </AdminAction>
+      </s-stack>
+      <s-button
+        slot='primary-action'
+        onClick={handleVerifyPayments}
+        disabled={
+          isVerifying ||
+          selectedOrderIds.length === 0 ||
+          loading ||
+          variantsLoading
+        }
+      >
+        {isVerifying ? 'Verifying...' : 'Check Payments'}
+      </s-button>
+      <s-button slot='secondary-actions' onClick={close}>
+        Close
+      </s-button>
+    </s-admin-action>
   );
 }
