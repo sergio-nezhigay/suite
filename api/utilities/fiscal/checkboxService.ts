@@ -6,6 +6,35 @@ import {
   CheckboxSellReceiptBody,
 } from './checkboxTypes';
 
+const UPSTREAM_TIMEOUT_PATTERN =
+  /cURL error 28|Timeout was reached|Failed to connect to api\.novaposhta/i;
+
+/** Checkbox could not reach Nova Poshta (its side, not ours). */
+export function isNovaPoshtaUpstreamTimeout(message: string): boolean {
+  return message.includes('third_party.generic') && UPSTREAM_TIMEOUT_PATTERN.test(message);
+}
+
+/**
+ * Errors safe to retry: rate limits and Checkbox→Nova Poshta timeouts, which
+ * are rejected before any receipt exists. Gateway errors (502/504) are NOT
+ * retried: the receipt may already be fiscalized and a retry would duplicate it.
+ */
+export function isTransientCheckboxError(message: string): boolean {
+  return (
+    /: 429 - /.test(message) ||
+    message.includes('Too Many Requests') ||
+    isNovaPoshtaUpstreamTimeout(message)
+  );
+}
+
+/** Short, human-readable version of a receipt error for the admin UI. */
+export function friendlyCheckboxError(message: string): string {
+  if (isNovaPoshtaUpstreamTimeout(message)) {
+    return 'Nova Poshta не відповідає (збій на боці Checkbox). Спробуйте ще раз за кілька хвилин.';
+  }
+  return message;
+}
+
 export class CheckboxService {
   private baseUrl = 'https://api.checkbox.ua/api/v1';
   private licenseKey: string;
@@ -38,15 +67,18 @@ export class CheckboxService {
       } catch (error) {
         lastError = error as Error;
 
-        // Check if it's a rate limit error
-        const isRateLimitError = error instanceof Error &&
-          (error.message.includes('429') || error.message.includes('Too Many Requests'));
+        const isTransient =
+          error instanceof Error && isTransientCheckboxError(error.message);
 
-        if (!isRateLimitError || attempt === maxRetries - 1) {
+        if (!isTransient || attempt === maxRetries - 1) {
           throw error;
         }
 
         const delayMs = baseDelay * Math.pow(2, attempt);
+        this.logger?.warn(
+          { stage: 'checkbox_retry', attempt: attempt + 1, delayMs, err: error },
+          '[Checkbox] transient error, retrying'
+        );
         await this.delay(delayMs);
       }
     }
@@ -159,6 +191,8 @@ export class CheckboxService {
   async createETTNReceipt(
     receiptBody: CheckboxReceiptBody
   ): Promise<CheckboxReceiptResponse> {
+    // Checkbox validates the TTN against Nova Poshta with a 2s timeout, so
+    // its upstream timeouts are retried with a longer base delay.
     return this.retryWithBackoff(async () => {
       const response = await fetch(`${this.baseUrl}/ettn`, {
         method: 'POST',
@@ -185,7 +219,7 @@ export class CheckboxService {
         throw new Error(`Receipt creation failed with status: ${receipt.status}`);
       }
       return receipt;
-    });
+    }, 3, 2000);
   }
 
   async ensureShiftOpen(): Promise<CheckboxShift> {

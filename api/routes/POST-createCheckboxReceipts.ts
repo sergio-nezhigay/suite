@@ -1,5 +1,5 @@
 import { RouteContext } from 'gadget-server';
-import { CheckboxService } from '../utilities/fiscal/checkboxService';
+import { CheckboxService, friendlyCheckboxError } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
 import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
 
@@ -87,9 +87,13 @@ Created: ${new Date().toISOString()}`;
         });
       } catch (error) {
         logger.error({ orderId: orderData.orderId, err: error }, 'Error processing order');
+        const message = error instanceof Error ? error.message : 'Unknown error';
+        const friendly = friendlyCheckboxError(message);
         results.push({
           orderId: orderData.orderId,
-          error: error instanceof Error ? error.message : 'Unknown error',
+          orderName: orderData.orderName || orderData.orderId,
+          error: friendly,
+          details: friendly === message ? undefined : message,
         });
       }
     }

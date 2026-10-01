@@ -1,24 +1,13 @@
-import { useEffect, useState } from 'react';
-import {
-  reactExtension,
-  useApi,
-  AdminAction,
-  BlockStack,
-  InlineStack,
-  Button,
-  Text,
-  Box,
-  Section,
-  Divider,
-  Badge,
-  Heading,
-} from '@shopify/ui-extensions-react/admin';
+/** @jsxImportSource preact */
+import '@shopify/ui-extensions/preact';
+import { render } from 'preact';
+import { useEffect, useState } from 'preact/hooks';
 import { updateOrdersTags } from '../../shared/shopifyOperations';
 
-// The target used here must match the target used in the extension's toml file (./shopify.extension.toml)
-const TARGET = 'admin.order-index.selection-action.render';
-
-export default reactExtension(TARGET, () => <App />);
+// Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
+export default async () => {
+  render(<App />, document.body);
+};
 
 interface Order {
   id: string;
@@ -73,10 +62,11 @@ interface ReceiptResult {
   fiscalCode?: string;
   ettnNumber?: string;
   error?: string;
+  details?: string;
 }
 
 function App() {
-  const { close, data } = useApi(TARGET);
+  const { data } = shopify;
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
   const [processing, setProcessing] = useState(false);
@@ -326,130 +316,119 @@ function App() {
     }
   };
 
+  const orderRowColumns = '35% 25% 40%';
+  const lineItemColumns = '45% 15% 15% 25%';
+
   return (
-    <AdminAction
-      title={`Checks for ${selectedIds.length} selected order${
+    <s-admin-action
+      heading={`Checks for ${selectedIds.length} selected order${
         selectedIds.length === 1 ? '' : 's'
       }`}
       loading={loading}
-      primaryAction={
-        <Button
-          onPress={handleProcessChecks}
-          disabled={loading || orders.length === 0 || processing || variantsLoading}
-        >
-          {processing ? 'Processing...' : variantsLoading ? 'Loading variants...' : 'Process Checks'}
-        </Button>
-      }
-      secondaryAction={<Button onPress={close}>Close</Button>}
     >
-      <BlockStack>
+      <s-button
+        slot='primary-action'
+        variant='primary'
+        onClick={handleProcessChecks}
+        disabled={loading || orders.length === 0 || processing || variantsLoading}
+      >
+        {processing ? 'Processing...' : variantsLoading ? 'Loading variants...' : 'Process Checks'}
+      </s-button>
+      <s-button slot='secondary-actions' onClick={() => shopify.close()}>
+        Close
+      </s-button>
+
+      <s-stack direction='block' gap='base'>
         {loading ? (
-          <Text>Loading order details...</Text>
+          <s-text>Loading order details...</s-text>
         ) : orders.length === 0 ? (
-          <Text>No orders found</Text>
+          <s-text>No orders found</s-text>
         ) : (
-          <BlockStack>
+          <s-stack direction='block' gap='base'>
             {orders.map((order, index) => (
-              <BlockStack key={order.id}>
-                <Section heading={order.name}>
-                  <BlockStack>
-                    {/* Order Summary */}
-                    <Box>
-                      <InlineStack>
-                        <Box minInlineSize='35%'>
-                          <Text>{order.customer?.displayName || 'Guest'}</Text>
-                        </Box>
-                        <Box minInlineSize='25%'>
-                          <Badge>{getPaymentMethod(order.metafields)}</Badge>
-                        </Box>
-                        <Box minInlineSize='40%'>
-                          {getTrackingNumber(order.fulfillments) && (
-                            <Text>{getTrackingNumber(order.fulfillments)}</Text>
-                          )}
-                        </Box>
-                      </InlineStack>
-                    </Box>
+              <s-stack key={order.id} direction='block' gap='small'>
+                <s-heading>{order.name}</s-heading>
 
-                    {/* Line Items */}
-                    {formatLineItemsWithPrices(order.lineItems).map(
-                      (item, itemIndex) => {
-                        const originalPrice = formatPrice(item.originalUnitPriceSet.shopMoney.amount);
-                        const discountedPrice = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
-                        const hasDiscount = originalPrice !== discountedPrice;
+                {/* Order Summary */}
+                <s-grid gridTemplateColumns={orderRowColumns} alignItems='center'>
+                  <s-text>{order.customer?.displayName || 'Guest'}</s-text>
+                  <s-box>
+                    <s-badge>{getPaymentMethod(order.metafields)}</s-badge>
+                  </s-box>
+                  <s-text>{getTrackingNumber(order.fulfillments) || ''}</s-text>
+                </s-grid>
 
-                        return (
-                          <Box key={itemIndex}>
-                            <InlineStack>
-                              <Box minInlineSize='45%'>
-                                <Text>{truncateProductName(item.title)}</Text>
-                              </Box>
-                              <Box minInlineSize='15%'>
-                                <Text>{productVariantsCache[item.title]}</Text>
-                              </Box>
-                              <Box minInlineSize='15%'>
-                                <Badge>{item.currentQuantity}</Badge>
-                              </Box>
-                              <Box minInlineSize='25%'>
-                                {hasDiscount ? (
-                                  <BlockStack>
-                                    <Text accessibilityRole="deletion">{originalPrice}</Text>
-                                    <Badge tone="success">{discountedPrice}</Badge>
-                                  </BlockStack>
-                                ) : (
-                                  <Text>{originalPrice}</Text>
-                                )}
-                              </Box>
-                            </InlineStack>
-                          </Box>
-                        );
-                      }
-                    )}
-                    {order.lineItems.nodes.length > 5 && (
-                      <Box>
-                        <Text>
-                          ...and {order.lineItems.nodes.length - 5} more items
-                        </Text>
-                      </Box>
-                    )}
-                  </BlockStack>
-                </Section>
-                {index < orders.length - 1 && <Divider />}
-              </BlockStack>
+                {/* Line Items */}
+                {formatLineItemsWithPrices(order.lineItems).map(
+                  (item, itemIndex) => {
+                    const originalPrice = formatPrice(item.originalUnitPriceSet.shopMoney.amount);
+                    const discountedPrice = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
+                    const hasDiscount = originalPrice !== discountedPrice;
+
+                    return (
+                      <s-grid key={itemIndex} gridTemplateColumns={lineItemColumns} alignItems='start'>
+                        <s-text>{truncateProductName(item.title)}</s-text>
+                        <s-text>{productVariantsCache[item.title]}</s-text>
+                        <s-box>
+                          <s-badge>{item.currentQuantity}</s-badge>
+                        </s-box>
+                        {hasDiscount ? (
+                          <s-stack direction='block' gap='small-200'>
+                            <s-text color='subdued'>was {originalPrice}</s-text>
+                            <s-box>
+                              <s-badge tone='success'>{discountedPrice}</s-badge>
+                            </s-box>
+                          </s-stack>
+                        ) : (
+                          <s-text>{originalPrice}</s-text>
+                        )}
+                      </s-grid>
+                    );
+                  }
+                )}
+                {order.lineItems.nodes.length > 5 && (
+                  <s-text>
+                    ...and {order.lineItems.nodes.length - 5} more items
+                  </s-text>
+                )}
+                {index < orders.length - 1 && <s-divider />}
+              </s-stack>
             ))}
-          </BlockStack>
+          </s-stack>
         )}
 
         {receiptResults.length > 0 && (
-          <Section heading='Receipt Results'>
-            <BlockStack>
+          <s-section heading='Receipt Results'>
+            <s-stack direction='block' gap='base'>
               {receiptResults.map((result, index) => (
-                <Box key={index}>
-                  <InlineStack>
-                    <Box minInlineSize='40%'>
-                      <Text>{result.orderName || result.orderId}</Text>
-                    </Box>
-                    <Box minInlineSize='60%'>
-                      {result.success ? (
-                        <BlockStack>
-                          <Badge tone='success'>✓ Receipt Created</Badge>
-                          {result.fiscalCode && (
-                            <Text>Fiscal: {result.fiscalCode}</Text>
-                          )}
-                          {result.ettnNumber && (
-                            <Text>ETTN: {result.ettnNumber}</Text>
-                          )}
-                        </BlockStack>
-                      ) : (
-                        <Badge tone='critical'>✗ {result.error}</Badge>
+                <s-grid key={index} gridTemplateColumns='30% 70%' alignItems='start'>
+                  <s-text type='strong'>{result.orderName || result.orderId}</s-text>
+                  {result.success ? (
+                    <s-stack direction='block' gap='small-200'>
+                      <s-box>
+                        <s-badge tone='success'>✓ Receipt Created</s-badge>
+                      </s-box>
+                      {result.fiscalCode && (
+                        <s-text>Fiscal: {result.fiscalCode}</s-text>
                       )}
-                    </Box>
-                  </InlineStack>
-                </Box>
+                      {result.ettnNumber && (
+                        <s-text>ETTN: {result.ettnNumber}</s-text>
+                      )}
+                    </s-stack>
+                  ) : (
+                    <s-stack direction='block' gap='small-200'>
+                      <s-banner tone='critical'>✗ {result.error}</s-banner>
+                      {result.details && (
+                        <s-text color='subdued'>{result.details}</s-text>
+                      )}
+                    </s-stack>
+                  )}
+                </s-grid>
               ))}
-            </BlockStack>
-          </Section>
+            </s-stack>
+          </s-section>
         )}
-      </BlockStack>
-    </AdminAction>
+      </s-stack>
+    </s-admin-action>
   );
 }
