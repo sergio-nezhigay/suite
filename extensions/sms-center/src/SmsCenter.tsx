@@ -85,59 +85,61 @@ function App() {
   };
 
   return (
-    <s-stack gap='large'>
-      <s-text>
-        {customerPhone
-          ? `Телефон клієнта:: ${customerPhone}`
-          : 'Телефон клієнта не знайдено'}
-      </s-text>
+    <s-admin-block>
+      <s-stack gap='large'>
+        <s-text>
+          {customerPhone
+            ? `Телефон клієнта:: ${customerPhone}`
+            : 'Телефон клієнта не знайдено'}
+        </s-text>
 
-      {customerPhone && (
-        <s-stack gap='base'>
-          <s-stack direction='inline' gap='base'>
-            <s-link
-              href={`https://msng.link/o/?${customerPhone}=vi`}
-              target='_blank'
+        {customerPhone && (
+          <s-stack gap='base'>
+            <s-stack direction='inline' gap='base'>
+              <s-link
+                href={`https://msng.link/o/?${customerPhone}=vi`}
+                target='_blank'
+                tone='auto'
+              >
+                Viber
+              </s-link>
+            </s-stack>
+            <s-text>Текст: "{generateContextMessage()}"</s-text>
+          </s-stack>
+        )}
+
+        <s-stack direction='inline' justifyContent='center' alignItems='center' gap='large'>
+          {smsTemplates.map((template) => (
+            <s-button
+              key={template.id}
+              onClick={() => handleSendSms(template.smsTextReplaced)}
+              disabled={loading || status !== 'Ready to send SMS'}
+              variant='primary'
               tone='auto'
             >
-              Viber
-            </s-link>
+              {template.title}
+            </s-button>
+          ))}
+        </s-stack>
+
+        <s-stack>
+          <s-stack direction='inline'>
+            {loading && <s-spinner />}
+            <s-badge
+              tone={
+                status.startsWith('Success')
+                  ? 'success'
+                  : status.startsWith('Error')
+                  ? 'critical'
+                  : undefined
+              }
+              size='base'
+            >
+              {status.slice(0, 90)}
+            </s-badge>
           </s-stack>
-          <s-text>Текст: "{generateContextMessage()}"</s-text>
-        </s-stack>
-      )}
-
-      <s-stack direction='inline' justifyContent='center' alignItems='center' gap='large'>
-        {smsTemplates.map((template) => (
-          <s-button
-            key={template.id}
-            onClick={() => handleSendSms(template.smsTextReplaced)}
-            disabled={loading || status !== 'Ready to send SMS'}
-            variant='primary'
-            tone='auto'
-          >
-            {template.title}
-          </s-button>
-        ))}
-      </s-stack>
-
-      <s-stack>
-        <s-stack direction='inline'>
-          {loading && <s-spinner />}
-          <s-badge
-            tone={
-              status.startsWith('Success')
-                ? 'success'
-                : status.startsWith('Error')
-                ? 'critical'
-                : undefined
-            }
-            size='base'
-          >
-            {status.slice(0, 90)}
-          </s-badge>
         </s-stack>
       </s-stack>
-    </s-stack>
+    </s-admin-block>
   );
 }
