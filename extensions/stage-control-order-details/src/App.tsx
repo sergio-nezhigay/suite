@@ -8,7 +8,7 @@ import {
   updateOrdersTags,
   addOrderNote,
 } from '../../shared/shopifyOperations';
-import { stages } from '../../shared/stages';
+import { findStage, stages } from '../../shared/stages';
 
 // Target: admin.order-details.block.render (see ./shopify.extension.toml)
 export default async () => {
@@ -17,7 +17,7 @@ export default async () => {
 
 function App() {
   const [value, setValue] = useState<string | undefined>(undefined);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
   const { data } = shopify;
 
@@ -25,15 +25,21 @@ function App() {
 
   useEffect(() => {
     async function fetchOrderTags() {
-      const tags = await getOrdersTags([orderId]);
-      const currentStage = (tags && tags[0]) || '';
-      setLoading(false);
-      setValue(currentStage);
+      try {
+        const tags = await getOrdersTags([orderId]);
+        setValue(findStage(tags));
+      } catch (err) {
+        console.error('Failed to fetch order tags:', err);
+        setError('Failed to load stage');
+      } finally {
+        setLoading(false);
+      }
     }
     fetchOrderTags();
   }, [orderId]);
 
   const onSelect = useCallback(async (newValue: string) => {
+    if (!newValue) return;
     setLoading(true);
     setError(null);
     try {
@@ -66,6 +72,7 @@ function App() {
         onChange={(event) => onSelect(event.currentTarget.value)}
         disabled={loading}
       >
+        <s-option value=''>— Не вибрано —</s-option>
         {stages.map(({ value, label }) => (
           <s-option key={value} value={value}>
             {label}
