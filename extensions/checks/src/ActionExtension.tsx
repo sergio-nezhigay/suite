@@ -176,27 +176,23 @@ function App() {
   useEffect(() => {
     if (orders.length > 0) {
       setVariantsLoading(true);
-      const allProductTitles = new Set<string>();
-      orders.forEach(order => {
-        order.lineItems.nodes.forEach(item => {
-          allProductTitles.add(item.title);
-        });
-      });
-
-      if (allProductTitles.size > 0) {
-        fetchBestVariants(Array.from(allProductTitles)).then(variants => {
-          setProductVariantsCache(variants);
-          setVariantsLoading(false);
-        });
-      } else {
+      fetchReceiptNames(orders).then(names => {
+        setProductVariantsCache(names);
         setVariantsLoading(false);
-      }
+      });
     }
   }, [orders]);
 
   const formatPrice = (amount: string) => {
     return Math.round(parseFloat(amount)).toString();
   };
+
+  // Same price as sent when issuing, so preview names match the check
+  const linePrice = (item: Order['lineItems']['nodes'][number]) =>
+    formatPrice(
+      item.discountedUnitPriceSet.shopMoney.amount ||
+      item.originalUnitPriceSet.shopMoney.amount
+    );
 
   const formatLineItemsWithPrices = (lineItems: Order['lineItems']) => {
     if (!lineItems?.nodes?.length) return [];
@@ -209,34 +205,33 @@ function App() {
       : name;
   };
 
-  // Helper functions for fetching variants from backend
-  const fetchBestVariant = async (productTitle: string): Promise<string> => {
+  // Check names per line item id, computed by the backend
+  const fetchReceiptNames = async (ordersToName: Order[]): Promise<Record<string, string>> => {
     try {
-      const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(productTitle)}`);
+      const response = await fetch('/receiptNames', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orders: ordersToName.map(order => ({
+            id: order.id,
+            lineItems: order.lineItems.nodes.map(item => ({
+              id: item.id,
+              title: item.title,
+              price: linePrice(item),
+            })),
+          })),
+        }),
+      });
       if (!response.ok) {
-        console.log('Failed to fetch variant for:', productTitle);
-        return '';
+        console.log('Failed to fetch receipt names:', response.status);
+        return {};
       }
       const data = await response.json();
-      return data.bestVariant;
+      return data.names;
     } catch (error) {
-      console.log('Error fetching variant for:', productTitle, error);
-      return '';
+      console.log('Error fetching receipt names:', error);
+      return {};
     }
-  };
-
-  // For batch processing multiple titles at once
-  const fetchBestVariants = async (productTitles: string[]): Promise<Record<string, string>> => {
-    const variants: Record<string, string> = {};
-
-    // Process in parallel for better performance
-    const promises = productTitles.map(async (title) => {
-      const variant = await fetchBestVariant(title);
-      variants[title] = variant;
-    });
-
-    await Promise.all(promises);
-    return variants;
   };
 
 
@@ -269,13 +264,9 @@ function App() {
         customer: order.customer?.displayName,
         lineItems: order.lineItems.nodes.map(item => ({
           title: item.title,
-          variant: productVariantsCache[item.title],
           quantity: item.currentQuantity,
           // Use discounted price if available, fallback to original
-          price: formatPrice(
-            item.discountedUnitPriceSet.shopMoney.amount ||
-            item.originalUnitPriceSet.shopMoney.amount
-          )
+          price: linePrice(item)
         }))
       }));
 
@@ -368,7 +359,7 @@ function App() {
                     return (
                       <s-grid key={itemIndex} gridTemplateColumns={lineItemColumns} alignItems='start'>
                         <s-text>{truncateProductName(item.title)}</s-text>
-                        <s-text>{productVariantsCache[item.title]}</s-text>
+                        <s-text>{productVariantsCache[item.id]}</s-text>
                         <s-box>
                           <s-badge>{item.currentQuantity}</s-badge>
                         </s-box>

@@ -1,40 +1,47 @@
-import { resolveBestVariant } from '../data/findBestVariant';
 import { CheckboxReceiptBody, CheckboxGood, CheckboxSellReceiptBody } from './checkboxTypes';
+import { assignReceiptNames } from './receiptNames';
+
+type OrderLineData = {
+  title: string;
+  price: string;
+  quantity?: number;
+};
+
+type OrderData = {
+  orderId?: string;
+  id?: string;
+  lineItems?: OrderLineData[];
+};
 
 export class OrderToReceiptTransformer {
-  static transformOrder(order: any, ettnNumber: string): CheckboxReceiptBody {
-    const lineItems = order.lineItems || [];
-    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
-      // Handle different possible price structures
-      let unitPriceUAH = 0;
-      if (item.priceSet?.shopMoney?.amount) {
-        unitPriceUAH = parseFloat(item.priceSet.shopMoney.amount);
-      } else if (item.price) {
-        unitPriceUAH = parseFloat(item.price);
-      }
+  // Names are computed here (not taken from the frontend) so every check flow uses the same rules
+  private static buildGoods(orderData: OrderData): CheckboxGood[] {
+    const lineItems = orderData.lineItems || [];
+    const names = assignReceiptNames(lineItems, orderData.orderId || orderData.id || '');
 
-      const priceKopecks = Math.round(unitPriceUAH * 100);
+    return lineItems.map((item, index) => ({
+      good: {
+        code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
+        name: names[index],
+        price: Math.round(parseFloat(item.price) * 100),
+      },
+      quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
+      is_return: false,
+      discounts: [],
+    }));
+  }
 
-      return {
-        good: {
-          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
-          name: this.mapProductVariant(item.title || item.name || 'Unknown Product'),
-          price: priceKopecks
-        },
-        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
-        is_return: false,
-        discounts: []
-      };
-    });
+  private static total(goods: CheckboxGood[]): number {
+    return goods.reduce((sum, good) => sum + (good.good.price * good.quantity / 1000), 0);
+  }
 
-    const totalAmount = goods.reduce((sum, good) =>
-      sum + (good.good.price * good.quantity / 1000), 0
-    );
+  static transformOrderFromData(orderData: OrderData, order: any, ettnNumber: string): CheckboxReceiptBody {
+    const goods = this.buildGoods(orderData);
     return {
       goods,
       payments: [{
         type: "ETTN",
-        value: totalAmount,
+        value: this.total(goods),
         ettn: ettnNumber
       }],
       discounts: [],
@@ -42,105 +49,13 @@ export class OrderToReceiptTransformer {
     };
   }
 
-  static transformOrderFromData(orderData: any, order: any, ettnNumber: string): CheckboxReceiptBody {
-    const lineItems = orderData.lineItems || [];
-    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
-      const priceKopecks = Math.round(parseFloat(item.price) * 100);
-
-      return {
-        good: {
-          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
-          name: item.variant, // Use pre-calculated variant from frontend
-          price: priceKopecks
-        },
-        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
-        is_return: false,
-        discounts: []
-      };
-    });
-
-    const totalAmount = goods.reduce((sum, good) =>
-      sum + (good.good.price * good.quantity / 1000), 0
-    );
-    return {
-      goods,
-      payments: [{
-        type: "ETTN",
-        value: totalAmount,
-        ettn: ettnNumber
-      }],
-      discounts: [],
-      deliveries: []
-    };
-  }
-
-  private static mapProductVariant(productTitle: string): string {
-    const bestMatch = resolveBestVariant(productTitle).variant;
-    return bestMatch;
-  }
-
-  static transformOrderForSell(order: any): CheckboxSellReceiptBody {
-    const lineItems = order.lineItems || [];
-    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
-      // Handle different possible price structures
-      let unitPriceUAH = 0;
-      if (item.priceSet?.shopMoney?.amount) {
-        unitPriceUAH = parseFloat(item.priceSet.shopMoney.amount);
-      } else if (item.price) {
-        unitPriceUAH = parseFloat(item.price);
-      }
-
-      const priceKopecks = Math.round(unitPriceUAH * 100);
-
-      return {
-        good: {
-          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
-          name: this.mapProductVariant(item.title || item.name || 'Unknown Product'),
-          price: priceKopecks
-        },
-        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
-        is_return: false,
-        discounts: []
-      };
-    });
-
-    const totalAmount = goods.reduce((sum, good) =>
-      sum + (good.good.price * good.quantity / 1000), 0
-    );
+  static transformOrderFromDataForSell(orderData: OrderData, order: any): CheckboxSellReceiptBody {
+    const goods = this.buildGoods(orderData);
     return {
       goods,
       payments: [{
         type: "CASHLESS",
-        value: totalAmount
-      }]
-    };
-  }
-
-  static transformOrderFromDataForSell(orderData: any, order: any): CheckboxSellReceiptBody {
-    const lineItems = orderData.lineItems || [];
-    const goods: CheckboxGood[] = lineItems.map((item: any, index: number) => {
-      const priceKopecks = Math.round(parseFloat(item.price) * 100);
-
-      return {
-        good: {
-          code: String(index + 1).padStart(4, '0'), // "0001", "0002", etc.
-          name: item.variant, // Use pre-calculated variant from frontend
-          price: priceKopecks
-        },
-        quantity: (item.quantity || 1) * 1000, // Checkbox format: 1000 = 1 item
-        is_return: false,
-        discounts: []
-      };
-    });
-
-    const totalAmount = goods.reduce((sum, good) =>
-      sum + (good.good.price * good.quantity / 1000), 0
-    );
-    return {
-      goods,
-      payments: [{
-        type: "CASHLESS",
-        value: totalAmount
+        value: this.total(goods)
       }]
     };
   }
