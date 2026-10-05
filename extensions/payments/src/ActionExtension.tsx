@@ -191,50 +191,41 @@ function App() {
   useEffect(() => {
     if (orders.length > 0) {
       setVariantsLoading(true);
-      const allProductTitles = new Set<string>();
-      orders.forEach(order => {
-        order.lineItems.nodes.forEach(item => {
-          allProductTitles.add(item.title);
-        });
-      });
-
-      if (allProductTitles.size > 0) {
-        fetchBestVariants(Array.from(allProductTitles)).then(variants => {
-          setBestVariants(variants);
-          setVariantsLoading(false);
-        });
-      } else {
+      fetchReceiptNames(orders).then(names => {
+        setBestVariants(names);
         setVariantsLoading(false);
-      }
+      });
     }
   }, [orders]);
 
-  const fetchBestVariant = async (productTitle: string): Promise<string> => {
+  // Check names per line item id, computed by the backend
+  const fetchReceiptNames = async (ordersToName: Order[]): Promise<Record<string, string>> => {
     try {
-      const response = await fetch(`/findBestVariant?productTitle=${encodeURIComponent(productTitle)}`);
+      const response = await fetch('/receiptNames', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          orders: ordersToName.map(order => ({
+            id: order.id,
+            lineItems: order.lineItems.nodes.map(item => ({
+              id: item.id,
+              title: item.title,
+              // Same price as sent when issuing, so preview names match the check
+              price: formatPrice(item.discountedUnitPriceSet.shopMoney.amount),
+            })),
+          })),
+        }),
+      });
       if (!response.ok) {
-        console.log('Failed to fetch variant for:', productTitle);
-        return '';
+        console.log('Failed to fetch receipt names:', response.status);
+        return {};
       }
       const data = await response.json();
-      return data.bestVariant;
+      return data.names;
     } catch (error) {
-      console.log('Error fetching variant for:', productTitle, error);
-      return '';
+      console.log('Error fetching receipt names:', error);
+      return {};
     }
-  };
-
-  const fetchBestVariants = async (productTitles: string[]): Promise<Record<string, string>> => {
-    const variants: Record<string, string> = {};
-
-    // Process in parallel for better performance
-    const promises = productTitles.map(async (title) => {
-      const variant = await fetchBestVariant(title);
-      variants[title] = variant;
-    });
-
-    await Promise.all(promises);
-    return variants;
   };
 
   const truncateProductName = (name: string, maxLength: number = 40) => {
@@ -270,7 +261,6 @@ function App() {
           title: item.title,
           quantity: item.currentQuantity,
           price: formatPrice(item.discountedUnitPriceSet.shopMoney.amount),
-          variant: bestVariants[item.title] || item.title,
         })),
       }));
 
@@ -378,7 +368,7 @@ function App() {
                               <s-text>{truncateProductName(item.title)}</s-text>
                             </s-box>
                             <s-box minInlineSize='20%'>
-                              <s-text>{bestVariants[item.title] || '...'}</s-text>
+                              <s-text>{bestVariants[item.id] || '...'}</s-text>
                             </s-box>
                             <s-box minInlineSize='15%'>
                               <s-badge>{item.currentQuantity}</s-badge>

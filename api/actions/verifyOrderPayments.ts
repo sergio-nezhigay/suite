@@ -122,7 +122,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     await timeIt('checkbox_ensure_shift', () => checkboxService.ensureShiftOpen(), logger);
 
     // Require orderData for automatic check creation
-    // The frontend provides orderData with pre-calculated AI variants
+    // The frontend provides orderData; check names are computed in the transformer
     if (!orderData) {
       return {
         success: false,
@@ -132,7 +132,7 @@ Note: Nova Poshta payments are excluded from automatic check creation`;
     }
 
     // Use the order object already passed in (has id, name, shopId, etc.)
-    // and the orderData from frontend (has line items with AI-selected variants)
+    // and the orderData from frontend (has line items with prices)
     const receiptBody = OrderToReceiptTransformer.transformOrderFromDataForSell(
       orderData,
       order

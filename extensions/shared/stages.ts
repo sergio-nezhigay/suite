@@ -20,6 +20,11 @@ const labels = [
   'Дубльовано',
 ];
 
+// Returns the first tag that is a known stage, or '' if none
+export function findStage(tags: string[] | undefined): string {
+  return tags?.find((tag) => labels.includes(tag)) || '';
+}
+
 export const STAGE_NAMES = {
   RI: 'Оформити РІ',
   CHE: 'Оформити Че',

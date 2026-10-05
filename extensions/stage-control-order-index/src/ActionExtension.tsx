@@ -7,7 +7,7 @@ import {
   getOrdersTags,
   updateOrdersTags,
 } from '../../shared/shopifyOperations';
-import { stages } from '../../shared/stages';
+import { findStage, stages } from '../../shared/stages';
 
 // Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
 export default async () => {
@@ -29,9 +29,12 @@ function App() {
     async function fetchOrderTags() {
       if (!initialLoadComplete && selectedIds.length > 0) {
         try {
-          const tags = await getOrdersTags(selectedIds);
-          const currentStage = (tags && tags[0]) || '';
-          setValue(currentStage);
+          // Per order, so mixed stages show blank instead of the first order's tag
+          const orderStages = await Promise.all(
+            selectedIds.map(async (id) => findStage(await getOrdersTags([id])))
+          );
+          const allSame = orderStages.every((stage) => stage === orderStages[0]);
+          setValue(allSame ? orderStages[0] : '');
           setInitialLoadComplete(true);
         } catch (error) {
           console.error('Failed to fetch initial tags:', error);
@@ -102,6 +105,7 @@ function App() {
           onChange={(event) => handleChange(event.currentTarget.value)}
           disabled={loading}
         >
+          <s-option value=''>— Не вибрано —</s-option>
           {stages.map(({ value, label }) => (
             <s-option key={value} value={value}>
               {label}
@@ -112,10 +116,11 @@ function App() {
       <s-button
         slot='primary-action'
         onClick={async () => {
-          await onSelect(value || '');
+          if (!value) return;
+          await onSelect(value);
           close();
         }}
-        disabled={loading}
+        disabled={loading || !value}
       >
         Update
       </s-button>

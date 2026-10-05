@@ -4,104 +4,7 @@ import {
   NOVA_POSHTA_ACCOUNT,
   extractPaymentCodeFromAccount,
 } from '../utilities/fiscal/paymentConstants';
-
-interface PreviewItem {
-  name: string;
-  quantity: number;
-  priceUAH: number;
-  totalUAH: number;
-}
-
-// Helper function to distribute amount across multiple items with variable pricing
-function distributeAmount(totalAmountUAH: number): PreviewItem[] {
-  const productName = 'Перехідник HDMI to VGA';
-
-  // If amount is 1000 UAH or less, use single item
-  if (totalAmountUAH <= 1000) {
-    return [
-      {
-        name: productName,
-        quantity: 1,
-        priceUAH: totalAmountUAH,
-        totalUAH: totalAmountUAH,
-      },
-    ];
-  }
-
-  // For amounts > 1000 UAH, split into multiple items with variable pricing
-  // Price range: 300-900 UAH to look natural
-  const minPrice = 300;
-  const maxPrice = 900;
-  const items: PreviewItem[] = [];
-  let remainingAmount = totalAmountUAH;
-  let iterationCount = 0;
-  const MAX_ITERATIONS = 1000; // Safety limit to prevent infinite loops
-
-  // Generate items until remaining amount is covered
-  while (remainingAmount > 0) {
-    iterationCount++;
-
-    // Safety check to prevent infinite loops
-    if (iterationCount > MAX_ITERATIONS) {
-      throw new Error(
-        `Distribution loop exceeded ${MAX_ITERATIONS} iterations. Remaining: ${remainingAmount} UAH. This indicates an infinite loop bug.`
-      );
-    }
-
-    let itemPrice: number;
-
-    if (remainingAmount <= maxPrice) {
-      // Last item: use exact remaining amount
-      itemPrice = remainingAmount;
-    } else if (remainingAmount <= maxPrice + minPrice) {
-      // Split remaining into 2 items with similar prices
-      itemPrice = Math.floor(remainingAmount / 2);
-    } else {
-      // Generate random price in range for natural distribution
-      // Use weighted random to prefer mid-range prices (400-700)
-      const random = Math.random();
-      if (random < 0.2) {
-        // 20% chance: lower range (300-450)
-        itemPrice = Math.floor(Math.random() * (450 - minPrice + 1)) + minPrice;
-      } else if (random < 0.8) {
-        // 60% chance: mid range (450-700)
-        itemPrice = Math.floor(Math.random() * (700 - 450 + 1)) + 450;
-      } else {
-        // 20% chance: higher range (700-900)
-        itemPrice = Math.floor(Math.random() * (maxPrice - 700 + 1)) + 700;
-      }
-    }
-
-    // Round to nearest 10 for natural-looking prices
-    itemPrice = Math.round(itemPrice / 10) * 10;
-
-    // CRITICAL FIX: Prevent zero prices that cause infinite loops
-    if (itemPrice === 0 && remainingAmount > 0) {
-      itemPrice = 10; // Minimum price of 10 UAH
-    }
-
-    // Ensure we don't exceed remaining amount
-    itemPrice = Math.min(itemPrice, remainingAmount);
-
-    // Final safety check
-    if (itemPrice <= 0) {
-      throw new Error(
-        `Invalid itemPrice: ${itemPrice}. This would cause an infinite loop.`
-      );
-    }
-
-    items.push({
-      name: productName,
-      quantity: 1,
-      priceUAH: itemPrice,
-      totalUAH: itemPrice,
-    });
-
-    remainingAmount -= itemPrice;
-  }
-
-  return items;
-}
+import { distributeAmount } from '../utilities/fiscal/receiptNames';
 
 export const params = {
   transactionId: { type: 'string', required: true },
@@ -166,7 +69,7 @@ export const run: ActionRun = async ({ params, api, logger }) => {
     }
 
     // Distribute amount across items
-    const items = distributeAmount(amount);
+    const items = distributeAmount(amount, String(transactionId));
 
     // Calculate total for verification
     const calculatedTotal = items.reduce((sum, item) => sum + item.totalUAH, 0);
