@@ -118,22 +118,29 @@ async function createMessage(
 }
 
 /**
+ * Rozetka order id from a Shopify order name. The automations Worker names Rozetka orders
+ * "R-<id>" since 2026-10-07; older ones are the bare 9-digit id. Anything else (site "№16047",
+ * Prom "P-432046098") is not a Rozetka order.
+ */
+export function rozetkaOrderIdFromName(orderName: string): string | null {
+  const match = orderName.trim().match(/^(?:R-)?(\d{9})$/);
+  return match ? match[1] : null;
+}
+
+/**
  * Send a predefined message to a Rozetka order chat
- * @param orderName - The order name (e.g., "865770877")
+ * @param orderName - The Shopify order name: "R-908063857", or a bare "865770877" for older orders
  * @returns Promise<boolean> - True if message was sent successfully
  */
 export async function sendRozetkaOrderMessage(
   orderName: string
 ): Promise<boolean> {
   try {
-    const normalizedOrderName = orderName.trim();
-    // Require exact 9-digit Rozetka order ID format
-    if (!/^\d{9}$/.test(normalizedOrderName)) {
-      logger.error({ orderName }, '[Rozetka] Invalid order name format. Expected format: XXXXXXXXX');
+    const orderId = rozetkaOrderIdFromName(orderName);
+    if (!orderId) {
+      logger.error({ orderName }, '[Rozetka] Invalid order name format. Expected format: R-XXXXXXXXX or XXXXXXXXX');
       return false;
     }
-
-    const orderId = normalizedOrderName;
     // Get access token
     let accessToken = await rozetkaTokenManager.getValidToken();
     if (!accessToken) {

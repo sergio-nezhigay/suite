@@ -1,7 +1,7 @@
 import type { RouteHandler } from 'fastify';
 import { logger } from 'gadget-server';
 import { smsClient } from 'utilities';
-import { sendRozetkaOrderMessage } from '../utilities/rozetka/sendRozetkaMessage';
+import { rozetkaOrderIdFromName, sendRozetkaOrderMessage } from '../utilities/rozetka/sendRozetkaMessage';
 
 const route: RouteHandler = async (request, reply) => {
   const { to, message, orderName } = request.body as {
@@ -20,7 +20,7 @@ const route: RouteHandler = async (request, reply) => {
     // Check if we should send a Rozetka message
     const shouldSendRozetkaMessage =
       orderName &&
-      /^\d{9}$/.test(orderName.trim()) &&
+      rozetkaOrderIdFromName(orderName) !== null &&
       message.toLowerCase().includes('peredzvonit');
 
     if (shouldSendRozetkaMessage) {
