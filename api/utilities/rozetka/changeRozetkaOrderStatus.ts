@@ -5,18 +5,12 @@ import { ROZETKA_API_BASE_URL } from '../data/data';
 export const changeRozetkaOrderStatus = async (
   orderId: number,
   status: number,
-  accessToken: string,
-  ttn?: string
+  accessToken: string
 ): Promise<void> => {
   try {
-    const body: any = { status };
-    if (ttn) {
-      body.ttn = ttn;
-    }
-
     const response = await axios.put(
       `${ROZETKA_API_BASE_URL}/orders/${orderId}`,
-      body,
+      { status },
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,
