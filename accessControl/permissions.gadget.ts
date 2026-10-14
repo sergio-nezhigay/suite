@@ -57,7 +57,6 @@ export const permissions: GadgetPermissions = {
           },
           actions: {
             create: true,
-            delete: true,
             update: true,
           },
         },
@@ -69,7 +68,6 @@ export const permissions: GadgetPermissions = {
           actions: {
             create: true,
             delete: true,
-            update: true,
           },
         },
         shopifyFulfillmentLineItem: {
@@ -122,8 +120,6 @@ export const permissions: GadgetPermissions = {
           },
           actions: {
             create: true,
-            delete: true,
-            update: true,
           },
         },
         shopifyProduct: {
