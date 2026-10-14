@@ -25,5 +25,6 @@
       "types/*": ["api/types/*"]
     },
     "types": ["@shopify/app-bridge-types"]
-  }
+  },
+  "exclude": ["node_modules", "**/dist"]
 }
