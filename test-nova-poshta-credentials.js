@@ -24,7 +24,7 @@ async function testFetchCredentials() {
       console.log('❌ Error:', data.error);
     }
   } catch (error) {
-    console.error('❌ Failed to fetch:', error.message);
+    console.error('❌ Failed to fetch:', error instanceof Error ? error.message : error);
     console.log('\n⚠️  Make sure your Gadget dev server is running!');
     console.log('   Run: npm run dev');
   }

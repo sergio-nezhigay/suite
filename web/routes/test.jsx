@@ -25,7 +25,7 @@ function ChatFormExample() {
       });
 
       // Extract titles from the response data
-      const extractedTitles = data.map((item) => item.title);
+      const extractedTitles = data.map((/** @type {{ title: string }} */ item) => item.title);
       setTitles(extractedTitles);
     } catch (error) {
       console.error('[test.jsx] Error sending message', {
@@ -38,7 +38,7 @@ function ChatFormExample() {
     setMessage('');
   }, [message]);
 
-  const handleMessageChange = useCallback((value) => setMessage(value), []);
+  const handleMessageChange = useCallback((/** @type {string} */ value) => setMessage(value), []);
 
   return (
     <>

@@ -6,7 +6,7 @@ import {
   createCustomer,
   findCustomer,
 } from '../utilities/shopify/api/orders/createCustomer';
-import { RozetkaOrder, ShopifyOrder } from 'types/*';
+import { RozetkaOrder, ShopifyOrder } from 'types/index';
 
 import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
 import { ROZETKA_API_BASE_URL } from 'api/utilities/data/data';

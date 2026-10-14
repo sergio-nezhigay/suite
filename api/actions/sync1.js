@@ -1,3 +1,4 @@
+/** @type { ActionRun } */
 export const run = async ({ api }) => {
   const allRecords = [];
   const pauseDuration = 2000;

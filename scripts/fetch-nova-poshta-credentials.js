@@ -50,6 +50,7 @@ if (!API_KEY) {
   }
 }
 
+/** @param {Record<string, unknown>} payload */
 async function fetchNovaPoshtaData(payload) {
   try {
     const response = await fetch('https://api.novaposhta.ua/v2.0/json/', {
@@ -72,7 +73,7 @@ async function fetchNovaPoshtaData(payload) {
 
     return data;
   } catch (error) {
-    console.error('Request failed:', error.message);
+    console.error('Request failed:', error instanceof Error ? error.message : error);
     throw error;
   }
 }
@@ -157,7 +158,7 @@ async function fetchSenderCredentials() {
 
     console.log('\n✅ Found warehouses:');
     if (warehouseResponse.data && warehouseResponse.data.length > 0) {
-      warehouseResponse.data.forEach((warehouse, index) => {
+      warehouseResponse.data.forEach((/** @type {any} */ warehouse, /** @type {number} */ index) => {
         console.log(`\n   ${index + 1}. ${warehouse.Description}`);
         console.log(`      City: ${warehouse.CityDescription || 'N/A'}`);
         console.log(`      Ref: ${warehouse.Ref}`);
@@ -222,7 +223,7 @@ async function fetchSenderCredentials() {
             cityWarehousesResponse.data.length > 0
           ) {
             console.log(`\n📍 Warehouses in ${city}:`);
-            cityWarehousesResponse.data.slice(0, 3).forEach((w) => {
+            cityWarehousesResponse.data.slice(0, 3).forEach((/** @type {any} */ w) => {
               console.log(`   ${w.Description} - Ref: ${w.Ref}`);
             });
           }
@@ -236,7 +237,7 @@ async function fetchSenderCredentials() {
       );
     }
   } catch (error) {
-    console.error('\n❌ Error fetching credentials:', error.message);
+    console.error('\n❌ Error fetching credentials:', error instanceof Error ? error.message : error);
     process.exit(1);
   }
 }

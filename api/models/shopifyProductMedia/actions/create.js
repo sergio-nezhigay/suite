@@ -12,7 +12,7 @@ export const run = async ({
 }) => {
   applyParams(params, record);
   await preventCrossShopDataAccess(params, record);
-  if (trigger.type === 'shopify_sync') {
+  if (/** @type {string} */ (trigger.type) === 'shopify_sync') {
     return;
   }
   await save(record);

@@ -1,5 +1,6 @@
 import cors from '@fastify/cors';
 
+/** @param { import("gadget-server").Server } server */
 export default async function (server) {
   await server.register(cors, {
     origin: [

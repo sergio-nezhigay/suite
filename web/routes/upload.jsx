@@ -4,7 +4,9 @@ import { useState } from 'react';
 
 export default function FileUploadPage() {
   const navigate = useNavigate();
-  const [apiResponse, setApiResponse] = useState(null);
+  const [apiResponse, setApiResponse] = useState(
+    /** @type {{ error?: string, file?: { id: string, alt?: string, createdAt: string, fileStatus: string } } | null} */ (null)
+  );
 
   const handleFileUpload = async () => {
     try {
@@ -34,7 +36,10 @@ export default function FileUploadPage() {
     const file = apiResponse.file;
 
     return file ? (
-      <Card sectioned title='File Upload Response'>
+      <Card>
+        <Text variant='headingMd' as='h2'>
+          File Upload Response
+        </Text>
         <Text variant='bodyMd' as='p'>
           <strong>File ID:</strong> {file.id}
         </Text>
