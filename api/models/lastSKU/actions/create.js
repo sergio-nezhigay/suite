@@ -1,4 +1,4 @@
-import { applyParams, save, ActionOptions } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 
 /** @type { ActionRun } */
 export const run = async ({ params, record, logger, api, connections }) => {
@@ -6,7 +6,7 @@ export const run = async ({ params, record, logger, api, connections }) => {
   await save(record);
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = {
   actionType: "create",
 };

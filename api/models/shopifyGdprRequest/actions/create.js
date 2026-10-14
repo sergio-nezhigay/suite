@@ -1,8 +1,8 @@
-import { applyParams, save, ActionOptions, CreateShopifyGdprRequestActionContext } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
 
 /**
- * @param { CreateShopifyGdprRequestActionContext } context
+ * @param { import("gadget-server").CreateShopifyGdprRequestActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
@@ -11,7 +11,7 @@ export async function run({ params, record, logger, api, connections }) {
 };
 
 /**
- * @param { CreateShopifyGdprRequestActionContext } context
+ * @param { import("gadget-server").CreateShopifyGdprRequestActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   switch(record.topic) {
@@ -31,5 +31,5 @@ export async function onSuccess({ params, record, logger, api, connections }) {
   }
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = { actionType: "create" };

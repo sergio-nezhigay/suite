@@ -1,7 +1,7 @@
-import { applyParams, save, ActionOptions, UpdateSmsTemplatesActionContext } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 
 /**
- * @param { UpdateSmsTemplatesActionContext } context
+ * @param { import("gadget-server").UpdateSmsTemplatesActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
@@ -9,13 +9,13 @@ export async function run({ params, record, logger, api, connections }) {
 };
 
 /**
- * @param { UpdateSmsTemplatesActionContext } context
+ * @param { import("gadget-server").UpdateSmsTemplatesActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = {
   actionType: "update",
 };

@@ -1,12 +1,8 @@
-import {
-  deleteRecord,
-  ActionOptions,
-  DeleteShopifyCompanyContactRoleActionContext,
-} from 'gadget-server';
+import { deleteRecord } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 
 /**
- * @param { DeleteShopifyCompanyContactRoleActionContext } context
+ * @param { import("gadget-server").DeleteShopifyCompanyContactRoleActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   await preventCrossShopDataAccess(params, record);
@@ -14,13 +10,13 @@ export async function run({ params, record, logger, api, connections }) {
 }
 
 /**
- * @param { DeleteShopifyCompanyContactRoleActionContext } context
+ * @param { import("gadget-server").DeleteShopifyCompanyContactRoleActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 }
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = {
   actionType: 'delete',
   triggers: {

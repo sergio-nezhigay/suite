@@ -1,4 +1,4 @@
-import { applyParams, save, ActionOptions } from 'gadget-server';
+import { applyParams, save } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
 
 /** @type { ActionRun } */
@@ -27,5 +27,5 @@ export const onSuccess = async ({
   connections,
 }) => {};
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = { actionType: 'create' };

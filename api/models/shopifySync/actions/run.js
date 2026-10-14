@@ -1,8 +1,8 @@
-import { applyParams, save, ActionOptions, RunShopifySyncActionContext } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 import { preventCrossShopDataAccess, shopifySync } from "gadget-server/shopify";
 
 /**
- * @param { RunShopifySyncActionContext } context
+ * @param { import("gadget-server").RunShopifySyncActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
@@ -12,13 +12,13 @@ export async function run({ params, record, logger, api, connections }) {
 };
 
 /**
- * @param { RunShopifySyncActionContext } context
+ * @param { import("gadget-server").RunShopifySyncActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = {
   actionType: "create",
   triggers: { api: true },

@@ -1,8 +1,8 @@
-import { applyParams, save, ActionOptions, UpdateShopifyCompanyAddressActionContext } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
 
 /**
- * @param { UpdateShopifyCompanyAddressActionContext } context
+ * @param { import("gadget-server").UpdateShopifyCompanyAddressActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
@@ -11,11 +11,11 @@ export async function run({ params, record, logger, api, connections }) {
 };
 
 /**
- * @param { UpdateShopifyCompanyAddressActionContext } context
+ * @param { import("gadget-server").UpdateShopifyCompanyAddressActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = { actionType: "update" };

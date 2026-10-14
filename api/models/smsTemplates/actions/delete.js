@@ -1,20 +1,20 @@
-import { deleteRecord, ActionOptions, DeleteSmsTemplatesActionContext } from "gadget-server";
+import { deleteRecord } from "gadget-server";
 
 /**
- * @param { DeleteSmsTemplatesActionContext } context
+ * @param { import("gadget-server").DeleteSmsTemplatesActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   await deleteRecord(record);
 };
 
 /**
- * @param { DeleteSmsTemplatesActionContext } context
+ * @param { import("gadget-server").DeleteSmsTemplatesActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = {
   actionType: "delete",
 };

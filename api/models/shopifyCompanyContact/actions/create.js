@@ -1,8 +1,8 @@
-import { applyParams, save, ActionOptions, CreateShopifyCompanyContactActionContext } from "gadget-server";
+import { applyParams, save } from "gadget-server";
 import { preventCrossShopDataAccess } from "gadget-server/shopify";
 
 /**
- * @param { CreateShopifyCompanyContactActionContext } context
+ * @param { import("gadget-server").CreateShopifyCompanyContactActionContext } context
  */
 export async function run({ params, record, logger, api, connections }) {
   applyParams(params, record);
@@ -11,11 +11,11 @@ export async function run({ params, record, logger, api, connections }) {
 };
 
 /**
- * @param { CreateShopifyCompanyContactActionContext } context
+ * @param { import("gadget-server").CreateShopifyCompanyContactActionContext } context
  */
 export async function onSuccess({ params, record, logger, api, connections }) {
   // Your logic goes here
 };
 
-/** @type { ActionOptions } */
+/** @type { import("gadget-server").ActionOptions } */
 export const options = { actionType: "create" };
