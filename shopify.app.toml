@@ -2,7 +2,7 @@
 
 client_id = "2a63484c3b50c064c9d0e0a0d10b00d6"
 name = "admin"
-application_url = "https://admin-action-block.gadget.app/api/shopify/install-or-render"
+application_url = "https://admin-action-block.gadget.app/"
 embedded = true
 handle = "admin-64"
 
