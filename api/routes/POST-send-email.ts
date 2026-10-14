@@ -16,6 +16,7 @@ interface SendEmailRequest {
 const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
   const { config, request, reply, logger } = context;
 
+  const startedAt = Date.now();
   try {
     const { recipientEmail, subject, htmlContent, cc, attachments } =
       request.body;
@@ -24,6 +25,10 @@ const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
       host: 'mail.adm.tools',
       port: 465,
       secure: true,
+      // nodemailer defaults are minutes; keep below the extension's 30s timeout
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 20000,
       auth: {
         user: 'info@informatica.com.ua',
         pass: config.EMAIL_PASSWORD,
@@ -54,12 +59,19 @@ const route: RouteHandler<{ Body: SendEmailRequest }> = async (context) => {
 
     // Send the email
     await emails.sendMail(emailOptions);
+    logger.info(
+      { recipientEmail, ms: Date.now() - startedAt },
+      'Email sent'
+    );
     await reply.code(200).send({
       success: true,
       message: 'Email sent successfully',
     });
   } catch (error) {
-    logger.error({ err: error }, 'Failed to send email');
+    logger.error(
+      { err: error, ms: Date.now() - startedAt },
+      'Failed to send email'
+    );
 
     await reply.code(500).send({
       success: false,

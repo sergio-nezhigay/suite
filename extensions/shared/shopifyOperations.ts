@@ -1,4 +1,4 @@
-import { makeGraphQLQuery } from './makeGraphQLQuery';
+import { fetchWithTimeout, makeGraphQLQuery } from './makeGraphQLQuery';
 
 export async function getOrdersTags(orderIds: string[]): Promise<string[]> {
   const orderTagPromises = orderIds.map((id) => {
@@ -515,11 +515,21 @@ export async function saveDeclaration({
   return response;
 }
 
+// The IP suffix is optional: it must never block or fail the note update.
 async function makeIPMessage() {
-  const response = await fetch('https://api.ipify.org?format=json');
-  const data = await response.json();
-  const ipMessage = data?.ip ? ` by ${data.ip}` : '';
-  return ipMessage;
+  try {
+    const response = await fetchWithTimeout(
+      'https://api.ipify.org?format=json',
+      {},
+      5000,
+      'ipify'
+    );
+    const data = await response.json();
+    return data?.ip ? ` by ${data.ip}` : '';
+  } catch (error) {
+    console.error('Failed to get IP:', error);
+    return '';
+  }
 }
 
 export interface OrderResponse {

@@ -9,7 +9,19 @@ import {
   updateOrdersTags,
   addOrderNote,
 } from '../../shared/shopifyOperations';
+import { fetchWithTimeout } from '../../shared/makeGraphQLQuery';
 import { SHOPIFY_APP_URL } from '../../shared/data';
+
+type SendStep = 'sheet' | 'email' | 'tagging';
+
+const STEP_LABELS: Record<SendStep, string> = {
+  sheet: 'Google Sheet',
+  email: 'email',
+  tagging: 'tagging',
+};
+
+// Above the backend's own timeouts, so the server can answer with a clear error first
+const ROUTE_TIMEOUT_MS = 30000;
 
 // Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
 export default async () => {
@@ -20,6 +32,7 @@ function SendExtension() {
   const [loading, setLoading] = useState<boolean>(true);
   const [sent, setSent] = useState<boolean>(false);
   const [sending, setSending] = useState<boolean>(false);
+  const [step, setStep] = useState<SendStep | null>(null);
   const [progress, setProgress] = useState<{
     done: number;
     total: number;
@@ -124,10 +137,14 @@ function SendExtension() {
   const getTitle = () => {
     if (error) return error;
     if (loading) return 'Loading orders...';
-    if (sending)
-      return `Sending… (${progress?.done ?? 0}/${
-        progress?.total ?? selectedIds.length
-      })`;
+    if (sending) {
+      const stepLabel = step ? STEP_LABELS[step] : 'starting';
+      const count =
+        step === 'tagging'
+          ? ` ${progress?.done ?? 0}/${progress?.total ?? selectedIds.length}`
+          : '';
+      return `Sending… step: ${stepLabel}${count}`;
+    }
     if (sent) return `Orders sent (${selectedIds.length} processed)`;
 
     const baseTitle = firstOrderTag
@@ -141,45 +158,66 @@ function SendExtension() {
     setError(null);
     setSending(true);
     setProgress({ done: 0, total: ordersContent!.length });
+    // Tracked locally too: the `step` state is stale inside this closure
+    let currentStep: SendStep = 'sheet';
+    const runStep = async <T,>(name: SendStep, fn: () => Promise<T>) => {
+      currentStep = name;
+      setStep(name);
+      const startedAt = Date.now();
+      console.log(`[send] step "${name}" started`);
+      const result = await fn();
+      console.log(`[send] step "${name}" done in ${Date.now() - startedAt}ms`);
+      return result;
+    };
+
     try {
       const rows = convertOrdersToRows(ordersContent!);
 
-      const appendResponse = await fetch(
-        `${SHOPIFY_APP_URL}/appendRowsToSheet`,
-        {
-          method: 'POST',
-          body: JSON.stringify({ rows, spreadsheetId, sheetName }),
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-      if (!appendResponse.ok) throw new Error('Failed to send data');
-
-      if (shouldSendEmail) {
-        const emailResponse = await fetch(
-          `${SHOPIFY_APP_URL}/send-email`,
+      await runStep('sheet', async () => {
+        const appendResponse = await fetchWithTimeout(
+          `${SHOPIFY_APP_URL}/appendRowsToSheet`,
           {
             method: 'POST',
+            body: JSON.stringify({ rows, spreadsheetId, sheetName }),
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              recipientEmail,
-              cc: 'nezhihai@gmail.com',
-              subject:
-                'Замовлення, кількість: ' + ordersContent!.length,
-              htmlContent: generateOrdersHtmlTable(ordersContent!),
-            }),
-          }
+          },
+          ROUTE_TIMEOUT_MS,
+          'Google Sheet'
         );
-        if (!emailResponse.ok) throw new Error('Failed to send email');
+        if (!appendResponse.ok)
+          throw new Error(`Failed to send data (${appendResponse.status})`);
+      });
+
+      if (shouldSendEmail) {
+        await runStep('email', async () => {
+          const emailResponse = await fetchWithTimeout(
+            `${SHOPIFY_APP_URL}/send-email`,
+            {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                recipientEmail,
+                cc: 'nezhihai@gmail.com',
+                subject: 'Замовлення, кількість: ' + ordersContent!.length,
+                htmlContent: generateOrdersHtmlTable(ordersContent!),
+              }),
+            },
+            ROUTE_TIMEOUT_MS,
+            'email'
+          );
+          if (!emailResponse.ok)
+            throw new Error(`Failed to send email (${emailResponse.status})`);
+        });
         if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
       }
 
       // Auto-tag processed orders
       if (shouldAutoTag) {
         try {
-          await autoTagProcessedOrders(
-            ordersContent!,
-            tagStrategy,
-            (done, total) => setProgress({ done, total })
+          await runStep('tagging', () =>
+            autoTagProcessedOrders(ordersContent!, tagStrategy, (done, total) =>
+              setProgress({ done, total })
+            )
           );
         } catch (tagError) {
           console.error('Failed to auto-tag orders:', tagError);
@@ -188,14 +226,14 @@ function SendExtension() {
 
       setSent(true);
     } catch (error) {
-      console.error('Error sending orders:', error);
+      console.error(`Error sending orders at step "${currentStep}":`, error);
       const errorMessage =
-        error instanceof Error
-          ? error.message
-          : 'Failed to send orders';
-      setError(errorMessage);
+        error instanceof Error ? error.message : 'Failed to send orders';
+      // Tells the user what already went out, so a retry doesn't duplicate rows/emails
+      setError(`Stuck at "${STEP_LABELS[currentStep]}": ${errorMessage}`);
     } finally {
       setSending(false);
+      setStep(null);
       setProgress(null);
     }
   };
@@ -346,7 +384,7 @@ function removeBarcodeFromTitle(
 }
 
 function convertOrdersToRows(orders: OrderResponse['nodes']) {
-  return orders
+  return [...orders]
     .sort((a, b) => a.name.localeCompare(b.name))
     .flatMap((order) => {
       const currentDate = new Date().toISOString().split('T')[0];
@@ -385,7 +423,7 @@ function convertOrdersToRows(orders: OrderResponse['nodes']) {
 function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
   if (!orders || orders.length === 0) return '<p>No orders.</p>';
 
-  const rows = orders
+  const rows = [...orders]
     .sort((a, b) => a.name.localeCompare(b.name))
     .flatMap((order) => {
       return order.lineItems.nodes.map((lineItem, index) => {

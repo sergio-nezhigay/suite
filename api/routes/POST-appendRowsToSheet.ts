@@ -31,6 +31,7 @@ const route: RouteHandler<{
   }
 
   const range = `${sheetName}!A1`;
+  const startedAt = Date.now();
   try {
     const auth = await authorize(config);
     const sheets = google.sheets({ version: 'v4', auth });
@@ -41,7 +42,13 @@ const route: RouteHandler<{
       valueInputOption: 'USER_ENTERED',
       insertDataOption: 'INSERT_ROWS',
       requestBody: { values: rows },
-    });
+    },
+    // Below the extension's 30s timeout, so the caller gets a clear 500 instead of hanging
+    { timeout: 20000 });
+    logger.info(
+      { spreadsheetId, rows: rows.length, ms: Date.now() - startedAt },
+      'Appended rows to Google Sheets'
+    );
 
     const responseData: sheets_v4.Schema$AppendValuesResponse = response.data;
     await reply.send({
@@ -50,7 +57,10 @@ const route: RouteHandler<{
       updates: responseData.updates,
     });
   } catch (error) {
-    logger.error({ err: error }, 'Error appending rows to Google Sheets');
+    logger.error(
+      { err: error, spreadsheetId, ms: Date.now() - startedAt },
+      'Error appending rows to Google Sheets'
+    );
     // Don't expose the actual error details in the response
     return reply
       .code(500)
