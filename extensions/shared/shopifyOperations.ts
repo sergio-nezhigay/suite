@@ -324,6 +324,90 @@ export async function updateOrdersTags({
   return [value];
 }
 
+const TAG_BATCH_SIZE = 25;
+const CHECK_PAYMENT_TAG = 'Перевірити оплату';
+
+// Replaces the tags and writes the note of many orders in one request per batch
+// (aliased orderUpdate mutations), instead of ~5 sequential calls per order.
+// Returns the ids of orders that failed; the caller decides what to do with them.
+export async function tagAndNoteOrders(
+  items: { orderId: string; tag: string; note: string }[]
+): Promise<string[]> {
+  const ipSuffix = await makeIPMessage();
+  const failed: string[] = [];
+
+  for (let start = 0; start < items.length; start += TAG_BATCH_SIZE) {
+    const batch = items.slice(start, start + TAG_BATCH_SIZE);
+    const toWrite = batch.filter(({ tag }) => tag !== CHECK_PAYMENT_TAG);
+    const guarded = batch.filter(({ tag }) => tag === CHECK_PAYMENT_TAG);
+
+    if (guarded.length > 0) {
+      const checkQuery = `#graphql
+        query CheckPayment(${guarded.map((_, i) => `$id${i}: ID!`).join(', ')}) {
+          ${guarded
+            .map(
+              (_, i) =>
+                `o${i}: order(id: $id${i}) { paymentMethod: metafield(namespace: "custom", key: "payment_method") { value } }`
+            )
+            .join('\n')}
+        }`;
+      const variables = Object.fromEntries(
+        guarded.map(({ orderId }, i) => [`id${i}`, orderId])
+      );
+      const { data } = await makeGraphQLQuery<
+        Record<string, { paymentMethod: { value: string } | null } | null>
+      >(checkQuery, variables);
+      guarded.forEach((item, i) => {
+        if (data?.[`o${i}`]?.paymentMethod?.value === 'Передплата безготівка') {
+          toWrite.push(item);
+        } else {
+          console.error(
+            `Status "${CHECK_PAYMENT_TAG}" is only allowed for "Передплата безготівка": ${item.orderId}`
+          );
+          failed.push(item.orderId);
+        }
+      });
+    }
+
+    if (toWrite.length === 0) continue;
+
+    const mutation = `#graphql
+      mutation TagAndNote(${toWrite.map((_, i) => `$in${i}: OrderInput!`).join(', ')}) {
+        ${toWrite
+          .map(
+            (_, i) =>
+              `o${i}: orderUpdate(input: $in${i}) { order { id } userErrors { field message } }`
+          )
+          .join('\n')}
+      }`;
+    const variables = Object.fromEntries(
+      toWrite.map(({ orderId, tag, note }, i) => [
+        `in${i}`,
+        { id: orderId, tags: [tag], note: note + ipSuffix },
+      ])
+    );
+
+    try {
+      const { data, errors } = await makeGraphQLQuery<
+        Record<string, { userErrors: { message: string }[] } | null>
+      >(mutation, variables);
+      if (errors) throw new Error(errors.map((e) => e.message).join(', '));
+      toWrite.forEach(({ orderId }, i) => {
+        const userErrors = data?.[`o${i}`]?.userErrors;
+        if (!data?.[`o${i}`] || userErrors?.length) {
+          console.error(`Failed to tag order ${orderId}:`, userErrors);
+          failed.push(orderId);
+        }
+      });
+    } catch (error) {
+      console.error('Failed to tag batch:', error);
+      failed.push(...toWrite.map(({ orderId }) => orderId));
+    }
+  }
+
+  return failed;
+}
+
 export async function getCustomerPhone(customerId: string) {
   const query = `#graphql
   query GetCustomerPhone($customerId: ID!) {

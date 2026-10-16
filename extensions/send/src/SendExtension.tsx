@@ -6,8 +6,7 @@ import { useEffect, useState, useMemo } from 'preact/hooks';
 import {
   fetchOrdersData,
   OrderResponse,
-  updateOrdersTags,
-  addOrderNote,
+  tagAndNoteOrders,
 } from '../../shared/shopifyOperations';
 import { fetchWithTimeout } from '../../shared/makeGraphQLQuery';
 import { SHOPIFY_APP_URL } from '../../shared/data';
@@ -516,28 +515,20 @@ async function autoTagProcessedOrders(
   tagStrategy: string | ((order: OrderResponse['nodes'][number]) => string),
   onProgress?: (done: number, total: number) => void
 ): Promise<void> {
-  for (let i = 0; i < orders.length; i++) {
-    const order = orders[i];
-    const newTag =
+  const items = orders.map((order) => {
+    const tag =
       typeof tagStrategy === 'function' ? tagStrategy(order) : tagStrategy;
+    console.log(`Auto-tagging order ${order.name} with: ${tag}`);
+    return {
+      orderId: order.id,
+      tag,
+      note: `Order sent to supplier. Tagged as: ${tag}`,
+    };
+  });
 
-    console.log(`Auto-tagging order ${order.name} with: ${newTag}`);
-
-    await updateOrdersTags({
-      value: newTag,
-      orderIds: [order.id],
-    });
-
-    try {
-      await addOrderNote({
-        orderId: order.id,
-        note: `Order sent to supplier. Tagged as: ${newTag}`,
-      });
-    } catch (error) {
-      console.error(`Failed to add note to order ${order.name}:`, error);
-      // Don't throw - continue processing other orders
-    }
-
-    onProgress?.(i + 1, orders.length);
+  const failed = await tagAndNoteOrders(items);
+  onProgress?.(orders.length, orders.length);
+  if (failed.length > 0) {
+    throw new Error(`Failed to tag ${failed.length} of ${orders.length} orders`);
   }
 }
