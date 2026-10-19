@@ -2,6 +2,7 @@ import type { RouteHandler } from 'fastify';
 import { logger } from 'gadget-server';
 import { smsClient } from 'utilities';
 import { rozetkaOrderIdFromName, sendRozetkaOrderMessage } from '../utilities/rozetka/sendRozetkaMessage';
+import { promOrderIdFromName, sendPromOrderMessage } from '../utilities/prom/sendPromMessage';
 
 const route: RouteHandler = async (request, reply) => {
   const { to, message, orderName } = request.body as {
@@ -17,11 +18,26 @@ const route: RouteHandler = async (request, reply) => {
 
   try {
     const smsResponse = await smsClient(to, message);
+    const isCallbackMessage = message.toLowerCase().includes('peredzvonit');
     // Check if we should send a Rozetka message
     const shouldSendRozetkaMessage =
       orderName &&
       rozetkaOrderIdFromName(orderName) !== null &&
-      message.toLowerCase().includes('peredzvonit');
+      isCallbackMessage;
+    const shouldSendPromMessage =
+      orderName &&
+      promOrderIdFromName(orderName) !== null &&
+      isCallbackMessage;
+
+    if (shouldSendPromMessage) {
+      // Send Prom message asynchronously (don't block SMS response)
+      sendPromOrderMessage(orderName).catch((error) => {
+        logger.error({
+          orderName,
+          error: error instanceof Error ? error.message : String(error),
+        }, '[SMS Route] Failed to send Prom message');
+      });
+    }
 
     if (shouldSendRozetkaMessage) {
       // Send Rozetka message asynchronously (don't block SMS response)

@@ -14,11 +14,25 @@ export default async () => {
   render(<App />, document.body);
 };
 
+// Order source is encoded in the order name: R- Rozetka, P- Prom, otherwise the site
+function getStoreLink(orderNumber: string) {
+  if (orderNumber.startsWith('R-')) return 'https://rozetka.com.ua/seller/interra/';
+  if (orderNumber.startsWith('P-')) return 'https://informatica.prom.ua/';
+  return 'informatica.com.ua';
+}
+
+function getStoreName(orderNumber: string) {
+  if (orderNumber.startsWith('R-')) return 'Interra на Rozetka';
+  if (orderNumber.startsWith('P-')) return 'informatica.prom.ua';
+  return 'informatica.com.ua';
+}
+
 function App() {
   const { data } = shopify;
   const [status, setStatus] = useState('Loading...');
   const [smsTemplates, setSmsTemplates] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [sentText, setSentText] = useState('');
   const [customerPhone, setCustomerPhone] = useState<string>('');
   const [orderDetails, setOrderDetails] = useState<any>(null);
   const orderId = data?.selected[0]?.id;
@@ -34,6 +48,7 @@ function App() {
           smsTextReplaced: replacePlaceholders(res.smsText, {
             orderTotal: orderDetails?.total || '',
             orderNumber: orderDetails?.orderNumber || '',
+            storeLink: getStoreLink(orderDetails?.orderNumber || ''),
           }),
         }));
         setSmsTemplates(resultsProcessed);
@@ -65,7 +80,8 @@ function App() {
 
       const note = `Success: SMS sent "${smsText}"`;
       await addOrderNote({ orderId, note });
-      setStatus(note);
+      setSentText(smsText);
+      setStatus('Success: ✔ SMS надіслано');
     } catch (error) {
       const note = `Error sending sms: ${(error as Error).message}`;
       await addOrderNote({ orderId, note });
@@ -81,7 +97,7 @@ function App() {
     const productName = orderDetails.lineItems?.[0]?.title || '';
     const orderNumber = orderDetails.orderNumber || '';
 
-    return `Доброго дня! Це магазин informatica.com.ua щодо вашого замовлення ${`${orderNumber} `}на товар "${productName}"`;
+    return `Доброго дня! Це магазин ${getStoreName(orderNumber)} щодо вашого замовлення ${`${orderNumber} `}на товар "${productName}"`;
   };
 
   return (
@@ -138,6 +154,7 @@ function App() {
               {status.slice(0, 90)}
             </s-badge>
           </s-stack>
+          {sentText && <s-text>Надіслано: "{sentText}"</s-text>}
         </s-stack>
       </s-stack>
     </s-admin-block>

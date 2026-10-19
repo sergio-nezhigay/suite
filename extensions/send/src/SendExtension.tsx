@@ -11,16 +11,38 @@ import {
 import { fetchWithTimeout } from '../../shared/makeGraphQLQuery';
 import { SHOPIFY_APP_URL } from '../../shared/data';
 
-type SendStep = 'sheet' | 'email' | 'tagging';
+type SendStep = 'sheet' | 'email' | 'warranty' | 'tagging';
 
 const STEP_LABELS: Record<SendStep, string> = {
   sheet: 'Google Sheet',
   email: 'email',
+  warranty: 'warranty email',
   tagging: 'tagging',
 };
 
 // Above the backend's own timeouts, so the server can answer with a clear error first
 const ROUTE_TIMEOUT_MS = 30000;
+
+// How long the success message stays visible before the modal closes itself
+const AUTO_CLOSE_MS = 2000;
+
+function getErrorMessage(error: unknown, fallback: string) {
+  return error instanceof Error ? error.message : fallback;
+}
+
+async function postToApp(path: string, body: unknown, label: string) {
+  const response = await fetchWithTimeout(
+    `${SHOPIFY_APP_URL}/${path}`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    },
+    ROUTE_TIMEOUT_MS,
+    label
+  );
+  if (!response.ok) throw new Error(`${label} failed (${response.status})`);
+}
 
 // Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
 export default async () => {
@@ -37,6 +59,7 @@ function SendExtension() {
     total: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [completedSteps, setCompletedSteps] = useState<SendStep[]>([]);
   const [ordersContent, setOrdersContent] = useState<
     OrderResponse['nodes'] | null
   >(null);
@@ -46,30 +69,6 @@ function SendExtension() {
     () => selectedOrders.map(({ id }: { id: string }) => id),
     [selectedOrders]
   );
-
-  const emailWarrantyCards = async (ordersContent: OrderResponse['nodes']) => {
-    try {
-      const response = await fetch(`${SHOPIFY_APP_URL}/emailWarrantyCards`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          subject: 'Order Details',
-          ordersContent,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-      console.log('Email sent successfully:', result);
-    } catch (error) {
-      console.error('Failed to send email:', error);
-    }
-  };
 
   useEffect(() => {
     console.log('Fetching orders for:', selectedIds);
@@ -81,9 +80,7 @@ function SendExtension() {
         setError(null);
       } catch (error) {
         console.error('Failed to fetch orders content:', error);
-        const errorMessage =
-          error instanceof Error ? error.message : 'Failed to fetch orders';
-        setError(errorMessage);
+        setError(getErrorMessage(error, 'Failed to fetch orders'));
       } finally {
         setLoading(false);
       }
@@ -159,77 +156,91 @@ function SendExtension() {
     setProgress({ done: 0, total: ordersContent!.length });
     // Tracked locally too: the `step` state is stale inside this closure
     let currentStep: SendStep = 'sheet';
-    const runStep = async <T,>(name: SendStep, fn: () => Promise<T>) => {
+    const completed: SendStep[] = [];
+    const problems: string[] = [];
+
+    const runStep = async (name: SendStep, fn: () => Promise<void>) => {
       currentStep = name;
       setStep(name);
       const startedAt = Date.now();
       console.log(`[send] step "${name}" started`);
-      const result = await fn();
+      await fn();
       console.log(`[send] step "${name}" done in ${Date.now() - startedAt}ms`);
-      return result;
+      completed.push(name);
+    };
+
+    // For steps after the supplier already has the orders: a failure is
+    // reported, but the remaining steps still run
+    const runFollowUpStep = async (name: SendStep, fn: () => Promise<void>) => {
+      try {
+        await runStep(name, fn);
+      } catch (error) {
+        console.error(`[send] step "${name}" failed:`, error);
+        // Messages already name the step (postToApp label, tagging count)
+        problems.push(getErrorMessage(error, `${STEP_LABELS[name]} failed`));
+      }
     };
 
     try {
-      const rows = convertOrdersToRows(ordersContent!);
-
-      await runStep('sheet', async () => {
-        const appendResponse = await fetchWithTimeout(
-          `${SHOPIFY_APP_URL}/appendRowsToSheet`,
-          {
-            method: 'POST',
-            body: JSON.stringify({ rows, spreadsheetId, sheetName }),
-            headers: { 'Content-Type': 'application/json' },
-          },
-          ROUTE_TIMEOUT_MS,
-          'Google Sheet'
+      // Delivery to the supplier: a failure stops the run
+      try {
+        await runStep('sheet', () =>
+          postToApp(
+            'appendRowsToSheet',
+            { rows: convertOrdersToRows(ordersContent!), spreadsheetId, sheetName },
+            'Google Sheet'
+          )
         );
-        if (!appendResponse.ok)
-          throw new Error(`Failed to send data (${appendResponse.status})`);
-      });
-
-      if (shouldSendEmail) {
-        await runStep('email', async () => {
-          const emailResponse = await fetchWithTimeout(
-            `${SHOPIFY_APP_URL}/send-email`,
-            {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
+        if (shouldSendEmail) {
+          await runStep('email', () =>
+            postToApp(
+              'send-email',
+              {
                 recipientEmail,
                 cc: 'nezhihai@gmail.com',
                 subject: 'Замовлення, кількість: ' + ordersContent!.length,
                 htmlContent: generateOrdersHtmlTable(ordersContent!),
-              }),
-            },
-            ROUTE_TIMEOUT_MS,
-            'email'
-          );
-          if (!emailResponse.ok)
-            throw new Error(`Failed to send email (${emailResponse.status})`);
-        });
-        if (shouldSendWarrantyEmail) emailWarrantyCards(ordersContent!);
-      }
-
-      // Auto-tag processed orders
-      if (shouldAutoTag) {
-        try {
-          await runStep('tagging', () =>
-            autoTagProcessedOrders(ordersContent!, tagStrategy, (done, total) =>
-              setProgress({ done, total })
+              },
+              'email'
             )
           );
-        } catch (tagError) {
-          console.error('Failed to auto-tag orders:', tagError);
         }
+      } catch (error) {
+        console.error(`[send] step "${currentStep}" failed:`, error);
+        // Names the failed step, so a retry doesn't duplicate what already went out
+        setError(
+          `Stuck at "${STEP_LABELS[currentStep]}": ${getErrorMessage(error, 'Failed to send orders')}`
+        );
+        return;
       }
 
+      if (shouldSendWarrantyEmail) {
+        await runFollowUpStep('warranty', () =>
+          postToApp(
+            'emailWarrantyCards',
+            { subject: 'Order Details', ordersContent },
+            'warranty email'
+          )
+        );
+      }
+      if (shouldAutoTag) {
+        await runFollowUpStep('tagging', () =>
+          autoTagProcessedOrders(ordersContent!, tagStrategy, (done, total) =>
+            setProgress({ done, total })
+          )
+        );
+      }
+
+      // Sent either way, so the button stays disabled and nothing is sent twice
       setSent(true);
-    } catch (error) {
-      console.error(`Error sending orders at step "${currentStep}":`, error);
-      const errorMessage =
-        error instanceof Error ? error.message : 'Failed to send orders';
-      // Tells the user what already went out, so a retry doesn't duplicate rows/emails
-      setError(`Stuck at "${STEP_LABELS[currentStep]}": ${errorMessage}`);
+      setCompletedSteps(completed);
+      if (problems.length > 0) {
+        // Stays open so the failure gets noticed
+        setError(`Failed: ${problems.join('; ')}`);
+        return;
+      }
+      // Action modals can't show toasts, so show the success message, then close
+      setTimeout(() => shopify.close(), AUTO_CLOSE_MS);
     } finally {
       setSending(false);
       setStep(null);
@@ -241,7 +252,12 @@ function SendExtension() {
     <s-admin-action heading={getTitle()}>
       <s-stack>
         {sending && <s-spinner />}
-        {loading ? (
+        {sent && !error ? (
+          <s-banner tone='info' heading='✓ Done'>
+            {completedSteps.map((step) => STEP_LABELS[step]).join(', ')}: done.
+            Closing…
+          </s-banner>
+        ) : loading ? (
           <s-spinner />
         ) : ordersContent && ordersContent.length > 0 ? (
           <s-stack>
@@ -263,7 +279,7 @@ function SendExtension() {
         onClick={handleSend}
         disabled={loading || !ordersContent || sent || sending}
       >
-        {sent ? 'Added' : sending ? 'Sending…' : 'Add to Google Sheet'}
+        {sent ? '✓ Done' : sending ? 'Sending…' : 'Add to Google Sheet'}
       </s-button>
     </s-admin-action>
   );
