@@ -12,7 +12,8 @@
     "deploy": "shopify app deploy -c shopify.app.toml",
     "ggt": "npx ggt dev ./ --app=admin-action-block --env=development",
     "ggt:deploy": "npx ggt deploy ./ --app=admin-action-block --env=development",
-    "build": "NODE_ENV=production vite build"
+    "build": "NODE_ENV=production vite build",
+    "test": "node --import ./scripts/test/ts-esm.mjs --test scripts/test/*.test.ts"
   },
   "dependencies": {
     "@fastify/cors": "^8.5.0",
