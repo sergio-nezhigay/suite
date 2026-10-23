@@ -28,7 +28,7 @@ interface CreateMessageResponse {
   };
 }
 
-const ROZETKA_MESSAGE_TEXT =
+export const ROZETKA_MESSAGE_TEXT =
   'Не змогли додзвонитись до вас для підтвердження замовлення. Чи актуальне замовлення та указаний номер телефону ?';
 
 const AUTH_ERROR = Symbol('auth_error');
