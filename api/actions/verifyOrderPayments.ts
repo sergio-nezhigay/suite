@@ -1,526 +1,194 @@
 import { ActionOptions } from 'gadget-server';
-import { updateOrderPaymentStatus } from '../utilities/shopify/api/orders/updateOrderPaymentStatus';
-import { CheckboxService } from '../utilities/fiscal/checkboxService';
+import { CheckboxService, friendlyCheckboxError } from '../utilities/fiscal/checkboxService';
 import { OrderToReceiptTransformer } from '../utilities/fiscal/orderToReceiptTransformer';
-import {
-  EXCLUDED_PAYMENT_CODES,
-  NOVA_POSHTA_ACCOUNT,
-  extractPaymentCodeFromAccount,
-} from '../utilities/fiscal/paymentConstants';
+import { getCheckSkipReason } from '../utilities/fiscal/paymentConstants';
+import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
 import { timeIt } from 'api/utilities/timeIt';
 
-// Helper function to create automatic check for verified payment
-async function createAutomaticCheck(
-  order: any,
-  connections: any,
-  api: any,
-  logger: any,
-  orderData: any,
-  // The matched bank transaction row, passed in by the caller. We do NOT re-read
-  // it here: this function runs in the same request that just wrote matchedOrderId
-  // (and, on the issue path, checkReceiptId), so a findFirst would race that write
-  // and is the reason "Check Payments" needed two presses.
-  bankTransaction: {
-    id: string;
-    counterpartyAccount?: string | null;
-    counterpartyName?: string | null;
-    checkIssuedAt?: Date | null;
-    checkReceiptId?: string | null;
-    checkSkipReason?: string | null;
-  }
-) {
-  try {
-    if (!bankTransaction) {
-      return {
-        success: false,
-        skipped: true,
-        reason: 'No matched bank transaction found',
-      };
-    }
-    // Check if check already issued
-    if (bankTransaction.checkReceiptId || bankTransaction.checkIssuedAt) {
-      return {
-        success: false,
-        skipped: true,
-        reason: `Check already issued for this payment (Receipt ID: ${
-          bankTransaction.checkReceiptId || 'N/A'
-        })`,
-      };
-    }
+// One press = find the bank payment for each order, then issue its fiscal check
+// or record why none is needed. Everything is stored on the bankTransaction row,
+// so pressing again only reports what is already done.
 
-    // Check if check was previously skipped
-    if (bankTransaction.checkSkipReason) {
-      return {
-        success: false,
-        skipped: true,
-        reason: bankTransaction.checkSkipReason,
-      };
-    }
+const DAY_MS = 24 * 60 * 60 * 1000;
 
-    // Extract and validate payment code
-    const paymentCode = extractPaymentCodeFromAccount(
-      bankTransaction.counterpartyAccount
-    );
+const TX_SELECT = {
+  id: true,
+  amount: true,
+  transactionDateTime: true,
+  description: true,
+  counterpartyAccount: true,
+  matchedOrderId: true,
+  checkReceiptId: true,
+  checkIssuedAt: true,
+  checkSkipReason: true,
+} as const;
 
-    // Skip check creation for excluded payment codes
-    if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
-      const skipReason = `Excluded payment code: ${paymentCode} (doesn't require check)`;
+type OrderInput = {
+  id: string;
+  name: string;
+  createdAt: string;
+  totalAmount: number;
+  lineItems: { id: string; title: string; quantity: number; price: string }[];
+};
 
-      // Update bank transaction with skip reason
-      await api.bankTransaction.update(bankTransaction.id, {
-        checkSkipReason: skipReason,
-      });
-      // Add note to order explaining why check wasn't created
-      const restrictionNote = `🧾 Automatic Check Creation Skipped
-Reason: Payment code ${paymentCode} doesn't require check issuance
-Counterparty: ${bankTransaction.counterpartyName || 'Unknown'}
-Account: ${bankTransaction.counterpartyAccount || 'Unknown'}
-Date: ${new Date().toISOString()}
-Note: This payment code (2600, 2902, 2909, or 2920) is excluded from automatic check creation`;
+type CheckStatus = 'no_payment' | 'issued' | 'skipped' | 'failed';
 
-      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-        note: restrictionNote,
-      });
+const toNumericId = (id: string) => id.split('/').pop() as string;
 
-      return {
-        success: false,
-        skipped: true,
-        reason: skipReason,
-        checkSkipReason: skipReason,
-      };
-    }
-
-    // Check Nova Poshta account restriction
-    if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
-      const skipReason = 'Nova Poshta account restriction';
-
-      // Update bank transaction with skip reason
-      await api.bankTransaction.update(bankTransaction.id, {
-        checkSkipReason: skipReason,
-      });
-      const restrictionNote = `🧾 Automatic Check Creation Skipped
-Reason: Nova Poshta account restriction
-Counterparty: ${bankTransaction.counterpartyName || 'Nova Poshta'}
-Account: ${bankTransaction.counterpartyAccount}
-Date: ${new Date().toISOString()}
-Note: Nova Poshta payments are excluded from automatic check creation`;
-
-      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-        note: restrictionNote,
-      });
-
-      return {
-        success: false,
-        skipped: true,
-        reason: skipReason,
-        checkSkipReason: skipReason,
-      };
-    }
-    // Initialize Checkbox service
-    const checkboxService = new CheckboxService(logger);
-    await timeIt('checkbox_signin', () => checkboxService.signIn(), logger);
-    await timeIt('checkbox_ensure_shift', () => checkboxService.ensureShiftOpen(), logger);
-
-    // Require orderData for automatic check creation
-    // The frontend provides orderData; check names are computed in the transformer
-    if (!orderData) {
-      return {
-        success: false,
-        skipped: true,
-        reason: 'Order data with variants not provided',
-      };
-    }
-
-    // Use the order object already passed in (has id, name, shopId, etc.)
-    // and the orderData from frontend (has line items with prices)
-    const receiptBody = OrderToReceiptTransformer.transformOrderFromDataForSell(
-      orderData,
-      order
-    );
-
-    // Create the sell receipt
-    const receipt = await timeIt('checkbox_create_receipt',
-      () => checkboxService.createSellReceipt(receiptBody), logger, { orderId: order.id });
-    // Update bank transaction with check information
-    const checkIssuedAt = new Date();
-    await api.bankTransaction.update(bankTransaction.id, {
-      checkReceiptId: receipt.id,
-      checkIssuedAt: checkIssuedAt,
-    });
-    // Add receipt info to order notes
-    const checkNote = `🧾 Automatic Check Created
-Receipt ID: ${receipt.id}
-Fiscal Code: ${receipt.fiscal_code || 'N/A'}
-Receipt URL: ${receipt.receipt_url || 'N/A'}
-Created: ${checkIssuedAt.toISOString()}
-Reason: Payment verified and order marked as paid`;
-
-    await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-      note: checkNote,
-    });
-
-    return {
-      success: true,
-      receiptId: receipt.id,
-      fiscalCode: receipt.fiscal_code,
-      receiptUrl: receipt.receipt_url,
-      checkReceiptId: receipt.id,
-      checkIssuedAt,
-    };
-  } catch (error) {
-    logger.error({ orderName: order.name, err: error }, '[DEBUG-PAYMENTS] Failed to create check for order');
-
-    // Add error note to order but don't fail the payment verification
-    try {
-      const errorNote = `🧾 Automatic Check Creation Failed
-Error: ${error instanceof Error ? error.message : 'Unknown error'}
-Attempted: ${new Date().toISOString()}
-Note: Payment verification was successful, check creation can be done manually`;
-
-      await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-        note: errorNote,
-      });
-    } catch (noteError) {
-      logger.error({ err: noteError }, 'Failed to add error note');
-    }
-
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : 'Unknown error',
-    };
-  }
-}
-
-import { refreshBankDataSinceLastSync } from '../utilities/bank/refreshBankData';
-
-export const run = async ({ params, api, connections, logger }: any) => {
+export const run = async ({ params, api, logger }: any) => {
   const actionStart = performance.now();
+  const orders: OrderInput[] = params.orderData;
+  if (!Array.isArray(orders) || orders.length === 0) {
+    throw new Error('orderData parameter is required');
+  }
+  const orderIds = orders.map((o) => toNumericId(o.id));
+
   try {
-    const { orderIds, autoCreateChecks = true, orderData } = params;
+    await timeIt('refresh_bank_data', () => refreshBankDataSinceLastSync(api), logger);
+  } catch (refreshError) {
+    logger.warn({ err: refreshError }, 'Bank data refresh failed');
+  }
 
-    if (!orderIds || !Array.isArray(orderIds)) {
-      throw new Error('orderIds parameter is required and must be an array');
+  const [alreadyMatched, unmatched] = await Promise.all([
+    api.bankTransaction.findMany({
+      filter: { matchedOrderId: { in: orderIds } },
+      select: TX_SELECT,
+    }),
+    api.bankTransaction.findMany({
+      filter: {
+        transactionDateTime: { greaterThan: new Date(Date.now() - 10 * DAY_MS) },
+        type: { equals: 'income' },
+        matchedOrderId: { equals: null },
+      },
+      sort: { transactionDateTime: 'Descending' },
+      first: 250,
+      select: TX_SELECT,
+    }),
+  ]);
+  const freeTxs: any[] = [...unmatched];
+
+  // Signed in lazily: only when at least one order actually needs a check
+  let checkbox: CheckboxService | null = null;
+  const getCheckbox = async () => {
+    if (!checkbox) {
+      const service = new CheckboxService(logger);
+      await timeIt('checkbox_signin', () => service.signIn(), logger);
+      await timeIt('checkbox_ensure_shift', () => service.ensureShiftOpen(), logger);
+      checkbox = service;
     }
-    if (!orderData || !Array.isArray(orderData) || orderData.length === 0) {
-      throw new Error('orderData parameter is required');
-    }
+    return checkbox;
+  };
 
-    const numericOrderIds = orderIds.map((id: string) =>
-      id.startsWith('gid://shopify/Order/') ? id.split('/').pop() : id
-    );
+  const results: { status: CheckStatus; [key: string]: unknown }[] = [];
+  for (const order of orders) {
+    const orderId = toNumericId(order.id);
+    let tx = alreadyMatched.find((t: any) => t.matchedOrderId === orderId);
 
-    logger.info({ numericOrderIds, orderDataCount: orderData.length }, '[DEBUG] verifyOrderPayments received');
-
-    // Check for existing verifications using bankTransaction.matchedOrderId
-    const existingMatches = await timeIt<any[]>('query_existing_matches',
-      () => api.bankTransaction.findMany({
-        filter: { matchedOrderId: { in: numericOrderIds } },
-        select: {
-          id: true,
-          matchedOrderId: true,
-          counterpartyAccount: true,
-          counterpartyName: true,
-          checkIssuedAt: true,
-          checkReceiptId: true,
-          checkSkipReason: true,
-        },
-      }),
-      logger,
-      { order_count: orderIds.length }
-    );
-
-    // Create a set of already matched bankTransactionIds to avoid duplicates
-    const matchedTransactionIds = new Set(
-      existingMatches.map((match: { id: any }) => match.id)
-    );
-
-    // Log existing matches for debugging
-    existingMatches.forEach((match: any) => {
-    });
-
-    // Use shopifyShop to get the shopId (route handler has no Shopify session)
-    const shop = await api.shopifyShop.findFirst({ select: { id: true } });
-    const shopId = shop?.id;
-    logger.info({ shopId }, '[DEBUG] resolved shopId');
-
-    // Build orders from frontend-provided data (avoids multi-tenant isolation issue
-    // where api.shopifyOrder.findMany returns 0 results without a Shopify session)
-    const orders = orderData.map((od: any) => {
-      const numericId = od.id?.startsWith('gid://shopify/Order/')
-        ? od.id.split('/').pop()
-        : od.id;
-      return {
-        id: numericId,
-        name: od.name,
-        createdAt: od.createdAt,
-        orderAmount: od.totalAmount ?? 0,
-        shopId,
-      };
-    });
-    logger.info(
-      { orders: orders.map((o: any) => ({ id: o.id, amount: o.orderAmount })) },
-      '[DEBUG] orders built from frontend data'
-    );
-
-    // Refresh bank data since last sync, then fetch recent transactions
-    try {
-      await timeIt('refresh_bank_data', () => refreshBankDataSinceLastSync(api), logger);
-    } catch (refreshError) {
-      logger.warn({ err: refreshError }, 'Bank data refresh failed');
-    }
-
-    // Fetch recent bank transactions (last 10 days)
-    const tenDaysAgo = new Date(Date.now() - 10 * 24 * 60 * 60 * 1000);
-
-    const transactions = await timeIt<any[]>('query_bank_transactions',
-      () => api.bankTransaction.findMany({
-        filter: {
-          transactionDateTime: { greaterThan: tenDaysAgo },
-          type: { equals: 'income' }, // Only incoming payments
-          matchedOrderId: { equals: null }, // Exclude already matched payments
-        },
-        sort: { transactionDateTime: 'Descending' }, // Most recent first
-        first: 250,
-        select: {
-          id: true,
-          amount: true,
-          transactionDateTime: true,
-          description: true,
-          counterpartyAccount: true,
-          counterpartyName: true,
-        },
-      }),
-      logger
-    );
-
-    logger.info(
-      { txCount: transactions.length, sampleAmounts: transactions.slice(0, 5).map((t: any) => t.amount) },
-      '[DEBUG] transactions fetched'
-    );
-
-    // Simple matching logic: exact amount + within 7 days
-    const results: any[] = [];
-
-    await timeIt('order_matching_loop', async () => {
-    for (const order of orders) {
-      const orderAmount = order.orderAmount;
-      const orderDate = new Date(order.createdAt);
-      logger.info({ orderId: order.id, orderName: order.name, orderAmount }, '[DEBUG] processing order');
-
-      // Check if this order is already verified (has a matched bank transaction)
-      const existingMatch = existingMatches.find(
-        (match: any) => match.matchedOrderId === order.id
+    if (!tx) {
+      const orderTime = new Date(order.createdAt).getTime();
+      const index = freeTxs.findIndex(
+        (t) =>
+          Math.abs((t.amount || 0) - order.totalAmount) < 0.01 &&
+          Math.abs(new Date(t.transactionDateTime).getTime() - orderTime) < 7 * DAY_MS
       );
-
-      if (existingMatch) {
-        const hasCheck = !!(existingMatch.checkReceiptId || existingMatch.checkIssuedAt);
-        const isSkipped = !!existingMatch.checkSkipReason;
-
-        // Retry check only if matched but check previously failed (not skipped, not issued)
-        if (autoCreateChecks && !hasCheck && !isSkipped) {
-          const currentOrderData = orderData?.find(
-            (od: any) => od.id === order.id || od.id === `gid://shopify/Order/${order.id}`
-          );
-          const checkResult = await createAutomaticCheck(
-            order,
-            connections,
-            api,
-            logger,
-            currentOrderData,
-            existingMatch
-          );
-          // Apply the outcome locally instead of re-reading a row we just wrote
-          if (checkResult?.checkReceiptId) existingMatch.checkReceiptId = checkResult.checkReceiptId;
-          if (checkResult?.checkIssuedAt) existingMatch.checkIssuedAt = checkResult.checkIssuedAt;
-          if (checkResult?.checkSkipReason) existingMatch.checkSkipReason = checkResult.checkSkipReason;
-        }
-
-        results.push({
-          orderId: order.id,
-          orderName: order.name || '',
-          orderAmount,
-          orderDate: order.createdAt,
-          matchCount: 1,
-          checkIssued: !!(existingMatch.checkReceiptId || existingMatch.checkIssuedAt),
-          checkIssuedAt: existingMatch.checkIssuedAt,
-          checkReceiptId: existingMatch.checkReceiptId,
-          checkSkipped: !!existingMatch.checkSkipReason,
-          checkSkipReason: existingMatch.checkSkipReason,
-          matches: [{ transactionId: existingMatch.id, amount: orderAmount, date: null, description: 'Previously matched payment' }],
-        });
-        continue;
+      if (index >= 0) {
+        // Taken out of the pool so two orders with the same amount never share a payment
+        [tx] = freeTxs.splice(index, 1);
+        await api.bankTransaction.update(tx.id, { matchedOrderId: orderId });
       }
-
-      const matches = transactions.filter((tx: any) => {
-        const txAmount = tx.amount || 0;
-        const amountDiff = Math.abs(txAmount - orderAmount);
-        const amountMatch = amountDiff < 0.01;
-
-        const txDateTime = tx.transactionDateTime
-          ? new Date(tx.transactionDateTime)
-          : new Date();
-        const timeDiff = Math.abs(txDateTime.getTime() - orderDate.getTime());
-        const dateMatch = timeDiff < 7 * 24 * 60 * 60 * 1000;
-
-        // Skip already-matched transactions (prevents greedy first-order matching bug)
-        const notAlreadyMatched = !matchedTransactionIds.has(tx.id);
-
-        return amountMatch && dateMatch && notAlreadyMatched;
-      });
-      // Match to first available transaction only (one-to-one matching)
-      let checkResult: any = null;
-      if (matches.length > 0) {
-        const firstMatch = matches[0];
-        const txId = firstMatch.id;
-        const txAmount = firstMatch.amount || 0;
-        const amountDiff = Math.abs(txAmount - orderAmount);
-        const txDateTime = firstMatch.transactionDateTime
-          ? new Date(firstMatch.transactionDateTime)
-          : new Date();
-        const daysDiff =
-          Math.abs(txDateTime.getTime() - orderDate.getTime()) /
-          (24 * 60 * 60 * 1000);
-
-        // Calculate confidence score (100% for exact match, lower for differences)
-        let confidence = 100;
-        if (amountDiff > 0) confidence -= (amountDiff / orderAmount) * 10;
-        if (daysDiff > 1) confidence -= daysDiff * 2;
-        confidence = Math.max(50, Math.min(100, confidence));
-
-        try {
-          // Update bank transaction with matched order
-          await api.bankTransaction.update(txId, {
-            matchedOrderId: order.id,
-          });
-
-          // Mark as used immediately to prevent duplicate matching in this run
-          matchedTransactionIds.add(txId);
-        } catch (saveError) {
-          logger.error({ orderId: order.id, err: saveError }, 'Failed to save match for order');
-        }
-
-        // Update Shopify order after successful match
-        try {
-          const matchDetails = `₴${firstMatch.amount} on ${new Date(
-            firstMatch.transactionDateTime
-          ).toLocaleDateString()}`;
-
-          await updateOrderPaymentStatus(connections, order.id, order.shopId, {
-            note: `🔍 Payment Verification Complete\nMatching transaction found: ${matchDetails}\nConfidence: ${Math.round(
-              confidence
-            )}%\n\nVerified at: ${new Date().toISOString()}`,
-            markAsPaid: true,
-          });
-
-          // Create automatic check for verified payment (if enabled)
-          if (autoCreateChecks) {
-            try {
-              // Find the corresponding orderData for this specific order
-              const currentOrderData = orderData?.find(
-                (od: any) =>
-                  od.id === order.id ||
-                  od.id === `gid://shopify/Order/${order.id}`
-              );
-              // Pass the just-matched transaction straight through — no re-read.
-              checkResult = await createAutomaticCheck(
-                order,
-                connections,
-                api,
-                logger,
-                currentOrderData,
-                {
-                  id: txId,
-                  counterpartyAccount: firstMatch.counterpartyAccount ?? null,
-                  counterpartyName: firstMatch.counterpartyName ?? null,
-                  checkIssuedAt: null,
-                  checkReceiptId: null,
-                  checkSkipReason: null,
-                }
-              );
-            } catch (checkError) {
-              logger.error({ orderName: order.name, err: checkError }, 'Check creation error for order');
-            }
-          }
-        } catch (shopifyError) {
-          logger.error({ orderId: order.id, err: shopifyError }, 'Failed to update Shopify order');
-        }
-      }
-
-      // Check information for newly verified orders, taken from the createAutomaticCheck result
-      let checkInfo = {
-        checkIssued: false,
-        checkIssuedAt: null as Date | null,
-        checkReceiptId: null as string | null,
-        checkSkipped: false,
-        checkSkipReason: null as string | null,
-      };
-
-      if (matches.length > 0 && checkResult) {
-        // Build from the value createAutomaticCheck just returned — it already
-        // holds these locally, so we don't re-read the row we just wrote.
-        if (checkResult.checkReceiptId || checkResult.checkIssuedAt) {
-          checkInfo.checkIssued = true;
-          checkInfo.checkIssuedAt = checkResult.checkIssuedAt ?? null;
-          checkInfo.checkReceiptId = checkResult.checkReceiptId ?? null;
-        }
-        if (checkResult.checkSkipReason) {
-          checkInfo.checkSkipped = true;
-          checkInfo.checkSkipReason = checkResult.checkSkipReason;
-        }
-      }
-
-      results.push({
-        orderId: order.id,
-        orderName: order.name || '',
-        orderAmount: orderAmount,
-        orderDate: order.createdAt,
-        matchCount: matches.length,
-        // Add check information
-        checkIssued: checkInfo.checkIssued,
-        checkIssuedAt: checkInfo.checkIssuedAt,
-        checkReceiptId: checkInfo.checkReceiptId,
-        checkSkipped: checkInfo.checkSkipped,
-        checkSkipReason: checkInfo.checkSkipReason,
-        matches: matches.map((tx: any) => ({
-          transactionId: tx.id,
-          amount: tx.amount || 0,
-          date: tx.transactionDateTime || '',
-          description: tx.description || '',
-        })),
-      });
     }
-    }, logger, { orders_count: orders.length, transactions_count: transactions.length });
 
-    logger.info({
+    let status: CheckStatus = 'no_payment';
+    let reason: string | null = null;
+    let receiptId: string | null = tx?.checkReceiptId ?? null;
+
+    if (!tx) {
+      status = 'no_payment';
+    } else if (tx.checkReceiptId || tx.checkIssuedAt) {
+      status = 'issued';
+    } else if (tx.checkSkipReason) {
+      status = 'skipped';
+      reason = tx.checkSkipReason;
+    } else if ((reason = getCheckSkipReason(tx.counterpartyAccount))) {
+      status = 'skipped';
+      await api.bankTransaction.update(tx.id, { checkSkipReason: reason });
+    } else {
+      let receipt: { id: string } | null = null;
+      try {
+        const service = await getCheckbox();
+        receipt = await timeIt(
+          'checkbox_create_receipt',
+          () =>
+            service.createSellReceipt(
+              OrderToReceiptTransformer.transformOrderFromDataForSell(order, order)
+            ),
+          logger,
+          { orderId }
+        );
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        logger.error({ orderName: order.name, err: error }, 'Check creation failed');
+        status = 'failed';
+        reason = friendlyCheckboxError(message);
+      }
+
+      if (receipt) {
+        receiptId = receipt.id;
+        // Saved right after Checkbox answers (one retry), so a later press can never issue it twice
+        const save = () =>
+          api.bankTransaction.update(tx.id, {
+            checkReceiptId: receipt!.id,
+            checkIssuedAt: new Date(),
+          });
+        try {
+          await save().catch(save);
+          status = 'issued';
+        } catch (error) {
+          logger.error(
+            { orderName: order.name, receiptId: receipt.id, err: error },
+            'Check created but receipt id not saved'
+          );
+          status = 'failed';
+          reason = 'Check created but not saved. Do not press again; tell the developer the Receipt ID.';
+        }
+      }
+    }
+
+    results.push({
+      orderId,
+      orderName: order.name,
+      orderAmount: order.totalAmount,
+      status,
+      reason,
+      receiptId,
+      payment: tx
+        ? {
+            amount: tx.amount || 0,
+            date: tx.transactionDateTime ?? null,
+            description: tx.description || '',
+          }
+        : null,
+    });
+  }
+
+  const count = (s: CheckStatus) => results.filter((r) => r.status === s).length;
+  logger.info(
+    {
       stage: 'verify_summary',
       orders_checked: orders.length,
-      orders_matched: results.filter((r: any) => r.matchCount > 0).length,
-      checks_created: results.filter((r: any) => r.checkIssued).length,
-      checks_skipped: results.filter((r: any) => r.checkSkipped).length,
+      no_payment: count('no_payment'),
+      issued: count('issued'),
+      skipped: count('skipped'),
+      failed: count('failed'),
       total_duration_ms: Math.round(performance.now() - actionStart),
-    }, 'Verify summary');
+    },
+    'Verify summary'
+  );
 
-    return {
-      success: true,
-      results,
-      summary: {
-        ordersChecked: orders.length,
-        transactionsScanned: transactions.length,
-        ordersWithMatches: results.filter((r: any) => r.matchCount > 0).length,
-      },
-    };
-  } catch (error) {
-    logger.error({ err: error }, 'Error in verifyOrderPayments');
-    return {
-      success: false,
-      error: error instanceof Error ? error.message : String(error),
-    };
-  }
+  return { success: true, results, transactionsScanned: unmatched.length };
 };
 
 export const params = {
-  orderIds: { type: 'array', items: { type: 'string' }, required: true },
-  autoCreateChecks: { type: 'boolean', default: true, required: false },
   orderData: {
     type: 'array',
     required: true,
@@ -540,7 +208,6 @@ export const params = {
               title: { type: 'string' },
               quantity: { type: 'number' },
               price: { type: 'string' },
-              variant: { type: 'string' },
             },
           },
         },

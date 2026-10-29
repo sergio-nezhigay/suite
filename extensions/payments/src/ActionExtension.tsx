@@ -44,32 +44,20 @@ interface VerificationResult {
   orderId: string;
   orderName: string;
   orderAmount: number;
-  orderDate: string;
-  matchCount: number;
-  // Check information
-  checkIssued?: boolean;
-  checkIssuedAt?: string;
-  checkReceiptId?: string;
-  checkFiscalCode?: string;
-  checkReceiptUrl?: string;
-  checkSkipped?: boolean;
-  checkSkipReason?: string;
-  matches: Array<{
-    transactionId: string;
+  status: 'no_payment' | 'issued' | 'skipped' | 'failed';
+  reason: string | null;
+  receiptId: string | null;
+  payment: {
     amount: number;
     date: string | null;
     description: string;
-  }>;
+  } | null;
 }
 
 interface VerificationResponse {
   success: boolean;
   results: VerificationResult[];
-  summary: {
-    ordersChecked: number;
-    transactionsScanned: number;
-    ordersWithMatches: number;
-  };
+  transactionsScanned: number;
   error?: string;
 }
 
@@ -103,7 +91,6 @@ function App() {
     [data?.selected]
   );
 
-  console.log('Selected orders data:', data);
 
   // Fetch order details using fetch (same as checks extension)
   useEffect(() => {
@@ -162,7 +149,6 @@ function App() {
 
         const ordersData = await res.json();
 
-        console.log('GraphQL Response:', ordersData);
 
         if (ordersData.errors) {
           console.error('GraphQL Errors:', ordersData.errors);
@@ -176,7 +162,6 @@ function App() {
           }
         }));
 
-        console.log('Filtered orders:', filteredOrders);
         setOrders(filteredOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -249,8 +234,6 @@ function App() {
     setVerificationResults(null);
 
     try {
-      console.log('Verifying payments for orders:', selectedOrderIds);
-
       const orderData = orders.map(order => ({
         id: order.id,
         name: order.name,
@@ -264,26 +247,15 @@ function App() {
         })),
       }));
 
-      console.log('Sending order data with variants:', orderData);
-
-      // Call the Gadget action directly via fetch
       const response = await fetch('/verifyOrderPayments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          orderIds: selectedOrderIds,
-          orderData: orderData
-        }),
+        body: JSON.stringify({ orderData }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const result = await response.json();
-      console.log('Verification result:', result);
 
       if (result.success) {
         setVerificationResults(result);
@@ -298,40 +270,16 @@ function App() {
     }
   };
 
-  const getPaymentStatusBadge = (result: VerificationResult) => {
-    if (result.matchCount > 0) {
-      return (
-        <s-badge tone='success'>✅ Payment Found</s-badge>
-      );
-    } else {
-      return <s-badge tone='critical'>❌ No Payment</s-badge>;
-    }
-  };
-
-  const getCheckStatusBadge = (result: VerificationResult) => {
-    if (result.checkIssued) {
-      return <s-badge tone='success'>🧾 Check Issued</s-badge>;
-    } else if (result.checkSkipped) {
-      return <s-badge tone='warning'>⏭️ Check Skipped</s-badge>;
-    } else if (result.matchCount > 0) {
-      return <s-badge tone='warning'>⏳ Check Pending</s-badge>;
-    }
-    return null;
-  };
-
-  const formatVerificationTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    } else {
-      return 'Just now';
+  const getStatusBadge = (result: VerificationResult) => {
+    switch (result.status) {
+      case 'issued':
+        return <s-badge tone='success'>🧾 Check Issued</s-badge>;
+      case 'skipped':
+        return <s-badge tone='info'>⏭️ Check Not Needed</s-badge>;
+      case 'failed':
+        return <s-badge tone='critical'>⚠️ Check Failed</s-badge>;
+      default:
+        return <s-badge tone='warning'>❌ No Payment</s-badge>;
     }
   };
 
@@ -403,73 +351,31 @@ function App() {
 
         {verificationResults && (
           <s-stack>
-            <s-text type="strong">📊 Verification Summary</s-text>
-            <s-text>
-              Orders Checked: {verificationResults.summary.ordersChecked}
+            <s-text type="strong">
+              📋 Results ({verificationResults.transactionsScanned} new bank payments scanned)
             </s-text>
-            <s-text>
-              Transactions Scanned:{' '}
-              {verificationResults.summary.transactionsScanned}
-            </s-text>
-            <s-text>
-              Matches Found: {verificationResults.summary.ordersWithMatches}
-            </s-text>
-
-            <s-text type="strong">📋 Results by Order</s-text>
             <s-stack>
               {verificationResults.results.map((result) => (
                 <s-stack key={result.orderId}>
                   <s-stack direction='inline'>
                     <s-text type="strong">{result.orderName}</s-text>
-                    {getPaymentStatusBadge(result)}
-                    {getCheckStatusBadge(result)}
+                    {getStatusBadge(result)}
                   </s-stack>
 
                   <s-text>Amount: ₴{result.orderAmount.toFixed(2)}</s-text>
 
-                  {result.checkIssued && (
-                    <s-stack>
-                      <s-text type="strong">🧾 Fiscal Check Details:</s-text>
-                      {result.checkReceiptId && (
-                        <s-text>Receipt ID: {result.checkReceiptId}</s-text>
-                      )}
-                      {result.checkFiscalCode && result.checkFiscalCode !== 'N/A' && (
-                        <s-text>Fiscal Code: {result.checkFiscalCode}</s-text>
-                      )}
-                      {result.checkReceiptUrl && result.checkReceiptUrl !== 'N/A' && (
-                        <s-text>URL: {result.checkReceiptUrl}</s-text>
-                      )}
-                      {result.checkIssuedAt && (
-                        <s-text>
-                          Issued: {formatVerificationTime(result.checkIssuedAt)}
-                        </s-text>
-                      )}
-                    </s-stack>
+                  {result.payment && (
+                    <s-text>
+                      💰 ₴{result.payment.amount.toFixed(2)} on{' '}
+                      {result.payment.date
+                        ? new Date(result.payment.date).toLocaleDateString()
+                        : '—'}
+                      {' · '}
+                      {result.payment.description.substring(0, 50)}
+                    </s-text>
                   )}
-
-                  {result.checkSkipped && (
-                    <s-stack>
-                      <s-text>⏭️ Check Creation Skipped</s-text>
-                      <s-text>Reason: {result.checkSkipReason}</s-text>
-                    </s-stack>
-                  )}
-
-                  {result.matches.length > 0 && (
-                    <s-stack>
-                      <s-text type="strong">✅ Matching Transactions:</s-text>
-                      {result.matches.map((match) => (
-                        <s-stack key={match.transactionId}>
-                          <s-text>
-                            💰 ₴{match.amount.toFixed(2)} on{' '}
-                            {match.date ? new Date(match.date).toLocaleDateString() : '—'}
-                          </s-text>
-                          <s-text>
-                            📝 {match.description.substring(0, 50)}
-                          </s-text>
-                        </s-stack>
-                      ))}
-                    </s-stack>
-                  )}
+                  {result.receiptId && <s-text>Receipt ID: {result.receiptId}</s-text>}
+                  {result.reason && <s-text>Reason: {result.reason}</s-text>}
                 </s-stack>
               ))}
             </s-stack>
