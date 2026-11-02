@@ -4,6 +4,7 @@ import { render } from 'preact';
 import { useState, useEffect, useMemo } from 'preact/hooks';
 
 import { stages } from '../../shared/stages';
+import { updateOrdersTags } from '../../shared/shopifyOperations';
 
 // Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
 export default async () => {
@@ -61,19 +62,25 @@ interface VerificationResponse {
   error?: string;
 }
 
-function supplierCode2orderTag(supplierCode: string) {
-  switch (supplierCode) {
-    case 'РИ':
-      return stages.RI;
-    case 'ЧЕ':
-      return stages.CHE;
-    case 'Ме':
-      return stages.ME;
-    case 'ИИ':
-      return stages.II;
-    default:
-      return 'Невідомий постачальник';
-  }
+// Supplier code = SKU part after '^' (e.g. '2640^ИИ' -> 'ИИ')
+const SUPPLIER_STAGE: Record<string, string> = {
+  'РИ': stages.RI,
+  'ЧЕ': stages.CHE,
+  'Ме': stages.ME,
+  'ИИ': stages.II,
+  'ЩУ': stages.PAID_DELIVERY, // shipped by us, not the supplier
+  'Б': stages.REORDER,
+  'EV': stages.REORDER,
+};
+
+// Stage to set after payment; '' when unknown or suppliers differ, so the user picks
+function defaultStage(order: Order): string {
+  const codes = new Set(
+    order.lineItems.nodes.map((item) => item.variant?.sku?.split('^')[1] || '')
+  );
+  if (codes.size !== 1) return '';
+  const [code] = codes;
+  return SUPPLIER_STAGE[code] || '';
 }
 
 function App() {
@@ -85,6 +92,10 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [bestVariants, setBestVariants] = useState<Record<string, string>>({});
   const [variantsLoading, setVariantsLoading] = useState(false);
+  // Chosen stage per order id ('' = leave tags as they are)
+  const [stageByOrder, setStageByOrder] = useState<Record<string, string>>({});
+  // Outcome of the tag change per order id, shown in results
+  const [stageResults, setStageResults] = useState<Record<string, string>>({});
 
   const selectedOrderIds = useMemo(() =>
     data?.selected?.map((item: any) => item.id) || [],
@@ -175,6 +186,9 @@ function App() {
   // Fetch best variants when orders change
   useEffect(() => {
     if (orders.length > 0) {
+      setStageByOrder(
+        Object.fromEntries(orders.map((order) => [order.id, defaultStage(order)]))
+      );
       setVariantsLoading(true);
       fetchReceiptNames(orders).then(names => {
         setBestVariants(names);
@@ -232,6 +246,7 @@ function App() {
     setIsVerifying(true);
     setError(null);
     setVerificationResults(null);
+    setStageResults({});
 
     try {
       const orderData = orders.map(order => ({
@@ -259,6 +274,7 @@ function App() {
 
       if (result.success) {
         setVerificationResults(result);
+        await applyStages(result.results);
       } else {
         setError(result.error || 'Verification failed');
       }
@@ -268,6 +284,26 @@ function App() {
     } finally {
       setIsVerifying(false);
     }
+  };
+
+  // Paid orders (check issued or not needed) move to the chosen stage; others keep their tags
+  const applyStages = async (results: VerificationResult[]) => {
+    const outcomes: Record<string, string> = {};
+    for (const result of results) {
+      const stage = stageByOrder[result.orderId];
+      if (result.status !== 'issued' && result.status !== 'skipped') continue;
+      if (!stage) {
+        outcomes[result.orderId] = 'stage not changed';
+        continue;
+      }
+      try {
+        await updateOrdersTags({ value: stage, orderIds: [result.orderId] });
+        outcomes[result.orderId] = `→ ${stage}`;
+      } catch (err) {
+        outcomes[result.orderId] = `stage error: ${err instanceof Error ? err.message : err}`;
+      }
+    }
+    setStageResults(outcomes);
   };
 
   const getStatusBadge = (result: VerificationResult) => {
@@ -298,13 +334,27 @@ function App() {
         ) : (
           <s-stack>
             <s-text type="strong">📦 Order Preview</s-text>
-            {/* TODO: Add here also 1st order's sku */}
-
 
             {orders.map((order, index) => (
               <s-stack key={order.id}>
-                <s-section heading={order.name + "->" + supplierCode2orderTag(order.lineItems.nodes[0].variant?.sku?.split('^')[1] || "")}> {/*supplier code*/}
+                <s-section heading={order.name}>
                   <s-stack>
+                    <s-select
+                      label='Stage after payment'
+                      value={stageByOrder[order.id] || ''}
+                      onChange={(event) => {
+                        const value = event.currentTarget.value;
+                        setStageByOrder((prev) => ({ ...prev, [order.id]: value }));
+                      }}
+                      disabled={isVerifying}
+                    >
+                      <s-option value=''>— не змінювати —</s-option>
+                      {stages.map(({ value, label }) => (
+                        <s-option key={value} value={value}>
+                          {label}
+                        </s-option>
+                      ))}
+                    </s-select>
                     {/* Line Items */}
                     {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {
                       const price = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
@@ -376,6 +426,9 @@ function App() {
                   )}
                   {result.receiptId && <s-text>Receipt ID: {result.receiptId}</s-text>}
                   {result.reason && <s-text>Reason: {result.reason}</s-text>}
+                  {stageResults[result.orderId] && (
+                    <s-text>🏷️ {stageResults[result.orderId]}</s-text>
+                  )}
                 </s-stack>
               ))}
             </s-stack>

@@ -30,6 +30,8 @@ export const STAGE_NAMES = {
   CHE: 'Оформити Че',
   ME: 'Оформити Ме',
   II: 'Оформити Ии',
+  PAID_DELIVERY: 'Оплачено - на доставку',
+  REORDER: 'Необхідне дозамовлення',
 } as const;
 
 export type StageOption = { value: string; label: string };
