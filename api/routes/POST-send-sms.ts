@@ -16,11 +16,13 @@ const SHOP_DOMAIN = 'c2da09-15.myshopify.com';
 
 // S4: one "couldn't reach you" email per site order with the «Передзвоніть» SMS. Mode via
 // UNREACHABLE_EMAIL_MODE (off | test | live, default off); test sends only to UNREACHABLE_EMAIL_TEST_TO.
-// Never throws, so the SMS answer stays a success whatever happens here.
+// Never throws and takes at most 10 s, so the SMS answer stays a success whatever happens here.
 async function unreachableEmail(orderName: string) {
   try {
     const env = process.env;
-    const outcome = await sendUnreachableEmail(orderName, {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    const timeout = new Promise<'timeout'>((resolve) => (timer = setTimeout(() => resolve('timeout'), 10_000)));
+    const work = sendUnreachableEmail(orderName, {
       mode: modeOf(env.UNREACHABLE_EMAIL_MODE),
       testTo: env.UNREACHABLE_EMAIL_TEST_TO || 'nezhihai@gmail.com',
       templateId: Number(env.UNREACHABLE_TEMPLATE_ID),
@@ -55,6 +57,8 @@ async function unreachableEmail(orderName: string) {
       send: (email) => brevoSend(env.BREVO_API_KEY ?? '', email),
       log: logger,
     });
+    // The whole step is capped so the SMS reply never waits more than 10 s
+    const outcome = await Promise.race([work, timeout]).finally(() => clearTimeout(timer));
     logger.info({ orderName, outcome }, '[unreachable] done');
   } catch (error) {
     logger.error({ orderName, error: error instanceof Error ? error.message : String(error) }, '[unreachable] unexpected error');
