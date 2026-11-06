@@ -2,6 +2,7 @@ import { ActionOptions } from "gadget-server";
 import { sendTelegramMessage } from "api/utilities/http/telegramClient";
 
 const CHECKS_TODO_TAG = "Зробити чеки";
+const KYIV_ALERT_HOURS = [18, 19, 20, 21];
 
 // Live Admin API read: `tag:` does exact whole-tag matching, unlike the Gadget
 // mirror's `tags: { matches }` full-text operator, and avoids sync staleness.
@@ -16,6 +17,12 @@ const ORDERS_BY_TAG_QUERY = `
 export const run: ActionRun = async ({ api, connections, logger, config }) => {
   // Scheduler only meaningful in the deployed env; match processDeclarationOrders.
   if (process.env.NODE_ENV !== "production") return;
+
+  // Cron is UTC-only; gate on Kyiv wall-clock hour so DST shifts don't move the alert.
+  const kyivHour = Number(
+    new Intl.DateTimeFormat("en-GB", { timeZone: "Europe/Kyiv", hour: "2-digit", hourCycle: "h23" }).format(new Date())
+  );
+  if (!KYIV_ALERT_HOURS.includes(kyivHour)) return;
 
   const searchQuery = `tag:'${CHECKS_TODO_TAG}'`;
   const shops = await api.shopifyShop.findMany({
@@ -46,7 +53,7 @@ export const run: ActionRun = async ({ api, connections, logger, config }) => {
 
 export const options: ActionOptions = {
   triggers: {
-    // UTC. 18-21 Kyiv during summer (EEST, UTC+3); shifts to 17-20 Kyiv in winter.
-    scheduler: [{ cron: "0 15,16,17,18 * * *" }],
+    // UTC, covering 18-21 Kyiv in both summer (UTC+3) and winter (UTC+2); run() skips other hours.
+    scheduler: [{ cron: "0 15-19 * * *" }],
   },
 };
