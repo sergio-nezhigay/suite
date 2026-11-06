@@ -290,14 +290,17 @@ function App() {
   const applyStages = async (results: VerificationResult[]) => {
     const outcomes: Record<string, string> = {};
     for (const result of results) {
-      const stage = stageByOrder[result.orderId];
+      // Backend returns the numeric id; dropdowns and tag writes use the GID
+      const rawId = String(result.orderId);
+      const gid = rawId.startsWith('gid://') ? rawId : `gid://shopify/Order/${rawId}`;
+      const stage = stageByOrder[gid];
       if (result.status !== 'issued' && result.status !== 'skipped') continue;
       if (!stage) {
         outcomes[result.orderId] = 'stage not changed';
         continue;
       }
       try {
-        await updateOrdersTags({ value: stage, orderIds: [result.orderId] });
+        await updateOrdersTags({ value: stage, orderIds: [gid] });
         outcomes[result.orderId] = `→ ${stage}`;
       } catch (err) {
         outcomes[result.orderId] = `stage error: ${err instanceof Error ? err.message : err}`;
