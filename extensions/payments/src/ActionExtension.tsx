@@ -4,6 +4,7 @@ import { render } from 'preact';
 import { useState, useEffect, useMemo } from 'preact/hooks';
 
 import { stages } from '../../shared/stages';
+import { updateOrdersTags } from '../../shared/shopifyOperations';
 
 // Target: admin.order-index.selection-action.render (see ./shopify.extension.toml)
 export default async () => {
@@ -44,48 +45,42 @@ interface VerificationResult {
   orderId: string;
   orderName: string;
   orderAmount: number;
-  orderDate: string;
-  matchCount: number;
-  // Check information
-  checkIssued?: boolean;
-  checkIssuedAt?: string;
-  checkReceiptId?: string;
-  checkFiscalCode?: string;
-  checkReceiptUrl?: string;
-  checkSkipped?: boolean;
-  checkSkipReason?: string;
-  matches: Array<{
-    transactionId: string;
+  status: 'no_payment' | 'issued' | 'skipped' | 'failed';
+  reason: string | null;
+  receiptId: string | null;
+  payment: {
     amount: number;
     date: string | null;
     description: string;
-  }>;
+  } | null;
 }
 
 interface VerificationResponse {
   success: boolean;
   results: VerificationResult[];
-  summary: {
-    ordersChecked: number;
-    transactionsScanned: number;
-    ordersWithMatches: number;
-  };
+  transactionsScanned: number;
   error?: string;
 }
 
-function supplierCode2orderTag(supplierCode: string) {
-  switch (supplierCode) {
-    case 'РИ':
-      return stages.RI;
-    case 'ЧЕ':
-      return stages.CHE;
-    case 'Ме':
-      return stages.ME;
-    case 'ИИ':
-      return stages.II;
-    default:
-      return 'Невідомий постачальник';
-  }
+// Supplier code = SKU part after '^' (e.g. '2640^ИИ' -> 'ИИ')
+const SUPPLIER_STAGE: Record<string, string> = {
+  'РИ': stages.RI,
+  'ЧЕ': stages.CHE,
+  'Ме': stages.ME,
+  'ИИ': stages.II,
+  'ЩУ': stages.PAID_DELIVERY, // shipped by us, not the supplier
+  'Б': stages.REORDER,
+  'EV': stages.REORDER,
+};
+
+// Stage to set after payment; '' when unknown or suppliers differ, so the user picks
+function defaultStage(order: Order): string {
+  const codes = new Set(
+    order.lineItems.nodes.map((item) => item.variant?.sku?.split('^')[1] || '')
+  );
+  if (codes.size !== 1) return '';
+  const [code] = codes;
+  return SUPPLIER_STAGE[code] || '';
 }
 
 function App() {
@@ -97,13 +92,16 @@ function App() {
   const [error, setError] = useState<string | null>(null);
   const [bestVariants, setBestVariants] = useState<Record<string, string>>({});
   const [variantsLoading, setVariantsLoading] = useState(false);
+  // Chosen stage per order id ('' = leave tags as they are)
+  const [stageByOrder, setStageByOrder] = useState<Record<string, string>>({});
+  // Outcome of the tag change per order id, shown in results
+  const [stageResults, setStageResults] = useState<Record<string, string>>({});
 
   const selectedOrderIds = useMemo(() =>
     data?.selected?.map((item: any) => item.id) || [],
     [data?.selected]
   );
 
-  console.log('Selected orders data:', data);
 
   // Fetch order details using fetch (same as checks extension)
   useEffect(() => {
@@ -162,7 +160,6 @@ function App() {
 
         const ordersData = await res.json();
 
-        console.log('GraphQL Response:', ordersData);
 
         if (ordersData.errors) {
           console.error('GraphQL Errors:', ordersData.errors);
@@ -176,7 +173,6 @@ function App() {
           }
         }));
 
-        console.log('Filtered orders:', filteredOrders);
         setOrders(filteredOrders);
       } catch (error) {
         console.error('Error fetching orders:', error);
@@ -190,6 +186,9 @@ function App() {
   // Fetch best variants when orders change
   useEffect(() => {
     if (orders.length > 0) {
+      setStageByOrder(
+        Object.fromEntries(orders.map((order) => [order.id, defaultStage(order)]))
+      );
       setVariantsLoading(true);
       fetchReceiptNames(orders).then(names => {
         setBestVariants(names);
@@ -247,10 +246,9 @@ function App() {
     setIsVerifying(true);
     setError(null);
     setVerificationResults(null);
+    setStageResults({});
 
     try {
-      console.log('Verifying payments for orders:', selectedOrderIds);
-
       const orderData = orders.map(order => ({
         id: order.id,
         name: order.name,
@@ -264,29 +262,19 @@ function App() {
         })),
       }));
 
-      console.log('Sending order data with variants:', orderData);
-
-      // Call the Gadget action directly via fetch
       const response = await fetch('/verifyOrderPayments', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          orderIds: selectedOrderIds,
-          orderData: orderData
-        }),
+        body: JSON.stringify({ orderData }),
       });
 
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
       const result = await response.json();
-      console.log('Verification result:', result);
 
       if (result.success) {
         setVerificationResults(result);
+        await applyStages(result.results);
       } else {
         setError(result.error || 'Verification failed');
       }
@@ -298,40 +286,39 @@ function App() {
     }
   };
 
-  const getPaymentStatusBadge = (result: VerificationResult) => {
-    if (result.matchCount > 0) {
-      return (
-        <s-badge tone='success'>✅ Payment Found</s-badge>
-      );
-    } else {
-      return <s-badge tone='critical'>❌ No Payment</s-badge>;
+  // Paid orders (check issued or not needed) move to the chosen stage; others keep their tags
+  const applyStages = async (results: VerificationResult[]) => {
+    const outcomes: Record<string, string> = {};
+    for (const result of results) {
+      // Backend returns the numeric id; dropdowns and tag writes use the GID
+      const rawId = String(result.orderId);
+      const gid = rawId.startsWith('gid://') ? rawId : `gid://shopify/Order/${rawId}`;
+      const stage = stageByOrder[gid];
+      if (result.status !== 'issued' && result.status !== 'skipped') continue;
+      if (!stage) {
+        outcomes[result.orderId] = 'stage not changed';
+        continue;
+      }
+      try {
+        await updateOrdersTags({ value: stage, orderIds: [gid] });
+        outcomes[result.orderId] = `→ ${stage}`;
+      } catch (err) {
+        outcomes[result.orderId] = `stage error: ${err instanceof Error ? err.message : err}`;
+      }
     }
+    setStageResults(outcomes);
   };
 
-  const getCheckStatusBadge = (result: VerificationResult) => {
-    if (result.checkIssued) {
-      return <s-badge tone='success'>🧾 Check Issued</s-badge>;
-    } else if (result.checkSkipped) {
-      return <s-badge tone='warning'>⏭️ Check Skipped</s-badge>;
-    } else if (result.matchCount > 0) {
-      return <s-badge tone='warning'>⏳ Check Pending</s-badge>;
-    }
-    return null;
-  };
-
-  const formatVerificationTime = (dateString: string) => {
-    const date = new Date(dateString);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-    const diffDays = Math.floor(diffHours / 24);
-
-    if (diffDays > 0) {
-      return `${diffDays} day${diffDays > 1 ? 's' : ''} ago`;
-    } else if (diffHours > 0) {
-      return `${diffHours} hour${diffHours > 1 ? 's' : ''} ago`;
-    } else {
-      return 'Just now';
+  const getStatusBadge = (result: VerificationResult) => {
+    switch (result.status) {
+      case 'issued':
+        return <s-badge tone='success'>🧾 Check Issued</s-badge>;
+      case 'skipped':
+        return <s-badge tone='info'>⏭️ Check Not Needed</s-badge>;
+      case 'failed':
+        return <s-badge tone='critical'>⚠️ Check Failed</s-badge>;
+      default:
+        return <s-badge tone='warning'>❌ No Payment</s-badge>;
     }
   };
 
@@ -350,13 +337,27 @@ function App() {
         ) : (
           <s-stack>
             <s-text type="strong">📦 Order Preview</s-text>
-            {/* TODO: Add here also 1st order's sku */}
-
 
             {orders.map((order, index) => (
               <s-stack key={order.id}>
-                <s-section heading={order.name + "->" + supplierCode2orderTag(order.lineItems.nodes[0].variant?.sku?.split('^')[1] || "")}> {/*supplier code*/}
+                <s-section heading={order.name}>
                   <s-stack>
+                    <s-select
+                      label='Stage after payment'
+                      value={stageByOrder[order.id] || ''}
+                      onChange={(event) => {
+                        const value = event.currentTarget.value;
+                        setStageByOrder((prev) => ({ ...prev, [order.id]: value }));
+                      }}
+                      disabled={isVerifying}
+                    >
+                      <s-option value=''>— не змінювати —</s-option>
+                      {stages.map(({ value, label }) => (
+                        <s-option key={value} value={value}>
+                          {label}
+                        </s-option>
+                      ))}
+                    </s-select>
                     {/* Line Items */}
                     {order.lineItems.nodes.slice(0, 5).map((item, itemIndex) => {
                       const price = formatPrice(item.discountedUnitPriceSet.shopMoney.amount);
@@ -403,72 +404,33 @@ function App() {
 
         {verificationResults && (
           <s-stack>
-            <s-text type="strong">📊 Verification Summary</s-text>
-            <s-text>
-              Orders Checked: {verificationResults.summary.ordersChecked}
+            <s-text type="strong">
+              📋 Results ({verificationResults.transactionsScanned} new bank payments scanned)
             </s-text>
-            <s-text>
-              Transactions Scanned:{' '}
-              {verificationResults.summary.transactionsScanned}
-            </s-text>
-            <s-text>
-              Matches Found: {verificationResults.summary.ordersWithMatches}
-            </s-text>
-
-            <s-text type="strong">📋 Results by Order</s-text>
             <s-stack>
               {verificationResults.results.map((result) => (
                 <s-stack key={result.orderId}>
                   <s-stack direction='inline'>
                     <s-text type="strong">{result.orderName}</s-text>
-                    {getPaymentStatusBadge(result)}
-                    {getCheckStatusBadge(result)}
+                    {getStatusBadge(result)}
                   </s-stack>
 
                   <s-text>Amount: ₴{result.orderAmount.toFixed(2)}</s-text>
 
-                  {result.checkIssued && (
-                    <s-stack>
-                      <s-text type="strong">🧾 Fiscal Check Details:</s-text>
-                      {result.checkReceiptId && (
-                        <s-text>Receipt ID: {result.checkReceiptId}</s-text>
-                      )}
-                      {result.checkFiscalCode && result.checkFiscalCode !== 'N/A' && (
-                        <s-text>Fiscal Code: {result.checkFiscalCode}</s-text>
-                      )}
-                      {result.checkReceiptUrl && result.checkReceiptUrl !== 'N/A' && (
-                        <s-text>URL: {result.checkReceiptUrl}</s-text>
-                      )}
-                      {result.checkIssuedAt && (
-                        <s-text>
-                          Issued: {formatVerificationTime(result.checkIssuedAt)}
-                        </s-text>
-                      )}
-                    </s-stack>
+                  {result.payment && (
+                    <s-text>
+                      💰 ₴{result.payment.amount.toFixed(2)} on{' '}
+                      {result.payment.date
+                        ? new Date(result.payment.date).toLocaleDateString()
+                        : '—'}
+                      {' · '}
+                      {result.payment.description.substring(0, 50)}
+                    </s-text>
                   )}
-
-                  {result.checkSkipped && (
-                    <s-stack>
-                      <s-text>⏭️ Check Creation Skipped</s-text>
-                      <s-text>Reason: {result.checkSkipReason}</s-text>
-                    </s-stack>
-                  )}
-
-                  {result.matches.length > 0 && (
-                    <s-stack>
-                      <s-text type="strong">✅ Matching Transactions:</s-text>
-                      {result.matches.map((match) => (
-                        <s-stack key={match.transactionId}>
-                          <s-text>
-                            💰 ₴{match.amount.toFixed(2)} on{' '}
-                            {match.date ? new Date(match.date).toLocaleDateString() : '—'}
-                          </s-text>
-                          <s-text>
-                            📝 {match.description.substring(0, 50)}
-                          </s-text>
-                        </s-stack>
-                      ))}
-                    </s-stack>
+                  {result.receiptId && <s-text>Receipt ID: {result.receiptId}</s-text>}
+                  {result.reason && <s-text>Reason: {result.reason}</s-text>}
+                  {stageResults[result.orderId] && (
+                    <s-text>🏷️ {stageResults[result.orderId]}</s-text>
                   )}
                 </s-stack>
               ))}

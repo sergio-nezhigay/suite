@@ -5,11 +5,7 @@ import {
   CheckboxGood,
   CheckboxCashlessPayment,
 } from '../utilities/fiscal/checkboxTypes';
-import {
-  EXCLUDED_PAYMENT_CODES,
-  NOVA_POSHTA_ACCOUNT,
-  extractPaymentCodeFromAccount,
-} from '../utilities/fiscal/paymentConstants';
+import { getCheckSkipReason } from '../utilities/fiscal/paymentConstants';
 import { distributeAmount } from '../utilities/fiscal/receiptNames';
 
 export const params = {
@@ -57,24 +53,11 @@ export const run: ActionRun = async ({ params, api, logger }) => {
       };
     }
 
-    // Check if this is Nova Poshta account (excluded from checks)
-    if (bankTransaction.counterpartyAccount === NOVA_POSHTA_ACCOUNT) {
+    const skipReason = getCheckSkipReason(bankTransaction.counterpartyAccount);
+    if (skipReason) {
       return {
         success: false,
-        error: 'Check issuance not allowed for Nova Poshta payments',
-      };
-    }
-
-    // Check if this payment code is excluded from checks
-    const paymentCode = extractPaymentCodeFromAccount(
-      bankTransaction.counterpartyAccount || ''
-    );
-    if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
-      return {
-        success: false,
-        error: `Check issuance not allowed for payment code ${paymentCode} (codes ${EXCLUDED_PAYMENT_CODES.join(
-          ', '
-        )} don't require checks)`,
+        error: `Check issuance not allowed: ${skipReason}`,
       };
     }
 

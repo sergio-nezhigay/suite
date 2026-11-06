@@ -55,3 +55,20 @@ export function extractPaymentCodeFromAccount(
   const unpadded = digits.replace(/^0+/, '');
   return unpadded.length >= 4 ? unpadded.slice(0, 4) : null;
 }
+
+/**
+ * Why a payment from this counterparty account doesn't need a fiscal check,
+ * or null when a check must be issued.
+ */
+export function getCheckSkipReason(
+  account: string | null | undefined
+): string | null {
+  if (account === NOVA_POSHTA_ACCOUNT) {
+    return 'Nova Poshta payment (no check required)';
+  }
+  const paymentCode = extractPaymentCodeFromAccount(account);
+  if (paymentCode && EXCLUDED_PAYMENT_CODES.includes(paymentCode)) {
+    return `Payment code ${paymentCode} (no check required)`;
+  }
+  return null;
+}
