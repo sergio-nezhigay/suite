@@ -1,7 +1,7 @@
 api_version = "2026-07"
 
 [[extensions]]
-name = "t:name"
+name = "EasyBuy COD notice"
 handle = "thank-you-easybuy"
 uid = "b6b7384f-3022-45fc-a58f-626e29c94570"
 type = "ui_extension"
