@@ -1,0 +1,20 @@
+api_version = "2026-07"
+
+[[extensions]]
+name = "t:name"
+handle = "thank-you-easybuy"
+uid = "b6b7384f-3022-45fc-a58f-626e29c94570"
+type = "ui_extension"
+
+# Same box on both pages: right after checkout, and on the order page in the customer account
+[[extensions.targeting]]
+module = "./src/ThankYou.tsx"
+target = "purchase.thank-you.block.render"
+
+[[extensions.targeting]]
+module = "./src/OrderStatus.tsx"
+target = "customer-account.order-status.block.render"
+
+[extensions.capabilities]
+# Asks our Gadget backend whether the order was paid by COD (the payment name isn't visible to the extension)
+network_access = true
