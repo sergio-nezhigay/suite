@@ -91,6 +91,22 @@ function SendExtension() {
   const firstOrderTag = ordersContent?.[0]?.tags?.[0] || '';
   console.log('firstOrderTag', JSON.stringify(firstOrderTag, null, 2));
 
+  // The supplier comes from the first order only, so every selected order must
+  // have the same supplier; otherwise some would go to the wrong supplier
+  const mixedSupplierError = useMemo(() => {
+    if (!ordersContent) return null;
+    const counts = new Map<string, number>();
+    for (const order of ordersContent) {
+      const tag = order.tags?.[0] || '';
+      const code =
+        SUPPLIER_CODES.find((c) => tag.includes(c)) ?? 'no supplier tag';
+      counts.set(code, (counts.get(code) ?? 0) + 1);
+    }
+    if (counts.size <= 1) return null;
+    const summary = [...counts].map(([code, n]) => `${code}: ${n}`).join(', ');
+    return `Selected orders are for ${counts.size} suppliers (${summary}): select one supplier at a time`;
+  }, [ordersContent]);
+
   let spreadsheetId = '';
   let sheetName = 'Sheet2';
   let recipientEmail = '';
@@ -134,6 +150,7 @@ function SendExtension() {
   const getTitle = () => {
     if (error) return error;
     if (loading) return 'Loading orders...';
+    if (mixedSupplierError) return mixedSupplierError;
     if (sending) {
       const stepLabel = step ? STEP_LABELS[step] : 'starting';
       const count =
@@ -275,7 +292,9 @@ function SendExtension() {
       <s-button
         slot='primary-action'
         onClick={handleSend}
-        disabled={loading || !ordersContent || sent || sending}
+        disabled={
+          loading || !ordersContent || !!mixedSupplierError || sent || sending
+        }
       >
         {sent
           ? '✓ Done'
@@ -528,6 +547,9 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
 
 // Tag strategies
 const COMPLETED_TAG = 'Завершені';
+
+// Supplier codes inside the "Оформити …" tag; must match the checks in SendExtension
+const SUPPLIER_CODES = ['Ии', 'РІ', 'Че', 'Ме'];
 
 // Reusable auto-tagging function
 async function autoTagProcessedOrders(
