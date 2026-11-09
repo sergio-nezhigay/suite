@@ -59,7 +59,8 @@ function SendExtension() {
     total: number;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [completedSteps, setCompletedSteps] = useState<SendStep[]>([]);
+  // Steps that worked, kept across presses so Retry only redoes the rest
+  const [doneSteps, setDoneSteps] = useState<SendStep[]>([]);
   const [ordersContent, setOrdersContent] = useState<
     OrderResponse['nodes'] | null
   >(null);
@@ -89,6 +90,22 @@ function SendExtension() {
   }, [selectedIds]);
   const firstOrderTag = ordersContent?.[0]?.tags?.[0] || '';
   console.log('firstOrderTag', JSON.stringify(firstOrderTag, null, 2));
+
+  // The supplier comes from the first order only, so every selected order must
+  // have the same supplier; otherwise some would go to the wrong supplier
+  const mixedSupplierError = useMemo(() => {
+    if (!ordersContent) return null;
+    const counts = new Map<string, number>();
+    for (const order of ordersContent) {
+      const tag = order.tags?.[0] || '';
+      const code =
+        SUPPLIER_CODES.find((c) => tag.includes(c)) ?? 'no supplier tag';
+      counts.set(code, (counts.get(code) ?? 0) + 1);
+    }
+    if (counts.size <= 1) return null;
+    const summary = [...counts].map(([code, n]) => `${code}: ${n}`).join(', ');
+    return `Selected orders are for ${counts.size} suppliers (${summary}): select one supplier at a time`;
+  }, [ordersContent]);
 
   let spreadsheetId = '';
   let sheetName = 'Sheet2';
@@ -133,6 +150,7 @@ function SendExtension() {
   const getTitle = () => {
     if (error) return error;
     if (loading) return 'Loading orders...';
+    if (mixedSupplierError) return mixedSupplierError;
     if (sending) {
       const stepLabel = step ? STEP_LABELS[step] : 'starting';
       const count =
@@ -150,95 +168,83 @@ function SendExtension() {
     return `${baseTitle} (${selectedIds.length} selected)`;
   };
 
+  // Stops at the first failure. Pressing again (Retry) skips the steps that
+  // already worked, so the supplier never gets the same orders twice.
   const handleSend = async () => {
-    setError(null);
-    setSending(true);
-    setProgress({ done: 0, total: ordersContent!.length });
-    // Tracked locally too: the `step` state is stale inside this closure
-    let currentStep: SendStep = 'sheet';
-    const completed: SendStep[] = [];
-    const problems: string[] = [];
+    const orders = ordersContent;
+    if (!orders) return;
 
-    const runStep = async (name: SendStep, fn: () => Promise<void>) => {
-      currentStep = name;
-      setStep(name);
-      const startedAt = Date.now();
-      console.log(`[send] step "${name}" started`);
-      await fn();
-      console.log(`[send] step "${name}" done in ${Date.now() - startedAt}ms`);
-      completed.push(name);
-    };
-
-    // For steps after the supplier already has the orders: a failure is
-    // reported, but the remaining steps still run
-    const runFollowUpStep = async (name: SendStep, fn: () => Promise<void>) => {
-      try {
-        await runStep(name, fn);
-      } catch (error) {
-        console.error(`[send] step "${name}" failed:`, error);
-        // Messages already name the step (postToApp label, tagging count)
-        problems.push(getErrorMessage(error, `${STEP_LABELS[name]} failed`));
-      }
-    };
-
-    try {
-      // Delivery to the supplier: a failure stops the run
-      try {
-        await runStep('sheet', () =>
+    // Run in order. Tagging is last, so orders are marked done only when
+    // everything before it worked.
+    const steps: { name: SendStep; enabled: boolean; run: () => Promise<void> }[] = [
+      {
+        name: 'sheet',
+        enabled: true,
+        run: () =>
           postToApp(
             'appendRowsToSheet',
-            { rows: convertOrdersToRows(ordersContent!), spreadsheetId, sheetName },
+            { rows: convertOrdersToRows(orders), spreadsheetId, sheetName },
             'Google Sheet'
-          )
-        );
-        if (shouldSendEmail) {
-          await runStep('email', () =>
-            postToApp(
-              'send-email',
-              {
-                recipientEmail,
-                cc: 'nezhihai@gmail.com',
-                subject: 'Замовлення, кількість: ' + ordersContent!.length,
-                htmlContent: generateOrdersHtmlTable(ordersContent!),
-              },
-              'email'
-            )
-          );
-        }
-      } catch (error) {
-        console.error(`[send] step "${currentStep}" failed:`, error);
-        // Names the failed step, so a retry doesn't duplicate what already went out
-        setError(
-          `Stuck at "${STEP_LABELS[currentStep]}": ${getErrorMessage(error, 'Failed to send orders')}`
-        );
-        return;
-      }
-
-      if (shouldSendWarrantyEmail) {
-        await runFollowUpStep('warranty', () =>
+          ),
+      },
+      {
+        name: 'email',
+        enabled: shouldSendEmail,
+        run: () =>
+          postToApp(
+            'send-email',
+            {
+              recipientEmail,
+              cc: 'nezhihai@gmail.com',
+              subject: 'Замовлення, кількість: ' + orders.length,
+              htmlContent: generateOrdersHtmlTable(orders),
+            },
+            'email'
+          ),
+      },
+      {
+        name: 'warranty',
+        enabled: shouldSendWarrantyEmail,
+        run: () =>
           postToApp(
             'emailWarrantyCards',
-            { subject: 'Order Details', ordersContent },
+            { subject: 'Order Details', ordersContent: orders },
             'warranty email'
-          )
-        );
-      }
-      if (shouldAutoTag) {
-        await runFollowUpStep('tagging', () =>
-          autoTagProcessedOrders(ordersContent!, tagStrategy, (done, total) =>
+          ),
+      },
+      {
+        name: 'tagging',
+        enabled: shouldAutoTag,
+        run: () =>
+          autoTagProcessedOrders(orders, tagStrategy, (done, total) =>
             setProgress({ done, total })
-          )
-        );
+          ),
+      },
+    ];
+
+    setError(null);
+    setSending(true);
+    const done = [...doneSteps];
+
+    try {
+      for (const { name, enabled, run } of steps) {
+        if (!enabled || done.includes(name)) continue;
+        setStep(name);
+        const startedAt = Date.now();
+        try {
+          await run();
+          console.log(`[send] step "${name}" done in ${Date.now() - startedAt}ms`);
+        } catch (error) {
+          console.error(`[send] step "${name}" failed:`, error);
+          // postToApp / tagging errors already name the step
+          setError(getErrorMessage(error, `${STEP_LABELS[name]} failed`));
+          return;
+        }
+        done.push(name);
+        setDoneSteps([...done]);
       }
 
-      // Sent either way, so the button stays disabled and nothing is sent twice
       setSent(true);
-      setCompletedSteps(completed);
-      if (problems.length > 0) {
-        // Stays open so the failure gets noticed
-        setError(`Failed: ${problems.join('; ')}`);
-        return;
-      }
       // Action modals can't show toasts, so show the success message, then close
       setTimeout(() => shopify.close(), AUTO_CLOSE_MS);
     } finally {
@@ -252,9 +258,18 @@ function SendExtension() {
     <s-admin-action heading={getTitle()}>
       <s-stack>
         {sending && <s-spinner />}
+        {error && !sending && doneSteps.length > 0 && (
+          // In the body, not the heading, so it isn't cut off
+          <s-banner tone='critical' heading='Stopped: orders not tagged yet'>
+            Already sent: {doneSteps.map((s) => STEP_LABELS[s]).join(', ')}.
+            Press "Retry failed steps": it won't send those again. If you close
+            this window, the orders stay untagged and a new send would repeat
+            them.
+          </s-banner>
+        )}
         {sent && !error ? (
           <s-banner tone='info' heading='✓ Done'>
-            {completedSteps.map((step) => STEP_LABELS[step]).join(', ')}: done.
+            {doneSteps.map((step) => STEP_LABELS[step]).join(', ')}: done.
             Closing…
           </s-banner>
         ) : loading ? (
@@ -277,9 +292,17 @@ function SendExtension() {
       <s-button
         slot='primary-action'
         onClick={handleSend}
-        disabled={loading || !ordersContent || sent || sending}
+        disabled={
+          loading || !ordersContent || !!mixedSupplierError || sent || sending
+        }
       >
-        {sent ? '✓ Done' : sending ? 'Sending…' : 'Add to Google Sheet'}
+        {sent
+          ? '✓ Done'
+          : sending
+            ? 'Sending…'
+            : doneSteps.length > 0
+              ? 'Retry failed steps'
+              : 'Add to Google Sheet'}
       </s-button>
     </s-admin-action>
   );
@@ -524,6 +547,9 @@ function generateOrdersHtmlTable(orders: OrderResponse['nodes']) {
 
 // Tag strategies
 const COMPLETED_TAG = 'Завершені';
+
+// Supplier codes inside the "Оформити …" tag; must match the checks in SendExtension
+const SUPPLIER_CODES = ['Ии', 'РІ', 'Че', 'Ме'];
 
 // Reusable auto-tagging function
 async function autoTagProcessedOrders(
