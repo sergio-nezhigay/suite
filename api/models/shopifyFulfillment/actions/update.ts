@@ -1,3 +1,4 @@
+import { withCpu } from '../../../utilities/cpuTracker';
 import { changeRozetkaOrderStatus } from 'api/utilities/rozetka/changeRozetkaOrderStatus';
 import { ROZETKA_ORDER_STATUSES } from 'api/utilities/rozetka/rozetkaStatuses';
 import { getRozetkaAccessToken } from 'api/utilities/rozetka/getRozetkaAccessToken';
@@ -5,7 +6,6 @@ import { updateFulfillmentTracking } from 'api/utilities/shopify/api/orders/upda
 import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
 import { applyParams, save, ActionOptions } from 'gadget-server';
 import { preventCrossShopDataAccess } from 'gadget-server/shopify';
-import { google } from 'googleapis';
 
 const SPREADSHEET_ID = '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE';
 const SHEET_NAME = 'Аркуш1';
@@ -60,7 +60,7 @@ export const run: ActionRun = async ({ params, record }) => {
 /**
  * On success: sync with Google Sheets & update fulfillment tracking
  */
-export const onSuccess: ActionOnSuccess = async ({
+export const onSuccess: ActionOnSuccess = withCpu('webhook:shopifyFulfillment.update', async ({
   record,
   connections,
   config,
@@ -130,6 +130,6 @@ export const onSuccess: ActionOnSuccess = async ({
   //    return;
   //  }
   //  changeRozetkaOrderStatus(Number(rozetkaOrderNumber[0]), ROZETKA_ORDER_STATUSES.RETURNED, accessToken);
-};
+});
 
 export const options: ActionOptions = { actionType: 'update' };
