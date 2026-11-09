@@ -1,5 +1,7 @@
-import { PDFDocument, rgb, PDFFont, PDFImage, PDFPage } from 'pdf-lib';
-import fontkit from '@pdf-lib/fontkit';
+// Types only: pdf-lib + fontkit are heavy, so they load inside createWarrantyPdf
+// instead of on every server start. Bare package names in import() resolve fine
+// on Gadget (same pattern as googleapis in authorizeGoogle.ts).
+import type { PDFDocument, PDFFont, PDFImage, PDFPage } from 'pdf-lib';
 
 // Define necessary types locally or import if moved to a shared types file
 interface WarrantyOrderItem {
@@ -95,7 +97,6 @@ function drawTable(
     page.drawLine({
       start: { x: startX, y: currentY },
       end: { x: startX + colWidths.reduce((a, b) => a + b, 0), y: currentY },
-      color: rgb(0, 0, 0),
       thickness: 0.5,
     });
     if (i < rowHeights.length) {
@@ -109,7 +110,6 @@ function drawTable(
     page.drawLine({
       start: { x: xPos, y: startY },
       end: { x: xPos, y: startY - totalHeight },
-      color: rgb(0, 0, 0),
       thickness: 0.5,
     });
     if (j < colWidths.length) {
@@ -132,7 +132,6 @@ function drawTable(
           y: currentY - 15 - lineIndex * 15,
           size: fontSize,
           font: currentFont,
-          color: rgb(0, 0, 0),
         });
       });
 
@@ -166,14 +165,12 @@ async function addWarrantyPage(
     y: height - 120,
     size: 18,
     font: boldFont,
-    color: rgb(0, 0, 0),
   });
   page.drawText(`${order.date}`, {
     x: 50,
     y: height - 150,
     size: 12,
     font,
-    color: rgb(0, 0, 0),
   });
 
   const tableData = [
@@ -194,7 +191,6 @@ async function addWarrantyPage(
     y: tableStartY + 20,
     size: 10,
     font,
-    color: rgb(0, 0, 0),
   });
 
   drawTable(
@@ -237,7 +233,6 @@ async function addWarrantyPage(
       y: warrantyY - index * 20,
       size: 9,
       font,
-      color: rgb(0, 0, 0),
     });
   });
 }
@@ -248,6 +243,9 @@ export async function createWarrantyPdf(
   const logoUrl =
     'https://cdn.shopify.com/s/files/1/0868/0462/7772/files/informatica-logo-good1.jpg?v=1740226141';
   const logoBytes = await (await fetch(logoUrl)).arrayBuffer();
+
+  const { PDFDocument } = await import('pdf-lib');
+  const fontkit = (await import('@pdf-lib/fontkit')).default;
 
   const pdfDoc = await PDFDocument.create();
   pdfDoc.registerFontkit(fontkit);

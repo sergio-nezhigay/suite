@@ -1,5 +1,9 @@
 import type { RouteHandler } from 'fastify';
 import { logger } from 'gadget-server';
+// Static imports on purpose: a relative `await import()` fails on Gadget
+// (ERR_MODULE_NOT_FOUND). The heavy pdf-lib is loaded lazily inside warrantyPdfUtils.
+import { createWarrantyPdf } from '../utilities/pdf/warrantyPdfUtils';
+import { sendWarrantyEmail } from '../utilities/email/warrantyEmailUtils';
 
 interface ShopifyCustomer {
   firstName: string;
@@ -49,9 +53,6 @@ const route: RouteHandler<{ Body: RequestBody }> = async (context) => {
 
     const orders = formatOrders(ordersContent);
 
-    // Loaded on demand: pdf-lib + fontkit are heavy and only this route needs them
-    const { createWarrantyPdf } = await import('../utilities/pdf/warrantyPdfUtils');
-    const { sendWarrantyEmail } = await import('../utilities/email/warrantyEmailUtils');
     const pdfBuffer = await createWarrantyPdf(orders);
 
     await sendWarrantyEmail(context, pdfBuffer, orders.length);
