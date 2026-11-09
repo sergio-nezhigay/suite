@@ -1,3 +1,4 @@
+import { withCpu } from '../utilities/cpuTracker';
 import { ActionOptions } from "gadget-server";
 import { sendTelegramMessage } from "api/utilities/http/telegramClient";
 
@@ -14,7 +15,7 @@ const ORDERS_BY_TAG_QUERY = `
   }
 `;
 
-export const run: ActionRun = async ({ api, connections, logger, config }) => {
+export const run: ActionRun = withCpu('action:sendChecksToDoAlert', async ({ api, connections, logger, config }) => {
   // Scheduler only meaningful in the deployed env; match processDeclarationOrders.
   if (process.env.NODE_ENV !== "production") return;
 
@@ -49,7 +50,7 @@ export const run: ActionRun = async ({ api, connections, logger, config }) => {
   const text = `🧾 ${CHECKS_TODO_TAG}: ${allNames.length} замовлень\n\n${allNames.join(", ")}`;
   await sendTelegramMessage({ botToken: config.BOT_TOKEN!, chatId: config.CHAT_ID!, text });
   logger.info({ count: allNames.length }, "Checks-to-do alert sent");
-};
+});
 
 export const options: ActionOptions = {
   triggers: {

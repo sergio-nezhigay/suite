@@ -1,3 +1,4 @@
+import { withCpu } from '../../../utilities/cpuTracker';
 import {
   applyParams,
   save,
@@ -17,7 +18,7 @@ const RELEVANT_FIELDS = [
   'cancelledAt',
 ];
 
-export const run = async ({ params, record, logger }: any) => {
+export const run = withCpu('webhook:shopifyOrder.update', async ({ params, record, logger }: any) => {
   const start = performance.now();
   try {
     applyParams(params, record);
@@ -37,6 +38,6 @@ export const run = async ({ params, record, logger }: any) => {
     const duration_ms = Math.round(performance.now() - start);
     logger?.info({ stage: 'shopify_order_update', duration_ms, orderId: record.id }, 'shopify_order_update completed');
   }
-};
+});
 
 export const options: ActionOptions = { actionType: 'update' };

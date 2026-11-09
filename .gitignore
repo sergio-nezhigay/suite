@@ -13,3 +13,4 @@ npm-cache/
 nul
 extensions/*/dist/
 .shopify-cli-home/
+scripts/.cpu-log.jsonl

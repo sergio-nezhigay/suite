@@ -1,9 +1,10 @@
+import { withCpu } from '../utilities/cpuTracker';
 import { ActionOptions } from 'gadget-server';
 import { fetchPrivatBankTransactions, PrivatBankTransaction } from '../utilities/bank/fetchPrivatBankTransactions';
 import { deriveExternalId } from '../utilities/bank/transactionIdentity';
 import { timeIt } from 'api/utilities/timeIt';
 
-export const run = async ({
+export const run = withCpu('action:syncBankTransactions', async ({
   params,
   logger,
   api,
@@ -117,41 +118,6 @@ export const run = async ({
       if (refKey) existingByKey.set(refKey, row);
     }
     logger.info(`Indexed ${existingByKey.size} existing transaction keys from DB`);
-
-    // Debug: Show transaction date distribution
-    if (transactions.length > 0) {
-      const transactionsByDate = transactions.reduce(
-        (acc: Record<string, number>, tx: PrivatBankTransaction) => {
-          if (tx.date) {
-            acc[tx.date] = (acc[tx.date] || 0) + 1;
-          }
-          return acc;
-        },
-        {} as Record<string, number>
-      );
-
-      logger.info(
-        'DEBUG - Transaction distribution by date:',
-        transactionsByDate
-      );
-
-      // Show most recent transactions
-      const recentTransactions = transactions
-        .filter((t: PrivatBankTransaction) => t.date)
-        .sort((a: PrivatBankTransaction, b: PrivatBankTransaction) =>
-          (b.date! + (b.time || '')).localeCompare(a.date! + (a.time || ''))
-        )
-        .slice(0, 5);
-
-      logger.info('DEBUG - 5 most recent transactions from API:');
-      recentTransactions.forEach((tx: PrivatBankTransaction, i: number) => {
-        logger.info(
-          `  ${i + 1}. ${tx.date} ${tx.time || ''} - ${tx.amount} ${
-            tx.currency
-          } (${tx.type}) - ID: ${tx.id || tx.reference}`
-        );
-      });
-    }
 
     // Validate transaction data structure
     const validTransactions: PrivatBankTransaction[] = [];
@@ -537,7 +503,7 @@ export const run = async ({
       },
     };
   }
-};
+});
 
 // Parameters for the action
 export const params = {

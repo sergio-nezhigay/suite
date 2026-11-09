@@ -1,7 +1,6 @@
 import { logger } from 'gadget-server';
-import { google } from 'googleapis';
 
-import { authorize } from '../authorizeGoogle';
+import { getSheetsClient } from '../authorizeGoogle';
 
 const SPREADSHEET_ID = '1IE-6iZ0tgTPdg0RzWhdzRMv0tca9x5Th8BIg5P0gjwE';
 export async function fetchNovaPoshtaDeclaration(
@@ -10,8 +9,7 @@ export async function fetchNovaPoshtaDeclaration(
 ): Promise<string | null> {
   try {
     const step1Start = Date.now();
-    const auth = await authorize(config);
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = await getSheetsClient(config);
     logger.info({ orderName, duration_ms: Date.now() - step1Start }, 'Step 1: Authorize & get sheets client');
 
     const startRow = 7100;

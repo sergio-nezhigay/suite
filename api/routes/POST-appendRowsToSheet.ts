@@ -1,6 +1,5 @@
-import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
+import { getSheetsClient } from 'api/utilities/suppliers/authorizeGoogle';
 import { RouteHandler } from 'gadget-server';
-import { google } from 'googleapis';
 import type { sheets_v4 } from 'googleapis';
 
 //async function authorize(config: any) {
@@ -33,8 +32,7 @@ const route: RouteHandler<{
   const range = `${sheetName}!A1`;
   const startedAt = Date.now();
   try {
-    const auth = await authorize(config);
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = await getSheetsClient(config);
 
     const response = await sheets.spreadsheets.values.append({
       spreadsheetId,

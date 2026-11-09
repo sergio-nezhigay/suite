@@ -1,7 +1,8 @@
+import { withCpu } from '../utilities/cpuTracker';
 import { ActionOptions } from "gadget-server";
 import { sendTelegramMessage } from "api/utilities/http/telegramClient";
 
-export const run: ActionRun = async ({ api, logger, config }) => {
+export const run: ActionRun = withCpu('action:sendUnlinkedPaymentsAlert', async ({ api, logger, config }) => {
   const BOT_TOKEN = config.BOT_TOKEN;
   const CHAT_ID = config.CHAT_ID;
 
@@ -37,7 +38,7 @@ export const run: ActionRun = async ({ api, logger, config }) => {
     await sendTelegramMessage({ botToken: BOT_TOKEN!, chatId: CHAT_ID!, text: alertText });
     logger.info({ count: unlinked.length }, "Unlinked payments alert sent");
   }
-};
+});
 
 export const options: ActionOptions = {
   triggers: {

@@ -1,3 +1,4 @@
+import { withCpu } from '../../../utilities/cpuTracker';
 import {
   applyParams,
   preventCrossShopDataAccess,
@@ -9,9 +10,9 @@ export const run: ActionRun = async ({ params, record, logger }: any) => {
 
 };
 
-export const onSuccess: ActionOnSuccess = async ({ record, api, logger }) => {
+export const onSuccess: ActionOnSuccess = withCpu('webhook:shopifyOrder.create', async ({ record, api, logger }) => {
   
-};
+});
 
 export const options: ActionOptions = {
   actionType: 'create',

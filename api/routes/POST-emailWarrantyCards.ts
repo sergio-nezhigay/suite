@@ -1,6 +1,5 @@
 import type { RouteHandler } from 'fastify';
 import { logger } from 'gadget-server';
-import { createWarrantyPdf, sendWarrantyEmail } from 'utilities';
 
 interface ShopifyCustomer {
   firstName: string;
@@ -50,6 +49,9 @@ const route: RouteHandler<{ Body: RequestBody }> = async (context) => {
 
     const orders = formatOrders(ordersContent);
 
+    // Loaded on demand: pdf-lib + fontkit are heavy and only this route needs them
+    const { createWarrantyPdf } = await import('../utilities/pdf/warrantyPdfUtils');
+    const { sendWarrantyEmail } = await import('../utilities/email/warrantyEmailUtils');
     const pdfBuffer = await createWarrantyPdf(orders);
 
     await sendWarrantyEmail(context, pdfBuffer, orders.length);

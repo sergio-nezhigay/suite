@@ -1,6 +1,5 @@
 import { logger } from 'gadget-server';
-import { google } from 'googleapis';
-import { authorize } from './suppliers/authorizeGoogle';
+import { getSheetsClient } from './suppliers/authorizeGoogle';
 
 interface DeclarationConfig {
   spreadsheetId: string;
@@ -29,8 +28,7 @@ export async function fetchDeclarationFromSheet(
 
   try {
     const step1Start = Date.now();
-    const auth = await authorize(config);
-    const sheets = google.sheets({ version: 'v4', auth });
+    const sheets = await getSheetsClient(config);
     logger.info({ orderName, duration_ms: Date.now() - step1Start }, 'Step 1: Authorize & get sheets client');
 
     const range = `${sheetName}!A${startRow}:Z`;

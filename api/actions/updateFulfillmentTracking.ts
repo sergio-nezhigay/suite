@@ -1,6 +1,5 @@
 import { updateFulfillmentTracking } from 'api/utilities/shopify/api/orders/updateFulfillmentTracking';
 import { authorize } from 'api/utilities/suppliers/authorizeGoogle';
-import { google } from 'googleapis';
 
 export const run: ActionRun = async ({
   params,
