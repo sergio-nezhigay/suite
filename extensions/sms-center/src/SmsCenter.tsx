@@ -8,6 +8,7 @@ import { getOrderInfo, addOrderNote } from '../../shared/shopifyOperations';
 import { replacePlaceholders } from './utils/replacePlaceholders';
 import { sendSmsMessage } from './utils/sendSmsMessage';
 import { fetchSmsTemplates } from './utils/fetchSmsTemplates';
+import validateAndFormatPhoneNumber from './utils/validateAndFormatPhoneNumber';
 
 // Target: admin.order-details.block.render (see ./shopify.extension.toml)
 export default async () => {
@@ -57,7 +58,14 @@ function App() {
         if (!orderDetails?.shippingPhone) {
           setStatus('Phone not found');
         } else {
-          setCustomerPhone(orderDetails?.shippingPhone);
+          const raw = orderDetails.shippingPhone;
+          let phone = raw;
+          try {
+            phone = validateAndFormatPhoneNumber(raw);
+          } catch {
+            // keep raw; sending will show the validation error
+          }
+          setCustomerPhone(phone);
           setStatus('Ready to send SMS');
         }
       } catch (err: any) {
