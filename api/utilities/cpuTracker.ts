@@ -27,13 +27,8 @@ export function logBootOnce(trigger: string) {
   );
   // Workers burn ~3.7% CPU between requests once the first request has run. Profile that idle
   // window once per worker to see what is running. unref() so this never keeps a worker alive.
+  profileState = 'scheduled';
   setTimeout(() => void runIdleProfile(), 120_000).unref();
-  process.once('SIGTERM', () => {
-    logger.info(
-      { exit: true, at: new Date().toISOString(), bootId, procCpuMs: ms(process.cpuUsage()), uptimeS: Math.round(process.uptime()) },
-      'exit'
-    );
-  });
 }
 
 type ProfileNode = { id: number; hitCount?: number; callFrame: { functionName: string; url: string; lineNumber: number } };
@@ -47,6 +42,7 @@ function shortUrl(url: string) {
 }
 
 async function runIdleProfile(seconds = 30) {
+  profileState = 'running';
   try {
     const inspector = await import('node:inspector');
     const { performance } = await import('node:perf_hooks');
@@ -89,11 +85,10 @@ async function runIdleProfile(seconds = 30) {
     const resources: Record<string, number> = {};
     for (const r of (process as any).getActiveResourcesInfo?.() ?? []) resources[r] = (resources[r] ?? 0) + 1;
 
-    logger.info(
-      {
+    profileState = 'done';
+    pendingProfile = {
         idleProfile: true,
         at: new Date().toISOString(),
-        bootId,
         seconds,
         processCpuMs: ms(cpu), // all threads of the process
         userMs: Math.round(cpu.user / 1000),
@@ -103,11 +98,9 @@ async function runIdleProfile(seconds = 30) {
         resources: JSON.stringify(resources),
         top: top.join(' | '),
         uptimeS: Math.round(process.uptime()),
-      },
-      'idle-profile'
-    );
+    };
   } catch (err) {
-    logger.warn({ bootId, error: String(err) }, 'idle-profile failed');
+    profileState = `failed: ${String(err).slice(0, 200)}`;
   }
 }
 
@@ -128,10 +121,20 @@ export function logCpu(name: string, start: ReturnType<typeof startCpu>) {
       // bootId is that worker's total, to compare with the dashboard's "Active CPU time".
       procCpuMs: ms(process.cpuUsage()),
       uptimeS: Math.round(process.uptime()),
+      profileState,
     },
     'cpu'
   );
+  // Gadget drops log lines written outside a request, so the idle profile is logged here
+  if (pendingProfile) {
+    logger.info({ ...pendingProfile, loggedAt: new Date().toISOString(), bootId }, 'idle-profile');
+    pendingProfile = null;
+  }
 }
+
+// 'none' -> 'scheduled' -> 'running' -> 'done' | 'failed: ...'; shows whether the timer fired at all
+let profileState = 'none';
+let pendingProfile: Record<string, unknown> | null = null;
 
 // Wrap an action's run/onSuccess: withCpu('bankSync', async (ctx) => { ... })
 export function withCpu<A extends unknown[], R>(name: string, fn: (...args: A) => Promise<R>) {
