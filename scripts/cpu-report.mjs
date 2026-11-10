@@ -42,7 +42,8 @@ function collect(existing) {
     // Gadget lifts our `name` field to the top-level logger name and stringifies numbers
     const rec = { at: f.at, boot: !!f.boot, bootId: f.bootId, name: f.boot ? f.trigger : (f.name ?? e.name),
       cpuMs: Number(f.cpuMs ?? f.bootCpuMs ?? 0), wallMs: Number(f.wallMs ?? 0),
-      uptimeS: Number(f.uptimeS ?? 0), rssMb: Number(f.rssMb ?? 0) };
+      uptimeS: Number(f.uptimeS ?? 0), rssMb: Number(f.rssMb ?? 0),
+      procCpuMs: f.procCpuMs == null ? undefined : Number(f.procCpuMs) };
     if (seen.has(keyOf(rec))) continue;
     seen.add(keyOf(rec));
     fresh.push(rec);
@@ -60,7 +61,12 @@ function summarise(records) {
   const byDay = new Map();
   for (const r of records) {
     if (Date.parse(r.at) < since) continue;
-    const d = byDay.get(dayOf(r.at)) ?? { boots: 0, bootMs: 0, maxRss: 0, workMs: 0, names: new Map() };
+    const d = byDay.get(dayOf(r.at)) ?? { boots: 0, bootMs: 0, maxRss: 0, workMs: 0, names: new Map(), workers: new Map() };
+    // Highest whole-process CPU seen per worker = that worker's total so far (start-up + work + idle)
+    const w = d.workers.get(r.bootId) ?? { totalMs: 0, upS: 0 };
+    w.totalMs = Math.max(w.totalMs, r.procCpuMs ?? (r.boot ? r.cpuMs : 0));
+    w.upS = Math.max(w.upS, r.uptimeS ?? 0);
+    d.workers.set(r.bootId, w);
     if (r.boot) {
       d.boots++; d.bootMs += r.cpuMs; d.maxRss = Math.max(d.maxRss, r.rssMb ?? 0);
     } else {
@@ -74,12 +80,16 @@ function summarise(records) {
   if (!byDay.size) return console.log('No cpu/boot lines yet (deployed? collected?).');
   for (const [day, d] of [...byDay].sort()) {
     console.log(`\n${day}  measured CPU ${fmt(d.bootMs + d.workMs)}  =  starts ${fmt(d.bootMs)} (${d.boots}×, avg ${fmt(d.bootMs / (d.boots || 1))}, max mem ${d.maxRss} MB)  +  work ${fmt(d.workMs)}`);
+    const ws = [...d.workers.values()];
+    const wTotal = ws.reduce((a, w) => a + w.totalMs, 0);
+    const longestMin = Math.round(Math.max(0, ...ws.map((w) => w.upS)) / 60);
+    console.log(`            our processes total ${fmt(wTotal)} across ${ws.length} worker(s), longest awake ${longestMin} min (exact only for lines logged from 2026-11-10)`);
     const top = [...d.names].sort((a, b) => b[1].cpuMs - a[1].cpuMs).slice(0, 8);
     for (const [name, n] of top) {
       console.log(`  ${fmt(n.cpuMs).padStart(9)}  ${String(n.calls).padStart(4)} calls  (wall ${fmt(n.wallMs)})  ${name}`);
     }
   }
-  console.log('\nCompare "measured CPU" with Ops dashboard → Active CPU time (last 24 h).');
+  console.log('\nCompare "our processes total" with Ops dashboard → Active CPU time (last 24 h).');
 }
 
 let records = readStore();

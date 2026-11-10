@@ -3,7 +3,7 @@ import { ActionOptions } from "gadget-server";
 import { sendTelegramMessage } from "api/utilities/http/telegramClient";
 
 const CHECKS_TODO_TAG = "Зробити чеки";
-const KYIV_ALERT_HOURS = [18, 19, 20, 21];
+const KYIV_ALERT_HOURS = [21];
 
 // Live Admin API read: `tag:` does exact whole-tag matching, unlike the Gadget
 // mirror's `tags: { matches }` full-text operator, and avoids sync staleness.
@@ -54,7 +54,8 @@ export const run: ActionRun = withCpu('action:sendChecksToDoAlert', async ({ api
 
 export const options: ActionOptions = {
   triggers: {
-    // UTC, covering 18-21 Kyiv in both summer (UTC+3) and winter (UTC+2); run() skips other hours.
-    scheduler: [{ cron: "0 15-19 * * *" }],
+    // 21:00 Kyiv = 18 UTC in summer (UTC+3), 19 UTC in winter (UTC+2); run() skips the other one.
+    // Kept to 2 runs a day: every scheduled run wakes a Gadget worker, which costs CPU.
+    scheduler: [{ cron: "0 18,19 * * *" }],
   },
 };

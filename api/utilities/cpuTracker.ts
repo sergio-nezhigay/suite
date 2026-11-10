@@ -33,7 +33,18 @@ export function startCpu() {
 
 export function logCpu(name: string, start: ReturnType<typeof startCpu>) {
   logger.info(
-    { cpu: true, at: new Date().toISOString(), bootId, name, cpuMs: ms(process.cpuUsage(start.cpu)), wallMs: Date.now() - start.wall },
+    {
+      cpu: true,
+      at: new Date().toISOString(),
+      bootId,
+      name,
+      cpuMs: ms(process.cpuUsage(start.cpu)),
+      wallMs: Date.now() - start.wall,
+      // Whole-process CPU since this worker started (start-up + work + idle). The last value per
+      // bootId is that worker's total, to compare with the dashboard's "Active CPU time".
+      procCpuMs: ms(process.cpuUsage()),
+      uptimeS: Math.round(process.uptime()),
+    },
     'cpu'
   );
 }
