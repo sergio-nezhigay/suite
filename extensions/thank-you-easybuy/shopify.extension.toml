@@ -16,5 +16,5 @@ module = "./src/OrderStatus.tsx"
 target = "customer-account.order-status.block.render"
 
 [extensions.capabilities]
-# Asks our Gadget backend whether the order was paid by COD (the payment name isn't visible to the extension)
+# Asks our Cloudflare worker (informatica-automations) whether the order was paid by COD (the payment name isn't visible to the extension)
 network_access = true

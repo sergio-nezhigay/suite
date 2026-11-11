@@ -1,12 +1,15 @@
 /** @jsxImportSource preact */
 import '@shopify/ui-extensions/preact';
 import { useEffect, useState } from 'preact/hooks';
-import { SHOPIFY_APP_URL } from '../../shared/data';
 
 const EASYBUY_SKU_SUFFIX = '^ИИ';
 export const COD_GATEWAY = 'накладений';
 const TIMEOUT_MS = 5000;
 const CACHE_PREFIX = 'easybuy-cod:';
+// Cloudflare worker informatica-automations (repo ../automations-wrangler), not Gadget: each Gadget wake
+// costs ~1.5 min of the Hobby plan's CPU. Rollback: point this back to
+// `${SHOPIFY_APP_URL}/easybuy-cod-check` (the Gadget route is kept) with the ShopifySessionToken prefix.
+const CHECK_URL = 'https://informatica-automations.informatica5305.workers.dev/easybuy-cod-check';
 
 // Minimal shape shared by checkout and customer-account `shopify.storage`
 export interface KeyValueStorage {
@@ -19,7 +22,7 @@ export interface BoxInput {
   orderId: string | undefined;
   storage: KeyValueStorage;
   // Decides COD for this order. Returns true/false, or null when it can't tell
-  // (then we ask the Gadget backend once and remember the answer).
+  // (then we ask the backend worker once and remember the answer).
   checkCodLocally: () => Promise<boolean | null>;
   getToken: () => Promise<string>;
   translate: (key: string) => string;
@@ -44,11 +47,11 @@ async function askBackend(orderId: string, getToken: () => Promise<string>): Pro
   const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
     const token = await getToken();
-    const res = await fetch(`${SHOPIFY_APP_URL}/easybuy-cod-check`, {
+    const res = await fetch(CHECK_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        Authorization: `ShopifySessionToken ${token}`,
+        Authorization: `Bearer ${token}`,
       },
       body: JSON.stringify({ orderId }),
       signal: controller.signal,
@@ -64,7 +67,7 @@ async function askBackend(orderId: string, getToken: () => Promise<string>): Pro
 }
 
 // Shows the box only for EasyBuy-only COD orders. Any error or timeout → nothing.
-// Order of checks, cheapest first: SKUs (client) → saved answer → local check → Gadget (once per order).
+// Order of checks, cheapest first: SKUs (client) → saved answer → local check → worker (once per order).
 export function EasyBuyCodBox({
   skus,
   orderId,

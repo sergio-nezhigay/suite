@@ -18,7 +18,7 @@ const ORDER_PAYMENT_QUERY = `
   }
 `;
 
-// Reads the payment name from Shopify's Customer Account API (no call to our Gadget backend).
+// Reads the payment name from Shopify's Customer Account API (no call to our backend).
 // Only a positive match is trusted; anything else returns null, so the backend is asked once
 // and its answer is saved.
 function makeCheckCodLocally(orderId: string | undefined) {

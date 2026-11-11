@@ -1,6 +1,8 @@
 import { RouteHandler } from 'gadget-server';
 
-// Called by the thank-you / order-status box (extensions/thank-you-easybuy).
+// No longer called: since the box moved to the Cloudflare worker (automations-wrangler,
+// src/routes/easybuy-cod-check) to stop waking Gadget. Kept for rollback; delete once the worker is proven.
+// Was called by the thank-you / order-status box (extensions/thank-you-easybuy).
 // Answers one question: is this a COD order where every item is EasyBuy (SKU ends in ^ИИ)?
 // The shop comes from the Shopify session token (Gadget verifies it), never from the request body.
 
