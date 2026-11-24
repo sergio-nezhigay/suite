@@ -85,6 +85,19 @@ test('good request: 1 POST with the product id, then thanks', async () => {
   assert.deepEqual(sent, { code: 302, location: THANKS });
 });
 
+test('device model goes first in the review text ("fit" only with 4-5 stars); empty or junk device keeps the comment', async () => {
+  await run({ ...good, review_device: ' Lenovo IdeaPad 330-15. ' });
+  assert.equal(posts()[0].body.body, 'Підійшло до: Lenovo IdeaPad 330-15. Підійшло');
+  await run({ ...good, email: 'c@x.ua', review_device: 'HP ProBook 450 G5', review_body: '' });
+  assert.equal(posts()[1].body.body, 'Підійшло до: HP ProBook 450 G5.');
+  await run({ ...good, email: 'd@x.ua', review_device: '' });
+  assert.equal(posts()[2].body.body, 'Підійшло');
+  await run({ ...good, email: 'e@x.ua', review_device: ' - ' });
+  assert.equal(posts()[3].body.body, 'Підійшло');
+  await run({ ...good, email: 'f@x.ua', review_rating: '1', review_device: 'Asus X540', review_body: 'Не заряджає' });
+  assert.equal(posts()[4].body.body, 'Пристрій: Asus X540. Не заряджає');
+});
+
 test('repeat: same email + product already reviewed, 0 POSTs, then thanks', async () => {
   lookup = () => json({ reviews: [{ product_external_id: Number(PRODUCT), reviewer: { email: 'A+B@x.ua' } }] });
   const sent = await run(good);
