@@ -18,18 +18,29 @@ type ReviewInput = {
 
 const str = (value: unknown) => (typeof value === 'string' ? value.trim() : '');
 
+// The optional "which laptop / motherboard / router" answer (adapters and RAM) goes
+// first in the review text, so buyers see the model. "Fit" only with 4-5 stars;
+// an answer with no letter or digit ("-", "...") counts as none.
+function reviewBody(device: string, comment: string, rating?: number) {
+  const model = Array.from(device).slice(0, 80).join('').replace(/[.\s]+$/, '');
+  if (!/[\p{L}\p{N}]/u.test(model)) return comment;
+  const label = rating && rating >= 4 ? 'Підійшло до' : 'Пристрій';
+  return [`${label}: ${model}.`, comment].filter(Boolean).join(' ');
+}
+
 function parseInput(query: unknown): ReviewInput {
   const q = (query ?? {}) as Record<string, unknown>;
   const rating = str(q.review_rating);
   const productId = str(q.product_id);
   const handle = str(q.product_handle);
+  const stars = /^[1-5]$/.test(rating) ? Number(rating) : undefined;
   return {
-    rating: /^[1-5]$/.test(rating) ? Number(rating) : undefined,
+    rating: stars,
     productId: /^\d+$/.test(productId) ? productId : undefined,
     handle: /^[\p{L}\p{N}_-]+$/u.test(handle) ? handle : undefined,
     name: str(q.name),
     email: str(q.email),
-    body: str(q.review_body),
+    body: reviewBody(str(q.review_device), str(q.review_body), stars),
   };
 }
 
